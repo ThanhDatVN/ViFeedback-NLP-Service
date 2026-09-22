@@ -444,4 +444,42 @@ and soup coefficients — every one of them is coming later in this project.
 
 ---
 
+## ADR-016 · 2026-09-22 · Scaling the encoder buys nothing; PhoBERT-base is the ship · Accepted
+
+**Context.** Phase 4 Tier E ran the two models that exceed the 4.29 GB laptop GPU on a Kaggle T4.
+Sentiment, `seg_pyvi`, 5 seeds, dev:
+
+| Model | Params | Macro-F1 | Neutral F1 | Δ vs base | Where |
+|---|---|---|---|---|---|
+| **`phobert-base`** | **135M** | **0.8643 ± 0.0092** | **0.663 ± 0.029** | — | laptop |
+| `phobert-large` | 368M | 0.8560 ± 0.0036 | 0.636 ± 0.011 | **−0.0083** (1.2 pooled std) | Kaggle T4 |
+| `xlmr-base` | 277M | 0.8403 ± 0.0063 | 0.604 ± 0.018 | **−0.0240** (3.0 pooled std) | Kaggle T4 |
+
+**Decision.** Ship `phobert-base`. Close the model axis; neither larger model enters the champion
+search.
+
+**Consequences and reasoning.**
+
+* **2.7× the parameters is not worth 1.2 seed-std in the wrong direction.** `phobert-large`'s seed
+  range [0.8520, 0.8604] sits *inside* `phobert-base`'s [0.8494, 0.8750], so the difference is not
+  even resolvable — and the point estimate is lower. Against the CPU latency objective it is
+  strictly worse: 2.7× the FLOPs for no measurable accuracy.
+* **`xlm-roberta-base` is clearly worse** (−0.024, 3.0 pooled std). Multilingual pretraining loses
+  to Vietnamese-specific pretraining at the same scale, which is the result PhoBERT's own paper
+  reports and this replicates.
+* **`phobert-large` is unstable at this data size**, and visibly so: best epochs across seeds were
+  [1, 4, 4, 4, 3], one seed peaked at **epoch 1** and degraded from there, and another started at
+  macro-F1 0.7724. Dev-macro-F1 checkpoint selection is what keeps those runs usable at all.
+* Two `xlmr-base` seeds **collapsed to neutral F1 = 0.000 at epoch 1** before recovering — the
+  majority-class collapse the minority class invites, and a reminder that a 1-epoch budget would
+  have produced a very different conclusion.
+* **CafeBERT (560M) is not worth running.** The trend across 135M → 277M → 368M is flat-to-negative,
+  and 560M would cost ~90 GPU-minutes to extend a line that is already answered.
+
+**This closes Tier E as a negative result, and it is a useful one:** the remaining headroom on this
+task is in the *minority class* and the *data*, not in encoder capacity. Tiers A, C and D keep their
+priority; Tier E does not.
+
+---
+
 <!-- Append new entries above this line. -->
