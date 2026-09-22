@@ -303,3 +303,67 @@ class TestOrdinalMetrics:
         y = rng.choice(3, size=100)
         assert "qwk" in M.evaluate(y, y, "sentiment")
         assert "qwk" not in M.evaluate(rng.choice(4, size=100), rng.choice(4, size=100), "topic")
+
+
+class TestImbalanceAwareMetrics:
+    """Added after an audit found the suite incomplete: neutral F1 was reported without an interval
+    while macro-F1 carried one, on a class with 73 dev examples."""
+
+    def test_cohen_kappa_matches_sklearn(self, rng):
+        from sklearn.metrics import cohen_kappa_score
+
+        for _ in range(10):
+            y = rng.choice(3, size=400)
+            p = np.where(rng.random(400) < 0.7, y, rng.choice(3, size=400))
+            assert M.cohen_kappa(y, p, 3) == pytest.approx(cohen_kappa_score(y, p), abs=1e-9)
+
+    def test_g_mean_is_zero_when_any_class_is_missed(self):
+        """The defining property: unlike balanced accuracy, ignoring one class scores 0, not 0.67."""
+        y = np.array([0] * 50 + [1] * 5 + [2] * 50)
+        blind = np.array([0] * 50 + [0] * 5 + [2] * 50)
+        assert M.g_mean(y, blind, 3) == 0.0
+        assert M.evaluate(y, blind, "sentiment")["balanced_accuracy"] > 0.6
+
+    def test_g_mean_is_one_for_perfect_predictions(self):
+        y = np.array([0, 1, 2, 0, 1, 2])
+        assert M.g_mean(y, y, 3) == pytest.approx(1.0)
+
+    def test_average_precision_matches_sklearn(self, rng):
+        from sklearn.metrics import average_precision_score
+
+        y = rng.choice(3, size=300, p=[0.46, 0.04, 0.50])
+        prob = rng.dirichlet([2, 1, 2], size=300)
+        ap = M.average_precision_per_class(y, prob, 3)
+        for c in range(3):
+            assert ap[c] == pytest.approx(
+                average_precision_score((y == c).astype(int), prob[:, c]), abs=1e-9
+            )
+
+    def test_average_precision_is_nan_for_an_absent_class(self, rng):
+        y = np.array([0, 0, 2, 2])
+        prob = rng.dirichlet([1, 1, 1], size=4)
+        assert np.isnan(M.average_precision_per_class(y, prob, 3)[1])
+
+    def test_per_class_ci_brackets_the_point_estimate(self, rng):
+        y = rng.choice(3, size=500, p=[0.46, 0.04, 0.50])
+        p = np.where(rng.random(500) < 0.8, y, rng.choice(3, size=500))
+        ci = M.per_class_f1_ci(y, p, 3, n_resamples=300, seed=0)
+        exact = M.evaluate(y, p, "sentiment")
+        for i, name in enumerate(exact["labels"]):
+            assert ci[i]["ci_low"] <= ci[i]["f1"] <= ci[i]["ci_high"]
+            assert ci[i]["f1"] == pytest.approx(exact["per_class"][name]["f1"])
+
+    def test_minority_class_ci_is_much_wider(self, rng):
+        """The measured fact this closes: on dev, neutral's CI is 9x wider than the majority
+        classes'. Reporting the point estimate alone invited over-reading."""
+        y = np.array([0] * 705 + [1] * 73 + [2] * 805)
+        p = np.where(rng.random(len(y)) < 0.9, y, rng.choice(3, size=len(y)))
+        ci = M.per_class_f1_ci(y, p, 3, n_resamples=400, seed=0)
+        assert ci[1]["ci_width"] > 3 * ci[0]["ci_width"]
+
+    def test_length_buckets_partition_the_data(self):
+        texts = ["a", "a b c", "a b c d e f", "a " * 30]
+        y = np.array([0, 1, 2, 0])
+        df = M.metrics_by_length_bucket(y, y, texts, "sentiment")
+        assert df["n"].sum() == len(y)
+        assert (df["macro_f1"] <= 1.0).all()

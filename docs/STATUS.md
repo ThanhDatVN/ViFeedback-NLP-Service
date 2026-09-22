@@ -135,6 +135,17 @@ expected benefit is uncertain (H3).
 add anything on top of two free configuration changes, on a CPU without VNNI?"** That is a sharper
 question and the answer may legitimately be *no* — which is still a result, and one worth reporting.
 
+### P10 — Per-class F1 was reported without an interval
+**Measured, and closed.** Neutral F1 on dev is 0.688 with a 95% bootstrap CI of **[0.593, 0.772]** —
+width **0.180**, against 0.020 for negative and 0.018 for positive. **9× wider.** Every neutral F1
+in this project was quoted to three decimals without that interval while macro-F1 carried one.
+
+*Closed by:* `per_class_f1_ci()`, plus `g_mean`, `cohen_kappa`, per-class average precision and
+`metrics_by_length_bucket`. Neutral AP is 0.690 against F1 0.688, which independently confirms
+ADR-015: the ranking is no better than the decision rule, so there is no hidden threshold win.
+
+*Remaining:* every neutral F1 in the docs should be re-quoted with its interval.
+
 ### P9 — Anything fitted on the evaluation set is suspect until cross-fitted
 Threshold tuning looked worth +0.035 and was worth **zero** on PhoBERT once cross-fitted (ADR-015).
 Root cause: 73 neutral dev examples cannot support a transferable decision boundary — the same

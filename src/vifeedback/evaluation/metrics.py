@@ -16,6 +16,7 @@ from __future__ import annotations
 from typing import Any
 
 import numpy as np
+import pandas as pd
 
 from vifeedback.constants import label_names, n_classes
 
@@ -101,6 +102,8 @@ def evaluate(
         "accuracy": accuracy,
         "balanced_accuracy": float(prf["recall"].mean()),
         "mcc": _mcc_from_confusion(cm),
+        "g_mean": float(np.prod(prf["recall"]) ** (1.0 / k)),
+        "cohen_kappa": cohen_kappa(y_true, y_pred, k),
         "per_class": {
             name: {
                 "precision": float(prf["precision"][i]),
@@ -124,7 +127,11 @@ def evaluate(
         out.update(ordinal_metrics(y_true, y_pred, k))
 
     if y_prob is not None:
-        out.update(_probability_metrics(y_true, np.asarray(y_prob, dtype=np.float64), k))
+        prob = np.asarray(y_prob, dtype=np.float64)
+        out.update(_probability_metrics(y_true, prob, k))
+        ap = average_precision_per_class(y_true, prob, k)
+        for i, name in enumerate(names):
+            out["per_class"][name]["average_precision"] = ap[i]
     return out
 
 
@@ -227,3 +234,142 @@ def ordinal_metrics(y_true: np.ndarray, y_pred: np.ndarray, k: int) -> dict[str,
         "qwk": quadratic_weighted_kappa(y_true, y_pred, k),
         "adjacent_accuracy": adjacent_accuracy(y_true, y_pred),
     }
+
+
+# --- Imbalance-aware and threshold-free metrics ---------------------------------------------------
+# Added after an audit found the suite incomplete in a way that mattered: neutral F1 is the number
+# this project turns on, and it was being reported without a confidence interval while macro-F1 had
+# one. A point estimate on 73 dev examples without an interval invites exactly the over-reading the
+# rest of the protocol is built to prevent.
+
+
+def g_mean(y_true: np.ndarray, y_pred: np.ndarray, k: int) -> float:
+    """Geometric mean of per-class recall — the standard imbalance metric.
+
+    Unlike the arithmetic mean (balanced accuracy), the geometric mean goes to **zero** if any single
+    class is entirely missed. On a 3-class problem with a 4% class, that is the behaviour we want:
+    a model that ignores neutral should score 0, not 0.67.
+    """
+    recall = prf_from_confusion(confusion(y_true, y_pred, k))["recall"]
+    return float(np.prod(recall) ** (1.0 / k))
+
+
+def cohen_kappa(y_true: np.ndarray, y_pred: np.ndarray, k: int) -> float:
+    """Unweighted chance-corrected agreement.
+
+    Reported so model performance can be compared against the corpus's published inter-annotator
+    agreement (91.20% sentiment, 71.07% topic) on the same footing. A topic macro-F1 of 0.80 means
+    something very different against 71% human agreement than against 91%.
+    """
+    cm = confusion(y_true, y_pred, k).astype(np.float64)
+    n = cm.sum()
+    if n == 0:
+        return 0.0
+    po = np.diag(cm).sum() / n
+    pe = (cm.sum(axis=1) @ cm.sum(axis=0)) / (n * n)
+    return float((po - pe) / (1 - pe)) if pe < 1 else 0.0
+
+
+def average_precision_per_class(y_true: np.ndarray, y_prob: np.ndarray, k: int) -> dict[int, float]:
+    """One-vs-rest average precision (area under the precision-recall curve).
+
+    **Threshold-free**, which matters here: F1 measures the model at the argmax decision rule, and
+    ADR-015 showed that decision rule cannot be tuned on this dataset. AP asks a different and
+    fairer question — *does the model rank neutral examples above the rest?* — separating ranking
+    quality from the decision rule it is stuck with.
+    """
+    from sklearn.metrics import average_precision_score
+
+    out = {}
+    for c in range(k):
+        binary = (np.asarray(y_true) == c).astype(int)
+        if binary.sum() == 0:
+            out[c] = float("nan")
+            continue
+        out[c] = float(average_precision_score(binary, y_prob[:, c]))
+    return out
+
+
+def per_class_f1_ci(
+    y_true: np.ndarray,
+    y_pred: np.ndarray,
+    k: int,
+    n_resamples: int = 2000,
+    alpha: float = 0.05,
+    seed: int = 0,
+) -> dict[int, dict[str, float]]:
+    """Bootstrap CI for **each class's** F1, not just the macro average.
+
+    The gap this closes: neutral F1 is the number the project turns on, and it rests on 73 dev
+    examples. Reporting it as a bare point estimate beside a macro-F1 that *does* carry an interval
+    was an inconsistency in the protocol, not a stylistic choice.
+    """
+    y_true = np.asarray(y_true, np.int64)
+    y_pred = np.asarray(y_pred, np.int64)
+    codes = y_true * k + y_pred
+    n = len(codes)
+
+    rng = np.random.default_rng(seed)
+    scores = np.empty((n_resamples, k), dtype=np.float64)
+    done = 0
+    while done < n_resamples:
+        size = min(500, n_resamples - done)
+        idx = rng.integers(0, n, size=(size, n), dtype=np.int64)
+        for j in range(size):
+            cm = np.bincount(codes[idx[j]], minlength=k * k).reshape(k, k)
+            scores[done + j] = prf_from_confusion(cm)["f1"]
+        done += size
+
+    point = prf_from_confusion(confusion(y_true, y_pred, k))["f1"]
+    lo, hi = np.percentile(scores, [100 * alpha / 2, 100 * (1 - alpha / 2)], axis=0)
+    return {
+        c: {
+            "f1": float(point[c]),
+            "ci_low": float(lo[c]),
+            "ci_high": float(hi[c]),
+            "ci_width": float(hi[c] - lo[c]),
+            "std": float(scores[:, c].std(ddof=1)),
+        }
+        for c in range(k)
+    }
+
+
+def metrics_by_length_bucket(
+    y_true: np.ndarray,
+    y_pred: np.ndarray,
+    texts: list[str],
+    task: str,
+    edges: tuple[int, ...] = (0, 5, 10, 20, 10_000),
+) -> pd.DataFrame:
+    """Macro-F1 and accuracy sliced by sentence length.
+
+    Not cosmetic. Neutral sentences average 9.8 syllables against 16.9 for negative, and 19.2% of
+    them are under 5 syllables. Without this slice, an error attributed to *meaning* may really be
+    an artifact of *brevity* — a very short sentence carries little evidence either way, and the
+    error analysis would be describing the wrong cause.
+    """
+    from itertools import pairwise
+
+    from vifeedback.preprocess import syllable_count
+
+    lengths = np.array([syllable_count(t) for t in texts])
+    y_true, y_pred = np.asarray(y_true), np.asarray(y_pred)
+
+    rows = []
+    for lo, hi in pairwise(edges):
+        m = (lengths >= lo) & (lengths < hi)
+        if m.sum() == 0:
+            continue
+        sub = evaluate(y_true[m], y_pred[m], task)
+        row = {
+            "bucket": f"{lo}-{hi - 1}" if hi < 10_000 else f"{lo}+",
+            "n": int(m.sum()),
+            "share": round(float(m.mean()), 3),
+            "macro_f1": round(sub["macro_f1"], 4),
+            "accuracy": round(sub["accuracy"], 4),
+        }
+        for name in label_names(task):
+            row[f"support_{name}"] = sub["per_class"][name]["support"]
+            row[f"f1_{name}"] = round(sub["per_class"][name]["f1"], 4)
+        rows.append(row)
+    return pd.DataFrame(rows)

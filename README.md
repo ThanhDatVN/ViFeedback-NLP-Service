@@ -60,6 +60,9 @@ see the [scorecard](docs/EXPERIMENT_MATRIX.md#pre-registration-scorecard--gate-g
 | [docs/EVALUATION_PROTOCOL.md](docs/EVALUATION_PROTOCOL.md) | Metrics, seed policy, significance testing, latency harness spec, error taxonomy, software test strategy |
 | [docs/RESEARCH_NOTES.md](docs/RESEARCH_NOTES.md) | Dataset and model landscape, prior results, tooling decisions, sources |
 | **[docs/STATUS.md](docs/STATUS.md)** | **Progress, open problems, next experiments, compute plan** |
+| [docs/BENCHMARK_COMPARISON.md](docs/BENCHMARK_COMPARISON.md) | Where we stand against published UIT-VSFC results, and what is not yet claimable |
+| [docs/PROPOSALS.md](docs/PROPOSALS.md) | Techniques, models and workflow changes, each anchored to a measurement |
+| [notebooks/01_eda.ipynb](notebooks/01_eda.ipynb) | Executed EDA — 23 cells, 4 figures, every decision traced to an ADR |
 | [docs/DECISIONS.md](docs/DECISIONS.md) | Decision log (ADR-001 … ADR-014) — every plan correction forced by measurement |
 
 ## Reproducing what exists
