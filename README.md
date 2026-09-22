@@ -63,6 +63,7 @@ see the [scorecard](docs/EXPERIMENT_MATRIX.md#pre-registration-scorecard--gate-g
 | [docs/BENCHMARK_COMPARISON.md](docs/BENCHMARK_COMPARISON.md) | Where we stand against published UIT-VSFC results, and what is not yet claimable |
 | [docs/PROPOSALS.md](docs/PROPOSALS.md) | Techniques, models and workflow changes, each anchored to a measurement |
 | [notebooks/01_eda.ipynb](notebooks/01_eda.ipynb) | Executed EDA — 23 cells, 4 figures, every decision traced to an ADR |
+| [docs/KAGGLE_GUIDE.md](docs/KAGGLE_GUIDE.md) | Step-by-step for the two models that exceed the 4.29 GB laptop GPU |
 | [docs/DECISIONS.md](docs/DECISIONS.md) | Decision log (ADR-001 … ADR-014) — every plan correction forced by measurement |
 
 ## Reproducing what exists
