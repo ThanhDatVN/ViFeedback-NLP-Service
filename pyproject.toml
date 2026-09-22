@@ -1,0 +1,66 @@
+[project]
+name = "vifeedback"
+version = "0.1.0"
+description = "Vietnamese feedback sentiment & topic classification: TF-IDF baselines vs PhoBERT, with CPU inference optimization"
+requires-python = ">=3.11"
+dependencies = [
+    "numpy>=2.0",
+    "pandas>=2.2",
+    "scikit-learn>=1.5",
+    "scipy>=1.14",
+    "matplotlib>=3.9",
+    "pyarrow>=17.0",
+    "datasets>=3.0",
+    "huggingface-hub>=0.25",
+    "transformers>=4.44",
+    "tqdm>=4.66",
+    "typer>=0.12",
+    "pyyaml>=6.0",
+]
+
+[project.optional-dependencies]
+train = ["torch>=2.4", "accelerate>=0.34"]
+serve = ["fastapi>=0.115", "uvicorn>=0.30", "onnxruntime>=1.19", "prometheus-client>=0.20"]
+seg = ["py_vncorenlp>=0.1.4", "underthesea>=6.8"]
+dev = ["pytest>=8.0", "pytest-cov>=5.0", "ruff>=0.6", "mypy>=1.11"]
+
+[project.scripts]
+vifeedback = "vifeedback.cli:app"
+
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.ruff]
+line-length = 100
+target-version = "py311"
+src = ["src", "tests"]
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "N", "UP", "B", "SIM", "RUF"]
+# N812: `integrity as I` / `normalize as N` are deliberate short aliases for modules used
+# densely in analysis code; the alternative is noise at every call site.
+ignore = ["E501", "N812"]
+
+[tool.mypy]
+python_version = "3.11"
+packages = ["vifeedback"]
+ignore_missing_imports = true
+warn_unused_ignores = true
+disallow_untyped_defs = false
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = "-q --strict-markers"
+markers = [
+    "slow: long-running (excluded from the PR loop)",
+    "needs_data: requires data/raw to be populated via `make data`",
+    "needs_java: requires a JVM (VnCoreNLP)",
+]
+
+[tool.coverage.run]
+source = ["src/vifeedback"]
+omit = ["*/cli.py"]
