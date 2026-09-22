@@ -1,0 +1,14 @@
+.git
+.github
+data
+results
+models
+notebooks
+docs
+tests
+*.zip
+__pycache__
+.pytest_cache
+.ruff_cache
+.mypy_cache
+*.egg-info

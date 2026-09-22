@@ -1,6 +1,6 @@
 # Status, Open Problems and Next Experiments
 
-**Updated:** 2026-09-22, after Gate G3 and the ADR-015 correction.
+**Updated:** 2026-09-22, after Gate G4 (locked test evaluation) and the G7 infrastructure build.
 Living document. Results live in [EXPERIMENT_MATRIX.md](EXPERIMENT_MATRIX.md); decisions in
 [DECISIONS.md](DECISIONS.md); this file says **where the project stands, what is wrong with it, and
 what to run next.**
@@ -15,21 +15,40 @@ what to run next.**
 | **G1** | Baselines & evaluation harness | ✅ | 22 runs, harness pinned against sklearn |
 | **G2** | PhoBERT reproduction | ✅ *(test eval deferred to G4, ADR-011)* | 10 runs, 5 seeds × 2 tasks |
 | **G3** | Word-segmentation ablation | ✅ | 15 runs + latency benchmark |
-| G4 | Improvement ladder | ⬜ next | — |
+| **G4** | Locked test evaluation | ✅ | 12 test runs, `results/test_evaluations.log` |
+| G4b | Improvement ladder (Tier A–F) | ⬜ in progress | 4 of ~120 runs |
 | G5 | Error analysis & robustness | ⬜ | — |
-| G6 | CPU inference optimization | ⬜ | partially pre-empted, see [§ 3.6](#p6--the-quantization-headroom-is-smaller-than-planned) |
-| G7 | Service, CI, release | ⬜ | — |
+| G6 | CPU inference optimization | ⬜ code ready | harness + ONNX ladder written; not yet run. See [P6](#p6--the-quantization-headroom-is-smaller-than-planned) |
+| **G7** | Service, Docker, CI | ✅ | FastAPI + 18 contract tests, multi-stage image, 4-job workflow |
 
-**CV checklist: 5/10** — items 1, 2, 3, 4, 5 complete.
+**CV checklist: 7/10** — items 1–5, 8, 10 complete. Remaining: error analysis (6),
+quantization benchmark (7), HF model card (9).
 
-**Compute so far:** 47 training runs, ~4.5 GPU-hours, all on the laptop RTX 3050. Zero external GPU
-used to date.
+**Compute so far:** 69 runs, ~7 GPU-hours, all on the laptop RTX 3050. Zero external GPU used.
 
 ---
 
 ## 2. Results
 
-Dev split. Sentiment unless stated. Full tables in
+### Headline — locked test split, 5 seeds
+
+| | Ours (test) | Published best | Honest TF-IDF baseline (test) |
+|---|---|---|---|
+| **Macro-F1** | **0.8373 ± 0.0031** | 0.8341 *(BamiBERT 2026)* | 0.7450 |
+| Weighted F1 | 0.9391 ± 0.0020 | ~0.94 | 0.8817 |
+| Neutral F1 | 0.5955 ± 0.0070 | not reported | 0.3530 |
+
+**+0.0032 over the published best is one seed-std, 4/5 seeds above — competitive, not better.**
+On dev the same model scored 0.8670; the dev→test drop is −0.0298 and the baseline dropped −0.026
+in the same direction, so the gap is a property of the split. Reporting dev as the result would
+have been wrong.
+
+Against the revised criteria: **S1** minimum met, target missed by 0.003 · **S3** target exceeded
+1.8× (+0.092, p = 3e-7) · **S4** minimum met, target missed (0.596 vs 0.65).
+
+### Dev split — the ladder
+
+Sentiment unless stated. Full tables in
 [EXPERIMENT_MATRIX § 5](EXPERIMENT_MATRIX.md#5-result-tables-to-fill).
 
 | Model | Preprocessing | **Macro-F1** | Weighted F1 | Neutral F1 |
@@ -72,6 +91,25 @@ provisional until G4.
    because of it** (ADR-015). Cross-fitting removes the *entire* apparent gain on PhoBERT. The
    inflated baselines had been *understating* PhoBERT's advantage, so the correction raises the
    headline lift from +0.085 to **+0.096**.
+
+---
+
+## 2b. Infrastructure completed at G7
+
+| Component | What exists |
+|---|---|
+| `src/vifeedback/serving/` | FastAPI: `/v1/classify`, `/healthz`, `/readyz`, `/version`, `/metrics`. Pydantic contracts with batch and length caps |
+| `src/vifeedback/inference/` | ONNX export with dynamic axes, graph optimization, dynamic + static INT8, parity verification, the full latency harness |
+| `Dockerfile` | Multi-stage, non-root, **ONNX Runtime only — no torch**, readiness-based HEALTHCHECK, artifacts mounted rather than baked |
+| `.github/workflows/ci.yml` | 4 jobs: quality · dataset integrity · API contract · image build with a size gate |
+| `Makefile` | 17 targets; `make ci` is exactly what the workflow runs |
+| `configs/` | One YAML per experiment, copied into each run directory |
+| `tests/` | unit · data · contract (18) · integration (6) · **packaging guards (10)** |
+
+The packaging guards exist because of a real incident: a bare `models/` pattern in `.gitignore`
+matched `src/vifeedback/models/` at depth and silently excluded that package from all 14 commits.
+The repository imported fine locally and was **broken for anyone who cloned it** — found by a
+clean-clone rehearsal, not by any test, because no test looked at git's view of the repo.
 
 ---
 

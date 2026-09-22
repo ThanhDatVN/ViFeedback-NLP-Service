@@ -1,0 +1,15 @@
+# Phase 4 Tier A. Post-hoc threshold tuning cross-fits to zero gain on PhoBERT (ADR-015), so the
+# imbalance correction has to happen during training or not at all.
+task: sentiment
+model_key: phobert-base
+preprocessing: seg_pyvi
+recipe: logit-adjust
+loss: logit-adjust
+logit_adjust_tau: 1.0       # subtract tau*log(prior) from the logits; free at inference
+
+max_length: 96
+batch_size: 32
+epochs: 4
+lr: 2.0e-5
+fp16: true
+seeds: [42, 1337, 2024, 7, 31337]

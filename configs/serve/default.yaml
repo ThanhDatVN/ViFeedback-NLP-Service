@@ -1,0 +1,13 @@
+# Serving runtime. Mirrors the environment variables read by vifeedback.serving.app.
+model_dir: models/serve
+max_length: 96              # Gate G0
+segmenter: pyvi             # ADR-012: +0.023 macro-F1 for 0.31 ms p95, and no JVM
+ort_threads: 2              # more threads is often SLOWER at batch=1; swept in Phase 6
+log_level: INFO
+
+limits:
+  max_batch: 64
+  max_chars: 2000
+
+# Pre-registered budget: an optimization may not cost more than this (ROADMAP S6).
+accuracy_budget_pp: 0.5

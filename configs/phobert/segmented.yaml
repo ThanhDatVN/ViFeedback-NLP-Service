@@ -1,0 +1,18 @@
+# Gate G3/G4 champion. The only change from reference.yaml is `preprocessing`.
+# Worth +0.0234 macro-F1 (t=8.58, p=0.0010, 5/5 seeds, non-overlapping ranges) - ADR-012.
+task: sentiment
+model_key: phobert-base
+preprocessing: seg_vncorenlp   # use seg_pyvi to match what actually ships
+recipe: base
+loss: ce
+
+max_length: 96
+batch_size: 32
+grad_accum: 1
+epochs: 4
+lr: 2.0e-5
+warmup_ratio: 0.1
+weight_decay: 0.01
+fp16: true
+
+seeds: [42, 1337, 2024, 7, 31337]

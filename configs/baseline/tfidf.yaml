@@ -1,0 +1,20 @@
+# The B0-B5 ladder. Each rung exists to make the next number interpretable.
+task: sentiment
+seed: 42
+selection: dev            # PredefinedSplit: fit on train, score on dev, never on test
+scoring: f1_macro         # scoring on accuracy would select the settings that best ignore neutral
+
+models:
+  - {key: b0,  label: majority class}
+  - {key: b0b, label: stratified random}
+  - {key: b1,  label: TF-IDF word 1-2g + LR}
+  - {key: b2,  label: TF-IDF char_wb 3-5g + LR}
+  - {key: b3,  label: TF-IDF word+char union + LR}
+  - {key: b4,  label: TF-IDF union + LinearSVC}
+  - {key: b5,  label: TF-IDF union + LR, class-weighted}
+
+# Decision priors must be CROSS-FITTED before their benefit is reported (ADR-015): fitting and
+# scoring on the same split overstated the gain by +0.012 to +0.036 macro-F1.
+threshold_tuning:
+  enabled: true
+  crossfit_folds: 5

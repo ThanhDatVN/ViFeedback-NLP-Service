@@ -1,0 +1,14 @@
+dataset: uitnlp/vietnamese_students_feedback
+revision: refs/convert/parquet   # the repo's loading script needs wget and datasets<3.0
+
+expected_splits: {train: 11426, validation: 1583, test: 3166}
+
+labels:
+  sentiment: {0: negative, 1: neutral, 2: positive}
+  topic: {0: lecturer, 1: training_program, 2: facility, 3: others}
+
+variants: [raw, seg_vncorenlp, seg_underthesea, seg_pyvi]
+
+integrity:
+  assert_split_sizes: true
+  max_normalized_leakage: 0.05   # measured 0.0174; pinned as a regression guard

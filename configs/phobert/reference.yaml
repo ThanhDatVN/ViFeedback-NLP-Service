@@ -1,0 +1,19 @@
+# Gate G2 reference configuration. Every ablation moves exactly one axis away from this.
+task: sentiment
+model_key: phobert-base
+preprocessing: raw          # condition P0
+recipe: base
+loss: ce
+
+max_length: 96              # Gate G0: PhoBERT subword p99.9 = 87; 2.7x below the 256 default
+batch_size: 32
+grad_accum: 1               # effective batch 32
+epochs: 4
+lr: 2.0e-5
+warmup_ratio: 0.1
+weight_decay: 0.01
+max_grad_norm: 1.0
+fp16: true
+early_stopping_patience: 3  # selection is on dev macro-F1, never loss or accuracy
+
+seeds: [42, 1337, 2024, 7, 31337]

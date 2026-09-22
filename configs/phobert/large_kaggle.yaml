@@ -1,0 +1,15 @@
+# Does NOT fit the 4.29 GB laptop GPU (~7.9 GB). Run on Kaggle P100 - see docs/KAGGLE_GUIDE.md.
+task: sentiment
+model_key: phobert-large
+preprocessing: seg_pyvi
+recipe: base
+loss: ce
+
+max_length: 96
+batch_size: 16              # 32 will not fit
+grad_accum: 2               # effective batch 32 - REQUIRED, or the comparison against
+                            # phobert-base at 32 is not controlled
+epochs: 4
+lr: 1.0e-5                  # lower than base: larger models are less stable at 2e-5
+fp16: true
+seeds: [42, 1337, 2024, 7, 31337]

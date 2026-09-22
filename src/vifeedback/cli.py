@@ -19,7 +19,9 @@ baseline_app = typer.Typer(help="Phase 1: classical baselines")
 app.add_typer(data_app, name="data")
 train_app = typer.Typer(help="Phase 2+: transformer fine-tuning")
 app.add_typer(baseline_app, name="baseline")
+serve_app = typer.Typer(help="Phase 6-7: export, benchmark, serve")
 app.add_typer(train_app, name="train")
+app.add_typer(serve_app, name="serve")
 
 
 # --- Phase 0 ------------------------------------------------------------------------------------
@@ -259,6 +261,112 @@ def train_run(
             res["summary"], f"=== {task.upper()} / {model} / {recipe} / {len(seed_tuple)} seeds ==="
         )
     )
+
+
+# --- Phase 6-7 -----------------------------------------------------------------------------------
+
+
+@serve_app.command("export")
+def serve_export(
+    checkpoint: str = typer.Option(..., help="path to a saved HF checkpoint"),
+    task: str = typer.Option("sentiment"),
+    max_length: int = typer.Option(96),
+    quantize: str = typer.Option("dynamic", help="none | dynamic | static"),
+    out: str = typer.Option("", help="defaults to models/serve/<task>"),
+) -> None:
+    """Export a checkpoint to ONNX, optimize, optionally quantize, and verify parity."""
+    from pathlib import Path
+
+    from transformers import AutoModelForSequenceClassification, AutoTokenizer
+
+    from vifeedback import paths
+    from vifeedback.data.loader import load
+    from vifeedback.inference import onnx_export as OX
+
+    dst = Path(out) if out else paths.MODELS / "serve" / task
+    model = AutoModelForSequenceClassification.from_pretrained(checkpoint)
+    tok = AutoTokenizer.from_pretrained(checkpoint)
+
+    fp32 = OX.export_fp32(model, tok, dst, max_length)
+    typer.echo(f"  fp32      {fp32.name}  {fp32.stat().st_size / 1e6:.1f} MB")
+
+    opt = OX.optimize_graph(fp32, dst / "model.opt.onnx")
+    typer.echo(f"  optimized {opt.name}  {opt.stat().st_size / 1e6:.1f} MB")
+
+    if quantize == "dynamic":
+        q = OX.quantize_dynamic_int8(opt, dst / "model.quant.onnx")
+        typer.echo(f"  int8-dyn  {q.name}  {q.stat().st_size / 1e6:.1f} MB")
+        typer.echo("  note: without AVX512-VNNI this may be SLOWER than fp32 (H3) - benchmark it")
+    elif quantize == "static":
+        calib = load("validation")["sentence"].head(200).tolist()
+        q = OX.quantize_static_int8(opt, dst / "model.quant.onnx", calib, tok, max_length)
+        typer.echo(f"  int8-stat {q.name}  {q.stat().st_size / 1e6:.1f} MB")
+
+    clf = OX.OnnxClassifier(dst, max_length=max_length)
+    texts = load("validation")["sentence"].head(64).tolist()
+    parity = OX.verify_parity(model, clf, texts)
+    typer.echo(
+        f"  parity    serving {clf.path.name} | max logit diff {parity['max_abs_logit_diff']:.2e}"
+        f" | label agreement {parity['label_agreement']:.1%}"
+    )
+    if parity["label_agreement"] < 0.995:
+        raise typer.Exit(code=1)
+
+
+@serve_app.command("bench")
+def serve_bench(
+    task: str = typer.Option("sentiment"),
+    model_dir: str = typer.Option("", help="defaults to models/serve/<task>"),
+    threads: int = typer.Option(0, help="0 = ORT default"),
+    timed: int = typer.Option(1000),
+) -> None:
+    """Benchmark CPU latency on the reference machine. Never run this on a cloud VM."""
+    import json
+    from pathlib import Path
+
+    from vifeedback import paths
+    from vifeedback.data.loader import load
+    from vifeedback.inference import benchmark as BM
+    from vifeedback.inference.onnx_export import OnnxClassifier
+    from vifeedback.preprocess.segment import get_segmenter
+
+    d = Path(model_dir) if model_dir else paths.MODELS / "serve" / task
+    clf = OnnxClassifier(d, threads or None)
+    seg = get_segmenter("pyvi")
+    texts = load("test")["sentence"].tolist()
+
+    rep = BM.benchmark_pipeline(
+        model_fn=clf.predict,
+        preprocess_fn=seg,
+        texts=texts,
+        label=f"{clf.path.name} threads={threads or 'default'}",
+        size_mb=clf.size_mb,
+        timed=timed,
+    )
+    out = paths.RESULTS / f"bench_{task}_{clf.path.stem}.json"
+    out.write_text(json.dumps(rep, indent=2, ensure_ascii=False), encoding="utf-8")
+
+    m, e = rep["model_only"], rep["end_to_end"]
+    typer.echo(f"  size          {rep['size_mb']} MB")
+    typer.echo(f"  model p50/p95 {m['p50_ms']:.2f} / {m['p95_ms']:.2f} ms")
+    typer.echo(f"  e2e   p50/p95 {e['p50_ms']:.2f} / {e['p95_ms']:.2f} ms")
+    typer.echo(f"  preprocessing {rep['preprocess_share_of_p95']:.1%} of end-to-end p95")
+    typer.echo(f"  throughput    {rep['throughput']}")
+    if m["throttling_suspected"]:
+        typer.secho(f"  WARNING: {m['warning']}", fg="red")
+    typer.echo(f"  written       {out}")
+
+
+@serve_app.command("run")
+def serve_run(
+    host: str = typer.Option("0.0.0.0"),
+    port: int = typer.Option(8000),
+    reload: bool = typer.Option(False),
+) -> None:
+    """Run the API locally."""
+    import uvicorn
+
+    uvicorn.run("vifeedback.serving.app:app", host=host, port=port, reload=reload)
 
 
 if __name__ == "__main__":
