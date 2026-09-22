@@ -1,6 +1,6 @@
 # ViFeedback NLP Service — Development Roadmap
 
-**Owner:** thanhdataivn@gmail.com
+**Owner:** [@ThanhDatVN](https://github.com/ThanhDatVN)
 **Planned:** 2026-09-22
 **Horizon:** 8 core weeks (2026-09-22 → 2026-11-16) + 2 stretch weeks (→ 2026-11-30)
 **Budget assumption:** 10–12 focused hours/week. Every phase has an explicit time box; when a box is

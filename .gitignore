@@ -41,3 +41,6 @@ Thumbs.db
 
 # Secrets
 .env
+
+# Upload archives built by `git archive` for Kaggle/Colab
+*.zip
