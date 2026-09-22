@@ -11,7 +11,9 @@ results/runs/*
 !results/runs/.gitkeep
 results/figures/*.png
 !results/figures/.gitkeep
-models/
+# Anchored with a leading slash. Without it, git matches the pattern at ANY depth, and
+# `models/` silently excluded the src/vifeedback/models/ PACKAGE from every commit.
+/models/
 *.onnx
 *.bin
 *.safetensors
@@ -27,8 +29,8 @@ venv/
 .mypy_cache/
 .coverage
 htmlcov/
-dist/
-build/
+/dist/
+/build/
 
 # Notebooks
 .ipynb_checkpoints/
