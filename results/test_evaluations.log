@@ -1,0 +1,7 @@
+2026-09-22 09:04	g4-sent-b3-raw-base-s42-test	P4	Gate G4: locked test evaluation of the honest baseline and the best PhoBERT config
+2026-09-22 09:04	g4-sent-b3-raw-devpriors-s42-test	P4	Gate G4: locked test evaluation of the honest baseline and the best PhoBERT config
+2026-09-22 09:04	g4-sent-b4-raw-base-s42-test	P4	Gate G4: locked test evaluation of the honest baseline and the best PhoBERT config
+2026-09-22 09:04	g4-topi-b3-raw-base-s42-test	P4	Gate G4: locked test evaluation of the honest baseline and the best PhoBERT config
+2026-09-22 09:04	g4-topi-b3-raw-devpriors-s42-test	P4	Gate G4: locked test evaluation of the honest baseline and the best PhoBERT config
+2026-09-22 09:05	g4-topi-b4-raw-base-s42-test	P4	Gate G4: locked test evaluation of the honest baseline and the best PhoBERT config
+2026-09-22 09:10	p4-sent-phobert-base-seg_vncorenlp-base-s42-tes	P4	Gate G4: locked test evaluation, deferred from G2/G3 per ADR-011

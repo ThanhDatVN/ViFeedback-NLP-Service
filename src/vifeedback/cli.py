@@ -176,7 +176,25 @@ def train_run(
     seeds: str = typer.Option("42", help="comma-separated, or 'all' for the 5 canonical seeds"),
     epochs: int = typer.Option(4),
     lr: float = typer.Option(2e-5),
-    batch_size: int = typer.Option(32),
+    batch_size: int = typer.Option(32, help="per-step batch; see --grad-accum"),
+    grad_accum: int = typer.Option(
+        1,
+        help="gradient accumulation steps. EFFECTIVE batch = batch_size * grad_accum. "
+        "A model compared against another at a different effective batch is not a "
+        "controlled comparison.",
+    ),
+    eval_batch_size: int = typer.Option(128),
+    warmup_ratio: float = typer.Option(0.1),
+    weight_decay: float = typer.Option(0.01),
+    weight_scheme: str = typer.Option("balanced", help="balanced | sqrt | effective"),
+    focal_gamma: float = typer.Option(2.0),
+    tau: float = typer.Option(1.0, help="logit-adjustment tau"),
+    freeze_embeddings: bool = typer.Option(
+        False,
+        help="freeze the embedding matrix. Makes xlm-roberta-base fit a 4GB GPU "
+        "(192M of its 277M params are embeddings).",
+    ),
+    save_checkpoint: bool = typer.Option(False, help="write weights to models/<run_id>/"),
     max_length: int = typer.Option(96, help="Gate G0 decision: PhoBERT subword p99.9 = 87"),
     llrd: float = typer.Option(0.0, help="layer-wise lr decay, e.g. 0.9; 0 disables"),
     rdrop: float = typer.Option(0.0, help="R-Drop alpha; 0 disables"),
@@ -212,6 +230,14 @@ def train_run(
         epochs=epochs,
         lr=lr,
         batch_size=batch_size,
+        grad_accum=grad_accum,
+        eval_batch_size=eval_batch_size,
+        warmup_ratio=warmup_ratio,
+        weight_decay=weight_decay,
+        weight_scheme=weight_scheme,
+        focal_gamma=focal_gamma,
+        logit_adjust_tau=tau,
+        freeze_embeddings=freeze_embeddings,
         max_length=max_length,
         llrd=llrd or None,
         rdrop_alpha=rdrop,
@@ -219,7 +245,14 @@ def train_run(
         label_smoothing=label_smoothing,
         extra={"phase_num": phase},
     )
-    res = run_seeds(cfg, seed_tuple, include_test=include_test, reason=reason)
+    typer.echo(f"  effective batch = {batch_size} x {grad_accum} = {batch_size * grad_accum}")
+    res = run_seeds(
+        cfg,
+        seed_tuple,
+        include_test=include_test,
+        reason=reason,
+        save_checkpoint=save_checkpoint,
+    )
     typer.echo("")
     typer.echo(
         format_summary(

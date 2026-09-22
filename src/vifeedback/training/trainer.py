@@ -52,6 +52,7 @@ class TrainConfig:
     logit_adjust_tau: float = 1.0
     weight_scheme: str = "balanced"
 
+    freeze_embeddings: bool = False  # makes xlm-roberta-base fit a 4 GB GPU
     llrd: float | None = None  # e.g. 0.9 -> layer-wise decay downward
     rdrop_alpha: float = 0.0
     fgm_epsilon: float = 0.0
@@ -198,6 +199,18 @@ def train(
         id2label={i: n for i, n in LABELS[cfg.task].items()},
         label2id={n: i for i, n in LABELS[cfg.task].items()},
     ).to(device)
+
+    if cfg.freeze_embeddings:
+        # XLM-R carries 192M of its 277M parameters in the embedding matrix, so freezing it
+        # drops optimizer state from ~4.4 GB to ~1.4 GB. Defensible on 11k training examples:
+        # a 250k-row embedding table cannot be meaningfully updated from that much data.
+        frozen = 0
+        for name, param in model.named_parameters():
+            if "embeddings" in name:
+                param.requires_grad = False
+                frozen += param.numel()
+        if verbose:
+            print(f"  froze {frozen / 1e6:.0f}M embedding parameters")
 
     collator = DataCollatorWithPadding(tokenizer, padding="longest", return_tensors="pt")
     g = torch.Generator()
