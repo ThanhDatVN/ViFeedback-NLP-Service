@@ -250,4 +250,36 @@ no system Java. Three further obstacles surfaced while trying to remove it:
 
 ---
 
+## ADR-011 · 2026-09-22 · Defer the Gate G2 test evaluation and bundle it into G4 · Accepted
+
+**Context.** Gate G2 as written required "test evaluated exactly once and logged". Phase 2 finished
+with 10 dev runs and no test evaluation, for a reason worth stating plainly: **the trainer did not
+save checkpoints**, so evaluating the reference configuration on test would have meant retraining all
+ten runs — roughly 50 GPU-minutes to produce a number that Phases 3 and 4 will supersede anyway.
+
+**Decision.** Two changes.
+
+1. **Checkpoint saving added** (`run_once(save_checkpoint=True)`), off by default because a
+   135M-parameter checkpoint is ~540 MB and a 5-seed sweep would be 2.7 GB. On for anything that may
+   become a champion, so a later test evaluation costs seconds rather than a retrain.
+2. **The G2 test evaluation is deferred and bundled into G4.** At G4 a single test pass evaluates
+   three things together: the tuned TF-IDF baseline, the Phase 2 reference configuration (for the
+   literature reproduction), and the Phase 4 champion.
+
+**Consequences.**
+
+* This *tightens* protocol hygiene rather than loosening it. The test-set budget is ~8 evaluations
+  for the whole project (docs/EVALUATION_PROTOCOL.md § 4); bundling spends one where the original
+  plan spent two, and the deferred number was going to be superseded regardless.
+* G2 is therefore assessed on its substantive criteria, all of which are met: PhoBERT beats the tuned
+  baseline on dev macro-F1 for both tasks (+0.062 and +0.023, at 7.8× and 12.8× the seed std), seed
+  std is reported, and the weighted-F1 reproduction lands inside the published range.
+* The literature comparison is currently **dev-vs-published-test**, which is stated wherever it
+  appears and resolved at G4. It is not treated as a completed reproduction until then.
+* Generalizes to a rule: *save what an experiment might need later, before the experiment, not after
+  discovering it is gone.* The cost of the omission here was one deferred gate; on a larger sweep it
+  would have been the sweep.
+
+---
+
 <!-- Append new entries above this line. -->

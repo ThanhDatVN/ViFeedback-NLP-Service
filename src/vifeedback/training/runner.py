@@ -11,6 +11,7 @@ from typing import Any
 
 import numpy as np
 
+from vifeedback import paths
 from vifeedback.constants import SEEDS, n_classes
 from vifeedback.evaluation import bootstrap as B
 from vifeedback.evaluation import metrics as M
@@ -45,8 +46,14 @@ def run_once(
     n_bootstrap: int = 2000,
     verbose: bool = True,
     save: bool = True,
+    save_checkpoint: bool = False,
 ) -> dict[str, Any]:
-    """One seed, one configuration. Returns per-split metrics."""
+    """One seed, one configuration. Returns per-split metrics.
+
+    `save_checkpoint` writes the selected weights to `models/<run_id>/`. Off by default because a
+    135M-parameter checkpoint is ~540 MB and a 5-seed sweep would be 2.7 GB; on for anything that
+    might become a champion, so a later test evaluation costs seconds rather than a retrain.
+    """
     from torch.utils.data import DataLoader
     from transformers import DataCollatorWithPadding
 
@@ -105,6 +112,14 @@ def run_once(
         if verbose:
             print(M.format_report(metrics, f"  --> {split}"))
 
+    if save_checkpoint:
+        ckpt = paths.MODELS / cfg.run_id("ckpt")
+        ckpt.mkdir(parents=True, exist_ok=True)
+        model.save_pretrained(ckpt)
+        tokenizer.save_pretrained(ckpt)
+        if verbose:
+            print(f"  checkpoint: {ckpt}")
+
     return {
         "config": cfg,
         "metrics": evaluated,
@@ -124,6 +139,7 @@ def run_seeds(
     reason: str = "",
     verbose: bool = True,
     keep_models: bool = False,
+    save_checkpoint: bool = False,
 ) -> dict[str, Any]:
     """Run the same configuration across seeds and aggregate as mean ± std."""
     import dataclasses
@@ -131,7 +147,13 @@ def run_seeds(
     runs = []
     for seed in seeds:
         seeded = dataclasses.replace(cfg, seed=seed)
-        r = run_once(seeded, include_test=include_test, reason=reason, verbose=verbose)
+        r = run_once(
+            seeded,
+            include_test=include_test,
+            reason=reason,
+            verbose=verbose,
+            save_checkpoint=save_checkpoint,
+        )
         if not keep_models:
             r.pop("model", None)
             r.pop("tokenizer", None)

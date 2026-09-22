@@ -235,16 +235,69 @@ All selection on dev; test untouched. Every row is a `run_id` in `results/regist
    distinctive — while `others` tops out at 0.493. `others` is a catch-all with no vocabulary of its
    own, which is the same fact the 71.07% topic IAA reports from the annotator's side.
 
-### 5.2 PhoBERT reproduction — 5 seeds
+### 5.2 PhoBERT reproduction — MEASURED at Gate G2 (dev split, 5 seeds)
 
-| Run ID | Task | Model | Preproc | Macro-F1 mean | std | 95% CI | Weighted F1 | Acc | Δ vs best baseline | p (paired bootstrap) |
-|---|---|---|---|---|---|---|---|---|---|---|
-| | sentiment | phobert-base | P1 | | | | | | | |
-| | topic | phobert-base | P1 | | | | | | | |
+`vinai/phobert-base`, condition P0 (raw), `max_length` 96, batch 32, lr 2e-5, 4 epochs, fp16,
+checkpoint selected on dev macro-F1. Trained locally on the RTX 3050 (ADR-009), 69 s/epoch.
 
-**Literature reconciliation row** — state the published number, its metric definition, and your matching
-metric side by side. A 10 pp "gap" that is really a macro-vs-weighted difference must never be presented
-as a failure to reproduce.
+| Task | **Macro-F1** | Weighted F1 | Accuracy | Bal. acc | MCC | best epochs |
+|---|---|---|---|---|---|---|
+| Sentiment | **0.8436 ± 0.0079** | 0.9427 ± 0.0020 | 0.9449 ± 0.0021 | 0.8189 | 0.8974 | 4,2,4,4,2 |
+| Topic | **0.7971 ± 0.0018** | 0.8889 ± 0.0025 | 0.8906 ± 0.0028 | 0.7843 | 0.7496 | 4,3,3,3,4 |
+
+#### Versus the tuned baseline (B3 + priors)
+
+| Task | Baseline | PhoBERT | Δ macro-F1 | Δ / seed std |
+|---|---|---|---|---|
+| Sentiment | 0.782 | **0.8436** | **+0.062** | 7.8× |
+| Topic | 0.774 | **0.7971** | **+0.023** | 12.8× |
+
+Per class, which is where the story actually is:
+
+| Task | Class | Baseline F1 | PhoBERT F1 | Δ |
+|---|---|---|---|---|
+| Sentiment | negative | 0.919 | 0.957 | +0.038 |
+| Sentiment | **neutral** | 0.497 | **0.614** | **+0.117** |
+| Sentiment | positive | 0.931 | 0.960 | +0.029 |
+| Topic | lecturer | 0.928 | 0.941 | +0.013 |
+| Topic | training_program | 0.754 | 0.775 | +0.021 |
+| Topic | **facility** | **0.921** | 0.905 | **−0.016** |
+| Topic | others | 0.493 | 0.568 | +0.075 |
+
+#### Literature reconciliation
+
+| Source | Metric reported | Value | Ours (dev) |
+|---|---|---|---|
+| Nguyen et al. 2018 (MaxEnt) | weighted F1 | ~0.88 | 0.943 |
+| Bi-LSTM + Word2Vec | weighted F1 | 0.92 | 0.943 |
+| Recent PhoBERT work | weighted F1 / acc | ~0.94 / 94.5% | 0.943 / 0.945 |
+| BamiBERT (2026) | **macro-F1** | **0.8341** | **0.8436** |
+
+**Reproduction confirmed.** Our weighted F1 (0.943) and accuracy (0.945) sit inside the published
+range, and our macro-F1 (0.844) is slightly above the only published macro figure. The 10-point gap
+between the two columns is not a discrepancy — it is the same model measured two ways, which is the
+thesis of this project stated as a number rather than an argument.
+
+#### Four observations
+
+1. **PhoBERT earns its place on the minority class, and almost nowhere else.** Weighted F1 moves
+   +0.037 over the baseline; macro-F1 moves +0.062; neutral F1 moves **+0.117**. A reader looking only
+   at weighted F1 would conclude the transformer was barely worth the GPU.
+
+2. **Sentiment seed variance is 4× topic's** (std 0.0079 vs 0.0018). The cause is structural: dev has
+   73 neutral examples, so one third of the macro average rests on a class where a handful of
+   flipped predictions moves F1 by points. This is the concrete justification for the 5-seed policy —
+   on sentiment, any claimed gain under ~0.008 is indistinguishable from the seed.
+
+3. **TF-IDF beats PhoBERT on `facility`** (0.921 vs 0.905). Not noise: it exceeds topic's seed std by
+   9×. `facility` is the class with the most distinctive vocabulary (`phòng học`, `máy lạnh`, `wifi`,
+   `máy chiếu`), and distinctive vocabulary is exactly what TF-IDF represents best. A contextual model
+   has nothing to add and a little to lose. Worth reporting because it is the kind of result that
+   gets quietly dropped from a results table.
+
+4. **Checkpoint selection matters and is visible.** Best epochs varied 2–4 across seeds; two sentiment
+   seeds peaked at epoch 2 and then declined. A fixed 4-epoch schedule without dev-macro-F1 selection
+   would have shipped a worse model for 40% of seeds.
 
 ### 5.3 Preprocessing ablation — sentiment, 5 seeds each
 

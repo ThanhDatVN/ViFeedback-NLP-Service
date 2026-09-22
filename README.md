@@ -26,12 +26,20 @@ a well-documented negative result is kept):
 | H2 | VnCoreNLP word segmentation — mandated by PhoBERT's own model card — is unnecessary here, and costs more p95 latency than the transformer itself. | **Open** (Phase 3). Java is absent from the reference machine, which already makes the JVM dependency a deployment cost. |
 | H3 | INT8 dynamic quantization may be *slower* than FP32 on a consumer laptop CPU without AVX512-VNNI. | **Likely.** Reference CPU measured: AMD Ryzen 5 6600H, `avx2=true`, **`avx512_vnni=false`, `avx_vnni=false`**. |
 
-### Results so far — dev split, seed 42
+### Results so far — dev split
 
-| | best baseline | macro-F1 | weighted F1 | minority-class F1 |
+| Task | Model | macro-F1 | weighted F1 | minority-class F1 |
 |---|---|---|---|---|
-| Sentiment | B3 TF-IDF word+char + tuned priors | **0.782** | 0.906 | neutral **0.497** |
-| Topic | B3 TF-IDF word+char + tuned priors | **0.774** | 0.872 | others **0.493** |
+| Sentiment | TF-IDF word+char + tuned priors | 0.782 | 0.906 | neutral 0.497 |
+| Sentiment | **PhoBERT-base, 5 seeds** | **0.8436 ± 0.0079** | 0.9427 | neutral **0.614 ± 0.022** |
+| Topic | TF-IDF word+char + tuned priors | 0.774 | 0.872 | others 0.493 |
+| Topic | **PhoBERT-base, 5 seeds** | **0.7971 ± 0.0018** | 0.8889 | others **0.568 ± 0.011** |
+
+PhoBERT's advantage is concentrated almost entirely in the minority class: weighted F1 moves +0.037,
+macro-F1 +0.062, **neutral F1 +0.117**. Read only through weighted F1, the transformer would look
+barely worth the GPU. Two results that cut the other way are reported rather than dropped: TF-IDF
+**beats** PhoBERT on the `facility` topic (0.921 vs 0.905), and the topic lift (+0.023) is a quarter
+of the sentiment lift.
 
 Full ladder and analysis: [EXPERIMENT_MATRIX § 5.1](docs/EXPERIMENT_MATRIX.md#51-baseline-ladder--measured-at-gate-g1-dev-split-seed-42).
 Three pre-registered predictions were **falsified** at G1 and the success criteria revised in ADR-008 —
@@ -84,13 +92,13 @@ Alternative framings and the rules for filling the placeholders honestly are in
 
 ---
 
-## CV-readiness checklist · 3/10
+## CV-readiness checklist · 4/10
 
 Each item is owned by exactly one phase gate; see [ROADMAP.md § 7](docs/ROADMAP.md#7-checklist-to-gate-mapping).
 
 - [x] 1. Problem definition + data card + split — *Gate G0* ✅
 - [x] 2. TF-IDF baseline — *Gate G1* ✅
-- [ ] 3. PhoBERT fine-tuning & reproduction — *Gate G2*
+- [x] 3. PhoBERT fine-tuning & reproduction — *Gate G2* ✅ (5 seeds, both tasks)
 - [x] 4. Macro/per-class F1 + confusion matrix — *Gate G1* ✅ (harness + 22 runs)
 - [ ] 5. Word segmentation / preprocessing ablation — *Gate G3*
 - [ ] 6. ≥30 error cases categorized by linguistic features — *Gate G5*
