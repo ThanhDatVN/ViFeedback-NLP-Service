@@ -13,9 +13,10 @@ Per [ROADMAP § 5](ROADMAP.md#5-phase-plan), any gate that fails, any scope cut,
 
 ## ADR-001 · 2026-09-22 · Macro-F1 is the headline metric · Accepted
 
-**Context.** UIT-VSFC sentiment is ≈ 4.3% neutral. A classifier that never predicts neutral still reaches
-≈ 0.93 weighted F1 and ≈ 0.93 accuracy. Most published results on this dataset report weighted F1 or
-accuracy, which makes the minority class invisible.
+**Context.** UIT-VSFC sentiment is 4.32% neutral (measured: 458 of 11,426 train, 167 of 3,166 test). On
+the real test split, a classifier that never predicts neutral but is otherwise perfect reaches accuracy
+0.947 and weighted F1 0.922, against a macro-F1 of 0.649. Most published results on this dataset report
+weighted F1 or accuracy, which makes the minority class invisible.
 
 **Decision.** Macro-F1 is the single headline metric for every claim, with weighted F1 and accuracy always
 printed beside it.
@@ -131,6 +132,55 @@ benchmark) to "macro-F1 falls by X pp under de-diacritization, a shift real depl
 exhibits and this benchmark does not" — narrower, measurable, and honest. The perturbation suites
 gain importance rather than losing it, since they are now the *only* evidence on informal
 orthography. Reported in its own section, never merged into the clean-test table.
+
+---
+
+## ADR-008 · 2026-09-22 · Revise the success criteria against the measured baseline · Accepted
+
+**Context.** S1–S4 were pre-registered before any experiment. Gate G1 measured the baseline ladder and
+falsified the estimates they rested on:
+
+| Criterion | Assumed baseline | Measured baseline (dev) |
+|---|---|---|
+| S1 sentiment macro-F1 ≥ 0.76 | best baseline ~0.70 | **0.782** (B3 + tuned priors) |
+| S2 topic macro-F1 ≥ 0.72 | best baseline ~0.65 | **0.774** (B3 + tuned priors) |
+| S3 lift ≥ +0.08 over baseline | — | would demand PhoBERT ≥ 0.862 |
+| S4 neutral F1 ≥ 0.40 | linear model ~0.05–0.30 | **0.503** (B2 + tuned priors) |
+
+The best published macro-F1 on UIT-VSFC sentiment is ≈0.83. S3 as written therefore required beating
+the published state of the art by ~3 points merely to pass, and S1/S4 would be satisfied by the TF-IDF
+baseline alone — a criterion a transformer cannot fail is not a criterion.
+
+The cause is identifiable and worth recording: the ranges were anchored on the literature's framing of
+UIT-VSFC as noisy student feedback, and were not re-derived after Gate G0 measured the opposite — a
+pre-lowercased, pre-tokenized, 99.86% diacritized corpus with a median length of 11 syllables. That is
+close to ideal for TF-IDF.
+
+**Decision.** Revise the thresholds, and record the revision rather than restating the original ones as
+if they had been met. The revised bar is set **relative to the measured baseline**, so it cannot be
+satisfied by the baseline itself.
+
+| ID | Criterion | Was | **Revised minimum** | **Revised target** |
+|---|---|---|---|---|
+| S1 | Sentiment test macro-F1 | ≥ 0.76 | **≥ 0.80** | ≥ 0.84 |
+| S2 | Topic test macro-F1 | ≥ 0.72 | **≥ 0.79** | ≥ 0.83 |
+| S3 | Lift over the **tuned** baseline, sentiment | ≥ +0.08 | **≥ +0.025 and p < 0.05** | ≥ +0.05 |
+| S4 | Neutral-class F1 | ≥ 0.40 | **≥ 0.55** | ≥ 0.65 |
+
+**Consequences.**
+
+* S3 is now a *significance* criterion rather than an effect-size one. On a 3,166-example test set with
+  167 neutral examples, +0.025 macro-F1 that survives a paired bootstrap is a real result; +0.08 was
+  never a realistic ask against a baseline this strong.
+* The comparison must be against **B3 + tuned priors (0.782)**, the strongest baseline, never against
+  B1 (0.737). Quoting the weaker number would inflate the headline lift by 45 points of relative
+  improvement for free, and is exactly the failure mode ROADMAP § 9 rule 1 was written to prevent.
+* The CV snippet's numbers move accordingly: the honest sentence is "0.78 → 0.8x", not "0.66 → 0.82".
+  This is a smaller headline and a much more defensible one, and the interesting claim shifts onto the
+  neutral class and the latency work.
+* Standing rule adopted: **re-derive pre-registered ranges after the data profile is measured, and log
+  the revision.** Recording a stale prediction and quietly forgetting it is the failure this ADR exists
+  to prevent repeating.
 
 ---
 

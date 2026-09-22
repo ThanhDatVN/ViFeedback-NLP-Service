@@ -34,13 +34,16 @@ rules cannot be adjusted to fit a result.
 
 ### Why macro-F1 is the headline
 
-On UIT-VSFC sentiment, a model that **never predicts neutral** scores roughly:
+On the real UIT-VSFC test split (1,409 / 167 / 1,590), a model that **never predicts neutral** but is
+otherwise perfect scores:
 
 | | Value |
 |---|---|
-| Accuracy | ≈ 0.93 |
-| Weighted F1 | ≈ 0.93 |
-| **Macro-F1** | **≈ 0.63** |
+| Accuracy | 0.947 |
+| Weighted F1 | 0.922 |
+| **Macro-F1** | **0.649** |
+
+*(measured, not estimated; pinned by `tests/unit/test_metrics.py`)*
 
 Three metrics, one model, and only one of them notices that an entire class is missing. Every headline in
 this project is macro-F1, and the weighted number is always printed beside it so nobody can accuse the

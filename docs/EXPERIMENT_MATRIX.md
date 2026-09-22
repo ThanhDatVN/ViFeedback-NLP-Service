@@ -132,21 +132,108 @@ Week 4 rather than Week 7.
 
 ---
 
+### Pre-registration scorecard — Gate G1
+
+The expected ranges above were written before any experiment ran. Scoring them honestly:
+
+| Prediction | Predicted | Measured | Verdict |
+|---|---|---|---|
+| B1 word + LR, sentiment macro-F1 | 0.60–0.68 | **0.737** | **Falsified — too low by ~0.06** |
+| B2 char + LR, sentiment macro-F1 | 0.63–0.70 | **0.753** | **Falsified — too low** |
+| B2 > B1 on sentiment | yes | +0.016 | Confirmed, smaller than expected |
+| Best baseline, sentiment macro-F1 | 0.66–0.72 | **0.782** | **Falsified — too low by ~0.06** |
+| B1 word + LR, topic macro-F1 | 0.55–0.68 | **0.749** | **Falsified — too low** |
+| `facility` and `others` both weak | both weak | facility 0.921, others 0.493 | **Half wrong** |
+| Neutral F1 for a linear model | 0.05–0.30 | 0.353 → 0.503 tuned | Under-estimated |
+| Majority-class floor, sentiment | ~0.22 | 0.225 | Confirmed |
+| Majority-class floor, topic | — | 0.210 | — |
+
+**Diagnosis: the baselines were systematically under-predicted, and the cause is identifiable.** The
+estimates were anchored on the published *literature* framing of UIT-VSFC as a hard, noisy corpus of
+student feedback. Gate G0 then measured the opposite ([DATA_CARD § 6](DATA_CARD.md#6-surface-and-linguistic-profile--measured)):
+the corpus is pre-lowercased, pre-tokenized, 99.86% diacritized and 99.84% teencode-free, with a
+median length of 11 syllables and highly formulaic phrasing. That is close to an ideal setting for
+TF-IDF, and the expected ranges were not revised after G0 measured it. **The lesson is sequencing:
+pre-registered ranges should be re-derived once the data profile is known, and the revision recorded
+— not left stale and then quietly forgotten when the results arrive.**
+
+**Consequence for the success criteria.** S3 required PhoBERT to beat the tuned baseline by
+**≥ +0.08 macro-F1**. Against a 0.782 baseline that demands ≥ 0.862, while the best published
+macro-F1 on this dataset is ≈0.83. **S3 as written is very likely unreachable, and it was set against
+a baseline estimate that is now known to be wrong.** Revised in ADR-008 rather than silently dropped.
+
+---
+
 ## 5. Result tables to fill
 
 Copy these into the final report. Leave `—` where a run was not done; never leave a blank.
 
-### 5.1 Baseline ladder — task: `sentiment` / `topic` *(one table each)*
+### 5.1 Baseline ladder — MEASURED at Gate G1 (dev split, seed 42)
 
-| Run ID | Model | Features | Acc | Weighted F1 | **Macro-F1** | F1 neg | F1 neu | F1 pos | Fit time |
-|---|---|---|---|---|---|---|---|---|---|
-| | B0 majority | — | | | | | | | |
-| | B1 | word 1-2g | | | | | | | |
-| | B2 | char_wb 3-5g | | | | | | | |
-| | B3 | union | | | | | | | |
-| | B4 LinearSVC | best | | | | | | | |
-| | B5 + class weight | best | | | | | | | |
-| | B5 + threshold-tuned | best | | | | | | | |
+All selection on dev; test untouched. Every row is a `run_id` in `results/registry.csv`.
+
+#### Sentiment
+
+| Model | Acc | Weighted F1 | **Macro-F1** | F1 neg | **F1 neu** | F1 pos |
+|---|---|---|---|---|---|---|
+| B0 majority | 0.509 | 0.343 | **0.225** | 0.000 | 0.000 | 0.674 |
+| B0b stratified random | 0.474 | 0.474 | **0.347** | 0.476 | 0.056 | 0.510 |
+| B1 word 1-2g + LR | 0.910 | 0.902 | **0.737** | 0.921 | 0.353 | 0.936 |
+| B1 + tuned priors | 0.900 | 0.904 | **0.772** | 0.913 | 0.468 | 0.936 |
+| B2 char_wb 3-5g + LR | 0.905 | 0.901 | **0.753** | 0.918 | 0.410 | 0.930 |
+| B2 + tuned priors | 0.888 | 0.894 | **0.776** | 0.908 | **0.503** | 0.918 |
+| B3 word+char union + LR | 0.911 | 0.906 | **0.755** | 0.925 | 0.403 | 0.936 |
+| **B3 + tuned priors** | 0.905 | 0.906 | **0.782** | 0.919 | 0.497 | 0.931 |
+| B4 union + LinearSVC | 0.912 | 0.907 | **0.764** | 0.926 | 0.432 | 0.933 |
+| B5 union + LR, class-weighted | 0.895 | 0.899 | **0.768** | 0.907 | 0.466 | 0.931 |
+| B5 + tuned priors | 0.896 | 0.901 | **0.774** | 0.913 | 0.483 | 0.927 |
+
+**Champion baseline: B3 + tuned priors, macro-F1 0.782.** Paired bootstrap vs B1:
+**+0.0458 [+0.0086, +0.0839], p = 0.014 — significant.**
+
+#### Topic
+
+| Model | Acc | Weighted F1 | **Macro-F1** | F1 lecturer | F1 train_prog | F1 facility | **F1 others** |
+|---|---|---|---|---|---|---|---|
+| B0 majority | 0.727 | 0.612 | **0.210** | 0.842 | 0.000 | 0.000 | 0.000 |
+| B0b stratified random | 0.539 | 0.543 | **0.237** | 0.705 | 0.151 | 0.057 | 0.037 |
+| B1 word 1-2g + LR | 0.877 | 0.870 | **0.749** | 0.933 | 0.758 | 0.881 | 0.423 |
+| B1 + tuned priors | 0.879 | 0.875 | **0.770** | 0.932 | 0.761 | 0.913 | 0.474 |
+| B2 char_wb 3-5g + LR | 0.858 | 0.852 | **0.734** | 0.919 | 0.705 | 0.862 | 0.452 |
+| B2 + tuned priors | 0.863 | 0.857 | **0.754** | 0.919 | 0.710 | 0.890 | **0.497** |
+| B3 word+char union + LR | 0.871 | 0.867 | **0.753** | 0.928 | 0.740 | 0.864 | 0.480 |
+| **B3 + tuned priors** | 0.875 | 0.872 | **0.774** | 0.928 | 0.754 | **0.921** | 0.493 |
+| B4 union + LinearSVC | 0.880 | 0.874 | **0.768** | 0.933 | 0.753 | 0.908 | 0.479 |
+| B5 union + LR, class-weighted | 0.840 | 0.847 | **0.744** | 0.904 | 0.734 | 0.890 | 0.449 |
+| B5 + tuned priors | 0.878 | 0.872 | **0.765** | 0.930 | 0.754 | 0.914 | 0.461 |
+
+**Champion baseline: B3 + tuned priors, macro-F1 0.774.** Paired bootstrap vs B1:
+**+0.0255 [+0.0032, +0.0490], p = 0.017 — significant.**
+
+#### Four findings from the ladder
+
+1. **Threshold tuning is the single largest lever, and it is nearly free.** Tuning per-class priors
+   on dev lifts sentiment macro-F1 by +0.035 (B1) and neutral F1 from 0.353 to 0.468 — no new
+   features, no new model, one vector of three numbers. It answers the diagnostic question the rung
+   was built for: the baseline's neutral failure is **substantially a decision-rule problem, not
+   purely a representation problem.** That matters for Phase 4, because it predicts Tier A
+   (reweighting, thresholds) will transfer to PhoBERT and should be tried before anything expensive.
+
+2. **Class weighting and threshold tuning are near-substitutes, not additive.** B5 (class-weighted,
+   0.768) lands within noise of B1 + priors (0.772), and stacking them (B5 + priors, 0.774) adds
+   almost nothing over either alone. They attack the same problem from opposite ends of training.
+
+3. **Character n-grams help sentiment (+0.016) and hurt topic (−0.015).** The asymmetry is
+   explicable rather than noise: topic classification keys on distinctive *content vocabulary*
+   (`phòng học`, `wifi`, `giáo trình`), where word features are precise and character n-grams blur
+   morpheme boundaries; sentiment keys on *polarity and modality markers*, where sub-syllable
+   generalization pays. Worth stating because it contradicts the usual "char n-grams always help
+   noisy text" heuristic — which, given this corpus is not noisy ([DATA_CARD § 6](DATA_CARD.md#6-surface-and-linguistic-profile--measured)), is exactly what one should expect on reflection.
+
+4. **`facility` is easy; `others` is hard.** The pre-registration guessed both minority classes would
+   be weak. Measured, `facility` reaches F1 0.921 on 70 dev examples — its vocabulary is highly
+   distinctive — while `others` tops out at 0.493. `others` is a catch-all with no vocabulary of its
+   own, which is the same fact the 71.07% topic IAA reports from the annotator's side.
 
 ### 5.2 PhoBERT reproduction — 5 seeds
 

@@ -5,8 +5,8 @@ Vietnamese feedback understanding: **sentiment** (3-class) and **topic** (4-clas
 baselines against fine-tuned PhoBERT, with an explicit focus on **CPU inference cost** and on
 **where Vietnamese models actually break** (negation, teencode, missing diacritics).
 
-> **Status:** planning complete, implementation not started.
-> Start at [docs/ROADMAP.md](docs/ROADMAP.md).
+> **Status:** Gate G0 (data integrity) and Gate G1 (baselines + evaluation harness) complete.
+> Next: Phase 2, PhoBERT fine-tuning. Plan: [docs/ROADMAP.md](docs/ROADMAP.md).
 
 ---
 
@@ -20,11 +20,22 @@ to hide, and pairs it with a latency budget so the result is a *deployable* arti
 Three claims this project sets out to test (any of them may come back negative — that is fine, and
 a well-documented negative result is kept):
 
-| # | Hypothesis | Why it matters |
-|---|------------|----------------|
-| H1 | Macro-F1 is the binding constraint on UIT-VSFC, and the gap between TF-IDF and PhoBERT is far larger in macro-F1 than in weighted F1. | Turns a crowded benchmark into an honest, differentiated result. |
-| H2 | VnCoreNLP word segmentation — mandated by PhoBERT's own model card — is not necessary for this task, and is a *larger* share of p95 latency than the transformer itself. | Ablation and deployment become the same experiment. See [RESEARCH_NOTES](docs/RESEARCH_NOTES.md#h2-prior-art). |
-| H3 | INT8 dynamic quantization may be *slower* than FP32 on a consumer laptop CPU without AVX512-VNNI. | Forces a real measurement instead of a repeated blog-post claim. |
+| # | Hypothesis | Status |
+|---|------------|--------|
+| H1 | Macro-F1 is the binding constraint on UIT-VSFC. | **Supported.** A perfect-except-neutral classifier scores 0.947 accuracy / 0.922 weighted F1 / **0.649 macro-F1** on the real test split. The measured baseline gap is 0.906 weighted vs 0.782 macro. |
+| H2 | VnCoreNLP word segmentation — mandated by PhoBERT's own model card — is unnecessary here, and costs more p95 latency than the transformer itself. | **Open** (Phase 3). Java is absent from the reference machine, which already makes the JVM dependency a deployment cost. |
+| H3 | INT8 dynamic quantization may be *slower* than FP32 on a consumer laptop CPU without AVX512-VNNI. | **Likely.** Reference CPU measured: AMD Ryzen 5 6600H, `avx2=true`, **`avx512_vnni=false`, `avx_vnni=false`**. |
+
+### Results so far — dev split, seed 42
+
+| | best baseline | macro-F1 | weighted F1 | minority-class F1 |
+|---|---|---|---|---|
+| Sentiment | B3 TF-IDF word+char + tuned priors | **0.782** | 0.906 | neutral **0.497** |
+| Topic | B3 TF-IDF word+char + tuned priors | **0.774** | 0.872 | others **0.493** |
+
+Full ladder and analysis: [EXPERIMENT_MATRIX § 5.1](docs/EXPERIMENT_MATRIX.md#51-baseline-ladder--measured-at-gate-g1-dev-split-seed-42).
+Three pre-registered predictions were **falsified** at G1 and the success criteria revised in ADR-008 —
+see the [scorecard](docs/EXPERIMENT_MATRIX.md#pre-registration-scorecard--gate-g1).
 
 ---
 
@@ -37,6 +48,19 @@ a well-documented negative result is kept):
 | [docs/DATA_CARD.md](docs/DATA_CARD.md) | Dataset provenance, splits, class distribution, known limitations, validation checks |
 | [docs/EVALUATION_PROTOCOL.md](docs/EVALUATION_PROTOCOL.md) | Metrics, seed policy, significance testing, latency harness spec, error taxonomy, software test strategy |
 | [docs/RESEARCH_NOTES.md](docs/RESEARCH_NOTES.md) | Dataset and model landscape, prior results, tooling decisions, sources |
+| [docs/DECISIONS.md](docs/DECISIONS.md) | Decision log (ADR-001 … ADR-008), including every plan correction forced by measurement |
+
+## Reproducing what exists
+
+```bash
+pip install -e ".[dev]"
+vifeedback data fetch        # -> data/raw/*.parquet + SHA256 manifest
+vifeedback data report       # -> results/data_report.json + figures
+pytest -q                    # 62 tests
+vifeedback baseline run --task sentiment
+vifeedback baseline run --task topic
+vifeedback baseline registry
+```
 
 ---
 
@@ -60,14 +84,14 @@ Alternative framings and the rules for filling the placeholders honestly are in
 
 ---
 
-## CV-readiness checklist · 0/10
+## CV-readiness checklist · 3/10
 
 Each item is owned by exactly one phase gate; see [ROADMAP.md § 7](docs/ROADMAP.md#7-checklist-to-gate-mapping).
 
-- [ ] 1. Problem definition + data card + split — *Gate G0*
-- [ ] 2. TF-IDF baseline — *Gate G1*
+- [x] 1. Problem definition + data card + split — *Gate G0* ✅
+- [x] 2. TF-IDF baseline — *Gate G1* ✅
 - [ ] 3. PhoBERT fine-tuning & reproduction — *Gate G2*
-- [ ] 4. Macro/per-class F1 + confusion matrix — *Gate G1 (harness), G2 (first full report)*
+- [x] 4. Macro/per-class F1 + confusion matrix — *Gate G1* ✅ (harness + 22 runs)
 - [ ] 5. Word segmentation / preprocessing ablation — *Gate G3*
 - [ ] 6. ≥30 error cases categorized by linguistic features — *Gate G5*
 - [ ] 7. ONNX / quantization benchmark — *Gate G6*

@@ -68,10 +68,20 @@ cross-validation over the union.
 | test | 3,166 | 1,409 (44.50%) | **167 (5.27%)** | 1,590 (50.22%) |
 | **ALL** | 16,175 | 7,439 (45.99%) | **698 (4.32%)** | 8,038 (49.69%) |
 
-**The consequence that drives every downstream decision.** A classifier that never predicts
-`neutral` and is otherwise near-perfect still scores ≈0.93 weighted F1 and ≈0.93 accuracy, while its
-macro-F1 is capped near 0.63. Published UIT-VSFC results in the 92–94% range are weighted or
-accuracy figures. This project's headline metric is macro-F1 for exactly that reason (ADR-001).
+**The consequence that drives every downstream decision.** Computed on the real test split
+(1,409 / 167 / 1,590), a classifier that never predicts `neutral` but is otherwise **perfect** scores:
+
+| Metric | Value |
+|---|---|
+| Accuracy | **0.947** |
+| Weighted F1 | **0.922** |
+| **Macro-F1** | **0.649** |
+
+Three metrics, one model, and only one of them notices that an entire class is missing. Published
+UIT-VSFC results in the 92–94% range are weighted-F1 or accuracy figures, i.e. within reach of a
+model that has learned nothing about neutral at all. This project's headline metric is macro-F1 for
+exactly that reason (ADR-001). The figures above are pinned by
+`tests/unit/test_metrics.py::TestDegenerateCases::test_classifier_that_never_predicts_neutral`.
 
 ### Topic · `0=lecturer, 1=training_program, 2=facility, 3=others`
 

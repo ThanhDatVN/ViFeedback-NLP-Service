@@ -89,12 +89,17 @@ These are **pre-registered targets**, set before any experiment runs, so a miss 
 being retro-fitted. The reasoning behind each range is in
 [EXPERIMENT_MATRIX.md § Expected ranges](EXPERIMENT_MATRIX.md#expected-ranges-pre-registered).
 
+> **Revised at Gate G1 (ADR-008).** S1–S4 below are the revised thresholds. The originals were set
+> against an assumed baseline of ~0.70 macro-F1; the measured baseline is **0.782**, which made the
+> original S3 (+0.08) require beating the published state of the art, and made S1/S4 passable by the
+> TF-IDF baseline alone. Originals are preserved in ADR-008.
+
 | ID | Criterion | Minimum | Target |
 |---|---|---|---|
-| S1 | Sentiment test macro-F1 (best model) | ≥ 0.76 | ≥ 0.81 |
-| S2 | Topic test macro-F1 (best model) | ≥ 0.72 | ≥ 0.78 |
-| S3 | Macro-F1 lift over tuned TF-IDF baseline (sentiment) | ≥ +0.08 abs, p < 0.05 | ≥ +0.12 |
-| S4 | Neutral-class F1 (sentiment) | ≥ 0.40 | ≥ 0.55 |
+| S1 | Sentiment test macro-F1 (best model) | ≥ 0.80 | ≥ 0.84 |
+| S2 | Topic test macro-F1 (best model) | ≥ 0.79 | ≥ 0.83 |
+| S3 | Macro-F1 lift over the **tuned** TF-IDF baseline (sentiment) | ≥ +0.025 abs, p < 0.05 | ≥ +0.05 |
+| S4 | Neutral-class F1 (sentiment) | ≥ 0.55 | ≥ 0.65 |
 | S5 | p95 latency, batch = 1, reference CPU | ≤ 60 ms | ≤ 30 ms |
 | S6 | Accuracy cost of the shipped optimization | ≤ 0.5 pp macro-F1 | ≤ 0.2 pp |
 | S7 | Served artifact size on disk | ≤ 200 MB | ≤ 120 MB |
@@ -102,9 +107,10 @@ being retro-fitted. The reasoning behind each range is in
 | S9 | Coded error cases | ≥ 30 | ≥ 60 |
 | S10 | Clean-clone reproduction | Works | Works, < 15 min on CPU for the eval path |
 
-**S4 is the criterion most likely to fail and the one most worth fighting for.** With ~458 neutral
+**S4 is the criterion most likely to fail and the one most worth fighting for.** With 458 neutral
 training examples out of 11,426, neutral F1 is precisely what separates this project from every other
-UIT-VSFC notebook on GitHub.
+UIT-VSFC notebook on GitHub. The tuned TF-IDF baseline already reaches **0.503**, so the revised bar of
+0.55 asks the transformer to earn its place on exactly the class that matters.
 
 ---
 
