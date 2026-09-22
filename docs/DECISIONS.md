@@ -211,4 +211,43 @@ of VRAM — PhoBERT-large, XLM-R-large, and any batch-size-hungry Phase 4 recipe
 
 ---
 
+## ADR-010 · 2026-09-22 · Unblock VnCoreNLP with a pip-packaged JDK; keep models outside the repo · Accepted
+
+**Context.** Risk R1 said a missing JVM would make RDRSegmenter — condition **P1**, the canonical
+PhoBERT pipeline and the heart of hypothesis H2 — unmeasurable on this machine. Confirmed at Gate G0:
+no system Java. Three further obstacles surfaced while trying to remove it:
+
+1. `py_vncorenlp.download_model()` shells out to `wget`, which does not exist on Windows, and pulls
+   ~200 MB of NER, POS and dependency models we never use.
+2. `py_vncorenlp.VnCoreNLP()` `chdir()`s into its model directory and never returns, silently
+   relocating the calling process.
+3. **VnCoreNLP resolves its model directory from the jar's own URL and never URL-decodes it.** With
+   the repo at `D:\GitHub\ViFeedback NLP Service`, the space became `%20` and the segmenter died
+   with `wordsegmenter.rdr is not found`.
+
+**Decision.**
+
+* Provide the JVM through **`jdk4py`**, an ordinary pip package (OpenJDK 25), rather than a
+  system-level install. `ensure_java()` prefers a JVM already on PATH and falls back to it, so the
+  project does not depend on how the developer's machine happens to be configured.
+* Replace the downloader: fetch only the three `wseg` assets over `urllib`, idempotently.
+* Restore the working directory around JVM construction.
+* Keep VnCoreNLP's models **outside the repository**, under `~/.cache/vifeedback/vncorenlp`, and
+  raise with an explanatory message if the resolved path contains a space.
+
+**Consequences.**
+
+* P1 is now measurable here, so Phase 3 can run the full ablation instead of recording a gap. All
+  three segmenters verified to produce the expected output:
+  `giảng viên nhiệt tình với sinh viên` → `giảng_viên nhiệt_tình với sinh_viên`.
+* **R1 is downgraded for *measurement*, not for *deployment*.** Serving still needs a JVM, +~180 MB
+  of image and a per-request JNI call. That cost is exactly what H2 is meant to weigh, so the
+  experiment gets sharper rather than easier.
+* The space-in-path defect is a genuine deployment hazard, not a local quirk: a Docker `WORKDIR` or a
+  user checkout under `C:\Program Files` or `/home/my user/` would hit it. It is now a loud error
+  with a stated cause instead of a confusing `IOException`, and it is one more entry on the cost side
+  of the H2 ledger.
+
+---
+
 <!-- Append new entries above this line. -->

@@ -17,13 +17,12 @@ ablation records "not measurable here, and why" rather than crashing or silently
 
 from __future__ import annotations
 
+import pathlib
 import shutil
 import time
 from typing import Any
 
 import numpy as np
-
-from vifeedback import paths
 
 BACKENDS = ("none", "underthesea", "pyvi", "vncorenlp")
 
@@ -31,8 +30,36 @@ BACKENDS = ("none", "underthesea", "pyvi", "vncorenlp")
 # --- Availability -------------------------------------------------------------------------------
 
 
+def ensure_java() -> str | None:
+    """Make a JVM reachable, preferring one already on PATH.
+
+    The reference machine has no system Java, which would make RDRSegmenter — and therefore the
+    canonical P1 condition at the heart of H2 — unmeasurable here (risk R1). `jdk4py` ships a JDK as
+    an ordinary pip package, so the JVM can be provided without a system-level install and without
+    making the project depend on the developer's machine configuration.
+
+    Returns the JAVA_HOME that was set, or None if Java was already on PATH.
+    """
+    import os
+
+    if shutil.which("java") is not None:
+        return None
+    try:
+        import jdk4py
+    except ImportError:
+        return None
+
+    java_home = str(jdk4py.JAVA_HOME)
+    os.environ["JAVA_HOME"] = java_home
+    bin_dir = str(pathlib.Path(java_home) / "bin")
+    if bin_dir not in os.environ.get("PATH", ""):
+        os.environ["PATH"] = bin_dir + os.pathsep + os.environ.get("PATH", "")
+    return java_home
+
+
 def java_available() -> bool:
     """VnCoreNLP is a Java toolkit called through a JVM bridge. No Java, no RDRSegmenter."""
+    ensure_java()
     return shutil.which("java") is not None
 
 
@@ -62,6 +89,44 @@ def available() -> dict[str, dict[str, Any]]:
 
 
 # --- Backends -----------------------------------------------------------------------------------
+
+
+_VNCORENLP_BASE = "https://raw.githubusercontent.com/vncorenlp/VnCoreNLP/master"
+
+# Only the word-segmentation assets. py_vncorenlp's own downloader pulls NER, POS and dependency
+# models too (~200 MB) and shells out to `wget`, which does not exist on Windows. We need `wseg`
+# alone, so we fetch three files with urllib and keep the download portable and reproducible.
+_VNCORENLP_FILES = (
+    ("VnCoreNLP-1.2.jar", "VnCoreNLP-1.2.jar"),
+    ("models/wordsegmenter/vi-vocab", "models/wordsegmenter/vi-vocab"),
+    ("models/wordsegmenter/wordsegmenter.rdr", "models/wordsegmenter/wordsegmenter.rdr"),
+)
+
+
+def vncorenlp_dir() -> pathlib.Path:
+    """Where VnCoreNLP's models live — deliberately **outside** the repository.
+
+    VnCoreNLP resolves its model directory from the jar's own URL and never URL-decodes the result,
+    so a path containing a space becomes `.../ViFeedback%20NLP%20Service/...` and the segmenter dies
+    with "wordsegmenter.rdr is not found". Since the repo path is not ours to constrain — and a
+    Docker `WORKDIR` or a user's checkout may well contain a space — the models are kept under the
+    user cache, which is space-free on both Windows and Linux.
+    """
+    return pathlib.Path.home() / ".cache" / "vifeedback" / "vncorenlp"
+
+
+def download_vncorenlp(save_dir: str) -> str:
+    """Fetch the VnCoreNLP jar and word-segmenter models. Idempotent."""
+    import urllib.request
+
+    root = pathlib.Path(save_dir)
+    for remote, local in _VNCORENLP_FILES:
+        dest = root / local
+        if dest.exists() and dest.stat().st_size > 0:
+            continue
+        dest.parent.mkdir(parents=True, exist_ok=True)
+        urllib.request.urlretrieve(f"{_VNCORENLP_BASE}/{remote}", dest)
+    return str(root)
 
 
 class Segmenter:
@@ -128,15 +193,29 @@ class VnCoreNLPSegmenter(Segmenter):
     def __init__(self, save_dir: str | None = None) -> None:
         if not java_available():
             raise RuntimeError(
-                "VnCoreNLP needs a JVM and none is on PATH. This is risk R1; see ADR-004. "
-                "Install a JDK, or use the `underthesea` backend."
+                "VnCoreNLP needs a JVM and none is reachable. This is risk R1; see ADR-004. "
+                "Install `jdk4py` (pip, no system change) or a system JDK, "
+                "or use the `underthesea` backend."
             )
+        import os
+
         import py_vncorenlp
 
-        d = save_dir or str(paths.MODELS / "vncorenlp")
-        paths.MODELS.mkdir(parents=True, exist_ok=True)
-        py_vncorenlp.download_model(save_dir=d)
-        self._model = py_vncorenlp.VnCoreNLP(annotators=["wseg"], save_dir=d)
+        d = save_dir or str(vncorenlp_dir())
+        if " " in d:
+            raise RuntimeError(
+                f"VnCoreNLP cannot load models from a path containing a space: {d!r}. "
+                "See vncorenlp_dir() for why."
+            )
+        download_vncorenlp(d)
+
+        # py_vncorenlp chdir()s into the model directory and never returns; starting the JVM also
+        # mutates process state. Both are restored here so callers are not silently relocated.
+        cwd = os.getcwd()
+        try:
+            self._model = py_vncorenlp.VnCoreNLP(annotators=["wseg"], save_dir=d)
+        finally:
+            os.chdir(cwd)
 
     def __call__(self, texts: list[str]) -> list[str]:
         out = []
