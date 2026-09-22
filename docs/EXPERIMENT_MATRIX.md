@@ -299,20 +299,101 @@ thesis of this project stated as a number rather than an argument.
    seeds peaked at epoch 2 and then declined. A fixed 4-epoch schedule without dev-macro-F1 selection
    would have shipped a worse model for 40% of seeds.
 
-### 5.3 Preprocessing ablation — sentiment, 5 seeds each
+### 5.3 Word-segmentation ablation — MEASURED at Gate G3 (sentiment, dev, 5 seeds each)
 
-| ID | Preprocessing | Macro-F1 mean ± std | Δ vs P1 | p vs P1 | Preproc latency p95 (ms) | End-to-end p95 (ms) |
+**Hypothesis H2 is falsified on both axes.** It predicted that segmentation would not help accuracy
+and would dominate p95 latency. Both halves are wrong, and the way they are wrong is the finding.
+
+#### Accuracy
+
+| ID | Condition | **Macro-F1** | Weighted F1 | Accuracy | Neutral F1 | Δ macro vs P0 |
 |---|---|---|---|---|---|---|
-| P0 | raw | | | | ~0 | |
-| P1 | RDRSegmenter | | *ref* | *ref* | | |
-| P2 | underthesea | | | | | |
-| P3 | P1 + NFC/cleanup | | | | | |
-| P4 | P3 + teencode | | | | | |
-| P5 | P3 + lowercase | | | | | |
-| P6 | best + emoji | | | | | |
+| P0 | raw (no segmentation) | 0.8436 ± 0.0079 | 0.9427 | 0.9449 | 0.6139 ± 0.0222 | *ref* |
+| **P1** | **VnCoreNLP RDRSegmenter** | **0.8670 ± 0.0072** | 0.9529 | 0.9545 | **0.6680 ± 0.0184** | **+0.0234** |
+| P2 | underthesea | 0.8618 ± 0.0063 | 0.9506 | 0.9524 | 0.6560 ± 0.0178 | +0.0182 |
+| P2b | pyvi | 0.8643 ± 0.0098 | 0.9512 | 0.9531 | 0.6628 ± 0.0291 | +0.0207 |
 
-**Conclusion line to write explicitly:** *"Segmentation contributes `[Δ]` macro-F1 (p = `[p]`) at a cost of
-`[ms]` ms p95, i.e. `[%]` of end-to-end latency. Decision for serving: `[keep/drop]`."*
+P0 macro-F1 range **[0.8355, 0.8566]**; P1 range **[0.8598, 0.8751]** — **no overlap**. All five
+segmented seeds beat all five unsegmented seeds.
+
+#### Why the published "segmentation is unnecessary" finding is not wrong — it is measured elsewhere
+
+[arXiv:2301.00418](https://arxiv.org/abs/2301.00418) reports differences "typically under
+1 percentage point" and concludes segmentation is unnecessary for Vietnamese sentiment
+classification. Measure the *same* comparison four ways:
+
+| Metric | P0 → P1 | Effect |
+|---|---|---|
+| Accuracy | 0.9449 → 0.9545 | **+0.96 pp** |
+| Weighted F1 | 0.9427 → 0.9529 | **+1.02 pp** |
+| **Macro-F1** | 0.8436 → 0.8670 | **+2.34 pp** |
+| **Neutral F1** | 0.6139 → 0.6680 | **+5.42 pp** |
+
+**The published result replicates exactly — on the published metric.** Under 1 pp on accuracy and
+weighted F1, just as reported. The effect is **5.6× larger on the minority class**, and the metric
+that shows it is the one nobody reported. This is the project's thesis appearing a second time, in
+someone else's result rather than our own: the conclusion "segmentation is unnecessary" is an artifact
+of aggregating over a 4% class.
+
+#### Significance — and a methodological problem worth its own entry
+
+Two instruments disagree, and the disagreement is informative:
+
+| Test | Result |
+|---|---|
+| Paired t-test over seeds (n=5, paired by seed) | +0.0234, sd 0.0061, **t = 8.58, p = 0.0010**, Cohen d = 3.84, 5/5 positive |
+| Per-seed paired bootstrap on dev | **1/5 seeds** significant; BH-FDR keeps 1 |
+
+Not a contradiction — they estimate different variances. The bootstrap estimates *evaluation-set
+sampling* variance; the t-test estimates *training* variance. The dev set has **73 neutral examples**
+carrying one third of the macro average, so resampling it moves macro-F1 by **±0.027** — wider than
+the +0.023 effect being tested.
+
+**The dev set is underpowered for within-run macro-F1 comparisons at this project's effect sizes.**
+Even the test set (167 neutral) would only narrow the half-width to ~0.019. The seed-level paired
+test is the correct instrument here, and it is adopted as such in ADR-013.
+
+#### Latency — the premise that was off by two orders of magnitude
+
+Per-sentence, batch = 1 (the serving workload), reference CPU at 44 °C idle, JVM warm:
+
+| Backend | p50 | **p95** | p99 | Throughput |
+|---|---|---|---|---|
+| none | 0.000 ms | 0.000 ms | 0.001 ms | — |
+| **pyvi** | 0.105 ms | **0.311 ms** | 0.555 ms | 8,207/s |
+| VnCoreNLP | 0.255 ms | **0.606 ms** | 0.960 ms | 5,730/s |
+| underthesea | 0.368 ms | **1.192 ms** | 2.272 ms | 2,212/s |
+
+Against the model it feeds — PhoBERT-base FP32 on the same CPU, batch 1, 6 threads:
+
+| Configuration | p50 | **p95** | vs 256 |
+|---|---|---|---|
+| pad to `max_length` 256 (model default) | 154.4 ms | **177.5 ms** | — |
+| pad to `max_length` 96 (Gate G0 decision) | 79.3 ms | **90.2 ms** | 1.97× |
+| **dynamic padding** | 39.1 ms | **50.8 ms** | **3.49×** |
+
+**Segmentation is 1.2% of end-to-end p95 (VnCoreNLP) or 0.6% (pyvi).** H2 predicted it would exceed
+the transformer's own cost. It is two orders of magnitude below it.
+
+#### Serving decision: **pyvi**
+
+| | VnCoreNLP | pyvi |
+|---|---|---|
+| Macro-F1 | 0.8670 ± 0.0072 | 0.8643 ± 0.0098 (**−0.0027, well inside seed std**) |
+| p95 | 0.606 ms | **0.311 ms** |
+| Runtime dependency | JVM (~180 MB in image) | pure Python |
+| Known hazard | dies on any path containing a space (ADR-010) | none |
+
+Segmenter *choice* does not matter — the P1/P2/P2b spread (0.005) sits inside the seed std. Whether
+to segment *at all* matters (+0.023, p = 0.001). So the right move is to take the accuracy and pay
+the smallest possible price: **pyvi**, which removes the JVM, ~180 MB of image, and the space-in-path
+defect at a cost of −0.003 macro-F1 that no test can distinguish from noise.
+
+#### Two free wins already banked, before any quantization
+
+`max_length` 96 from Gate G0 and dynamic padding together give **3.49×** on p95 (177.5 → 50.8 ms).
+End-to-end with pyvi is ≈ **51.1 ms p95**, which already meets the S5 *minimum* (≤ 60 ms) with no
+ONNX export and no INT8. The S5 target (≤ 30 ms) is what Phase 6 must earn.
 
 ### 5.4 Improvement ladder
 

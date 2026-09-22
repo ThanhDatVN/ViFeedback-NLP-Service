@@ -91,7 +91,18 @@ from noise, and the `> seed std?` column in
 
 ## 3. Statistical significance
 
-### Paired bootstrap (primary test)
+> **Revised at Gate G3 (ADR-013).** The **seed-level paired test** is primary for macro-F1
+> comparisons between configurations; the paired bootstrap below is reported alongside it as
+> evaluation-set uncertainty. Measured reason: dev holds 73 neutral examples carrying a third of the
+> macro average, so a bootstrap CI on dev is ±0.027 — wider than most effects this project measures.
+> Both are always reported, and disagreements are stated rather than resolved by preference.
+
+### Seed-level paired test (primary)
+Paired over the 5 canonical seeds, same seed = same initialization. Report mean difference, sd,
+t, df, p, Cohen's d, and the sign count (how many of 5 seeds agree). Also report whether the two
+configurations' seed ranges overlap — non-overlapping ranges are a strong, assumption-free signal.
+
+### Paired bootstrap (evaluation-set uncertainty)
 For model A vs model B on the same test set:
 
 1. Resample test indices with replacement, 10,000 times.

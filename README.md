@@ -5,8 +5,9 @@ Vietnamese feedback understanding: **sentiment** (3-class) and **topic** (4-clas
 baselines against fine-tuned PhoBERT, with an explicit focus on **CPU inference cost** and on
 **where Vietnamese models actually break** (negation, teencode, missing diacritics).
 
-> **Status:** Gate G0 (data integrity) and Gate G1 (baselines + evaluation harness) complete.
-> Next: Phase 2, PhoBERT fine-tuning. Plan: [docs/ROADMAP.md](docs/ROADMAP.md).
+> **Status:** Gates G0–G3 complete · 47 runs · 5/10 checklist · zero external GPU used.
+> Next: Phase 4 improvement ladder.
+> Progress, open problems and next experiments: **[docs/STATUS.md](docs/STATUS.md)**.
 
 ---
 
@@ -23,7 +24,7 @@ a well-documented negative result is kept):
 | # | Hypothesis | Status |
 |---|------------|--------|
 | H1 | Macro-F1 is the binding constraint on UIT-VSFC. | **Supported.** A perfect-except-neutral classifier scores 0.947 accuracy / 0.922 weighted F1 / **0.649 macro-F1** on the real test split. The measured baseline gap is 0.906 weighted vs 0.782 macro. |
-| H2 | VnCoreNLP word segmentation — mandated by PhoBERT's own model card — is unnecessary here, and costs more p95 latency than the transformer itself. | **Open** (Phase 3). Java is absent from the reference machine, which already makes the JVM dependency a deployment cost. |
+| H2 | VnCoreNLP word segmentation is unnecessary here, and costs more p95 latency than the transformer itself. | **FALSIFIED, both halves.** Segmentation is worth **+0.023 macro-F1** (t=8.58, p=0.001, 5/5 seeds) and costs **0.6 ms p95** — 1.2% of the model's 50.8 ms. The published "unnecessary" result replicates on *accuracy* (+0.96 pp) and collapses on *macro-F1* (+2.34 pp) and *neutral F1* (+5.42 pp). |
 | H3 | INT8 dynamic quantization may be *slower* than FP32 on a consumer laptop CPU without AVX512-VNNI. | **Likely.** Reference CPU measured: AMD Ryzen 5 6600H, `avx2=true`, **`avx512_vnni=false`, `avx_vnni=false`**. |
 
 ### Results so far — dev split
@@ -31,7 +32,8 @@ a well-documented negative result is kept):
 | Task | Model | macro-F1 | weighted F1 | minority-class F1 |
 |---|---|---|---|---|
 | Sentiment | TF-IDF word+char + tuned priors | 0.782 | 0.906 | neutral 0.497 |
-| Sentiment | **PhoBERT-base, 5 seeds** | **0.8436 ± 0.0079** | 0.9427 | neutral **0.614 ± 0.022** |
+| Sentiment | PhoBERT-base, raw, 5 seeds | 0.8436 ± 0.0079 | 0.9427 | neutral 0.614 ± 0.022 |
+| Sentiment | **PhoBERT-base + segmentation, 5 seeds** | **0.8670 ± 0.0072** | 0.9529 | neutral **0.668 ± 0.018** |
 | Topic | TF-IDF word+char + tuned priors | 0.774 | 0.872 | others 0.493 |
 | Topic | **PhoBERT-base, 5 seeds** | **0.7971 ± 0.0018** | 0.8889 | others **0.568 ± 0.011** |
 
@@ -56,7 +58,8 @@ see the [scorecard](docs/EXPERIMENT_MATRIX.md#pre-registration-scorecard--gate-g
 | [docs/DATA_CARD.md](docs/DATA_CARD.md) | Dataset provenance, splits, class distribution, known limitations, validation checks |
 | [docs/EVALUATION_PROTOCOL.md](docs/EVALUATION_PROTOCOL.md) | Metrics, seed policy, significance testing, latency harness spec, error taxonomy, software test strategy |
 | [docs/RESEARCH_NOTES.md](docs/RESEARCH_NOTES.md) | Dataset and model landscape, prior results, tooling decisions, sources |
-| [docs/DECISIONS.md](docs/DECISIONS.md) | Decision log (ADR-001 … ADR-008), including every plan correction forced by measurement |
+| **[docs/STATUS.md](docs/STATUS.md)** | **Progress, open problems, next experiments, compute plan** |
+| [docs/DECISIONS.md](docs/DECISIONS.md) | Decision log (ADR-001 … ADR-014) — every plan correction forced by measurement |
 
 ## Reproducing what exists
 
@@ -92,7 +95,7 @@ Alternative framings and the rules for filling the placeholders honestly are in
 
 ---
 
-## CV-readiness checklist · 4/10
+## CV-readiness checklist · 5/10
 
 Each item is owned by exactly one phase gate; see [ROADMAP.md § 7](docs/ROADMAP.md#7-checklist-to-gate-mapping).
 
@@ -100,7 +103,7 @@ Each item is owned by exactly one phase gate; see [ROADMAP.md § 7](docs/ROADMAP
 - [x] 2. TF-IDF baseline — *Gate G1* ✅
 - [x] 3. PhoBERT fine-tuning & reproduction — *Gate G2* ✅ (5 seeds, both tasks)
 - [x] 4. Macro/per-class F1 + confusion matrix — *Gate G1* ✅ (harness + 22 runs)
-- [ ] 5. Word segmentation / preprocessing ablation — *Gate G3*
+- [x] 5. Word segmentation / preprocessing ablation — *Gate G3* ✅ (4 conditions × 5 seeds + latency)
 - [ ] 6. ≥30 error cases categorized by linguistic features — *Gate G5*
 - [ ] 7. ONNX / quantization benchmark — *Gate G6*
 - [ ] 8. API + Docker + CI — *Gate G7*

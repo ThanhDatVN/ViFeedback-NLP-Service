@@ -282,4 +282,108 @@ ten runs — roughly 50 GPU-minutes to produce a number that Phases 3 and 4 will
 
 ---
 
+## ADR-012 · 2026-09-22 · H2 falsified; serve with pyvi, not VnCoreNLP and not raw text · Accepted
+
+**Context.** H2 predicted that word segmentation would (a) not improve accuracy and (b) dominate p95
+latency, making it droppable for a large deployment win. Gate G3 measured both halves. Both are wrong.
+
+| | H2 predicted | Measured |
+|---|---|---|
+| Accuracy effect | none | **+0.0234 macro-F1** (t = 8.58, p = 0.0010, 5/5 seeds, ranges non-overlapping) |
+| Latency cost | dominates p95 | **0.606 ms p95** — 1.2% of the model's 50.8 ms |
+
+The published finding this hypothesis was anchored on ([arXiv:2301.00418](https://arxiv.org/abs/2301.00418))
+replicates *precisely* on the metric it reported — under 1 pp on accuracy and weighted F1 — while the
+same comparison moves macro-F1 by 2.34 pp and **neutral F1 by 5.42 pp**. The conclusion "segmentation
+is unnecessary" is an artifact of aggregating over a 4% class.
+
+**Decision.** Segment, and serve with **pyvi**.
+
+Segmenter *choice* is immaterial: VnCoreNLP 0.8670, pyvi 0.8643, underthesea 0.8618 — a 0.005 spread
+inside a 0.007–0.010 seed std. Whether to segment *at all* is material. So take the accuracy and pay
+the smallest price: pyvi costs −0.0027 macro-F1 versus VnCoreNLP (undetectable), runs **2× faster**
+(0.311 ms vs 0.606 ms p95), needs no JVM, removes ~180 MB from the Docker image, and is immune to the
+space-in-path defect of ADR-010.
+
+**Consequences.**
+
+* Risk **R1 is closed**, in the strongest available way: the deployment never needs a JVM, and it is
+  not a workaround — it is what the measurement recommends.
+* The project loses its most quotable predicted headline ("segmentation was 60% of p95 and I removed
+  it") and gains a better one: *a published negative result does not replicate once the minority class
+  is made visible.* That is a finding about the literature, not just about this pipeline.
+* All downstream phases switch to the `seg_pyvi` variant as the default preprocessing. Phase 4's
+  champion search and Phase 6's benchmark both run on segmented input.
+* Two configuration-only wins are already banked: `max_length` 96 (Gate G0) and dynamic padding give
+  **3.49×** on p95 (177.5 → 50.8 ms), meeting the S5 minimum before any ONNX or INT8 work.
+
+---
+
+## ADR-013 · 2026-09-22 · Seed-level paired t-test is the primary significance instrument · Accepted
+
+**Context.** docs/EVALUATION_PROTOCOL.md § 3 named the per-run **paired bootstrap** the primary test.
+At Gate G3 it disagreed with the seed-level evidence on the same comparison:
+
+| Instrument | Verdict on P0 vs P1 |
+|---|---|
+| Paired t-test over seeds (n = 5) | +0.0234, t = 8.58, **p = 0.0010**, Cohen d = 3.84, 5/5 positive, ranges non-overlapping |
+| Per-seed paired bootstrap on dev | **1/5** significant; BH-FDR retains 1 |
+
+Not a contradiction. They estimate different things: the bootstrap estimates **evaluation-set sampling**
+variance ("would this hold on another dev set of this size?"), the t-test estimates **training**
+variance ("would this hold on another run?"). Dev carries **73 neutral examples** bearing one third of
+the macro average, so resampling it moves macro-F1 by **±0.027** — wider than the +0.023 effect. The
+test set would only narrow that to ~0.019.
+
+**Decision.** For macro-F1 comparisons between configurations, the **seed-level paired test over the
+5 canonical seeds is primary**; the paired bootstrap is reported alongside as the evaluation-set
+uncertainty, not as the verdict. Both are always shown, and a disagreement is stated rather than
+resolved by picking the favourable one.
+
+**Consequences.**
+
+* **Phase 4 selection changes.** Recipes must be compared on the 5-seed mean, not on a single dev run.
+  A single-seed dev comparison cannot resolve anything below ~0.027 macro-F1, and almost every Tier A–C
+  increment is expected to be smaller than that. Exploration at 3 seeds, finalists at 5, remains the
+  rule — but the *decision* is now explicitly a seed-level one.
+* **The project has a stated resolution floor**, which belongs in the write-up: on this dataset, an
+  honest single-run dev claim cannot be finer than ~0.027 macro-F1. Any paper or repo reporting a
+  +0.01 improvement on UIT-VSFC from one run is reporting noise.
+* This is a *strengthening* of the protocol, and it was found by running the two tests and refusing to
+  discard the inconvenient one.
+
+---
+
+## ADR-014 · 2026-09-22 · Kaggle is the preferred free GPU; Colab is the fallback · Accepted
+
+**Context.** ADR-009 established that PhoBERT-base trains locally (3.6 GB measured of 4.29 GB), leaving
+only `phobert-large` (~7.9 GB) and unfrozen `xlm-roberta-base` (~5.9 GB) needing an external GPU. The
+original plan named Colab. Kaggle's free tier was not compared.
+
+| | Kaggle free | Colab free |
+|---|---|---|
+| GPU | P100 16 GB, or 2× T4 16 GB | T4 16 GB, not guaranteed |
+| Quota | **30 GPU-hours/week, stated** | unstated; throttled by prior use |
+| Session | up to 9 h, rarely preempted | ~12 h, preemptible at any time |
+| Output | `/kaggle/working` persisted with the notebook version | lost unless downloaded |
+| Input | versioned private Datasets | manual upload each session |
+
+**Decision.** Kaggle is the default external platform; Colab is kept as a fallback. Both notebooks are
+maintained and both are logic-free wrappers around the same CLI.
+
+**Consequences.**
+
+* Raw GPU capability is not the deciding factor — both offer 16 GB, and the largest planned model needs
+  7.9 GB. What decides it is that a **stated quota** and **persisted output** make a run reproducible,
+  and risk R4 (lost session) is what actually threatened the plan.
+* Kaggle's versioned Datasets give a cleaner path than re-uploading a zip each session, which matters
+  because the repo has no git remote yet.
+* Neither platform may produce a latency number. The reference machine is the laptop
+  (AMD Ryzen 5 6600H, no AVX512-VNNI) and is recorded in every `env.json`; a p95 from a cloud VM is not
+  comparable and does not enter the registry.
+* External GPU remains **optional**. 47 runs and every gate through G3 have been completed with zero
+  external compute, and Tiers A–D of Phase 4 need none either.
+
+---
+
 <!-- Append new entries above this line. -->
