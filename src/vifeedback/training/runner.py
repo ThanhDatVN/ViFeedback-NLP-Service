@@ -12,7 +12,6 @@ from typing import Any
 import numpy as np
 
 from vifeedback.constants import SEEDS, n_classes
-from vifeedback.data.loader import load
 from vifeedback.evaluation import bootstrap as B
 from vifeedback.evaluation import metrics as M
 from vifeedback.evaluation import report as R
@@ -20,7 +19,16 @@ from vifeedback.training.trainer import TextDataset, TrainConfig, predict, softm
 
 
 def _splits(task: str, preprocessing: str = "raw"):
-    tr, dv, te = load("train"), load("validation"), load("test")
+    """Load the three splits of one preprocessing variant.
+
+    `preprocessing` names a materialized variant (Phase 3). `raw` is condition P0 and reads the
+    corpus directly, so Phase 2's runs are already P0 and need no re-running.
+    """
+    from vifeedback.preprocess.variants import load_variant
+
+    tr = load_variant(preprocessing, "train")
+    dv = load_variant(preprocessing, "validation")
+    te = load_variant(preprocessing, "test")
     col = "sentence"
     return (
         (tr[col].tolist(), tr[task].to_numpy()),

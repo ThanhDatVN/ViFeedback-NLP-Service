@@ -71,6 +71,29 @@ def data_report(
     typer.echo(f"  written: {paths.RESULTS / 'data_report.json'}")
 
 
+@data_app.command("variants")
+def data_variants(
+    name: str = typer.Option("all", help="variant name, or 'all'"),
+    force: bool = typer.Option(False, help="Rebuild even if already materialized"),
+) -> None:
+    """Materialize preprocessing variants into data/processed/ (Phase 3)."""
+    from vifeedback.preprocess.variants import VARIANTS, build_all, summary_table
+
+    names = tuple(VARIANTS) if name == "all" else (name,)
+    metas = build_all(names, force=force)
+    typer.echo(summary_table(metas))
+
+
+@data_app.command("segmenters")
+def data_segmenters() -> None:
+    """Report which segmentation backends this machine can run, and why not."""
+    from vifeedback.preprocess.segment import available
+
+    for backend, info in available().items():
+        mark = "OK " if info["available"] else "-- "
+        typer.echo(f"  {mark} {backend:<14s} {info['reason']}")
+
+
 @data_app.command("env")
 def data_env() -> None:
     """Print the captured environment (CPU flags, packages, git)."""
@@ -149,6 +172,7 @@ def train_run(
     task: str = typer.Option("sentiment", help="sentiment | topic"),
     model: str = typer.Option("phobert-base", help="key from constants.MODEL_IDS"),
     recipe: str = typer.Option("base", help="base | classweight | focal | logit-adjust | ..."),
+    preprocessing: str = typer.Option("raw", help="variant name; raw = condition P0"),
     seeds: str = typer.Option("42", help="comma-separated, or 'all' for the 5 canonical seeds"),
     epochs: int = typer.Option(4),
     lr: float = typer.Option(2e-5),
@@ -183,6 +207,7 @@ def train_run(
         task=task,
         model_key=model,
         recipe=recipe,
+        preprocessing=preprocessing,
         loss=loss_for_recipe.get(recipe, "ce"),
         epochs=epochs,
         lr=lr,
