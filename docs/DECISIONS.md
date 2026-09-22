@@ -184,4 +184,31 @@ satisfied by the baseline itself.
 
 ---
 
+## ADR-009 · 2026-09-22 · Train locally on the RTX 3050; keep Colab as overflow · Accepted
+
+**Context.** The plan assumed all transformer fine-tuning would run on Colab, with the laptop reserved
+as the CPU reference machine. The reference machine turns out to carry an **NVIDIA RTX 3050 Laptop GPU
+(4.29 GB, compute 8.6)**. Measured: PhoBERT-base at `max_length=96`, batch 32, fp16 trains one epoch on
+UIT-VSFC in **69 seconds**, so a 4-epoch run costs ~4.6 minutes and a 5-seed sweep ~23 minutes.
+
+**Decision.** Run PhoBERT-base training locally. Colab is retained only for what does not fit in 4.3 GB
+of VRAM — PhoBERT-large, XLM-R-large, and any batch-size-hungry Phase 4 recipe.
+
+**Consequences.**
+
+* Iteration speed rises sharply and the Colab session-limit risk (R4) largely disappears for Phase 2–4.
+  R4 is downgraded from Medium/Medium to Low/Low for those phases.
+* **A new constraint replaces it, and it is not optional.** The laptop is both the training machine and
+  the latency reference machine. Training heats the package and Windows will down-clock it, so a
+  benchmark run on a hot machine measures the thermal state, not the model. Rule adopted for Phase 6:
+  *no benchmark runs while training is running, and a documented cool-down before any timed run.* The
+  benchmark harness already requires 5 repetitions with a >10% disagreement triggering a re-run
+  (docs/EVALUATION_PROTOCOL.md § Latency harness), which is the detector for a violation.
+* The 4.3 GB ceiling is a real limit, not a formality: PhoBERT-large plus AdamW optimizer state will not
+  fit. Those runs stay on Colab, and the split is recorded per run in `env.json` via `gpu_info()`.
+* Compute budget in [EXPERIMENT_MATRIX § 3](EXPERIMENT_MATRIX.md#3-run-inventory-and-compute-budget)
+  is revised: Phases 2–4 move from ~36 Colab GPU-hours to ~6 local GPU-hours.
+
+---
+
 <!-- Append new entries above this line. -->

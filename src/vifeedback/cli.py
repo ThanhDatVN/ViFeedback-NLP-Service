@@ -17,7 +17,9 @@ app = typer.Typer(add_completion=False, help="ViFeedback — Vietnamese feedback
 data_app = typer.Typer(help="Phase 0: acquisition, integrity, profiling")
 baseline_app = typer.Typer(help="Phase 1: classical baselines")
 app.add_typer(data_app, name="data")
+train_app = typer.Typer(help="Phase 2+: transformer fine-tuning")
 app.add_typer(baseline_app, name="baseline")
+app.add_typer(train_app, name="train")
 
 
 # --- Phase 0 ------------------------------------------------------------------------------------
@@ -137,6 +139,68 @@ def baseline_registry(
         typer.echo(df[cols].to_string(index=False))
     typer.echo("")
     typer.echo(f"  test-set evaluations to date: {test_evaluation_count()}")
+
+
+# --- Phase 2+ ------------------------------------------------------------------------------------
+
+
+@train_app.command("run")
+def train_run(
+    task: str = typer.Option("sentiment", help="sentiment | topic"),
+    model: str = typer.Option("phobert-base", help="key from constants.MODEL_IDS"),
+    recipe: str = typer.Option("base", help="base | classweight | focal | logit-adjust | ..."),
+    seeds: str = typer.Option("42", help="comma-separated, or 'all' for the 5 canonical seeds"),
+    epochs: int = typer.Option(4),
+    lr: float = typer.Option(2e-5),
+    batch_size: int = typer.Option(32),
+    max_length: int = typer.Option(96, help="Gate G0 decision: PhoBERT subword p99.9 = 87"),
+    llrd: float = typer.Option(0.0, help="layer-wise lr decay, e.g. 0.9; 0 disables"),
+    rdrop: float = typer.Option(0.0, help="R-Drop alpha; 0 disables"),
+    fgm: float = typer.Option(0.0, help="FGM epsilon; 0 disables"),
+    label_smoothing: float = typer.Option(0.0),
+    phase: int = typer.Option(2, help="phase number, used in the run id"),
+    include_test: bool = typer.Option(False, help="Also evaluate on test (logged; gates only)"),
+    reason: str = typer.Option("", help="Why the test set is being touched"),
+) -> None:
+    """Fine-tune a transformer encoder across one or more seeds."""
+    from vifeedback.constants import SEEDS
+    from vifeedback.training import TrainConfig, format_summary, run_seeds
+
+    if include_test and not reason:
+        raise typer.BadParameter("--reason is required when evaluating on test")
+
+    seed_tuple = SEEDS if seeds == "all" else tuple(int(s) for s in seeds.split(","))
+
+    loss_for_recipe = {
+        "base": "ce",
+        "classweight": "classweight",
+        "focal": "focal",
+        "focal-weighted": "focal-weighted",
+        "logit-adjust": "logit-adjust",
+    }
+
+    cfg = TrainConfig(
+        task=task,
+        model_key=model,
+        recipe=recipe,
+        loss=loss_for_recipe.get(recipe, "ce"),
+        epochs=epochs,
+        lr=lr,
+        batch_size=batch_size,
+        max_length=max_length,
+        llrd=llrd or None,
+        rdrop_alpha=rdrop,
+        fgm_epsilon=fgm,
+        label_smoothing=label_smoothing,
+        extra={"phase_num": phase},
+    )
+    res = run_seeds(cfg, seed_tuple, include_test=include_test, reason=reason)
+    typer.echo("")
+    typer.echo(
+        format_summary(
+            res["summary"], f"=== {task.upper()} / {model} / {recipe} / {len(seed_tuple)} seeds ==="
+        )
+    )
 
 
 if __name__ == "__main__":
