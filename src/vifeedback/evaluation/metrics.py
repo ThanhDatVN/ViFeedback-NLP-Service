@@ -120,6 +120,9 @@ def evaluate(
         "labels": names,
     }
 
+    if task in ORDINAL_TASKS:
+        out.update(ordinal_metrics(y_true, y_pred, k))
+
     if y_prob is not None:
         out.update(_probability_metrics(y_true, np.asarray(y_prob, dtype=np.float64), k))
     return out
@@ -172,3 +175,55 @@ def format_report(metrics: dict[str, Any], title: str = "") -> str:
             f"F1 {m['f1']:.3f}  (n={m['support']:>5d}, predicted {m['predicted']:>5d})"
         )
     return "\n".join(lines)
+
+
+# --- Ordinal metrics ----------------------------------------------------------------------------
+# Sentiment is ordered: negative < neutral < positive. Macro-F1 treats all errors as equal, but a
+# `positive -> negative` error is plainly worse than `positive -> neutral`. Measured at Gate G3,
+# 59.4% of all errors involve the middle class, and true neutrals split almost exactly evenly
+# between the two poles (20.8% / 20.3%) - the signature of ordinal confusion. These metrics make
+# that structure measurable; macro-F1 cannot express it. See docs/PROPOSALS.md F1.
+
+ORDINAL_TASKS = frozenset({"sentiment"})
+
+
+def ordinal_mae(y_true: np.ndarray, y_pred: np.ndarray) -> float:
+    """Mean absolute error over ordinal label indices. 0 is perfect; 2 is maximally wrong here."""
+    return float(np.abs(np.asarray(y_true, np.float64) - np.asarray(y_pred, np.float64)).mean())
+
+
+def quadratic_weighted_kappa(y_true: np.ndarray, y_pred: np.ndarray, k: int) -> float:
+    """Cohen's kappa with quadratic weights — penalizes distant errors quadratically.
+
+    1.0 is perfect, 0.0 is chance, negative is worse than chance. The standard metric for ordinal
+    agreement, and the right companion to macro-F1 on an ordered label set.
+    """
+    cm = confusion(y_true, y_pred, k).astype(np.float64)
+    n = cm.sum()
+    if n == 0:
+        return 0.0
+
+    idx = np.arange(k)
+    weights = (idx[:, None] - idx[None, :]) ** 2 / (k - 1) ** 2
+
+    expected = np.outer(cm.sum(axis=1), cm.sum(axis=0)) / n
+    num = (weights * cm).sum()
+    den = (weights * expected).sum()
+    return float(1.0 - num / den) if den > 0 else 0.0
+
+
+def adjacent_accuracy(y_true: np.ndarray, y_pred: np.ndarray) -> float:
+    """Share of predictions within one ordinal step of the truth.
+
+    Separates "the model is roughly right about polarity" from "the model inverted the sentiment",
+    which a single accuracy figure merges.
+    """
+    return float((np.abs(np.asarray(y_true) - np.asarray(y_pred)) <= 1).mean())
+
+
+def ordinal_metrics(y_true: np.ndarray, y_pred: np.ndarray, k: int) -> dict[str, float]:
+    return {
+        "ordinal_mae": ordinal_mae(y_true, y_pred),
+        "qwk": quadratic_weighted_kappa(y_true, y_pred, k),
+        "adjacent_accuracy": adjacent_accuracy(y_true, y_pred),
+    }

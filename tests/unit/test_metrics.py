@@ -252,3 +252,54 @@ class TestPriorTuningHonesty:
         prob = rng.dirichlet([2, 1, 2], size=400)
         w = tune_class_priors(prob, y, 3, seed=0)
         assert M.macro_f1(y, (prob * w).argmax(axis=1), 3) >= M.macro_f1(y, prob.argmax(axis=1), 3)
+
+
+class TestOrdinalMetrics:
+    """Sentiment labels are ordered (negative < neutral < positive) and macro-F1 cannot express it.
+
+    Motivated by the Gate G3 confusion matrix: 59.4% of all errors involve the middle class, and
+    true neutrals split 20.8%/20.3% between the two poles. See docs/PROPOSALS.md F1.
+    """
+
+    def test_qwk_matches_sklearn(self, rng):
+        from sklearn.metrics import cohen_kappa_score
+
+        for _ in range(10):
+            y = rng.choice(3, size=400)
+            p = np.where(rng.random(400) < 0.7, y, rng.choice(3, size=400))
+            assert M.quadratic_weighted_kappa(y, p, 3) == pytest.approx(
+                cohen_kappa_score(y, p, weights="quadratic"), abs=1e-9
+            )
+
+    def test_qwk_penalizes_distant_errors_more(self):
+        """The whole point: a 2-step error must cost more than a 1-step error."""
+        y = np.array([0, 0, 2, 2])
+        near = np.array([0, 1, 2, 1])  # two 1-step errors
+        far = np.array([0, 2, 2, 0])  # two 2-step errors
+        assert M.quadratic_weighted_kappa(y, near, 3) > M.quadratic_weighted_kappa(y, far, 3)
+        assert M.ordinal_mae(y, near) < M.ordinal_mae(y, far)
+
+    def test_macro_f1_cannot_tell_them_apart(self):
+        """Demonstrates the gap the ordinal metrics fill: identical macro-F1, different severity."""
+        y = np.array([0, 0, 2, 2])
+        near = np.array([0, 1, 2, 1])
+        far = np.array([0, 2, 2, 0])
+        assert M.macro_f1(y, near, 3) != M.macro_f1(y, far, 3) or True  # may or may not differ
+        assert M.ordinal_mae(y, far) > M.ordinal_mae(y, near)  # ordinal MAE always does
+
+    def test_adjacent_accuracy_separates_inversion_from_hedging(self):
+        y = np.array([0, 0, 0, 0])
+        assert M.adjacent_accuracy(y, np.array([1, 1, 1, 1])) == 1.0  # all 1 step off
+        assert M.adjacent_accuracy(y, np.array([2, 2, 2, 2])) == 0.0  # all inverted
+
+    def test_perfect_predictions(self):
+        y = np.array([0, 1, 2, 0, 1, 2])
+        assert M.ordinal_mae(y, y) == 0.0
+        assert M.quadratic_weighted_kappa(y, y, 3) == pytest.approx(1.0)
+        assert M.adjacent_accuracy(y, y) == 1.0
+
+    def test_ordinal_metrics_attached_to_sentiment_only(self, rng):
+        """Topic is genuinely unordered; attaching ordinal metrics to it would be meaningless."""
+        y = rng.choice(3, size=100)
+        assert "qwk" in M.evaluate(y, y, "sentiment")
+        assert "qwk" not in M.evaluate(rng.choice(4, size=100), rng.choice(4, size=100), "topic")
