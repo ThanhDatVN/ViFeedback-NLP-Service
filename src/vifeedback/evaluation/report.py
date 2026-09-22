@@ -45,6 +45,40 @@ REGISTRY_FIELDS = (
 )
 
 
+def yaml_safe(obj: Any) -> Any:
+    """Coerce a config tree into something `yaml.safe_dump` accepts.
+
+    Defensive by design. A run that has already spent five GPU-minutes must not be lost because one
+    metadata value is an exotic type — `torch.__version__` is a `str` subclass that `safe_dump`
+    refuses, and it cost exactly that once. Unknown types degrade to `str` rather than raising.
+    """
+    import numpy as _np
+
+    if isinstance(obj, dict):
+        return {str(k): yaml_safe(v) for k, v in obj.items()}
+    if isinstance(obj, (list, tuple)):
+        return [yaml_safe(v) for v in obj]
+    # np.bool_ is NOT a subclass of Python bool, so it must be caught before the numeric
+    # branches; otherwise it falls through to str() and a config records `fp16: 'True'`.
+    if isinstance(obj, _np.bool_):
+        return bool(obj)
+    if isinstance(obj, (_np.integer,)):
+        return int(obj)
+    if isinstance(obj, (_np.floating,)):
+        return float(obj)
+    if isinstance(obj, _np.ndarray):
+        return yaml_safe(obj.tolist())
+    if obj is None or isinstance(obj, bool):
+        return obj
+    if isinstance(obj, int) and not isinstance(obj, bool):
+        return int(obj)
+    if isinstance(obj, float):
+        return float(obj)
+    if isinstance(obj, str):
+        return str(obj)  # drops str subclasses such as torch's TorchVersion
+    return str(obj)
+
+
 def save_run(
     run_id: str,
     metrics: dict[str, Any],
@@ -61,7 +95,7 @@ def save_run(
 
     d = paths.run_dir(run_id)
     (d / "config.yaml").write_text(
-        yaml.safe_dump(config, sort_keys=False, allow_unicode=True), encoding="utf-8"
+        yaml.safe_dump(yaml_safe(config), sort_keys=False, allow_unicode=True), encoding="utf-8"
     )
     (d / "metrics.json").write_text(
         json.dumps(metrics, indent=2, ensure_ascii=False), encoding="utf-8"

@@ -49,7 +49,9 @@ def describe_determinism() -> dict[str, Any]:
     except ImportError:
         return {"torch": None}
     return {
-        "torch": torch.__version__,
+        # str() matters: torch.__version__ is a TorchVersion (a str subclass) that
+        # yaml.safe_dump refuses to represent, which killed a whole Phase 2 sweep.
+        "torch": str(torch.__version__),
         "cudnn_deterministic": bool(torch.backends.cudnn.deterministic),
         "cudnn_benchmark": bool(torch.backends.cudnn.benchmark),
         "cuda": torch.cuda.is_available(),
