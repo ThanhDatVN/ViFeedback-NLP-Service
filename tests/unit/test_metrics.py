@@ -210,3 +210,45 @@ class TestMcNemarAndFDR:
         assert out[0] is True
         assert out[-1] is False
         assert sum(out) <= sum(x < 0.05 for x in p)
+
+
+class TestPriorTuningHonesty:
+    """Regression cover for ADR-015.
+
+    Tuning decision priors on the same data they are scored on is optimistically biased. On
+    UIT-VSFC the bias accounted for the *entire* apparent gain on PhoBERT, so the distinction is
+    load-bearing rather than pedantic.
+    """
+
+    def test_crossfitted_is_not_more_optimistic_than_fit_on_eval(self, rng):
+        from vifeedback.models.baseline_tfidf import prior_tuning_report
+
+        y = rng.choice(3, size=600, p=[0.46, 0.04, 0.50])  # the real UIT-VSFC prior
+        logits = rng.normal(size=(600, 3))
+        logits[np.arange(600), y] += 1.5  # weakly informative probabilities
+        prob = np.exp(logits) / np.exp(logits).sum(axis=1, keepdims=True)
+
+        r = prior_tuning_report(prob, y, 3, seed=0)
+        assert r["fit_on_eval"] >= r["crossfitted"] - 1e-9, (
+            "fitting and scoring on the same data must not look worse than cross-fitting"
+        )
+        assert r["optimism_bias"] >= -1e-9
+
+    def test_crossfit_returns_one_prediction_per_example(self, rng):
+        from vifeedback.models.baseline_tfidf import crossfit_class_priors
+
+        y = rng.choice(3, size=200, p=[0.46, 0.04, 0.50])
+        prob = rng.dirichlet([1, 1, 1], size=200)
+        pred = crossfit_class_priors(prob, y, 3, seed=0)
+        assert pred.shape == y.shape
+        assert set(np.unique(pred)).issubset({0, 1, 2})
+
+    def test_tuning_cannot_reduce_fit_on_eval_macro_f1(self, rng):
+        """Sanity: the search starts from w = 1 and keeps the best, so it is monotone on its own
+        objective. Any violation means the optimizer is broken."""
+        from vifeedback.models.baseline_tfidf import tune_class_priors
+
+        y = rng.choice(3, size=400, p=[0.46, 0.04, 0.50])
+        prob = rng.dirichlet([2, 1, 2], size=400)
+        w = tune_class_priors(prob, y, 3, seed=0)
+        assert M.macro_f1(y, (prob * w).argmax(axis=1), 3) >= M.macro_f1(y, prob.argmax(axis=1), 3)

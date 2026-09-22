@@ -1,6 +1,6 @@
 # Status, Open Problems and Next Experiments
 
-**Updated:** 2026-09-22, after Gate G3.
+**Updated:** 2026-09-22, after Gate G3 and the ADR-015 correction.
 Living document. Results live in [EXPERIMENT_MATRIX.md](EXPERIMENT_MATRIX.md); decisions in
 [DECISIONS.md](DECISIONS.md); this file says **where the project stands, what is wrong with it, and
 what to run next.**
@@ -35,12 +35,13 @@ Dev split. Sentiment unless stated. Full tables in
 | Model | Preprocessing | **Macro-F1** | Weighted F1 | Neutral F1 |
 |---|---|---|---|---|
 | Majority class | — | 0.225 | 0.343 | 0.000 |
-| TF-IDF word+char + tuned priors | raw | 0.782 | 0.906 | 0.497 |
+| TF-IDF word+char + priors *(fit=eval, optimistic)* | raw | ~~0.782~~ | 0.906 | 0.497 |
+| **TF-IDF word+char + cross-fitted priors** | raw | **0.7708** | — | — |
 | PhoBERT-base, 5 seeds | raw (P0) | 0.8436 ± 0.0079 | 0.9427 | 0.6139 ± 0.0222 |
 | **PhoBERT-base, 5 seeds** | **VnCoreNLP (P1)** | **0.8670 ± 0.0072** | 0.9529 | **0.6680 ± 0.0184** |
 | PhoBERT-base, 5 seeds | pyvi (P2b) | 0.8643 ± 0.0098 | 0.9512 | 0.6628 ± 0.0291 |
 | PhoBERT-base, 5 seeds | underthesea (P2) | 0.8618 ± 0.0063 | 0.9506 | 0.6560 ± 0.0178 |
-| Topic: TF-IDF + tuned priors | raw | 0.774 | 0.872 | others 0.493 |
+| Topic: TF-IDF B4 LinearSVC *(honest best)* | raw | **0.768** | 0.874 | others 0.479 |
 | Topic: PhoBERT-base, 5 seeds | raw (P0) | 0.7971 ± 0.0018 | 0.8889 | others 0.568 ± 0.011 |
 
 ### Against the revised success criteria (ADR-008)
@@ -49,7 +50,7 @@ Dev split. Sentiment unless stated. Full tables in
 |---|---|---|---|---|---|
 | S1 | Sentiment macro-F1 | 0.80 | 0.84 | **0.867** | ✅ target exceeded |
 | S2 | Topic macro-F1 | 0.79 | 0.83 | 0.797 | ⚠️ min met, target far |
-| S3 | Lift over tuned baseline | +0.025, p<0.05 | +0.05 | **+0.085**, p=0.001 | ✅ target exceeded |
+| S3 | Lift over honest baseline | +0.025, p<0.05 | +0.05 | **+0.096**, p=0.001 | ✅ target exceeded |
 | S4 | Neutral F1 | 0.55 | 0.65 | **0.668** | ✅ target exceeded |
 | S5 | p95 latency | ≤60 ms | ≤30 ms | **51.1 ms** | ✅ min met, target open |
 | S6–S10 | inference / errors / release | — | — | not started | ⬜ |
@@ -57,7 +58,7 @@ Dev split. Sentiment unless stated. Full tables in
 **These are dev numbers.** The test set has not been touched (0 evaluations logged). S1–S4 are
 provisional until G4.
 
-### Three findings worth keeping
+### Four findings worth keeping
 
 1. **PhoBERT's advantage is almost entirely the minority class.** Weighted F1 +0.037, macro-F1 +0.062,
    **neutral F1 +0.117**. Through weighted F1 alone the transformer looks barely worth the GPU.
@@ -67,6 +68,10 @@ provisional until G4.
    over a 4% class (ADR-012).
 3. **TF-IDF beats PhoBERT on the `facility` topic** (0.921 vs 0.905, 9× the seed std). Distinctive
    vocabulary is what TF-IDF represents best, and a contextual model has nothing to add there.
+4. **Decision-threshold tuning does not generalize here, and a Gate G1 conclusion was retracted
+   because of it** (ADR-015). Cross-fitting removes the *entire* apparent gain on PhoBERT. The
+   inflated baselines had been *understating* PhoBERT's advantage, so the correction raises the
+   headline lift from +0.085 to **+0.096**.
 
 ---
 
@@ -130,6 +135,15 @@ expected benefit is uncertain (H3).
 add anything on top of two free configuration changes, on a CPU without VNNI?"** That is a sharper
 question and the answer may legitimately be *no* — which is still a result, and one worth reporting.
 
+### P9 — Anything fitted on the evaluation set is suspect until cross-fitted
+Threshold tuning looked worth +0.035 and was worth **zero** on PhoBERT once cross-fitted (ADR-015).
+Root cause: 73 neutral dev examples cannot support a transferable decision boundary — the same
+bottleneck as P1.
+
+*Direction:* the standing rule from ADR-015 now applies to everything still to come that fits a
+parameter on dev — calibration temperature, ensemble weights, model-soup coefficients, and the
+Phase 6 quantization calibration set. Each must be cross-fitted before its benefit is claimed.
+
 ### P7 — No test evaluation has happened yet
 Deferred to G4 (ADR-011). Every S1–S4 number above is dev. Phase 2/3 runs saved no checkpoints, so
 the G4 test pass will need a retrain of the champion configuration — budget ~25 min for it.
@@ -148,12 +162,13 @@ about this pipeline.
 All laptop-feasible unless marked. Selection on the 5-seed mean per ADR-013.
 
 ### Tier A — imbalance *(highest expected value)*
-The baseline showed decision-threshold tuning alone worth **+0.035 macro-F1** and neutral F1
-0.353 → 0.468, so the same lever should transfer.
+Re-scoped by ADR-015 to **training-time methods only**. Post-hoc thresholding was tested first
+(it is free) and cross-fits to no gain on PhoBERT, so the imbalance correction has to happen during
+training or not at all.
 
 | Recipe | Runs | Note |
 |---|---|---|
-| threshold tuning on PhoBERT probabilities | 0 (post-hoc) | free; apply to existing runs first |
+| ~~threshold tuning on PhoBERT probabilities~~ | — | **dropped** — cross-fitted gain is zero (ADR-015) |
 | `classweight` (balanced / sqrt / effective) | 15 | 3 schemes × 5 seeds |
 | `focal` γ ∈ {1, 2} | 10 | |
 | `logit-adjust` τ ∈ {0.5, 1.0} | 10 | principled for long tails, free at inference |

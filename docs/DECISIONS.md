@@ -386,4 +386,62 @@ maintained and both are logic-free wrappers around the same CLI.
 
 ---
 
+## ADR-015 · 2026-09-22 · Decision-threshold tuning must be cross-fitted; a Gate G1 conclusion is retracted · Accepted
+
+**Context.** Gate G1 reported that per-class decision-prior tuning was "the single largest lever" at
+**+0.035 macro-F1**, and concluded from it that the baseline's neutral-class failure was a
+*decision-rule* problem rather than a *representation* problem. That conclusion was built on priors
+that were **fitted on dev and scored on dev**.
+
+Cross-fitting the same tuning (5-fold, priors never see the examples they are scored on) gives a very
+different picture:
+
+| Model | Untuned | Fit = eval | **Cross-fitted** | Optimism bias |
+|---|---|---|---|---|
+| Sentiment B1 | 0.7366 | 0.7720 | 0.7578 | +0.0143 |
+| Sentiment B3 | 0.7547 | 0.7823 | **0.7708** | +0.0116 |
+| Sentiment B5 (already class-weighted) | 0.7679 | 0.7745 | **0.7390** | +0.0355 |
+| Topic B3 | 0.7529 | 0.7741 | 0.7516 | +0.0225 |
+| **PhoBERT, raw** | 0.8436 | 0.8599 | **0.8422** | +0.0177 |
+| **PhoBERT, segmented** | 0.8670 | 0.8773 | **0.8627** | +0.0145 |
+
+**Decision.** Three changes.
+
+1. **Retract the G1 claim.** On **PhoBERT the honest gain is zero** — −0.0014 and −0.0043, neither
+   significant, 2/5 and 1/5 seeds positive. The entire apparent improvement was optimism bias. On
+   TF-IDF a smaller real gain survives (+0.016 on sentiment B3), but topic gains nothing.
+2. **`crossfit_class_priors()` and `prior_tuning_report()` added** to the codebase, with tests. Any
+   reported tuned-threshold number must be cross-fitted. `tune_class_priors` stays as the right way to
+   *fit* priors for deployment; it is the wrong way to *estimate what they are worth*.
+3. **Phase 4 Tier A is re-scoped to training-time methods only** — class weighting, focal loss, logit
+   adjustment. Post-hoc thresholding is off the table for PhoBERT because it does not generalize here.
+
+**Why it fails, which is the interesting part.** Dev holds **73 neutral examples**. Cross-fitting
+estimates the priors from ~58 of them and scores on ~15. That is far too little to fit a decision
+boundary that transfers — the same 73-example bottleneck that makes the dev set underpowered for
+significance testing (ADR-013) also makes it too small to tune a threshold on. Two apparently
+unrelated methodological problems, one root cause.
+
+Stacking makes it worse, not better: **B5 (class-weighted) plus tuned priors cross-fits to 0.7390,
+*below* its own untuned 0.7679.** Correcting for imbalance twice overshoots.
+
+**Consequences — the corrected numbers, which favour the model, not the author.**
+
+| | Reported at G1/G3 | **Corrected** |
+|---|---|---|
+| Best honest sentiment baseline | 0.782 | **0.7708** (B3 + cross-fitted priors) |
+| Best honest topic baseline | 0.774 | **0.768** (B4 LinearSVC — never used priors) |
+| Sentiment lift over baseline | +0.085 | **+0.096** |
+| Topic lift over baseline | +0.023 | **+0.029** |
+
+The inflated baselines *understated* PhoBERT's advantage, so correcting them improves the project's
+headline. That direction of error is worth stating plainly: the bug was not convenient, and it was
+found by testing a result that had already been written up as a success.
+
+**Standing rule adopted:** *any hyperparameter fitted on the evaluation set must be cross-fitted
+before its benefit is reported.* This applies to thresholds, calibration temperature, ensemble weights
+and soup coefficients — every one of them is coming later in this project.
+
+---
+
 <!-- Append new entries above this line. -->

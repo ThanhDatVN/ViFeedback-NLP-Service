@@ -5,7 +5,8 @@ Vietnamese feedback understanding: **sentiment** (3-class) and **topic** (4-clas
 baselines against fine-tuned PhoBERT, with an explicit focus on **CPU inference cost** and on
 **where Vietnamese models actually break** (negation, teencode, missing diacritics).
 
-> **Status:** Gates G0–G3 complete · 47 runs · 5/10 checklist · zero external GPU used.
+> **Status:** Gates G0–G3 complete · 47 runs · 5/10 checklist · zero external GPU used ·
+> one published conclusion falsified (ADR-012) and one of our own retracted (ADR-015).
 > Next: Phase 4 improvement ladder.
 > Progress, open problems and next experiments: **[docs/STATUS.md](docs/STATUS.md)**.
 
@@ -31,10 +32,10 @@ a well-documented negative result is kept):
 
 | Task | Model | macro-F1 | weighted F1 | minority-class F1 |
 |---|---|---|---|---|
-| Sentiment | TF-IDF word+char + tuned priors | 0.782 | 0.906 | neutral 0.497 |
+| Sentiment | TF-IDF word+char + cross-fitted priors | 0.7708 | 0.906 | neutral 0.497 |
 | Sentiment | PhoBERT-base, raw, 5 seeds | 0.8436 ± 0.0079 | 0.9427 | neutral 0.614 ± 0.022 |
 | Sentiment | **PhoBERT-base + segmentation, 5 seeds** | **0.8670 ± 0.0072** | 0.9529 | neutral **0.668 ± 0.018** |
-| Topic | TF-IDF word+char + tuned priors | 0.774 | 0.872 | others 0.493 |
+| Topic | TF-IDF LinearSVC *(honest best)* | 0.768 | 0.874 | others 0.479 |
 | Topic | **PhoBERT-base, 5 seeds** | **0.7971 ± 0.0018** | 0.8889 | others **0.568 ± 0.011** |
 
 PhoBERT's advantage is concentrated almost entirely in the minority class: weighted F1 moves +0.037,

@@ -188,8 +188,18 @@ All selection on dev; test untouched. Every row is a `run_id` in `results/regist
 | B5 union + LR, class-weighted | 0.895 | 0.899 | **0.768** | 0.907 | 0.466 | 0.931 |
 | B5 + tuned priors | 0.896 | 0.901 | **0.774** | 0.913 | 0.483 | 0.927 |
 
-**Champion baseline: B3 + tuned priors, macro-F1 0.782.** Paired bootstrap vs B1:
-**+0.0458 [+0.0086, +0.0839], p = 0.014 — significant.**
+> ⚠️ **Corrected at ADR-015.** The `+ tuned priors` rows above are **optimistically biased**: the
+> priors were fitted on dev and scored on dev. Cross-fitted (honest) values:
+>
+> | Model | Untuned | Fit = eval | **Cross-fitted** | Bias |
+> |---|---|---|---|---|
+> | B1 | 0.7366 | 0.7720 | 0.7578 | +0.0143 |
+> | B2 | 0.7526 | 0.7761 | 0.7582 | +0.0178 |
+> | **B3** | 0.7547 | 0.7823 | **0.7708** | +0.0116 |
+> | B5 | 0.7679 | 0.7745 | **0.7390** | +0.0355 |
+>
+> **Honest sentiment baseline: 0.7708** (B3 + cross-fitted priors). Note B5 — correcting for
+> imbalance twice (class weights *and* priors) lands *below* its own untuned score.
 
 #### Topic
 
@@ -207,17 +217,19 @@ All selection on dev; test untouched. Every row is a `run_id` in `results/regist
 | B5 union + LR, class-weighted | 0.840 | 0.847 | **0.744** | 0.904 | 0.734 | 0.890 | 0.449 |
 | B5 + tuned priors | 0.878 | 0.872 | **0.765** | 0.930 | 0.754 | 0.914 | 0.461 |
 
-**Champion baseline: B3 + tuned priors, macro-F1 0.774.** Paired bootstrap vs B1:
-**+0.0255 [+0.0032, +0.0490], p = 0.017 — significant.**
+> ⚠️ **Corrected at ADR-015.** Cross-fitted, topic prior tuning gains nothing (B3: 0.7529 untuned →
+> 0.7516 cross-fitted). The **honest topic baseline is B4 LinearSVC at 0.768**, which never used
+> priors at all.
 
 #### Four findings from the ladder
 
-1. **Threshold tuning is the single largest lever, and it is nearly free.** Tuning per-class priors
-   on dev lifts sentiment macro-F1 by +0.035 (B1) and neutral F1 from 0.353 to 0.468 — no new
-   features, no new model, one vector of three numbers. It answers the diagnostic question the rung
-   was built for: the baseline's neutral failure is **substantially a decision-rule problem, not
-   purely a representation problem.** That matters for Phase 4, because it predicts Tier A
-   (reweighting, thresholds) will transfer to PhoBERT and should be tried before anything expensive.
+1. ~~**Threshold tuning is the single largest lever.**~~ **RETRACTED — see ADR-015.** The +0.035
+   was measured with priors fitted and scored on the same data. Cross-fitted, TF-IDF keeps a smaller
+   real gain (+0.016 on B3) and **PhoBERT keeps none at all** (−0.001 raw, −0.004 segmented, neither
+   significant). The diagnostic conclusion drawn from it — "the neutral failure is a decision-rule
+   problem" — does not hold for the transformer, and Phase 4 Tier A is re-scoped to training-time
+   methods only. Root cause: 73 neutral dev examples are too few to fit a threshold that transfers,
+   the same bottleneck that makes dev underpowered for significance (ADR-013).
 
 2. **Class weighting and threshold tuning are near-substitutes, not additive.** B5 (class-weighted,
    0.768) lands within noise of B1 + priors (0.772), and stacking them (B5 + priors, 0.774) adds
@@ -247,10 +259,12 @@ checkpoint selected on dev macro-F1. Trained locally on the RTX 3050 (ADR-009), 
 
 #### Versus the tuned baseline (B3 + priors)
 
-| Task | Baseline | PhoBERT | Δ macro-F1 | Δ / seed std |
+Baselines are the **cross-fitted honest** values (ADR-015), not the optimistic ones first reported.
+
+| Task | Honest baseline | PhoBERT (raw) | PhoBERT (segmented) | Δ vs baseline |
 |---|---|---|---|---|
-| Sentiment | 0.782 | **0.8436** | **+0.062** | 7.8× |
-| Topic | 0.774 | **0.7971** | **+0.023** | 12.8× |
+| Sentiment | 0.7708 (B3 + cross-fitted priors) | 0.8436 | **0.8670** | **+0.096** |
+| Topic | 0.768 (B4 LinearSVC) | 0.7971 | *not yet run* | **+0.029** |
 
 Per class, which is where the story actually is:
 
