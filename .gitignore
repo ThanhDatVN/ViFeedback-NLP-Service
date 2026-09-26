@@ -7,8 +7,19 @@ data/processed/*
 !data/processed/.gitkeep
 
 # Results — run artifacts are local; registry.csv IS committed
+# Per-run artifacts. preds.csv is large and regenerable from a checkpoint, so it stays out;
+# metrics.json and config.yaml are small and ARE tracked, because a result nobody else can inspect
+# is not a result. Review R11 warned that only .gitkeep was tracked here; a `git add -A` over a
+# missing directory then deleted every local artifact in one commit, which is exactly the failure
+# that warning described.
 results/runs/*
 !results/runs/.gitkeep
+!results/runs/*/
+results/runs/*/preds.csv
+results/runs/*/confusion.png
+!results/runs/*/metrics.json
+!results/runs/*/config.yaml
+!results/runs/*/env.json
 results/figures/*.png
 !results/figures/.gitkeep
 # Anchored with a leading slash. Without it, git matches the pattern at ANY depth, and
