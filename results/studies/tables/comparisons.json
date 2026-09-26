@@ -1,0 +1,277 @@
+{
+  "hygiene": {
+    "rows_in_registry": 97,
+    "duplicate_run_ids": [
+      "p4-topi-phobert-base-seg_pyvi-base-s1337-val",
+      "p4-topi-phobert-base-seg_pyvi-base-s2024-val",
+      "p4-topi-phobert-base-seg_pyvi-base-s42-val",
+      "p4-topi-phobert-base-seg_pyvi-base-s7-val"
+    ],
+    "reruns": {
+      "n_condition_seeds": 10,
+      "max_abs_macro_f1_disagreement": 0.0
+    },
+    "rows_used": 83
+  },
+  "comparisons": [
+    {
+      "a": {
+        "model": "phobert-base",
+        "recipe": "base",
+        "split": "validation",
+        "task": "sentiment",
+        "preprocessing": "raw"
+      },
+      "b": {
+        "model": "phobert-base",
+        "recipe": "base",
+        "split": "validation",
+        "task": "sentiment",
+        "preprocessing": "seg_pyvi"
+      },
+      "metric": "macro_f1",
+      "seeds": [
+        7,
+        42,
+        1337,
+        2024,
+        31337
+      ],
+      "n": 5,
+      "mean_a": 0.84364,
+      "mean_b": 0.8642800000000002,
+      "mean_diff": 0.020640000000000013,
+      "ci95": [
+        0.003809703665225036,
+        0.037470296334774986
+      ],
+      "wins_b": 5,
+      "t": 3.4049208541192737,
+      "p": 0.02715399747528181,
+      "name": "sentiment: pyvi vs raw",
+      "significant_bh": true
+    },
+    {
+      "a": {
+        "model": "phobert-base",
+        "recipe": "base",
+        "split": "validation",
+        "task": "sentiment",
+        "preprocessing": "raw"
+      },
+      "b": {
+        "model": "phobert-base",
+        "recipe": "base",
+        "split": "validation",
+        "task": "sentiment",
+        "preprocessing": "seg_vncorenlp"
+      },
+      "metric": "macro_f1",
+      "seeds": [
+        7,
+        42,
+        1337,
+        2024,
+        31337
+      ],
+      "n": 5,
+      "mean_a": 0.84364,
+      "mean_b": 0.86706,
+      "mean_diff": 0.023420000000000017,
+      "ci95": [
+        0.015819231141472524,
+        0.03102076885852751
+      ],
+      "wins_b": 5,
+      "t": 8.55496931613437,
+      "p": 0.0010249858159323822,
+      "name": "sentiment: vncorenlp vs raw",
+      "significant_bh": true
+    },
+    {
+      "a": {
+        "model": "phobert-base",
+        "recipe": "base",
+        "split": "validation",
+        "task": "sentiment",
+        "preprocessing": "raw"
+      },
+      "b": {
+        "model": "phobert-base",
+        "recipe": "base",
+        "split": "validation",
+        "task": "sentiment",
+        "preprocessing": "seg_underthesea"
+      },
+      "metric": "macro_f1",
+      "seeds": [
+        7,
+        42,
+        1337,
+        2024,
+        31337
+      ],
+      "n": 5,
+      "mean_a": 0.84364,
+      "mean_b": 0.8618400000000002,
+      "mean_diff": 0.018200000000000015,
+      "ci95": [
+        0.0022880383176241796,
+        0.034111961682375846
+      ],
+      "wins_b": 4,
+      "t": 3.175680153287988,
+      "p": 0.03367411580760007,
+      "name": "sentiment: underthesea vs raw",
+      "significant_bh": true
+    },
+    {
+      "a": {
+        "model": "phobert-base",
+        "recipe": "base",
+        "split": "validation",
+        "task": "sentiment",
+        "preprocessing": "seg_pyvi"
+      },
+      "b": {
+        "model": "phobert-base",
+        "recipe": "base",
+        "split": "validation",
+        "task": "sentiment",
+        "preprocessing": "seg_vncorenlp"
+      },
+      "metric": "macro_f1",
+      "seeds": [
+        7,
+        42,
+        1337,
+        2024,
+        31337
+      ],
+      "n": 5,
+      "mean_a": 0.8642800000000002,
+      "mean_b": 0.86706,
+      "mean_diff": 0.0027800000000000047,
+      "ci95": [
+        -0.016555383785684163,
+        0.022115383785684173
+      ],
+      "wins_b": 2,
+      "t": 0.39919132084487685,
+      "p": 0.7101472308452363,
+      "name": "sentiment: vncorenlp vs pyvi",
+      "significant_bh": false
+    },
+    {
+      "a": {
+        "model": "phobert-base",
+        "recipe": "base",
+        "split": "validation",
+        "task": "sentiment",
+        "preprocessing": "seg_pyvi"
+      },
+      "b": {
+        "model": "phobert-large",
+        "recipe": "base",
+        "split": "validation",
+        "task": "sentiment",
+        "preprocessing": "seg_pyvi"
+      },
+      "metric": "macro_f1",
+      "seeds": [
+        7,
+        42,
+        1337,
+        2024,
+        31337
+      ],
+      "n": 5,
+      "mean_a": 0.8642800000000002,
+      "mean_b": 0.8560399999999999,
+      "mean_diff": -0.00823999999999998,
+      "ci95": [
+        -0.02080524703466096,
+        0.004325247034661002
+      ],
+      "wins_b": 1,
+      "t": -1.8207288407240627,
+      "p": 0.14275617683453223,
+      "name": "sentiment: phobert-large vs base (pyvi)",
+      "significant_bh": false
+    },
+    {
+      "a": {
+        "model": "phobert-base",
+        "recipe": "base",
+        "split": "validation",
+        "task": "sentiment",
+        "preprocessing": "seg_pyvi"
+      },
+      "b": {
+        "model": "xlmr-base",
+        "recipe": "base",
+        "split": "validation",
+        "task": "sentiment",
+        "preprocessing": "seg_pyvi"
+      },
+      "metric": "macro_f1",
+      "seeds": [
+        7,
+        42,
+        1337,
+        2024,
+        31337
+      ],
+      "n": 5,
+      "mean_a": 0.8642800000000002,
+      "mean_b": 0.8402800000000001,
+      "mean_diff": -0.024,
+      "ci95": [
+        -0.03796389045158836,
+        -0.010036109548411642
+      ],
+      "wins_b": 0,
+      "t": -4.7719281926311234,
+      "p": 0.008827586146388162,
+      "name": "sentiment: xlmr-base vs phobert-base (pyvi)",
+      "significant_bh": true
+    },
+    {
+      "a": {
+        "model": "phobert-base",
+        "recipe": "base",
+        "split": "validation",
+        "task": "topic",
+        "preprocessing": "raw"
+      },
+      "b": {
+        "model": "phobert-base",
+        "recipe": "base",
+        "split": "validation",
+        "task": "topic",
+        "preprocessing": "seg_pyvi"
+      },
+      "metric": "macro_f1",
+      "seeds": [
+        7,
+        42,
+        1337,
+        2024,
+        31337
+      ],
+      "n": 5,
+      "mean_a": 0.79708,
+      "mean_b": 0.81114,
+      "mean_diff": 0.014059999999999984,
+      "ci95": [
+        0.007602989046967135,
+        0.020517010953032832
+      ],
+      "wins_b": 5,
+      "t": 6.045648437493418,
+      "p": 0.003776100939864443,
+      "name": "topic: pyvi vs raw",
+      "significant_bh": true
+    }
+  ]
+}

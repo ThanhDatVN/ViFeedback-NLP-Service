@@ -450,6 +450,10 @@ and soup coefficients — every one of them is coming later in this project.
 ---
 
 ## ADR-016 · 2026-09-22 · Scaling the encoder buys nothing; PhoBERT-base is the ship · Accepted
+> **Narrowed by ADR-019 (review R8).** The shipping decision stands. The general claims do not:
+> the evidence supports *"PhoBERT-base performs best among the configurations tested under this
+> budget"*, not that encoder capacity has no remaining value. XLM-R was fed pyvi-segmented text its
+> tokenizer never saw in pretraining, so its −0.024 mixes model and preprocessing effects.
 
 **Context.** Phase 4 Tier E ran the two models that exceed the 4.29 GB laptop GPU on a Kaggle T4.
 Sentiment, `seg_pyvi`, 5 seeds, dev:
@@ -580,3 +584,40 @@ measurement actually supports:
 ---
 
 <!-- Append new entries above this line. -->
+
+---
+
+## ADR-019 · 2026-09-27 · Narrow ADR-016 to the configurations tested · Accepted
+
+**Context.** External review (R8) pointed out that ADR-016 drew general conclusions — "scaling the
+encoder buys nothing", "multilingual pretraining loses to Vietnamese-specific pretraining",
+"CafeBERT is not worth running" — from one recipe, four epochs and one preprocessing condition.
+Checked against the runs, the review is right on three counts:
+
+1. **XLM-R was evaluated only on `seg_pyvi` input.** pyvi joins syllables with underscores
+   (`giảng_viên`). PhoBERT was pretrained on segmented text; XLM-R's SentencePiece model was not,
+   and fragments these tokens. Its −0.024 therefore mixes a model effect with a preprocessing
+   penalty that only one of the two models pays. No XLM-R **raw-text** run exists.
+2. **The comparison does not isolate parameter count.** PhoBERT-base, PhoBERT-large and XLM-R differ
+   in tokenizer, pretraining corpus, vocabulary and depth at once. The 135M → 277M → 368M "trend"
+   is three different models, not a scaling curve.
+3. **Budgets were matched in epochs, not in tuning.** Every model ran the base recipe's single
+   learning rate. `phobert-large`'s best epochs [1, 4, 4, 4, 3] suggest that rate did not suit it;
+   under-tuning the larger model is a known way to make it look worse.
+
+**Decision.**
+
+* **The shipping decision stands**: `phobert-base` + pyvi. It won every comparison actually run, and
+  it is the cheapest at inference. That is sufficient to ship it and needs none of the general claims.
+* **The conclusion is restated** as: *PhoBERT-base performs best among the configurations tested
+  under this budget (base recipe, 4 epochs, one learning rate, pyvi input).*
+* **Retracted as unsupported:** "encoder capacity has no remaining value", the multilingual-vs-
+  monolingual generalization, and "CafeBERT is not worth running". CafeBERT is *not run, for cost*,
+  which is a budget decision, not a finding.
+* **Tier E is paused, not closed.** If it is reopened, the minimum controls are an XLM-R raw-text
+  run (5 seeds, the one missing cell that confounds the existing result), a small learning-rate sweep
+  for `phobert-large` on 3 seeds, and tokenizer-specific length profiles, all declared in
+  `configs/experiments/` before running.
+
+**Consequences.** Nothing shipped changes. The README and EXPERIMENT_MATRIX stop presenting Tier E
+as a closed negative result and describe it as a budget-limited comparison with a known confound.

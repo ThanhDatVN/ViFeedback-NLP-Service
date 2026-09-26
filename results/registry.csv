@@ -86,3 +86,13 @@ p4-topi-phobert-base-seg_pyvi-base-s7-val,2026-09-22,P4,topic,phobert-base,seg_p
 p4-topi-phobert-base-seg_pyvi-base-s7-tes,2026-09-22,P4,topic,phobert-base,seg_pyvi,base,7,test,0.8032,0.8953,0.898,0.7909,0.765,0.7802,0.8256,,,264.0,G4 test: seg_pyvi,451e1424b146abbb87ddba5da2a288adf8911e2c
 p4-topi-phobert-base-seg_pyvi-base-s31337-val,2026-09-22,P4,topic,phobert-base,seg_pyvi,base,31337,validation,0.8116,0.8942,0.8958,0.8032,0.7616,0.7808,0.8406,,,263.0,G4 test: seg_pyvi,451e1424b146abbb87ddba5da2a288adf8911e2c
 p4-topi-phobert-base-seg_pyvi-base-s31337-tes,2026-09-22,P4,topic,phobert-base,seg_pyvi,base,31337,test,0.7966,0.8908,0.8929,0.7888,0.7558,0.7719,0.8188,,,263.0,G4 test: seg_pyvi,451e1424b146abbb87ddba5da2a288adf8911e2c
+p4-sent-phobert-large-seg_pyvi-base-s1337-val,2026-09-23,P4,sentiment,phobert-large,seg_pyvi,base,1337,validation,0.852,0.9507,0.9533,0.8233,0.913,0.8152,0.8854,,,538.3,phobert-large base,
+p4-sent-phobert-large-seg_pyvi-base-s2024-val,2026-09-23,P4,sentiment,phobert-large,seg_pyvi,base,2024,validation,0.8555,0.9508,0.9533,0.8271,0.9129,0.8176,0.8886,,,538.6,phobert-large base,
+p4-sent-phobert-large-seg_pyvi-base-s31337-val,2026-09-23,P4,sentiment,phobert-large,seg_pyvi,base,31337,validation,0.8589,0.951,0.9533,0.8312,0.9129,0.8218,0.8926,,,538.8,phobert-large base,
+p4-sent-phobert-large-seg_pyvi-base-s42-val,2026-09-23,P4,sentiment,phobert-large,seg_pyvi,base,42,validation,0.8604,0.9513,0.9539,0.8276,0.9141,0.8244,0.895,,,534.9,phobert-large base,
+p4-sent-phobert-large-seg_pyvi-base-s7-val,2026-09-23,P4,sentiment,phobert-large,seg_pyvi,base,7,validation,0.8534,0.9506,0.9533,0.823,0.9129,0.8167,0.8876,,,539.6,phobert-large base,
+p4-sent-xlmr-base-seg_pyvi-base-s1337-val,2026-09-23,P4,sentiment,xlmr-base,seg_pyvi,base,1337,validation,0.8499,0.9453,0.9476,0.8232,0.9023,0.8108,0.8812,,,316.8,xlmr-base base,
+p4-sent-xlmr-base-seg_pyvi-base-s2024-val,2026-09-23,P4,sentiment,xlmr-base,seg_pyvi,base,2024,validation,0.842,0.9417,0.9444,0.8123,0.8963,0.8039,0.8768,,,316.8,xlmr-base base,
+p4-sent-xlmr-base-seg_pyvi-base-s31337-val,2026-09-23,P4,sentiment,xlmr-base,seg_pyvi,base,31337,validation,0.8373,0.9405,0.9438,0.8039,0.8951,0.8001,0.8734,,,315.3,xlmr-base base,
+p4-sent-xlmr-base-seg_pyvi-base-s42-val,2026-09-23,P4,sentiment,xlmr-base,seg_pyvi,base,42,validation,0.8393,0.9411,0.9444,0.8044,0.8962,0.8001,0.875,,,317.2,xlmr-base base,
+p4-sent-xlmr-base-seg_pyvi-base-s7-val,2026-09-23,P4,sentiment,xlmr-base,seg_pyvi,base,7,validation,0.8329,0.942,0.9438,0.8162,0.8954,0.7939,0.866,,,317.7,xlmr-base base,

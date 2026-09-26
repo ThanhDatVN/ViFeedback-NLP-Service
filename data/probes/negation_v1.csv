@@ -1,0 +1,45 @@
+pair_id,set,cue,base,base_label,negated,negated_label
+1,pos_to_neg,không,thầy giảng bài dễ hiểu,positive,thầy giảng bài không dễ hiểu,negative
+2,pos_to_neg,không,cô rất nhiệt tình với sinh viên,positive,cô không nhiệt tình với sinh viên,negative
+3,pos_to_neg,không,môn học này bổ ích,positive,môn học này không bổ ích,negative
+4,pos_to_neg,không,phòng học sạch sẽ,positive,phòng học không sạch sẽ,negative
+5,pos_to_neg,không,giảng viên nhiệt tình,positive,giảng viên không nhiệt tình,negative
+6,pos_to_neg,không,tài liệu môn học đầy đủ,positive,tài liệu môn học không đầy đủ,negative
+7,pos_to_neg,không,thầy trả lời câu hỏi rõ ràng,positive,thầy trả lời câu hỏi không rõ ràng,negative
+8,pos_to_neg,không,bài tập giúp em hiểu bài,positive,bài tập không giúp em hiểu bài,negative
+9,pos_to_neg,không,cô dạy có tâm,positive,cô dạy không có tâm,negative
+10,pos_to_neg,không,em thích cách dạy của thầy,positive,em không thích cách dạy của thầy,negative
+11,pos_to_neg,không,máy chiếu hoạt động tốt,positive,máy chiếu hoạt động không tốt,negative
+12,pos_to_neg,không,chương trình học hợp lý,positive,chương trình học không hợp lý,negative
+13,pos_to_neg,không,thầy đến lớp đúng giờ,positive,thầy không đến lớp đúng giờ,negative
+14,pos_to_neg,không,cô giải thích rất kỹ,positive,cô giải thích không kỹ,negative
+15,pos_to_neg,không,môn học có tính thực tế cao,positive,môn học không có tính thực tế,negative
+16,pos_to_neg,không,thầy quan tâm đến sinh viên,positive,thầy không quan tâm đến sinh viên,negative
+17,pos_to_neg,không,wifi trong phòng học ổn định,positive,wifi trong phòng học không ổn định,negative
+18,pos_to_neg,không,em hiểu bài sau mỗi buổi học,positive,em không hiểu bài sau mỗi buổi học,negative
+19,pos_to_neg,không,thầy chấm điểm công bằng,positive,thầy chấm điểm không công bằng,negative
+20,pos_to_neg,không,slide bài giảng dễ nhìn,positive,slide bài giảng không dễ nhìn,negative
+21,pos_to_neg,không,bài giảng hấp dẫn,positive,bài giảng không hấp dẫn,negative
+22,pos_to_neg,không,thầy hướng dẫn thực hành chu đáo,positive,thầy hướng dẫn thực hành không chu đáo,negative
+23,pos_to_neg,không,nội dung môn học phù hợp với sinh viên,positive,nội dung môn học không phù hợp với sinh viên,negative
+24,pos_to_neg,không,phòng máy đủ máy cho sinh viên,positive,phòng máy không đủ máy cho sinh viên,negative
+25,pos_to_neg,không,em học được nhiều điều từ môn này,positive,em không học được nhiều điều từ môn này,negative
+26,pos_to_neg,không,bài kiểm tra sát với nội dung học,positive,bài kiểm tra không sát với nội dung học,negative
+27,pos_to_neg,không,điều hòa trong phòng hoạt động tốt,positive,điều hòa trong phòng không hoạt động,negative
+28,pos_to_neg,chưa,thầy dạy dễ hiểu,positive,thầy dạy chưa dễ hiểu,negative
+29,pos_to_neg,chưa,cô chuẩn bị bài giảng kỹ lưỡng,positive,cô chuẩn bị bài giảng chưa kỹ lưỡng,negative
+30,pos_to_neg,chưa,lịch học hợp lý,positive,lịch học chưa hợp lý,negative
+31,pos_to_neg,chưa,thầy truyền đạt tốt,positive,thầy truyền đạt chưa tốt,negative
+32,pos_to_neg,chẳng,thầy nhiệt tình giải đáp thắc mắc,positive,thầy chẳng nhiệt tình giải đáp thắc mắc,negative
+33,pos_to_neg,chẳng,môn học thú vị,positive,môn học chẳng thú vị,negative
+34,pos_to_neg,ko,thầy dạy hay,positive,thầy dạy ko hay,negative
+35,pos_to_neg,ko,môn này dễ hiểu,positive,môn này ko dễ hiểu,negative
+36,pos_to_neg,ko,cô giảng bài rõ ràng,positive,cô giảng bài ko rõ ràng,negative
+37,neg_to_pos,không,thầy khó tính,negative,thầy không khó tính,positive
+38,neg_to_pos,không,phòng học nóng,negative,phòng học không nóng,positive
+39,neg_to_pos,không,thầy dạy nhàm chán,negative,thầy dạy không nhàm chán,positive
+40,neg_to_pos,không,môn học khô khan,negative,môn học không khô khan,positive
+41,neg_to_pos,không,thầy hay đi trễ,negative,thầy không bao giờ đi trễ,positive
+42,neg_to_pos,không,cô hay la mắng sinh viên,negative,cô không la mắng sinh viên,positive
+43,neg_to_pos,không,có nhiều điều để chê,negative,không có gì để chê,positive
+44,neg_to_pos,không,bài giảng khó hiểu,negative,bài giảng không khó hiểu,positive

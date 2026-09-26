@@ -120,7 +120,7 @@ git clone https://github.com/ThanhDatVN/ViFeedback-NLP-Service.git
 cd ViFeedback-NLP-Service
 make install          # editable install with dev extras
 make data             # fetch UIT-VSFC + run the integrity suite
-make test             # 141 fast tests
+make test             # 243 fast tests
 make report           # Phase 0 profiling + EDA figures
 make baseline         # TF-IDF ladder
 make train            # fine-tune PhoBERT (needs a GPU; ~5 min/seed on an RTX 3050)
@@ -149,15 +149,16 @@ curl -s localhost:8000/v1/classify \
 │   ├── preprocess/    normalizers · 4 segmentation backends · materialized variants
 │   ├── models/        TF-IDF ladder (B0–B5) · cross-fitted prior tuning
 │   ├── training/      fine-tuning loop · losses (focal, logit-adjust, R-Drop, FGM) · seeding
-│   ├── evaluation/    metrics · bootstrap · ordinal metrics · run registry
+│   ├── evaluation/    metrics · bootstrap · registry · tables from the registry
+│   │                  error analysis · calibration · robustness suites
 │   ├── inference/     ONNX export · quantization · parity checks · latency harness
 │   ├── serving/       FastAPI app · request/response contracts
 │   └── cli.py         every experiment is a CLI call
 ├── notebooks/         EDA and results, both executed with outputs
-├── configs/           one YAML per experiment
-├── docs/              11 documents — see below
+├── configs/           one YAML per experiment · experiments/ = declared cycles + run ledger
+├── docs/              13 documents — see below
 ├── tests/             unit · data · contract · integration · packaging guards
-├── results/           registry.csv (append-only) · run artifacts · figures
+├── results/           registry.csv (append-only) · per-run metrics · studies/ (generated)
 └── Dockerfile · docker-compose.yml · Makefile · .github/workflows/ci.yml
 ```
 
@@ -165,9 +166,11 @@ curl -s localhost:8000/v1/classify \
 |---|---|
 | **[STATUS](docs/STATUS.md)** | **Progress, open problems, next experiments, compute plan** |
 | [ROADMAP](docs/ROADMAP.md) | Objectives, 8 phases, exit gates, risk register |
-| [DECISIONS](docs/DECISIONS.md) | 15 ADRs — every plan correction forced by measurement |
+| [DECISIONS](docs/DECISIONS.md) | 19 ADRs — every plan correction forced by measurement or review |
 | [DATA_CARD](docs/DATA_CARD.md) | Provenance, splits, distributions, 11 measured limitations |
-| [EVALUATION_PROTOCOL](docs/EVALUATION_PROTOCOL.md) | Metrics, seeds, significance, latency harness, error taxonomy |
+| [EVALUATION_PROTOCOL](docs/EVALUATION_PROTOCOL.md) | Metrics, seeds, significance, latency harness, error taxonomy, perturbation suites, calibration |
+| [ANNOTATION_GUIDE](docs/ANNOTATION_GUIDE.md) | Neutral-label audit: taxonomy, ambiguity vs incorrect gold, agreement and adjudication |
+| [REVIEW_AND_RESEARCH_PLAN](docs/REVIEW_AND_RESEARCH_PLAN.md) | External review (R1–R12) and the research plan this cycle follows |
 | [EXPERIMENT_MATRIX](docs/EXPERIMENT_MATRIX.md) | Run-ID scheme, pre-registration scorecard, all result tables |
 | [BENCHMARK_COMPARISON](docs/BENCHMARK_COMPARISON.md) | Against published work — and what is not yet claimable |
 | [PROPOSALS](docs/PROPOSALS.md) | 6 techniques, 7 models, 6 workflow changes, each anchored to a measurement |

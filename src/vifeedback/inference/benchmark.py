@@ -91,8 +91,9 @@ def throughput(
     n_batches: int = 30,
     seed: int = 42,
 ) -> dict[str, float]:
-    """Requests per second at several batch sizes. Batch throughput and single-request p95 are
-    different questions and a serving decision needs both."""
+    """**Texts** per second at several batch sizes (not HTTP requests per second: there is no server
+    in this measurement). Batch throughput and single-request p95 are different questions and a
+    serving decision needs both."""
     rng = np.random.default_rng(seed)
     out = {}
     for bs in batch_sizes:
@@ -105,7 +106,7 @@ def throughput(
         for b in batches:
             fn(b)
         elapsed = time.perf_counter() - t0
-        out[f"batch{bs}_req_per_s"] = round(n_batches * bs / elapsed, 1)
+        out[f"batch{bs}_texts_per_s"] = round(n_batches * bs / elapsed, 1)
     return out
 
 
@@ -118,18 +119,27 @@ def benchmark_pipeline(
     size_mb: float | None = None,
     **kw,
 ) -> dict[str, Any]:
-    """Full report: model-only, preprocessing-only, and end-to-end.
+    """Full report: model-only, preprocessing-only, and the in-process pipeline.
 
-    Separating the three is what let Phase 3 conclude that segmentation costs 1.2% of end-to-end
-    p95 rather than the majority share the hypothesis predicted.
+    Separating the three is what let Phase 3 conclude that segmentation costs 1.2% of pipeline p95
+    rather than the majority share the hypothesis predicted.
+
+    Two definitions, fixed after review (R10):
+
+    * **model-only** is timed on the *preprocessed* texts, computed once up front. Timing it on raw
+      text measured a different workload (different token lengths) from the one the pipeline runs.
+    * **end_to_end** means the in-process Python pipeline: preprocessing then the model. It excludes
+      HTTP, serialization, queueing and concurrent load, and is not a service SLA.
     """
     from vifeedback import env
 
+    model_inputs = preprocess_fn(texts) if preprocess_fn is not None else texts
     report: dict[str, Any] = {
         "label": label,
         "size_mb": size_mb,
-        "model_only": time_callable(model_fn, texts, **kw),
-        "throughput": throughput(model_fn, texts),
+        "model_only": time_callable(model_fn, model_inputs, **kw),
+        "throughput": throughput(model_fn, model_inputs),
+        "end_to_end_scope": "in-process preprocessing + model; excludes HTTP, queueing, concurrency",
         "environment": env.capture(),
     }
 
@@ -142,6 +152,7 @@ def benchmark_pipeline(
         report["end_to_end"] = time_callable(end_to_end, texts, **kw)
         pre = report["preprocess_only"]["p95_ms"]
         e2e = report["end_to_end"]["p95_ms"]
+        # A ratio of two separately measured p95s: indicative, not a per-request decomposition.
         report["preprocess_share_of_p95"] = round(pre / e2e, 4) if e2e else None
 
     return report
@@ -162,7 +173,7 @@ def compare(reports: list[dict[str, Any]], baseline_label: str | None = None) ->
                 "p95_ms": r["model_only"]["p95_ms"],
                 "p99_ms": r["model_only"]["p99_ms"],
                 "e2e_p95_ms": e2e["p95_ms"],
-                "req_per_s_b32": r["throughput"].get("batch32_req_per_s"),
+                "texts_per_s_b32": r["throughput"].get("batch32_texts_per_s"),
                 "throttled": r["model_only"]["throttling_suspected"],
             }
         )

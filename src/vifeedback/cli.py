@@ -22,6 +22,8 @@ app.add_typer(baseline_app, name="baseline")
 serve_app = typer.Typer(help="Phase 6-7: export, benchmark, serve")
 app.add_typer(train_app, name="train")
 app.add_typer(serve_app, name="serve")
+study_app = typer.Typer(help="Research studies (docs/REVIEW_AND_RESEARCH_PLAN.md § 7)")
+app.add_typer(study_app, name="study")
 
 
 # --- Phase 0 ------------------------------------------------------------------------------------
@@ -367,6 +369,396 @@ def serve_run(
     import uvicorn
 
     uvicorn.run("vifeedback.serving.app:app", host=host, port=port, reload=reload)
+
+
+# --- Studies -------------------------------------------------------------------------------------
+
+
+@study_app.command("neutral-audit")
+def study_neutral_audit(
+    checkpoint: str = typer.Option(
+        "models/p6-sent-phobert-base-seg_pyvi-base-s42-ckp",
+        help="saved sentiment checkpoint used for the dev view",
+    ),
+    preprocessing: str = typer.Option(
+        "seg_pyvi", help="must match the checkpoint's training input"
+    ),
+    oof: bool = typer.Option(True, help="also run k-fold OOF fine-tuning over train (~20 GPU-min)"),
+    k: int = typer.Option(5, help="OOF folds"),
+    seed: int = typer.Option(42),
+) -> None:
+    """Study A, steps 1 and 3: dev/OOF predictions, uncertainty, and a stratified audit sheet.
+
+    Text-free prediction files and the summary are written to results/studies/study_a/ and are
+    committed. Anything containing corpus text goes to its local/ subfolder, which is gitignored:
+    the raw data is not redistributed (docs/DATA_CARD.md § 11).
+    """
+    import pandas as pd
+
+    from vifeedback.evaluation import error_analysis as EA
+    from vifeedback.evaluation import metrics as M
+    from vifeedback.preprocess.variants import variant_dir
+
+    out = paths.RESULTS / "studies" / "study_a"
+    local = out / "local"
+    local.mkdir(parents=True, exist_ok=True)
+    task = "sentiment"
+
+    def _load(split: str) -> pd.DataFrame:
+        return pd.read_parquet(variant_dir(preprocessing) / f"{split}.parquet")
+
+    tr, dv = _load("train"), _load("validation")
+    summary: dict = {
+        "task": task,
+        "preprocessing": preprocessing,
+        "checkpoint": checkpoint,
+        "caveat_dev": "the checkpoint selected its epoch on validation, so the dev view is mildly "
+        "optimistic; it describes errors, it does not estimate generalization",
+    }
+
+    typer.echo(f"dev predictions from {checkpoint}")
+    dev_p = EA.predict_proba(checkpoint, dv["sentence"].tolist())
+    dev_t = EA.prediction_table(
+        dv["sentence_raw"].tolist(),
+        dv["sentence"].tolist(),
+        dv[task].to_numpy(),
+        dev_p,
+        task,
+        split="validation",
+        source="checkpoint",
+    )
+    summary["dev_metrics"] = M.evaluate(dev_t.gold_id, dev_t.pred_id, task, y_prob=dev_p)
+
+    tables = {"validation": dev_t}
+    if oof:
+        from vifeedback.training.trainer import TrainConfig
+
+        cfg = TrainConfig(
+            task=task, model_key="phobert-base", preprocessing=preprocessing, seed=seed
+        )
+        typer.echo(f"OOF: {k} folds over train ({len(tr)} rows)")
+        r = EA.oof_predictions(
+            cfg,
+            tr["sentence"].tolist(),
+            tr[task].to_numpy(),
+            dv["sentence"].tolist(),
+            dv[task].to_numpy(),
+            k=k,
+            fold_seed=seed,
+        )
+        tr_t = EA.prediction_table(
+            tr["sentence_raw"].tolist(),
+            tr["sentence"].tolist(),
+            tr[task].to_numpy(),
+            r["oof_probs"],
+            task,
+            split="train",
+            source="oof",
+        )
+        tr_t["fold"] = r["fold_id"]
+        tables["train"] = tr_t
+        dis = EA.fold_disagreement(r["dev_probs"])
+        dev_t["fold_vote_agreement"] = dis["vote_agreement"]
+        dev_t["fold_prob_std_max"] = dis["prob_std_max"]
+        summary["oof"] = {
+            "k": k,
+            "config_hash": cfg.config_hash(),
+            "folds": r["folds"],
+            "gpu_seconds": r["total_seconds"],
+            "metrics": M.evaluate(tr_t.gold_id, tr_t.pred_id, task, y_prob=r["oof_probs"]),
+            "dev_fold_ensemble_metrics": M.evaluate(
+                dev_t.gold_id,
+                r["dev_probs"].mean(axis=0).argmax(axis=1),
+                task,
+                y_prob=r["dev_probs"].mean(axis=0),
+            ),
+        }
+        issues = EA.suspected_label_issues(tr_t, top_k=200)
+        summary["suspected_issues_top200_by_gold_pred"] = (
+            issues.groupby(["gold", "pred"]).size().rename("n").reset_index().to_dict("records")
+        )
+
+    samples = []
+    for split, t in tables.items():
+        t.to_csv(
+            local / f"{split}_predictions_with_text.csv", index_label="row", encoding="utf-8-sig"
+        )
+        # 6 significant digits, not fixed decimals: a probability of 3e-6 rounded to 5 decimals
+        # becomes 0, and NLL / temperature fitting on the saved file would then be wrong.
+        text_free = t.drop(columns=["text", "model_input"])
+        text_free.to_csv(out / f"{split}_predictions.csv", index_label="row", float_format="%.6g")
+        summary[f"error_rate_by_flag_{split}"] = EA.error_rate_by_flag(t).to_dict("records")
+        summary[f"error_rate_by_flag_{split}_neutral"] = EA.error_rate_by_flag(
+            t, gold_class="neutral"
+        ).to_dict("records")
+        samples.append(
+            EA.stratified_audit_sample(
+                t, per_error_cell=8, per_correct_class=5, n_random=20, seed=seed
+            )
+        )
+
+    sample = pd.concat(samples, ignore_index=True)
+    sheet = EA.export_annotation_sheet(sample, local / "audit_sheet.csv")
+    sample[["split", "example_index", "stratum", "gold", "pred"]].to_csv(
+        out / "audit_sample_index.csv", index=False
+    )
+    summary["audit_sample"] = {
+        "n": len(sample),
+        "by_split_stratum": sample.groupby(["split", "stratum"]).size().to_dict(),
+    }
+    summary["audit_sample"]["by_split_stratum"] = {
+        f"{a}|{b}": int(v) for (a, b), v in summary["audit_sample"]["by_split_stratum"].items()
+    }
+
+    from vifeedback.evaluation.report import yaml_safe
+
+    (out / "summary.json").write_text(
+        json.dumps(yaml_safe(summary), indent=2, ensure_ascii=False), encoding="utf-8"
+    )
+    typer.echo(f"  dev macro-F1 {summary['dev_metrics']['macro_f1']:.4f}")
+    if oof:
+        typer.echo(f"  OOF macro-F1 {summary['oof']['metrics']['macro_f1']:.4f}")
+    typer.echo(f"  audit sheet ({len(sample)} rows): {sheet}")
+    typer.echo(f"  summary: {out / 'summary.json'}")
+
+
+@study_app.command("calibration")
+def study_calibration(
+    n_bins: int = typer.Option(15, help="ECE bins; disclosed in the output"),
+    seed: int = typer.Option(42),
+) -> None:
+    """E09: calibration of saved predictions, temperature cross-fitted on disjoint halves.
+
+    Reads Study A's prediction files, so it needs no GPU. Two views: the deployed checkpoint on
+    validation, and the fold models on their held-out train folds (OOF, if present).
+    """
+    import pandas as pd
+
+    from vifeedback.constants import label_names
+    from vifeedback.evaluation import calibration as C
+    from vifeedback.evaluation.report import yaml_safe
+
+    src = paths.RESULTS / "studies" / "study_a"
+    out = paths.RESULTS / "studies" / "calibration"
+    out.mkdir(parents=True, exist_ok=True)
+    cols = [f"p_{n}" for n in label_names("sentiment")]
+    report: dict = {"n_bins": n_bins, "protocol": "cross-fit on stratified halves", "views": {}}
+
+    for view, fname in (("checkpoint_on_validation", "validation"), ("oof_on_train", "train")):
+        f = src / f"{fname}_predictions.csv"
+        if not f.exists():
+            typer.echo(f"  skip {view}: {f.name} not found")
+            continue
+        df = pd.read_csv(f)
+        probs, y = df[cols].to_numpy(), df["gold_id"].to_numpy()
+        r = C.cross_fit_temperature(C.probs_to_logits(probs), y, seed=seed, n_bins=n_bins)
+        r.pop("calibrated_probs")
+        r["risk_coverage_uncalibrated"] = C.risk_coverage(probs, y)
+        report["views"][view] = r
+        u, t = r["uncalibrated"], r["temperature_scaled"]
+        typer.echo(
+            f"  {view:26s} n={u['n']:5d}  T={r['temperatures']}  "
+            f"NLL {u['nll']:.4f}->{t['nll']:.4f}  Brier {u['brier']:.4f}->{t['brier']:.4f}  "
+            f"ECE(w) {u['ece_equal_width']:.4f}->{t['ece_equal_width']:.4f}"
+        )
+
+    (out / "summary.json").write_text(
+        json.dumps(yaml_safe(report), indent=2, ensure_ascii=False), encoding="utf-8"
+    )
+    typer.echo(f"  written {out / 'summary.json'}")
+
+
+@study_app.command("robustness")
+def study_robustness(
+    checkpoint: str = typer.Option("models/p6-sent-phobert-base-seg_pyvi-base-s42-ckp"),
+    segmenter: str = typer.Option("pyvi", help="the checkpoint's training segmenter"),
+    split: str = typer.Option("validation", help="test is reserved for final confirmation"),
+    seed: int = typer.Option(42),
+    n_boot: int = typer.Option(2000),
+) -> None:
+    """Study B: perturbation suites and predefined slices, paired against clean predictions.
+
+    Perturbations are applied to raw text and then segmented, as the deployed pipeline would.
+    """
+
+    import numpy as np
+
+    from vifeedback.constants import label_names
+    from vifeedback.data.loader import load
+    from vifeedback.evaluation import error_analysis as EA
+    from vifeedback.evaluation import robustness as R
+    from vifeedback.evaluation.report import yaml_safe
+    from vifeedback.preprocess.segment import get_segmenter
+
+    if split == "test":
+        raise typer.BadParameter("test is reserved for the final confirmation run")
+
+    task = "sentiment"
+    k = len(label_names(task))
+    df = load(split)
+    raw, y = df["sentence"].tolist(), df[task].to_numpy()
+    seg = get_segmenter(segmenter)
+    out = paths.RESULTS / "studies" / "robustness"
+    out.mkdir(parents=True, exist_ok=True)
+
+    clean = EA.predict_proba(checkpoint, seg(raw)).argmax(1)
+    report: dict = {
+        "suite_version": R.SUITE_VERSION,
+        "slices_version": R.SLICES_VERSION,
+        "checkpoint": checkpoint,
+        "segmenter": segmenter,
+        "split": split,
+        "seed": seed,
+        "suites": {},
+        "slices": R.slice_report(y, clean, R.slice_masks(raw), k),
+    }
+    for suite in R.SUITES:
+        pert, changed = R.perturb(raw, suite, seed=seed)
+        pred = EA.predict_proba(checkpoint, seg(pert)).argmax(1)
+        entry = R.paired_delta(y, clean, pred, k, n_boot=n_boot, seed=seed)
+        entry["changed_share"] = float(changed.mean())
+        if changed.sum() >= 30:
+            entry["changed_only"] = R.paired_delta(
+                y[changed], clean[changed], pred[changed], k, n_boot=n_boot, seed=seed
+            )
+        # Where predictions go under shift. A rising minority-class recall can mean the model is
+        # dumping unreadable input into that class, which the aggregate delta alone would hide.
+        entry["pred_share_clean"] = (np.bincount(clean, minlength=k) / len(clean)).tolist()
+        entry["pred_share_shifted"] = (np.bincount(pred, minlength=k) / len(pred)).tolist()
+        entry["neutral_recall_clean"] = float((clean[y == 1] == 1).mean())
+        entry["neutral_recall_shifted"] = float((pred[y == 1] == 1).mean())
+        report["suites"][suite] = entry
+        typer.echo(
+            f"  {suite:16s} changed {entry['changed_share']:6.1%}  macro-F1 "
+            f"{entry['macro_f1_a']:.4f} -> {entry['macro_f1_b']:.4f}  "
+            f"delta {entry['delta']:+.4f} [{entry['delta_ci'][0]:+.4f}, {entry['delta_ci'][1]:+.4f}]"
+        )
+    probe = paths.DATA / "probes" / "negation_v1.csv"
+    if probe.exists():
+        import pandas as pd
+
+        report["negation_probe"] = R.negation_probe(
+            pd.read_csv(probe),
+            lambda xs: EA.predict_proba(checkpoint, seg(xs)).argmax(1),
+        )
+        for name, r in report["negation_probe"].items():
+            typer.echo(
+                f"  negation {name:11s} pairs {r['n_pairs']:2d}  pair-acc {r['pair_accuracy']:.3f}  "
+                f"flip {r['flip_rate']:.3f}  base-acc {r['base_accuracy']:.3f}"
+            )
+    if hasattr(seg, "close"):
+        seg.close()
+
+    (out / f"{split}.json").write_text(
+        json.dumps(yaml_safe(report), indent=2, ensure_ascii=False), encoding="utf-8"
+    )
+    typer.echo(f"  written {out / f'{split}.json'}")
+
+
+@study_app.command("tables")
+def study_tables() -> None:
+    """Regenerate result tables and the declared paired comparisons from the registry."""
+    from vifeedback.evaluation import compare_runs as CR
+    from vifeedback.evaluation.report import yaml_safe
+
+    out = paths.RESULTS / "studies" / "tables"
+    out.mkdir(parents=True, exist_ok=True)
+    r = CR.build()
+    r["table"].to_csv(out / "conditions.csv", index=False, float_format="%.6g")
+    (out / "conditions.md").write_text(
+        "<!-- generated by `vifeedback study tables`; do not edit by hand -->\n\n"
+        + CR.to_markdown(r["table"])
+        + "\n",
+        encoding="utf-8",
+    )
+    (out / "comparisons.json").write_text(
+        json.dumps(yaml_safe({"hygiene": r["hygiene"], "comparisons": r["comparisons"]}), indent=2),
+        encoding="utf-8",
+    )
+    h = r["hygiene"]
+    typer.echo(
+        f"  registry rows {h['rows_in_registry']} -> used {h['rows_used']}  "
+        f"(duplicate ids {len(h['duplicate_run_ids'])}, re-run seeds {h['reruns']['n_condition_seeds']}, "
+        f"max re-run disagreement {h['reruns']['max_abs_macro_f1_disagreement']})"
+    )
+    for c in r["comparisons"]:
+        if "p" in c:
+            typer.echo(
+                f"  {c['name']:32s} diff {c['mean_diff']:+.4f} "
+                f"[{c['ci95'][0]:+.4f}, {c['ci95'][1]:+.4f}]  wins {c['wins_b']}/{c['n']}  "
+                f"p {c['p']:.4f}  BH {'yes' if c['significant_bh'] else 'no'}"
+            )
+    typer.echo(f"  written {out}")
+
+
+@study_app.command("neutral-diagnosis")
+def study_neutral_diagnosis() -> None:
+    """Study A analysis: neutral error structure and a post-hoc decision-boundary test.
+
+    CPU only; reads the outputs of `study neutral-audit`. The boundary bias is tuned on the OOF
+    train predictions and evaluated on validation, so it is never scored on its own tuning data.
+    """
+    import pandas as pd
+
+    from vifeedback.constants import label_names
+    from vifeedback.evaluation import error_analysis as EA
+    from vifeedback.evaluation import metrics as M
+    from vifeedback.evaluation.report import yaml_safe
+
+    task = "sentiment"
+    names = label_names(task)
+    k, neutral = len(names), names.index("neutral")
+    src = paths.RESULTS / "studies" / "study_a"
+    cols = [f"p_{n}" for n in names]
+    out: dict = {}
+
+    tables = {}
+    for split in ("validation", "train"):
+        f = src / f"{split}_predictions.csv"
+        if f.exists():
+            tables[split] = pd.read_csv(f)
+            out[f"{split}_neutral"] = EA.neutral_diagnosis(tables[split])
+
+    if "train" in tables:
+        tr, dv = tables["train"], tables["validation"]
+        tuned = EA.tune_class_bias(tr[cols].to_numpy(), tr.gold_id.to_numpy(), neutral, k)
+        before = M.evaluate(dv.gold_id, dv.pred_id, task)
+        after_pred = EA.apply_class_bias(dv[cols].to_numpy(), neutral, tuned["bias"])
+        after = M.evaluate(dv.gold_id, after_pred, task)
+        out["boundary_test"] = {
+            "tuned_on": "OOF train predictions (fold models)",
+            "evaluated_on": "validation, deployed checkpoint",
+            "bias_on_neutral_logprob": tuned["bias"],
+            "oof_macro_f1_at_zero": tuned["at_zero"],
+            "oof_macro_f1_tuned": tuned["macro_f1"],
+            "dev_macro_f1_before": before["macro_f1"],
+            "dev_macro_f1_after": after["macro_f1"],
+            "dev_neutral_f1_before": before["per_class"]["neutral"]["f1"],
+            "dev_neutral_f1_after": after["per_class"]["neutral"]["f1"],
+            "dev_neutral_recall_before": before["per_class"]["neutral"]["recall"],
+            "dev_neutral_recall_after": after["per_class"]["neutral"]["recall"],
+            "dev_neutral_precision_before": before["per_class"]["neutral"]["precision"],
+            "dev_neutral_precision_after": after["per_class"]["neutral"]["precision"],
+        }
+        ng = tr[tr.gold == "neutral"]
+        out["train_neutral_oof"] = {
+            "n": len(ng),
+            "confidently_other_share": float(((~ng.correct) & (ng.p_pred >= 0.9)).mean()),
+            "p_gold_below_0.1_share": float((ng.p_gold < 0.1).mean()),
+        }
+        if "fold_vote_agreement" in dv.columns:
+            dn = dv[dv.gold == "neutral"]
+            out["dev_neutral_fold_agreement"] = {
+                "all_folds_agree_share": float((dn.fold_vote_agreement == 1.0).mean()),
+                "all_folds_agree_and_wrong_share": float(
+                    ((dn.fold_vote_agreement == 1.0) & ~dn.correct).mean()
+                ),
+            }
+
+    (src / "diagnosis.json").write_text(
+        json.dumps(yaml_safe(out), indent=2, ensure_ascii=False), encoding="utf-8"
+    )
+    typer.echo(json.dumps(yaml_safe(out), indent=2, ensure_ascii=False)[:4000])
 
 
 if __name__ == "__main__":

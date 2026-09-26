@@ -156,3 +156,57 @@ class TestRunIdentity:
         # Different config under the same id: must refuse.
         with _pytest.raises(FileExistsError, match="DIFFERENT configuration"):
             R.save_run("demo", m, config={**cfg, "lr": 5e-5}, y_true=y, y_pred=y, figure=False)
+
+
+class TestRegistrySchemaMigration:
+    """Regression cover: the committed registry predates the config_hash column. Appending a
+    22-field row under its 21-name header shifted every later field one column right, silently."""
+
+    def _patch(self, tmp_path, monkeypatch):
+        from vifeedback import paths
+
+        monkeypatch.setattr(paths, "RUNS", tmp_path / "runs")
+        monkeypatch.setattr(paths, "RESULTS", tmp_path)
+        monkeypatch.setattr(paths, "REGISTRY", tmp_path / "registry.csv")
+        monkeypatch.setattr(paths, "TEST_EVAL_LOG", tmp_path / "test_evaluations.log")
+        return paths
+
+    def test_appending_to_an_old_schema_keeps_columns_aligned(self, tmp_path, monkeypatch):
+        import csv
+
+        import pandas as pd
+
+        from vifeedback.evaluation import metrics as M
+        from vifeedback.evaluation import report as R
+
+        paths = self._patch(tmp_path, monkeypatch)
+        old_fields = [f for f in R.REGISTRY_FIELDS if f != "config_hash"]
+        with open(paths.REGISTRY, "w", encoding="utf-8", newline="") as f:
+            w = csv.DictWriter(f, fieldnames=old_fields)
+            w.writeheader()
+            w.writerow({k: "" for k in old_fields} | {"run_id": "old", "macro_f1": "0.5"})
+
+        y = np.array([0, 1, 2, 0, 1, 2])
+        m = M.evaluate(y, y, "sentiment")
+        R.save_run(
+            "new",
+            m,
+            config={"task": "sentiment", "split": "validation"},
+            y_true=y,
+            y_pred=y,
+            figure=False,
+        )
+
+        reg = pd.read_csv(paths.REGISTRY)
+        assert list(reg.columns) == list(R.REGISTRY_FIELDS)
+        assert reg.set_index("run_id").loc["old", "macro_f1"] == 0.5
+        assert reg.set_index("run_id").loc["new", "macro_f1"] == 1.0
+        assert reg.set_index("run_id").loc["new", "task"] == "sentiment"
+
+    def test_unknown_columns_are_refused_not_dropped(self, tmp_path, monkeypatch):
+        from vifeedback.evaluation import report as R
+
+        paths = self._patch(tmp_path, monkeypatch)
+        paths.REGISTRY.write_text("run_id,mystery\nx,1\n", encoding="utf-8")
+        with pytest.raises(ValueError, match="does not know"):
+            R._migrate_registry_schema()

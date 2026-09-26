@@ -14,7 +14,8 @@ rules cannot be adjusted to fit a result.
 5. [Latency harness](#latency-harness)
 6. [Error taxonomy](#error-taxonomy)
 7. [Perturbation suites](#7-perturbation-suites)
-8. [Software testing strategy](#software-testing-strategy)
+8. [Calibration and selective prediction](#8-calibration-and-selective-prediction)
+9. [Software testing strategy](#software-testing-strategy)
 
 ---
 
@@ -190,6 +191,11 @@ After every optimization step, macro-F1 is re-evaluated on the full test set. Th
 
 ## Error taxonomy
 
+> **Superseded for sentiment by Study A.** The neutral-label audit samples by confusion cell with a
+> random control stratum and uses [ANNOTATION_GUIDE.md](ANNOTATION_GUIDE.md), produced by
+> `vifeedback study neutral-audit`. The taxonomy below remains the coding scheme for the *phenomenon*
+> behind each error.
+
 Used in Phase 5 to code ≥ 30 (target 60) errors. Categories are mutually exclusive by *primary* cause; a
 secondary tag is allowed and recorded separately.
 
@@ -228,22 +234,67 @@ secondary tag is allowed and recorded separately.
 
 ## 7. Perturbation suites
 
-Programmatic transformations of the **full test set**, converting "the model struggles with teencode" from
-an impression into a number.
+Programmatic transformations that convert "the model struggles with teencode" from an impression into a
+number. Implemented in `src/vifeedback/evaluation/robustness.py` (suite version `1`), run by
+`vifeedback study robustness`.
 
-| Suite | Transformation | Reported |
+**Which split.** Development and every decision use **validation**. The test set is perturbed once, at
+final confirmation, with the suites frozen beforehand; the CLI refuses `--split test` so this cannot
+happen by accident.
+
+| Suite | Transformation (applied to raw text, before segmentation) | Reported |
 |---|---|---|
-| `nodiacritic` | Strip all diacritics from every sentence | Macro-F1 drop |
-| `teencode` | Replace whole words with dictionary teencode variants, p = 0.3 | Macro-F1 drop |
-| `charnoise-5` / `charnoise-10` | Random char swap / drop / duplicate at 5% / 10% | Macro-F1 drop |
-| `negation-probe` | ~50 hand-built minimal pairs differing only by *không* | Pair accuracy: fraction where the model flips label correctly |
+| `nodiacritic` / `nodiacritic-50` | Strip diacritics from every syllable / from each syllable with p = 0.5 | Macro-F1 delta with 95% CI |
+| `teencode-30` / `teencode-100` | Replace dictionary words with informal variants, p = 0.3 / 1.0 | Same, plus share of examples changed |
+| `charnoise-5` / `charnoise-10` | Per-letter swap / drop / duplicate / substitute at 5% / 10% | Same |
+| `negation-probe` | ~50 hand-built minimal pairs differing only by *không* | Pair accuracy *(planned)* |
 
-**Rules.** Perturbations apply to inputs only, never to gold labels. Each suite is seeded and
-deterministic. The clean baseline is reported in the same table so the drop is unambiguous. The negation
-probe set is handwritten, committed, and small enough to inspect by eye.
+**Rules.**
+
+- Perturbations apply to inputs only, never to gold labels.
+- They are applied to **raw** text and then segmented, as the deployed pipeline would do.
+  Perturbing already-segmented text would test an input the service never sees.
+- Every example's randomness is keyed on (suite version, suite, seed, example index), so an example can
+  be regenerated alone and results are independent of batch order.
+- Clean and perturbed predictions are compared on identical examples. The CI comes from a bootstrap over
+  **original examples**, so several variants of one sentence are never counted as independent evidence.
+- The **changed share** is reported for every suite, with the delta restricted to changed examples. A
+  suite that changes 3% of inputs and costs 0.001 macro-F1 has not shown robustness; it has barely tested.
+- **Neutral recall** is reported clean and shifted, because an aggregate delta can hide a minority-class
+  collapse.
+
+### Predefined slices (slice version `1`)
+
+Naturally occurring subsets of the clean evaluation set, frozen before any slice result was looked at:
+`negation`, `contrast`, `suggestion`, `short_lt5`, `long_ge30`, `emoticon_token`, `anonymized_name`
+(definitions in `robustness.SLICES`). Every slice is reported with its support and class counts. Slices
+under 30 examples are reported but marked unreliable. Changing a definition means bumping the version.
 
 This suite is the highest-value-per-hour item in the project: it takes an afternoon, no GPU, and produces
 a robustness table that essentially no other public UIT-VSFC project has.
+
+---
+
+## 8. Calibration and selective prediction
+
+Implemented in `src/vifeedback/evaluation/calibration.py`, run by `vifeedback study calibration`.
+Follows experiment E09/E10 of [REVIEW_AND_RESEARCH_PLAN.md](REVIEW_AND_RESEARCH_PLAN.md) and
+[Guo et al., 2017](https://proceedings.mlr.press/v70/guo17a.html).
+
+| Rule | Why |
+|---|---|
+| **Headline: NLL and Brier score** (proper scoring rules) | They cannot be gamed by binning choices |
+| ECE reported with **both** equal-width and equal-mass binning, bin count stated (default 15) | The same predictions give visibly different ECE under different bins |
+| Class-wise (one-vs-rest) ECE reported for every class | Top-label ECE is dominated by the majority classes and can hide an overconfident neutral |
+| Temperature is **fitted and scored on disjoint data**: stratified halves, fit on one, score the other, swap | A temperature scored on its own fitting data reports a training loss |
+| Both fitted temperatures are reported | If they differ a lot, one scalar T is not a stable property of the model |
+| F1 is **not** a success criterion for temperature scaling | It preserves the argmax by construction; the code asserts this |
+| Abstention reports **per-class coverage** at each operating point | Keeping 90% of all examples but 40% of neutral hides the problem rather than solving it |
+
+**Data.** Two views, reported separately: the deployed checkpoint on validation (its epoch was selected on
+validation, which is disclosed), and the Study A fold models on their held-out train folds. Test is not
+used to fit or choose anything; a final calibrated-vs-uncalibrated confirmation on test is one logged
+evaluation at the end of the cycle.
 
 ---
 

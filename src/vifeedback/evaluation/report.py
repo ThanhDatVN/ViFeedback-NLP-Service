@@ -185,11 +185,39 @@ def save_run(
     return {"dir": str(d), "run_id": run_id}
 
 
+def _migrate_registry_schema() -> None:
+    """Rewrite an existing registry under the current header, filling new columns with "".
+
+    `csv.DictWriter` writes values in REGISTRY_FIELDS order and never looks at the header already in
+    the file. When a column is added (config_hash was, after review R11), appending to an older
+    registry puts a 22-value row under a 21-name header: every field from the new column onward
+    lands one column to the right, and nothing raises. Migrating first keeps every row aligned.
+    """
+    with open(paths.REGISTRY, encoding="utf-8", newline="") as f:
+        reader = csv.DictReader(f)
+        header = reader.fieldnames or []
+        if list(header) == list(REGISTRY_FIELDS):
+            return
+        unknown = set(header) - set(REGISTRY_FIELDS)
+        if unknown:
+            raise ValueError(f"registry has columns this code does not know: {sorted(unknown)}")
+        rows = list(reader)
+    tmp = paths.REGISTRY.with_suffix(".csv.tmp")
+    with open(tmp, "w", encoding="utf-8", newline="") as f:
+        w = csv.DictWriter(f, fieldnames=REGISTRY_FIELDS)
+        w.writeheader()
+        for r in rows:
+            w.writerow({k: r.get(k, "") for k in REGISTRY_FIELDS})
+    tmp.replace(paths.REGISTRY)
+
+
 def append_registry(
     run_id: str, metrics: dict[str, Any], config: dict[str, Any], env_info: dict[str, Any]
 ) -> None:
     paths.RESULTS.mkdir(parents=True, exist_ok=True)
     new = not paths.REGISTRY.exists()
+    if not new:
+        _migrate_registry_schema()
     ci = metrics.get("macro_f1_ci")
     row = {
         "run_id": run_id,

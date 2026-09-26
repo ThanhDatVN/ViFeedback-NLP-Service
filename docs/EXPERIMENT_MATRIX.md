@@ -432,10 +432,11 @@ ONNX export and no INT8. The S5 target (≤ 30 ms) is what Phase 6 must earn.
 | D | | label-noise audit | | | | |
 | E | `p4-sent-phobert-base-seg_pyvi-base` | **phobert-base (135M)** | **0.8643 ± 0.0092** | *ref* | — | ✅ **ship** |
 | E | `p4-sent-phobert-large-seg_pyvi-base` | phobert-large (368M), Kaggle T4 | 0.8560 ± 0.0036 | −0.0083 | no (1.2 std) | ✗ |
-| E | `p4-sent-xlmr-base-seg_pyvi-base` | xlmr-base (277M), Kaggle T4 | 0.8403 ± 0.0063 | −0.0240 | yes, **worse** | ✗ |
+| E | `p4-sent-xlmr-base-seg_pyvi-base` | xlmr-base (277M), Kaggle T4, **pyvi input** | 0.8403 ± 0.0063 | −0.0240 | yes, **worse** | ✗ — confounded: XLM-R was never pretrained on segmented text (ADR-019) |
+| E | | xlmr-base, **raw input** | | | | **missing control** (review R8) |
 | E | | phobert-base-v2 | | | | not run |
 | E | | ViSoBERT | | | | not run |
-| E | | CafeBERT (560M) | | | | **dropped** — ADR-016 |
+| E | | CafeBERT (560M) | | | | not run, for cost — a budget decision, not a finding (ADR-019) |
 | E | | multi-task (2 heads) | | | | |
 | F | | seed ensemble | | | | |
 | F | | model soup | | | | |

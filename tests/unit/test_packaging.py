@@ -123,21 +123,6 @@ def _is_environment_block(exc: BaseException) -> bool:
     return any(m in str(exc) for m in _ENV_BLOCK_MARKERS)
 
 
-# A host security policy can block a third-party native library. That looks like a broken
-# import but is not one. Encountered on this machine: Windows Application Control blocked
-# scikit-learn's and onnx's native extensions. Such failures are reported and skipped, never
-# counted as defects in this repository and never silently swallowed - keeping the two apart
-# is the whole point.
-_ENV_BLOCK_MARKERS = (
-    "An Application Control policy has blocked",
-    "DLL load failed",
-)
-
-
-def _is_environment_block(exc: BaseException) -> bool:
-    return any(m in str(exc) for m in _ENV_BLOCK_MARKERS)
-
-
 class TestImportability:
     def test_every_module_imports(self) -> None:
         """Catches a module that is tracked but broken - a missing dependency or a syntax
