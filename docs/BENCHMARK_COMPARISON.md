@@ -58,7 +58,7 @@ That is Gate G4.
 | Our weighted F1 vs published weighted F1 | ⚠️ dev vs test | Same metric, different split |
 | Our macro-F1 vs BamiBERT's macro-F1 | ⚠️ dev vs test | Same metric, different split |
 | Our accuracy vs published accuracy | ⚠️ dev vs test | Same metric, different split |
-| Our topic macro-F1 vs anything | ❌ | **Nobody publishes topic macro-F1** |
+| Our topic macro-F1 vs anything | ⚠️ | BamiBERT Table 2 reports topic F1 **79.90**, but the averaging convention and protocol are not stated in comparable detail. Ours is 0.8038 ± 0.0045 on test |
 | Our latency vs anything | ❌ | **Nobody publishes latency at all** |
 | Our seed variance vs anything | ❌ | **Nobody publishes seed variance** |
 
@@ -84,11 +84,18 @@ These hold regardless of how Gate G4 lands, and they are what a reviewer would f
 | Statistical resolution floor | ✅ ~0.027 macro-F1 on dev | none |
 | Every number traceable to a `run_id` | ✅ 49 runs | n/a |
 
-### 4.2 A finding about the literature, not just about a model
+### 4.2 An independent replication of a preprocessing result
 
-The most-cited preprocessing result on this task — *word segmentation is unnecessary for Vietnamese
-sentiment classification* ([arXiv:2301.00418](https://arxiv.org/abs/2301.00418)) — **replicates
-exactly on the metric it reported and fails on macro-F1**:
+> **Corrected (ADR-018).** An earlier version described this as refuting
+> [arXiv:2301.00418](https://arxiv.org/abs/2301.00418). That was a misreading: the paper's
+> conclusion is conditional — segmentation may be unnecessary for *traditional classifiers* and
+> **is necessary** for deep-learning models using BPE. PhoBERT is the latter, so this measurement
+> **replicates** the paper. What it adds is a quantified effect size, a per-class breakdown and a
+> per-segmenter latency cost.
+
+
+Measured effect of segmentation in this PhoBERT pipeline, reported per metric because the size of
+the effect depends heavily on which one is used:
 
 | Metric | P0 raw → P1 segmented |
 |---|---|
@@ -99,8 +106,9 @@ exactly on the metric it reported and fails on macro-F1**:
 
 Significant at **p = 0.0010** (paired t over 5 seeds, Cohen d = 3.84, non-overlapping seed ranges).
 
-A published conclusion turns out to be an artifact of aggregating over a 4% class. That is a
-contribution to the field's practice, and it does not depend on our score being higher than anyone's.
+The effect is roughly five times larger on the minority class than on the aggregate, which is the
+part worth carrying forward. The paper's other deep-learning-relevant finding — that RDRsegmenter is
+the most stable toolkit — also reproduces here (VnCoreNLP > pyvi > underthesea on dev).
 
 ### 4.3 A documented self-correction
 
@@ -137,7 +145,8 @@ system.
 
 * the most thoroughly measured UIT-VSFC result we are aware of — seed variance, per-class CIs,
   leakage, label noise, latency, and ordinal structure, none of which appear in the published work;
-* a **replication failure of a published preprocessing conclusion**, shown to be metric-dependent;
+* an **independent replication** of a published preprocessing result, with an effect size, seed
+  variance and a per-class breakdown the original does not report;
 * a documented retraction of one of our own claims, with the corrected numbers.
 
 **What cannot be claimed yet:**

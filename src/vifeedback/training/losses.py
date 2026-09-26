@@ -146,7 +146,11 @@ class FGM:
             if param.requires_grad and self.param_name in name and param.grad is not None:
                 self._backup[name] = param.data.clone()
                 norm = torch.norm(param.grad)
-                if norm != 0 and not torch.isnan(norm):
+                # inf as well as nan: under AMP the gradient arrives multiplied by the loss scale,
+                # so an overflow that GradScaler will discard anyway can reach here first. The
+                # perturbation itself is unaffected by the scale, because dividing by the norm
+                # cancels it -- which is why the caller does not unscale before attacking.
+                if norm != 0 and not torch.isnan(norm) and not torch.isinf(norm):
                     param.data.add_(self.epsilon * param.grad / norm)
 
     def restore(self) -> None:

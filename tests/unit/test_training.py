@@ -34,7 +34,12 @@ class TestClassWeights:
         assert np.all(w > 0)
 
     def test_balanced_matches_sklearn(self) -> None:
-        from sklearn.utils.class_weight import compute_class_weight
+        # Guarded rather than module-level: sklearn is needed by this one test, and a host policy
+        # blocking its native extension (ADR-017) should not skip the other twenty-six.
+        compute_class_weight = pytest.importorskip(
+            "sklearn.utils.class_weight",
+            reason="scikit-learn unavailable (may be blocked by host policy)",
+        ).compute_class_weight
 
         y = np.concatenate([np.full(c, i) for i, c in enumerate(VSFC_COUNTS)])
         sk = compute_class_weight("balanced", classes=np.arange(3), y=y)
@@ -199,10 +204,23 @@ class TestSoftmax:
 
 class TestTrainConfig:
     def test_run_id_is_wellformed(self) -> None:
+        """Format: p<phase>-<task>-<model>-<preproc>-<recipe>-s<seed>-<confighash>-<split>.
+
+        The config hash was added after review (R11): without it, changing the learning rate,
+        epoch count or max length left the id unchanged, and `save_run()` writes to
+        `results/runs/<run_id>/` — so a different configuration silently overwrote the artifact a
+        published number pointed to.
+        """
         cfg = TrainConfig(task="sentiment", model_key="phobert-base", recipe="focal", seed=1337)
         rid = cfg.run_id("validation")
-        assert rid == "p2-sent-phobert-base-raw-focal-s1337-val"
+
+        assert rid.startswith("p2-sent-phobert-base-raw-focal-s1337-")
+        assert rid.endswith("-val")
         assert rid == rid.lower() and " " not in rid
+
+        parts = rid.split("-")
+        assert parts[-2] == cfg.config_hash()
+        assert len(cfg.config_hash()) == 8
 
     def test_max_length_default_matches_the_gate_g0_decision(self) -> None:
         """Gate G0 measured PhoBERT subword p99.9 = 87 and chose 96. If the default drifts, the

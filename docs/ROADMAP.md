@@ -144,7 +144,8 @@ ViFeedback-NLP-Service/
 │   └── cli.py                  # typer entrypoint: every experiment is a CLI call
 ├── notebooks/
 │   ├── 01_eda.ipynb
-│   └── colab_train.ipynb       # thin wrapper: clones repo, calls the SAME cli.py
+│   ├── 02_results.ipynb        # results, read live from the registry
+│   └── kaggle_train.ipynb      # thin wrapper: unpacks repo, calls the SAME cli.py
 ├── results/
 │   ├── runs/<run_id>/          # config.yaml, metrics.json, preds.csv, env.json, logs
 │   ├── registry.csv            # append-only index of every run — committed
@@ -156,7 +157,7 @@ ViFeedback-NLP-Service/
 
 **Two rules that carry the reproducibility of the whole project:**
 
-1. **Notebooks contain no logic.** `colab_train.ipynb` clones the repo and calls
+1. **Notebooks contain no logic.** `kaggle_train.ipynb` unpacks the repo and calls
    `python -m vifeedback.cli train --config configs/phobert/xxx.yaml`. The laptop and Colab therefore
    execute identical code paths, and a Colab-only bug becomes impossible.
 2. **`results/registry.csv` is append-only and committed.** One row per run:
@@ -259,7 +260,7 @@ comparison recorded; the best baseline's neutral-class F1 documented as the numb
 
 **Tasks**
 
-1. **Colab workflow**: `colab_train.ipynb` clones the repo, installs pinned deps, mounts Drive for
+1. **Cloud workflow**: `kaggle_train.ipynb` unpacks the repo, installs pinned deps, persists output for
    checkpoints, calls `cli.py train`. Keep any single run **under 30 minutes** and make it resumable —
    free-tier sessions get interrupted, and a training loop that cannot resume will cost you a week.
 2. Fine-tune `vinai/phobert-base` for sentiment and for topic on canonically segmented input
@@ -555,6 +556,7 @@ clean-clone rehearsal (P7). Those three are what make everything else credible.
 | R7 | Scope creep (extra datasets, extra models) | High | Med | The §2 exclusion table; anything new requires an ADR in `docs/DECISIONS.md` | Weekly gate review |
 | R8 | Results land but the write-up is late and thin | Med | High | Each phase's report section is written on the **Saturday of its own week**, not at the end of the project | Weekly cadence |
 | R9 | Published baselines don't reproduce (different metric definitions) | Med | Low | Reconcile weighted vs macro F1 explicitly in Phase 2; treat any mismatch as a finding, not a failure | Gate G2 |
+| R11 | A security policy blocks a Python package's native extension | **Materialized** | Med | Windows Application Control blocks `onnx` (and therefore `onnxscript`, and therefore `torch.onnx.export`) while leaving `onnxruntime` working. Export relocated to Kaggle; the benchmark stays on the reference machine (ADR-017) | Phase 6, first export |
 | R10 | Laptop thermal throttling corrupts latency numbers | Med | Med | 5 repetitions, median reported; AC power; record the power plan; re-run any benchmark whose repetitions disagree by > 10% | Phase 6 |
 
 ---

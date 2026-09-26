@@ -3,7 +3,8 @@
 Vietnamese feedback classification — **sentiment** (3-class) and **topic** (4-class) on
 [UIT-VSFC](https://huggingface.co/datasets/uitnlp/vietnamese_students_feedback) — benchmarking
 TF-IDF against fine-tuned PhoBERT, with a CPU latency budget and a measurement protocol strict
-enough to have falsified three of its own predictions.
+enough to have overturned several of this project's own claims — two of them retracted after
+external review (ADR-015, ADR-018).
 
 [![CI](https://github.com/ThanhDatVN/ViFeedback-NLP-Service/actions/workflows/ci.yml/badge.svg)](https://github.com/ThanhDatVN/ViFeedback-NLP-Service/actions/workflows/ci.yml)
 ![Python](https://img.shields.io/badge/python-3.11-blue)
@@ -16,20 +17,35 @@ enough to have falsified three of its own predictions.
 **Test split, 5 seeds, PhoBERT-base + word segmentation.** The test set was untouched until Gate G4
 and every evaluation is logged.
 
-| | Ours | Published best | Honest TF-IDF baseline |
+Two pipelines are reported separately, because the best *research* score and the *deployed*
+configuration are not the same artifact.
+
+| Sentiment, test, 5 seeds | Macro-F1 | Weighted F1 | Neutral F1 |
 |---|---|---|---|
-| **Macro-F1** | **0.8373 ± 0.0031** | 0.8341 *(BamiBERT, 2026)* | 0.7450 |
-| Weighted F1 | 0.9391 ± 0.0020 | ~0.94 | 0.8817 |
-| Accuracy | 0.9421 ± 0.0023 | 93.86% | 0.8834 |
-| Neutral-class F1 | 0.5955 ± 0.0070 | not reported | 0.3530 |
+| PhoBERT-base + **VnCoreNLP** (best measured) | **0.8373 ± 0.0031** | 0.9391 ± 0.0020 | 0.5955 ± 0.0070 |
+| PhoBERT-base + **pyvi** (what the service runs) | **0.8288 ± 0.0108** | 0.9369 | 0.5714 |
+| TF-IDF B3 + dev-fitted priors | 0.7450 | 0.8817 | 0.3530 |
 
-**+0.0032 over the published best is one seed-standard-deviation, with 4 of 5 seeds above it. That
-is competitive, not better — the project does not claim state of the art.**
+| Topic, test, 5 seeds | Macro-F1 | Weighted F1 | Others F1 |
+|---|---|---|---|
+| PhoBERT-base + pyvi | **0.8038 ± 0.0045** | 0.8907 | 0.5533 |
+| TF-IDF B4 LinearSVC | 0.7423 | 0.8596 | 0.4790 |
 
-It would have been easy to. On **dev** the same model scored **0.8670**, a 3.3-point gap that reads
-like a comfortable win. The dev→test drop is **−0.0298**, and the TF-IDF baseline dropped **−0.026**
-in the same direction, so the gap belongs to the split, not the model. Nothing but running the
-locked test split would have shown that.
+For reference, [BamiBERT (2026)](https://arxiv.org/html/2607.02259v1) Table 2 reports UIT-VSFC
+sentiment F1 **83.41** and topic F1 **79.90**. The averaging convention, seed protocol and model
+selection behind those numbers are not stated in enough detail to assume they match ours, so this is
+context rather than a ranking. A like-for-like comparison would mean running that model in this
+harness.
+
+**No state-of-the-art claim is made.** These numbers sit near published figures, but a seed
+standard deviation from this harness cannot establish significance against someone else's point
+estimate, and the protocols behind those figures are not documented in comparable detail.
+
+What the locked test split *did* establish is worth more. On **dev** the same model scored
+**0.8670**, a gap that reads like a comfortable win. The dev-to-test drop is **-0.0298**, and the
+TF-IDF baseline dropped **-0.026** in the same direction, so the gap belongs to the split rather
+than the model. Reporting the dev number would have been wrong, and only running the locked split
+revealed it.
 
 ---
 
@@ -53,23 +69,29 @@ results are weighted F1 or accuracy — within reach of a model that learned not
 | | Hypothesis | Outcome |
 |---|---|---|
 | **H1** | Macro-F1 is the binding constraint | **Supported.** PhoBERT's advantage over TF-IDF is +0.037 weighted F1 but **+0.24 neutral F1** |
-| **H2** | Word segmentation is unnecessary and dominates p95 latency | **Falsified, both halves.** Worth **+0.0234 macro-F1** (t = 8.58, p = 0.0010, 5/5 seeds) and costs **0.31 ms p95** — 0.6% of the model's 50.8 ms |
+| **H2** | Word segmentation is unnecessary and dominates p95 latency | **Both halves wrong, for different reasons.** *Latency*: falsified by measurement — 0.31 ms p95, 0.6% of the model's cost. *Accuracy*: segmentation is worth **+0.0234 macro-F1** (t = 8.58, p = 0.0010, 5/5 seeds), which **agrees with** the source paper. My reading of that paper was the error (ADR-018) |
 | **H3** | INT8 may be slower than FP32 without AVX512-VNNI | **Open.** Reference CPU measured: AMD Ryzen 5 6600H, `avx2=true`, **`avx512_vnni=false`** |
 
-### The most interesting finding is about the literature
+### Segmentation: an independent replication, not a refutation
 
-The published conclusion *"word segmentation is unnecessary for Vietnamese sentiment classification"*
-([arXiv:2301.00418](https://arxiv.org/abs/2301.00418)) **replicates exactly on the metric it
-reported** and collapses on macro-F1:
+An earlier version of this README claimed to have refuted
+[arXiv:2301.00418](https://arxiv.org/abs/2301.00418). **That was a misreading and is retracted**
+(ADR-018). The paper's conclusion is conditional: segmentation may be unnecessary for *traditional
+classifiers*, and **is necessary** for deep-learning models that use BPE. PhoBERT is the latter, so
+the measurement below agrees with the paper rather than contradicting it.
 
-| Metric | raw → segmented |
+| Metric | raw to segmented (VnCoreNLP) |
 |---|---|
-| Accuracy | +0.96 pp ← *"under 1 percentage point", as published* |
-| Weighted F1 | +1.02 pp ← *as published* |
+| Accuracy | +0.96 pp |
+| Weighted F1 | +1.02 pp |
 | **Macro-F1** | **+2.34 pp** |
 | **Neutral F1** | **+5.42 pp** |
 
-A field-level conclusion that turns out to be an artifact of aggregating over a 4% class.
+What remains is a **quantified independent replication**: an effect size with seed variance
+(t = 8.58, p = 0.0010, non-overlapping seed ranges), a per-class breakdown showing the effect is
+roughly five times larger on the minority class than on the aggregate, and a per-segmenter latency
+cost the original does not report. The paper's finding that RDRsegmenter is the most stable toolkit
+also reproduces here: VnCoreNLP 0.8670 > pyvi 0.8643 > underthesea 0.8618 on dev.
 
 ---
 
@@ -83,6 +105,7 @@ retraction of a result already written up as a success.
 | [007](docs/DECISIONS.md) | Teencode and missing diacritics are the error-analysis targets | They are **0.16%** and **0.14%** of the corpus. Reframed as robustness targets measured by induced perturbation |
 | [008](docs/DECISIONS.md) | The TF-IDF baseline would reach ~0.70 macro-F1 | It reached **0.78**. Three pre-registered ranges falsified, all low; success criteria revised against the measured baseline |
 | [012](docs/DECISIONS.md) | Removing segmentation would be the biggest latency win | Segmentation **helps accuracy** and costs 0.6% of p95. The headline hypothesis was wrong |
+| [018](docs/DECISIONS.md) | We refuted a published paper's conclusion | **We did not.** That conclusion is conditional and our result *agrees* with it. Caught by external review. Three documents repeated the claim because none of them carried the quote that would have refuted it |
 | [015](docs/DECISIONS.md) | Threshold tuning is "the single largest lever", +0.035 | Cross-fitted, the gain on PhoBERT is **zero**. Retracted — and the correction *raised* the reported lift, because the inflated baseline had been understating the model |
 
 ADR-015 is the one worth reading. The bug was not convenient, and it surfaced because a result that
@@ -164,15 +187,20 @@ What every number in this repository is held to
   majority classes. A point estimate on 73 examples invites over-reading.
 - **Seed-level paired t-test** is primary; the within-run bootstrap is reported beside it as
   evaluation-set uncertainty. They disagreed once, and [ADR-013](docs/DECISIONS.md) explains why.
-- **A stated resolution floor.** Dev cannot resolve anything below **~0.027 macro-F1** in a single
-  run. Any UIT-VSFC result claiming a +0.01 improvement from one run is reporting noise.
+- **Interval width, stated honestly.** A *single model's* dev macro-F1 carries a bootstrap
+  half-width of about **±0.027**, driven by 73 neutral examples. That is not a threshold below which
+  differences are noise: a **paired** difference cancels the shared evaluation-sample variation and
+  can be resolved far more tightly. Paired differences are therefore estimated by resampling the
+  same examples for both systems, never inferred from one model's interval (corrected after
+  review — R7).
 - **Anything fitted on the evaluation set must be cross-fitted** before its benefit is reported
   ([ADR-015](docs/DECISIONS.md)). Optimism bias measured at +0.012 to +0.036.
 - **Test evaluated at gates only**, every touch appended to `results/test_evaluations.log`.
 - **Every number traceable** to a `run_id` in `results/registry.csv`.
 
-Things the published literature on this dataset does not report: topic macro-F1, seed variance,
-per-class confidence intervals, train↔test leakage, label noise, or any latency figure.
+Not found in the published work surveyed here: seed variance, per-class confidence intervals,
+train-test leakage, label noise, or any latency figure. (Topic F1 *is* reported — BamiBERT Table 2
+gives 79.90 — an earlier version of this README wrongly said otherwise.)
 
 ---
 
@@ -185,7 +213,7 @@ does not enter the registry.
 |---|---|
 | CPU | AMD Ryzen 5 6600H · 6C/12T · AVX2 · **no AVX512-VNNI** |
 | GPU | RTX 3050 Laptop, 4.29 GB — 69 s/epoch for PhoBERT-base |
-| Runs to date | **69**, all local. Zero external GPU used |
+| Runs to date | 94 registry rows (73 dev, 21 test). Ten rows come from two models run on a Kaggle T4; the rest are local |
 
 `max_length` 96 (from the Gate G0 subword profile) plus dynamic padding already cut FP32 CPU p95
 from **177.5 ms to 50.8 ms — 3.49×, before any quantization**.
@@ -205,16 +233,25 @@ from **177.5 ms to 50.8 ms — 3.49×, before any quantization**.
 - [ ] ONNX / quantization benchmark — *G6*
 - [ ] HF model card — *G7*
 
-Open problems and the plan for closing them: **[docs/STATUS.md](docs/STATUS.md)**.
+Open problems: **[docs/STATUS.md](docs/STATUS.md)**.
+External code review and the next research cycle:
+**[docs/REVIEW_AND_RESEARCH_PLAN.md](docs/REVIEW_AND_RESEARCH_PLAN.md)**.
+
+Known open issues from that review, tracked in `docs/STATUS.md`: export quality contract (R3),
+API inference tests with a real artifact (R4), readiness semantics (R5), unbounded metrics
+buffer (R6), dependency/revision pinning (R11).
 
 ---
 
 ## CV snippet
 
-> Fine-tuned PhoBERT for Vietnamese sentiment/topic classification on 16k+ labeled sentences;
-> raised test macro-F1 from **0.745** (tuned TF-IDF) to **0.837 ± 0.003** over 5 seeds, and showed
-> that a published "segmentation is unnecessary" result is metric-dependent — it holds on accuracy
-> (+0.96 pp) and fails on macro-F1 (+2.34 pp) and minority-class F1 (+5.42 pp).
+> Built a reproducible Vietnamese feedback classification benchmark on UIT-VSFC; PhoBERT +
+> VnCoreNLP reached sentiment test macro-F1 **0.837 ± 0.003** across five seeds against **0.745**
+> for a tuned TF-IDF baseline, with minority-class analysis, preprocessing ablations and
+> per-segmenter latency measured on documented hardware.
+
+The deployed pipeline uses pyvi and scores **0.829 ± 0.011** — quote that figure when describing the
+service, not the research best.
 
 Every figure above is traceable to a `run_id`. Rules for quoting them honestly:
 [ROADMAP § 9](docs/ROADMAP.md#9-cv-snippet-and-claim-discipline).

@@ -282,7 +282,10 @@ ten runs — roughly 50 GPU-minutes to produce a number that Phases 3 and 4 will
 
 ---
 
-## ADR-012 · 2026-09-22 · H2 falsified; serve with pyvi, not VnCoreNLP and not raw text · Accepted
+## ADR-012 · 2026-09-22 · H2: segmentation helps and is cheap; serve with pyvi · Accepted
+> **Partially superseded by ADR-018.** The serving decision stands. The claim that this
+> *refuted* arXiv:2301.00418 was a misreading of a conditional conclusion and is retracted —
+> the measurement **replicates** that paper's deep-learning finding.
 
 **Context.** H2 predicted that word segmentation would (a) not improve accuracy and (b) dominate p95
 latency, making it droppable for a large deployment win. Gate G3 measured both halves. Both are wrong.
@@ -292,10 +295,12 @@ latency, making it droppable for a large deployment win. Gate G3 measured both h
 | Accuracy effect | none | **+0.0234 macro-F1** (t = 8.58, p = 0.0010, 5/5 seeds, ranges non-overlapping) |
 | Latency cost | dominates p95 | **0.606 ms p95** — 1.2% of the model's 50.8 ms |
 
-The published finding this hypothesis was anchored on ([arXiv:2301.00418](https://arxiv.org/abs/2301.00418))
-replicates *precisely* on the metric it reported — under 1 pp on accuracy and weighted F1 — while the
-same comparison moves macro-F1 by 2.34 pp and **neutral F1 by 5.42 pp**. The conclusion "segmentation
-is unnecessary" is an artifact of aggregating over a 4% class.
+~~The published finding this hypothesis was anchored on replicates *precisely* on the metric it
+reported ... an artifact of aggregating over a 4% class.~~ **RETRACTED — see ADR-018.** The paper's
+conclusion is conditional: segmentation may be unnecessary for *traditional classifiers*, and **is
+necessary** for deep-learning models using BPE. PhoBERT is the latter, so our +0.0234 macro-F1
+**agrees** with the paper. What remains is a clean independent replication with a quantified effect
+size, a per-class breakdown and a latency cost the original does not report.
 
 **Decision.** Segment, and serve with **pyvi**.
 
@@ -479,6 +484,98 @@ search.
 **This closes Tier E as a negative result, and it is a useful one:** the remaining headroom on this
 task is in the *minority class* and the *data*, not in encoder capacity. Tiers A, C and D keep their
 priority; Tier E does not.
+
+---
+
+## ADR-017 · 2026-09-23 · ONNX export moves off the reference machine; the benchmark stays on it · Accepted
+
+**Context.** Phase 6's ONNX ladder (L3–L6) cannot run on the reference machine. Windows Application
+Control blocks the `onnx` package's native extension:
+
+```
+ImportError: DLL load failed while importing onnx_cpp2py_export:
+An Application Control policy has blocked this file.
+```
+
+`onnxscript` fails the same way, since it imports `onnx`. `torch>=2.6` routes `torch.onnx.export`
+through `onnxscript`, so export is blocked end to end.
+
+**`onnxruntime` is not affected** — it ships its own signed native libraries and loads cleanly, with
+`CPUExecutionProvider` available.
+
+This is a machine security policy, not a dependency problem. It is not fixable in code, and working
+around it by disabling the policy is not a reasonable thing to do for a portfolio project.
+
+**Decision.** Split the two operations along the line that already exists in this project:
+
+| Operation | Where | Why |
+|---|---|---|
+| **Export + quantize** | Kaggle / Colab (Linux) | Deterministic and hardware-independent — an `.onnx` graph is the same artifact wherever it is produced |
+| **Benchmark + serve** | **Reference machine only** | `onnxruntime` works here, and latency is meaningless anywhere else (ADR-014) |
+
+An export cell is added to `notebooks/kaggle_train.ipynb`; the resulting `models/serve/<task>/`
+directory comes back with the results archive and `vifeedback serve bench` runs against it locally.
+
+**Consequences.**
+
+* Phase 6 is **not blocked** — only its first step relocates. The measurement that matters still
+  happens on the documented CPU.
+* The PyTorch half of the ladder (L0–L2: `max_length`, dynamic padding, thread count) runs locally
+  and is where the **3.49×** already came from, so the largest measured win is unaffected.
+* **H3 remains testable.** The reference CPU has no AVX512-VNNI, and whether INT8 helps or hurts
+  there is still answered by running the exported artifact under local `onnxruntime`.
+* Risk register gains R11: a security policy can block a Python package's native extension while
+  leaving a functionally adjacent one working. The failure mode is worth remembering — the error
+  named the policy, but nothing in it suggested that the *runtime* would be fine.
+
+---
+
+## ADR-018 · 2026-09-26 · Retract the "refuted a published result" claim — I misread the paper · Accepted
+
+**Context.** ADR-012, the README, BENCHMARK_COMPARISON and STATUS all claimed that this project
+**falsified** the conclusion of [arXiv:2301.00418](https://arxiv.org/abs/2301.00418), and that the
+published finding "word segmentation is unnecessary" was "an artifact of aggregating over a 4%
+class". External review flagged this, and re-reading the abstract confirms the reviewer is right and
+I was wrong.
+
+The paper's conclusion is **conditional**, not general:
+
+> "word segmentation maybe not be necessary for the Vietnamese sentiment classification corpus,
+> which comes from the social domain" — for *traditional classifiers* (Naive Bayes, SVM) —
+> but "word segmentation **is necessary** for Vietnamese sentiment classification when word
+> segmentation is used before using the BPE method and feeding into the deep learning model."
+
+PhoBERT is a deep-learning model using BPE. **Our +0.0234 macro-F1 from segmentation agrees with
+the paper. It does not contradict it.** The paper also reports RDRsegmenter as the most stable
+toolkit among {uitnlp, pyvi, underthesea}, which our own ordering reproduces
+(vncorenlp 0.8670 > pyvi 0.8643 > underthesea 0.8618 on dev).
+
+**How the error happened, because the mechanism matters more than the correction.** I anchored on
+the paper's title — phrased as a question — and on the "under 1 percentage point" figure, and
+treated the first clause of a two-clause conclusion as the whole conclusion. The
+[PhoBERT repository](https://github.com/VinAIResearch/PhoBERT#notes) states the same requirement
+explicitly, and I cited it in ADR-004 while still asserting the opposite two ADRs later. Nothing in
+the measurement was wrong; the literature claim attached to it was never checked against the source.
+
+**Decision.** Retract the refutation claim everywhere it appears. Replace it with what the
+measurement actually supports:
+
+> Quantified the effect of word segmentation in a PhoBERT pipeline — **+0.0234 macro-F1**
+> (t = 8.58, p = 0.0010, 5/5 seeds, non-overlapping seed ranges) and **+5.42 pp neutral F1** —
+> and measured the per-segmenter cost, independently reproducing both of the paper's
+> deep-learning-relevant findings.
+
+**Consequences.**
+
+* The project loses its "field-level finding" and keeps a clean **independent replication** with a
+  quantified effect size, a per-class breakdown and a latency cost the original does not report.
+  That is a smaller claim and a true one.
+* H2 in the README is **not** "falsified because the literature was wrong". Its *latency* half is
+  still genuinely falsified by measurement (segmentation is 0.6 ms p95, not the majority of it);
+  its *accuracy* half was a misreading of the source, not a finding.
+* Standing rule: **a claim about someone else's paper is quoted from that paper, in the ADR, before
+  it is written anywhere else.** Three documents repeated this claim because none of them carried
+  the quote that would have refuted it.
 
 ---
 

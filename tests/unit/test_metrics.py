@@ -10,6 +10,13 @@ from __future__ import annotations
 
 import numpy as np
 import pytest
+
+# sklearn is a hard requirement for these tests: they pin our metric implementations against
+# its reference ones. On a host where a security policy blocks its native extension (see
+# ADR-017) the honest behaviour is to skip with a reason, not to abort collection and take
+# the rest of the suite down with it.
+pytest.importorskip("sklearn", reason="scikit-learn unavailable (may be blocked by host policy)")
+
 from sklearn.metrics import (
     accuracy_score,
     balanced_accuracy_score,

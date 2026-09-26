@@ -71,10 +71,53 @@ class TrainConfig:
             return self.device
         return "cuda" if torch.cuda.is_available() else "cpu"
 
+    # Fields that change the result. Anything listed here is part of the run's identity; anything
+    # omitted (notes, device, num_workers) is not.
+    _IDENTITY_FIELDS = (
+        "task",
+        "model_key",
+        "preprocessing",
+        "recipe",
+        "loss",
+        "max_length",
+        "batch_size",
+        "grad_accum",
+        "epochs",
+        "lr",
+        "head_lr",
+        "weight_decay",
+        "warmup_ratio",
+        "max_grad_norm",
+        "label_smoothing",
+        "focal_gamma",
+        "logit_adjust_tau",
+        "weight_scheme",
+        "llrd",
+        "rdrop_alpha",
+        "fgm_epsilon",
+        "freeze_embeddings",
+        "seed",
+        "fp16",
+        "early_stopping_patience",
+    )
+
+    def config_hash(self) -> str:
+        """Short digest of every field that can change the result.
+
+        Exists because `run_id()` did not include the learning rate, epoch count or max length: two
+        genuinely different configurations produced the same id, and `save_run()` writes to
+        `results/runs/<run_id>/`, so the second silently overwrote the first. Verified during review
+        (R11) — the snapshot had no duplicates, but nothing prevented one.
+        """
+        import hashlib
+
+        payload = "|".join(f"{k}={getattr(self, k)!r}" for k in self._IDENTITY_FIELDS)
+        return hashlib.sha256(payload.encode()).hexdigest()[:8]
+
     def run_id(self, split: str = "val") -> str:
         return (
             f"p{self.extra.get('phase_num', 2)}-{self.task[:4]}-{self.model_key}-"
-            f"{self.preprocessing}-{self.recipe}-s{self.seed}-{split[:3]}"
+            f"{self.preprocessing}-{self.recipe}-s{self.seed}-{self.config_hash()}-{split[:3]}"
         )
 
 
@@ -282,8 +325,17 @@ def train(
             scaler.scale(loss).backward()
 
             if fgm is not None:
-                # Adversarial step: perturb embeddings along the gradient, accumulate, restore.
-                scaler.unscale_(optimizer)
+                # Adversarial step: perturb the embeddings along the gradient, accumulate, restore.
+                #
+                # Deliberately NO unscale_ here. FGM uses only the gradient *direction*
+                # (it divides by the gradient norm), and direction is invariant to the uniform
+                # factor AMP applies — so the scaled gradient gives the identical perturbation.
+                #
+                # Unscaling first, as this did until it was caught by review, leaves the clean
+                # gradient divided by `scale` while the adversarial gradient arrives multiplied by
+                # it. Their sum is then wrong by a factor of `scale` on the adversarial term
+                # (measured: 258 where 4 was correct at scale=128), and with grad_accum > 1 the
+                # next microbatch raises "unscale_() has already been called".
                 fgm.attack()
                 with torch.autocast(**autocast_kw):
                     adv_loss = criterion(model(**batch).logits, labels) / cfg.grad_accum
@@ -294,8 +346,9 @@ def train(
             n_batches += 1
 
             if (step + 1) % cfg.grad_accum == 0 or (step + 1) == len(train_loader):
-                if fgm is None:
-                    scaler.unscale_(optimizer)
+                # Exactly once per optimizer step, with every accumulated gradient — clean and
+                # adversarial — still on the same scale.
+                scaler.unscale_(optimizer)
                 torch.nn.utils.clip_grad_norm_(model.parameters(), cfg.max_grad_norm)
                 scaler.step(optimizer)
                 scaler.update()

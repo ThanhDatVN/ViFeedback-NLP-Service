@@ -145,3 +145,71 @@ class TestCheckpointing:
         assert reloaded.config.num_labels == 3
         assert reloaded.config.id2label[0] == "negative"
         assert reloaded.config.id2label[1] == "neutral"
+
+
+class TestFGMWithMixedPrecision:
+    """Regression cover for the gradient-scaling bug found in review (R2).
+
+    The loop used to call `scaler.unscale_(optimizer)` before the adversarial backward. That left
+    the clean gradient divided by the loss scale while the adversarial gradient arrived multiplied
+    by it, so their sum was wrong by a factor of `scale` on the adversarial term, and with
+    `grad_accum > 1` the next microbatch raised "unscale_() has already been called".
+
+    The fix relies on FGM needing only the gradient *direction*, which the uniform AMP scaling
+    leaves unchanged. These tests pin both halves of that reasoning.
+    """
+
+    def test_fgm_perturbation_is_invariant_to_gradient_scale(self) -> None:
+        """The property the fix depends on: scaling the gradient must not move the perturbation."""
+        from vifeedback.training.losses import FGM
+
+        torch.manual_seed(0)
+        model = torch.nn.Module()
+        model.word_embeddings = torch.nn.Embedding(10, 4)
+        base = model.word_embeddings.weight.detach().clone()
+        raw_grad = torch.randn_like(base)
+
+        deltas = []
+        for scale in (1.0, 128.0, 65536.0):
+            model.word_embeddings.weight.data.copy_(base)
+            model.word_embeddings.weight.grad = raw_grad * scale
+            fgm = FGM(model, epsilon=1.0)
+            fgm.attack()
+            deltas.append((model.word_embeddings.weight.data - base).clone())
+            fgm.restore()
+
+        for d in deltas[1:]:
+            assert torch.allclose(deltas[0], d, atol=1e-6), (
+                "the perturbation changed with the loss scale; the no-unscale fix is invalid"
+            )
+
+    def test_attack_skips_non_finite_gradients(self) -> None:
+        from vifeedback.training.losses import FGM
+
+        model = torch.nn.Module()
+        model.word_embeddings = torch.nn.Embedding(4, 3)
+        base = model.word_embeddings.weight.detach().clone()
+        for bad in (float("inf"), float("nan")):
+            model.word_embeddings.weight.data.copy_(base)
+            model.word_embeddings.weight.grad = torch.full_like(base, bad)
+            fgm = FGM(model, epsilon=1.0)
+            fgm.attack()
+            assert torch.allclose(model.word_embeddings.weight.data, base), (
+                f"a {bad} gradient produced a perturbation instead of being skipped"
+            )
+            fgm.restore()
+
+    def test_fgm_trains_with_grad_accum_without_raising(self, tiny) -> None:
+        """`grad_accum > 1` plus FGM is exactly the combination that used to raise."""
+        x, y = tiny
+        out = train(_cfg(fgm_epsilon=1.0, grad_accum=2, batch_size=4), x, y, x, y, verbose=False)
+        assert np.isfinite(out["history"][0]["train_loss"])
+
+    def test_fgm_changes_the_result_relative_to_plain_ce(self, tiny) -> None:
+        """Sanity: a no-op FGM would pass every test above while doing nothing."""
+        x, y = tiny
+        plain = train(_cfg(fgm_epsilon=0.0), x, y, x, y, verbose=False)
+        adv = train(_cfg(fgm_epsilon=1.0), x, y, x, y, verbose=False)
+        a = plain["model"].classifier.out_proj.weight.detach().numpy()
+        b = adv["model"].classifier.out_proj.weight.detach().numpy()
+        assert not np.allclose(a, b), "FGM had no effect on the weights"

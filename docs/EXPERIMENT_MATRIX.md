@@ -330,11 +330,17 @@ and would dominate p95 latency. Both halves are wrong, and the way they are wron
 P0 macro-F1 range **[0.8355, 0.8566]**; P1 range **[0.8598, 0.8751]** — **no overlap**. All five
 segmented seeds beat all five unsegmented seeds.
 
-#### Why the published "segmentation is unnecessary" finding is not wrong — it is measured elsewhere
+#### Relation to the published result
 
-[arXiv:2301.00418](https://arxiv.org/abs/2301.00418) reports differences "typically under
-1 percentage point" and concludes segmentation is unnecessary for Vietnamese sentiment
-classification. Measure the *same* comparison four ways:
+> **Corrected (ADR-018).** An earlier version described this as refuting
+> [arXiv:2301.00418](https://arxiv.org/abs/2301.00418). That was a misreading: the paper's
+> conclusion is conditional — segmentation may be unnecessary for *traditional classifiers* and
+> **is necessary** for deep-learning models using BPE. PhoBERT is the latter, so this measurement
+> **replicates** the paper. What it adds is a quantified effect size, a per-class breakdown and a
+> per-segmenter latency cost.
+
+
+Measured four ways, because the size of the effect depends on the metric:
 
 | Metric | P0 → P1 | Effect |
 |---|---|---|
@@ -343,11 +349,9 @@ classification. Measure the *same* comparison four ways:
 | **Macro-F1** | 0.8436 → 0.8670 | **+2.34 pp** |
 | **Neutral F1** | 0.6139 → 0.6680 | **+5.42 pp** |
 
-**The published result replicates exactly — on the published metric.** Under 1 pp on accuracy and
-weighted F1, just as reported. The effect is **5.6× larger on the minority class**, and the metric
-that shows it is the one nobody reported. This is the project's thesis appearing a second time, in
-someone else's result rather than our own: the conclusion "segmentation is unnecessary" is an artifact
-of aggregating over a 4% class.
+The effect is **5.6x larger on the minority class** than on the aggregate. That is the project's
+own thesis — metric choice determines what a result looks like — showing up inside a preprocessing
+ablation, and it is the part worth carrying into the write-up.
 
 #### Significance — and a methodological problem worth its own entry
 

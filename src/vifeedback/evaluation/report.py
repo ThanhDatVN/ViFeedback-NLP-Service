@@ -22,6 +22,7 @@ from vifeedback import env, paths
 
 REGISTRY_FIELDS = (
     "run_id",
+    "config_hash",
     "date",
     "phase",
     "task",
@@ -79,6 +80,60 @@ def yaml_safe(obj: Any) -> Any:
     return str(obj)
 
 
+def _config_fingerprint(config: dict[str, Any]) -> str:
+    """Digest of the result-affecting fields of a saved config."""
+    import hashlib
+
+    keys = sorted(
+        k
+        for k in config
+        if k
+        not in {
+            "notes",
+            "reason",
+            "fit_seconds",
+            "device",
+            "num_workers",
+            "determinism",
+            "best_epoch",
+        }
+    )
+    payload = "|".join(f"{k}={config[k]!r}" for k in keys)
+    return hashlib.sha256(payload.encode()).hexdigest()[:8]
+
+
+def _assert_not_clobbering(run_dir, config: dict[str, Any]) -> None:
+    """Refuse to overwrite an existing run that was produced by a different configuration.
+
+    Re-running the identical configuration is allowed and idempotent — that is a legitimate repeat.
+    Writing a *different* configuration into an existing run id is not: it destroys the artifact a
+    published number points to, and it does so silently. Found by review (R11).
+
+    Set VIFEEDBACK_ALLOW_OVERWRITE=1 to override deliberately.
+    """
+    import os
+
+    existing = run_dir / "config.yaml"
+    if not existing.exists() or os.getenv("VIFEEDBACK_ALLOW_OVERWRITE") == "1":
+        return
+
+    import yaml
+
+    try:
+        old = yaml.safe_load(existing.read_text(encoding="utf-8")) or {}
+    except Exception:
+        return  # an unreadable config is not evidence of a conflict
+
+    if _config_fingerprint(old) != _config_fingerprint(config):
+        raise FileExistsError(
+            f"run '{run_dir.name}' already exists with a DIFFERENT configuration. Writing here "
+            f"would destroy the artifact an existing number points to.\n"
+            f"  existing fingerprint: {_config_fingerprint(old)}\n"
+            f"  incoming fingerprint: {_config_fingerprint(config)}\n"
+            f"Change the recipe name, or set VIFEEDBACK_ALLOW_OVERWRITE=1 if this is intended."
+        )
+
+
 def save_run(
     run_id: str,
     metrics: dict[str, Any],
@@ -94,6 +149,7 @@ def save_run(
     import yaml
 
     d = paths.run_dir(run_id)
+    _assert_not_clobbering(d, config)
     (d / "config.yaml").write_text(
         yaml.safe_dump(yaml_safe(config), sort_keys=False, allow_unicode=True), encoding="utf-8"
     )
@@ -137,6 +193,7 @@ def append_registry(
     ci = metrics.get("macro_f1_ci")
     row = {
         "run_id": run_id,
+        "config_hash": _config_fingerprint(config),
         "date": datetime.now(UTC).strftime("%Y-%m-%d"),
         "phase": config.get("phase", ""),
         "task": config.get("task", ""),

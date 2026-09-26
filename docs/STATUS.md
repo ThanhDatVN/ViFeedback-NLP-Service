@@ -81,10 +81,10 @@ provisional until G4.
 
 1. **PhoBERT's advantage is almost entirely the minority class.** Weighted F1 +0.037, macro-F1 +0.062,
    **neutral F1 +0.117**. Through weighted F1 alone the transformer looks barely worth the GPU.
-2. **The published "word segmentation is unnecessary" finding replicates on its own metric and fails
-   on macro-F1.** Under 1 pp on accuracy and weighted F1 exactly as reported; **+2.34 pp macro-F1** and
-   **+5.42 pp neutral F1**. A conclusion in the literature turns out to be an artifact of aggregating
-   over a 4% class (ADR-012).
+2. **Segmentation is worth +2.34 pp macro-F1 and +5.42 pp neutral F1** in this PhoBERT pipeline —
+   an independent replication of [arXiv:2301.00418](https://arxiv.org/abs/2301.00418), whose
+   conclusion is conditional and whose deep-learning case agrees with this result. An earlier claim
+   that the project *refuted* that paper was a misreading and is retracted (ADR-018).
 3. **TF-IDF beats PhoBERT on the `facility` topic** (0.921 vs 0.905, 9× the seed std). Distinctive
    vocabulary is what TF-IDF represents best, and a contextual model has nothing to add there.
 4. **Decision-threshold tuning does not generalize here, and a Gate G1 conclusion was retracted
@@ -131,8 +131,10 @@ could not.
   15 estimates instead of 5, without touching dev or test, so ADR-002 is untouched. Cost: 3× the GPU
   time per recipe.
 - **(b) Raise seeds to 10** for the final two or three candidates.
-- **(c) Report a stated resolution floor** (~0.027 single-run dev) in the write-up. Any UIT-VSFC result
-  claiming a +0.01 improvement from one run is reporting noise, and saying so is a contribution.
+- **(c) Report interval widths precisely.** The ~0.027 figure is a *single-model* dev CI half-width,
+  not a resolution floor for differences: a paired comparison cancels the shared evaluation-sample
+  variation and resolves more tightly. Report paired-difference intervals directly rather than
+  inferring them from one model's CI (corrected after review — R7).
 
 ### P2 — Topic is the weak task and we have not tried to fix it
 Topic macro-F1 0.797 barely clears the S2 minimum, versus 0.867 for sentiment. `others` F1 is 0.568.
@@ -299,9 +301,9 @@ Ranked by value per hour. Each needs an ADR before it starts (ADR-003 boundary).
 | `phobert-large`, unfrozen `xlm-roberta-base` | **Kaggle P100 16 GB** | exceeds 4.29 GB; Kaggle's 30 h/week quota is stated, Colab's is not (ADR-014) |
 | **All latency benchmarking, API, Docker, CI** | **Laptop only** | the reference machine is documented in `env.json`; a p95 from a cloud VM is not comparable |
 
-Notebooks: [`notebooks/kaggle_train.ipynb`](../notebooks/kaggle_train.ipynb) (preferred),
-[`notebooks/colab_train.ipynb`](../notebooks/colab_train.ipynb). Both are logic-free wrappers around
-the same CLI, so a platform-only bug is impossible.
+Notebook: [`notebooks/kaggle_train.ipynb`](../notebooks/kaggle_train.ipynb) — a logic-free wrapper
+around the same CLI. The Colab duplicate was removed: it carried both bugs a real Kaggle run
+exposed, because fixing one wrapper does not fix the other.
 
 **Thermal constraint (ADR-009):** the laptop is both the training machine and the latency reference.
 Training drove the GPU to 83 °C; the segmentation benchmark above was taken at 44 °C idle. No

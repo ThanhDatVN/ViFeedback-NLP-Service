@@ -94,7 +94,10 @@ from noise, and the `> seed std?` column in
 > **Revised at Gate G3 (ADR-013).** The **seed-level paired test** is primary for macro-F1
 > comparisons between configurations; the paired bootstrap below is reported alongside it as
 > evaluation-set uncertainty. Measured reason: dev holds 73 neutral examples carrying a third of the
-> macro average, so a bootstrap CI on dev is ±0.027 — wider than most effects this project measures.
+> macro average, so a bootstrap CI on *one model's* dev macro-F1 is about ±0.027. That is the
+> width of a single-model interval, **not** a floor below which differences are unresolvable:
+> a paired difference cancels the shared evaluation-sample variation and is usually far
+> tighter. Estimate it by resampling the same examples for both systems (corrected — R7).
 > Both are always reported, and disagreements are stated rather than resolved by preference.
 
 ### Seed-level paired test (primary)
