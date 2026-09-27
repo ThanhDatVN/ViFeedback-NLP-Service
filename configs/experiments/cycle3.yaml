@@ -12,11 +12,16 @@
 # rule is unchanged; a development gate is added.
 #
 # Version 4, after V1 and the S2b development result: a new serving candidate, CE + restoration,
-# declared before it is measured. The challenge v2 hash moves to version 5.
+# declared before it is measured.
+#
+# Version 5 (ADR-030): the owner cannot write challenge v2, so human-labelled real student text
+# (NEU-ESC test) becomes the confirmation data for S2b, S2b-prime and S3, and H7 is repeated on it with
+# gpt-4o-mini. Declared after the overall NEU-ESC scores were seen (CE 0.463 > augmented 0.434) and
+# before any cell below was computed.
 
-version: 4
+version: 5
 declared: 2026-09-27
-revised: 2026-09-28  # v2 external evaluation; v3 S2a (ADR-029); v4 S2b-prime, declared before it is measured
+revised: 2026-09-28  # v2 external; v3 S2a (ADR-029); v4 S2b-prime; v5 NEU-ESC replaces challenge v2 (ADR-030)
 budget:
   weight_updating_runs: 30          # V1 8, Step 2 up to 10, Step 4 branch up to 12
   gpu_hours_estimate: {laptop_rtx3050: 3, kaggle_t4: 0.5}
@@ -142,4 +147,40 @@ external_evaluation:   # v2; corpora pinned in configs/data/external_reference.j
     metric: macro-F1 and per-class F1; augmented - CE paired bootstrap
     role: domain-shift and real-noise confirmation alongside challenge v2; needs the owner to accept the dataset's conditions
     llm: the H7 comparison is repeated here only after the owner confirms that sending NEU-ESC text to the API is allowed
+
+confirmation_without_v2:   # v5, ADR-030
+  data: NEU-ESC test, 6,613 posts, Toxic -> negative, lowercased pipeline
+  cells:
+    all: every post
+    contrast: posts containing nhưng, tuy, mặc dù or song as a whole word
+    unaccented: every post with diacritics stripped (real text and labels, synthetic noise)
+    short_neutral: gold-neutral posts of at most 10 words
+    off_topic: "topics Spam, News, Jobs & Recruitment, Club & Events; in-domain is UIT-VSFC validation"
+  min_rows_per_decision_cell: 100   # a cell below this is reported, not used to decide
+  rules:
+    S2b_restoration: >
+      Served model + restorer vs served model alone: macro-F1 on the unaccented cell higher with a
+      paired bootstrap 95% CI above 0, and macro-F1 on the all cell within 0.002.
+    S2b_prime_ce_plus_restoration: >
+      CE + restorer vs augmented + restorer, five seeds each: contrast-cell accuracy higher, pooled
+      exact McNemar p < 0.05 with CE + restorer ahead; unaccented-cell macro-F1 (5-seed mean) not
+      lower by more than 0.02; all-cell macro-F1 (5-seed mean) not lower by more than 0.005;
+      short_neutral accuracy (5-seed mean) not lower by more than 0.05; UIT-VSFC validation macro-F1
+      (5-seed mean) not lower by more than 0.005.
+    S3_out_of_scope: >
+      Mahalanobis (the development choice) on the served model, threshold fixed as in development
+      (95% of validation kept): off_topic vs validation AUROC >= 0.90.
+  serving: >
+    If S2b_prime passes, the service moves to CE seed 42 + restorer through the release gate, with an
+    ADR; else if S2b passes, the served model gains the restorer. The out-of-scope score is added as a
+    field if S3 passes. Challenge v2, if it is ever written, is reported next to these results.
+
+h7_neu_esc:   # v5
+  model: gpt-4o-mini-2024-07-18, zero-shot, the frozen prompt (v4_policy_informal_contrast)
+  licence: >
+    The owner confirmed on 2026-09-28 that NEU-ESC text may be sent to the API (CC BY 4.0 /
+    Apache-2.0). UIT-VSFC text still may not, so there is no few-shot run (its demonstrations come
+    from UIT-VSFC train).
+  comparison: vs CE seed 42 and augmented seed 42 on the same posts, paired bootstrap on macro-F1 and neutral F1; 5-seed encoder means reported
+  caveat: the prompt states UIT-VSFC's label policy; NEU-ESC's differs (forum posts, neutral = no emotion)
 

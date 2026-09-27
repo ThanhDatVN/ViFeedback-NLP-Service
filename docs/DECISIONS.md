@@ -916,3 +916,26 @@ a human-typed challenge set (v2).
 **Licence.** ViLexNorm is CC BY-NC-SA 4.0. The lexicon is built locally, and a model trained with it
 inherits the non-commercial condition. If that model is ever served, the model card must say so. A
 commercial-safe lexicon would come from U3: candidates the owner checks.
+
+---
+
+## ADR-030 · 2026-09-28 · Real student text replaces the human-typed challenge set as Cycle 3's confirmation data · Accepted
+
+**Context.** Cycle 3's serving rules were to be confirmed on challenge v2, sentences typed by several
+people. The owner has neither the time nor the people for it now. Meanwhile NEU-ESC became available:
+6,613 test posts written by Vietnamese students on university forums, labelled by the dataset's
+annotators, with no overlap with UIT-VSFC.
+
+**Decision.** `cycle3.yaml` v5 moves the confirmation of S2b (restoration), S2b′ (CE + restoration)
+and S3 (out-of-scope score) to cells built from NEU-ESC test. Each cell is either real text with real
+labels (all posts; contrast sentences; short neutral posts; off-topic posts), or real text with real
+labels and a known perturbation (all posts with diacritics stripped). A cell needs at least 100 rows to
+decide anything. The owner also allowed NEU-ESC text to be sent to the OpenAI API, so H7 is repeated
+on it with gpt-4o-mini, zero-shot. UIT-VSFC text is still not sent.
+
+**What this costs.** NEU-ESC is forum writing, not course surveys, and its label policy differs
+(69% neutral). A rule passing here shows the change holds on real student text; it does not show it on
+the service's exact input. The unaccented cell's noise is synthetic, though the text and labels are
+real. And the overall NEU-ESC scores (CE 0.463, augmented 0.434) were seen before this version was
+written; the cells were not, and they are computed only after this commit. Challenge v2, if it is ever
+written, is reported next to these results, never instead of them.
