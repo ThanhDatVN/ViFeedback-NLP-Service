@@ -1,0 +1,2134 @@
+{
+ "model": "gpt-4o-mini-2024-07-18",
+ "seed": 0,
+ "usage": {
+  "prompt_tokens": 908,
+  "completion_tokens": 7627
+ },
+ "rows": [
+  {
+   "topic": "thời tiết",
+   "text": "Trời hôm nay đẹp quá!"
+  },
+  {
+   "topic": "thời tiết",
+   "text": "Nắng quá, k biết đi đâu thôi."
+  },
+  {
+   "topic": "thời tiết",
+   "text": "Chờ mưa mãi mà vẫn không có."
+  },
+  {
+   "topic": "thời tiết",
+   "text": "Thời tiết se lạnh hẳn rồi."
+  },
+  {
+   "topic": "thời tiết",
+   "text": "Nắng nóng quá, bật quạt phà phà."
+  },
+  {
+   "topic": "thời tiết",
+   "text": "Đã lâu không thấy mưa."
+  },
+  {
+   "topic": "thời tiết",
+   "text": "Thích thời tiết mát mẻ như này."
+  },
+  {
+   "topic": "thời tiết",
+   "text": "Hôm nay lạnh lắm, nhớ mặc ấm."
+  },
+  {
+   "topic": "thời tiết",
+   "text": "Bão sắp tới, mọi người chú ý nhé!"
+  },
+  {
+   "topic": "thời tiết",
+   "text": "Ku anh bảo chiều nắng to."
+  },
+  {
+   "topic": "thời tiết",
+   "text": "Trời hôm nay u ám quá!"
+  },
+  {
+   "topic": "thời tiết",
+   "text": "Tối nay chắc có mưa."
+  },
+  {
+   "topic": "thời tiết",
+   "text": "Chán thời tiết quá, lúc nắng lúc mưa."
+  },
+  {
+   "topic": "thời tiết",
+   "text": "Trời trở lạnh, uống trà nóng ngon ghê."
+  },
+  {
+   "topic": "thời tiết",
+   "text": "Nghe nói trời mai sẽ đẹp."
+  },
+  {
+   "topic": "thời tiết",
+   "text": "Mới sáng mà đổ mưa rồi."
+  },
+  {
+   "topic": "thời tiết",
+   "text": "Cần mưa để cây cối xanh hơn."
+  },
+  {
+   "topic": "thời tiết",
+   "text": "Chẳng biết trời hôm nay thế nào nhỉ?"
+  },
+  {
+   "topic": "thời tiết",
+   "text": "Mưa rơi thật lãng mạn."
+  },
+  {
+   "topic": "thời tiết",
+   "text": "Thời tiết này thích hợp để đi chơi."
+  },
+  {
+   "topic": "thời tiết",
+   "text": "Nắng to mà không mát chút nào."
+  },
+  {
+   "topic": "thời tiết",
+   "text": "Du lịch vào mùa thu là chuẩn nhất."
+  },
+  {
+   "topic": "thời tiết",
+   "text": "Hãy chờ cơn mưa mùa hè tới nhé!"
+  },
+  {
+   "topic": "thời tiết",
+   "text": "Chiều nào cũng thấy mưa rả rích."
+  },
+  {
+   "topic": "thời tiết",
+   "text": "Thời tiết đẹp, cùng nhau đi picnic nào!"
+  },
+  {
+   "topic": "thời tiết",
+   "text": "Lạnh quá, muốn ở nhà xem phim."
+  },
+  {
+   "topic": "thời tiết",
+   "text": "Biển ngày hè hơi oi, nhưng vẫn thích."
+  },
+  {
+   "topic": "thời tiết",
+   "text": "Hôm qua lạnh, giờ lại nóng!"
+  },
+  {
+   "topic": "thời tiết",
+   "text": "Trời ngày mai báo bão rồi mọi người ơi."
+  },
+  {
+   "topic": "thời tiết",
+   "text": "Biểu tượng thời tiết : ☀️🌧️❄️"
+  },
+  {
+   "topic": "thời tiết",
+   "text": "Mùa đông chỉ thích ăn lẩu thôi."
+  },
+  {
+   "topic": "thời tiết",
+   "text": "Lên núi thì nên đi vào mùa này."
+  },
+  {
+   "topic": "thời tiết",
+   "text": "Cần mưa để giải nhiệt nhé."
+  },
+  {
+   "topic": "thời tiết",
+   "text": "trời nay k có mây, thik ghê."
+  },
+  {
+   "topic": "thời tiết",
+   "text": "Lạnh như cắt vào da!"
+  },
+  {
+   "topic": "thời tiết",
+   "text": "Nắng nóng thật khó chịu."
+  },
+  {
+   "topic": "thời tiết",
+   "text": "Bão đến kịp thời rồi đó."
+  },
+  {
+   "topic": "thời tiết",
+   "text": "Sẽ có nắng trong vài ngày tới."
+  },
+  {
+   "topic": "thời tiết",
+   "text": "Mưa mát, lòng tôi cũng thấy mát."
+  },
+  {
+   "topic": "thời tiết",
+   "text": "Thời tiết dạo này thật bất ổn."
+  },
+  {
+   "topic": "thời tiết",
+   "text": "Chỉ còn mấy hôm nữa là hè."
+  },
+  {
+   "topic": "thời tiết",
+   "text": "12h trưa mà trời vẫn đen."
+  },
+  {
+   "topic": "thời tiết",
+   "text": "Thích mùa xuân, có hoa nở."
+  },
+  {
+   "topic": "thời tiết",
+   "text": "Gió lạnh mùa đông làm tôi thấy yêu."
+  },
+  {
+   "topic": "thời tiết",
+   "text": "Thời tiết quá lý tưởng cho một buổi dã ngoại."
+  },
+  {
+   "topic": "thời tiết",
+   "text": "Bác nào muốn đi ra ngoài không?"
+  },
+  {
+   "topic": "thời tiết",
+   "text": "Thời tiết dịu mát, đi dài hơn một chút."
+  },
+  {
+   "topic": "thời tiết",
+   "text": "Chỉ có cơn gió chiều mới biết được lòng người."
+  },
+  {
+   "topic": "thời tiết",
+   "text": "Mưa lắm, ướt hết cả chân."
+  },
+  {
+   "topic": "thời tiết",
+   "text": "Nắng đẹp quá, rủ bạn đi chụp hình nào."
+  },
+  {
+   "topic": "thời tiết",
+   "text": "Trời giữa hè mà chuyển lạnh."
+  },
+  {
+   "topic": "thời tiết",
+   "text": "Hãy tận hưởng những ngày nắng đẹp."
+  },
+  {
+   "topic": "thời tiết",
+   "text": "Mùa đã qua và mùa mới đang chờ chào."
+  },
+  {
+   "topic": "thời tiết",
+   "text": "Cảm giác mùa đông thật ấm áp khi có người bên cạnh."
+  },
+  {
+   "topic": "mua sắm và giá cả",
+   "text": "Mua sắm online rẻ thật đấy!"
+  },
+  {
+   "topic": "mua sắm và giá cả",
+   "text": "Giá cả này sao mà cao thế?"
+  },
+  {
+   "topic": "mua sắm và giá cả",
+   "text": "Hôm nay có chương trình giảm giá nè!"
+  },
+  {
+   "topic": "mua sắm và giá cả",
+   "text": "Thấy đồ sale mà mê quá!"
+  },
+  {
+   "topic": "mua sắm và giá cả",
+   "text": "Đợi mã giảm giá rồi mua thôi!"
+  },
+  {
+   "topic": "mua sắm và giá cả",
+   "text": "Hàng chất lượng nhưng giá hơi chát."
+  },
+  {
+   "topic": "mua sắm và giá cả",
+   "text": "Thích shopping ở chợ đêm hơn."
+  },
+  {
+   "topic": "mua sắm và giá cả",
+   "text": "Khuyên mọi người nên mua sắm thông minh."
+  },
+  {
+   "topic": "mua sắm và giá cả",
+   "text": "Giá cả thị trường biến động quá nhanh."
+  },
+  {
+   "topic": "mua sắm và giá cả",
+   "text": "Giảm giá đến 50% mà cũng chưa mua!"
+  },
+  {
+   "topic": "mua sắm và giá cả",
+   "text": "Dạo này đồ điện tử giá phụ thuộc vào USD."
+  },
+  {
+   "topic": "mua sắm và giá cả",
+   "text": "Chờ đợt Black Friday mới mua đồ."
+  },
+  {
+   "topic": "mua sắm và giá cả",
+   "text": "Shop này bán hàng rất ok luôn."
+  },
+  {
+   "topic": "mua sắm và giá cả",
+   "text": "Mua giày online không biết size sao ta?"
+  },
+  {
+   "topic": "mua sắm và giá cả",
+   "text": "Cái áo này nhìn xinh mà giá ổn!"
+  },
+  {
+   "topic": "mua sắm và giá cả",
+   "text": "Hàng sale lại hết nhanh quá!"
+  },
+  {
+   "topic": "mua sắm và giá cả",
+   "text": "Biết đâu mua được món hời không chừng."
+  },
+  {
+   "topic": "mua sắm và giá cả",
+   "text": "Tìm hiểu giá cả trước khi mua là rất cần."
+  },
+  {
+   "topic": "mua sắm và giá cả",
+   "text": "Đồ handmade nhưng giá hơi mềm."
+  },
+  {
+   "topic": "mua sắm và giá cả",
+   "text": "Lên mạng so sánh giá cho chắc ăn."
+  },
+  {
+   "topic": "mua sắm và giá cả",
+   "text": "Abc xem chỗ nào có hàng chất lượng?"
+  },
+  {
+   "topic": "mua sắm và giá cả",
+   "text": "Mua bams đầy tay luôn, đã lắm!"
+  },
+  {
+   "topic": "mua sắm và giá cả",
+   "text": "Hóng mấy cái video unboxing trên TikTok."
+  },
+  {
+   "topic": "mua sắm và giá cả",
+   "text": "Nhiều khi đi siêu thị cũng phải kiềm chế."
+  },
+  {
+   "topic": "mua sắm và giá cả",
+   "text": "Nhà có gì cần thì lướt mua luôn."
+  },
+  {
+   "topic": "mua sắm và giá cả",
+   "text": "Khi nào có mẫu mới thì mua ngay."
+  },
+  {
+   "topic": "mua sắm và giá cả",
+   "text": "Thích kiểu dáng, giá cả lại hợp lý."
+  },
+  {
+   "topic": "mua sắm và giá cả",
+   "text": "Hàm lượng mod không dấu hay hơn nhỉ?"
+  },
+  {
+   "topic": "mua sắm và giá cả",
+   "text": "Mua sắm nên biết ngân sách trước đã."
+  },
+  {
+   "topic": "mua sắm và giá cả",
+   "text": "Càng nhiều món thì lòng lại càng vui."
+  },
+  {
+   "topic": "mua sắm và giá cả",
+   "text": "Nên mua combo để tiết kiệm hơn."
+  },
+  {
+   "topic": "mua sắm và giá cả",
+   "text": "Chỉ cần code giảm là mua liền."
+  },
+  {
+   "topic": "mua sắm và giá cả",
+   "text": "Nay thấy hàng hot mà chưa kịp mua."
+  },
+  {
+   "topic": "mua sắm và giá cả",
+   "text": "Đã từng săn hàng giảm giá, mà 0 thành công."
+  },
+  {
+   "topic": "mua sắm và giá cả",
+   "text": "Giá quá chát cho cái túi bình thường."
+  },
+  {
+   "topic": "mua sắm và giá cả",
+   "text": "Mua gì cũng phải xem review trước đã."
+  },
+  {
+   "topic": "mua sắm và giá cả",
+   "text": "Dạo này mua sắm tốn nhiều tiền quá."
+  },
+  {
+   "topic": "mua sắm và giá cả",
+   "text": "Lên mạng tìm đồ độc lạ thì lại thích."
+  },
+  {
+   "topic": "mua sắm và giá cả",
+   "text": "Sáng nay thấy món mình thích mà hết hàng."
+  },
+  {
+   "topic": "mua sắm và giá cả",
+   "text": "Mua bulk tiết kiệm được nhiều lắm."
+  },
+  {
+   "topic": "mua sắm và giá cả",
+   "text": "Dạo này giảm giá, mà sale chưa đạt kỳ vọng."
+  },
+  {
+   "topic": "mua sắm và giá cả",
+   "text": "Thích shopping vào cuối tuần hơn."
+  },
+  {
+   "topic": "mua sắm và giá cả",
+   "text": "Giá trên trời, chất lượng lại chỉ bình thường."
+  },
+  {
+   "topic": "mua sắm và giá cả",
+   "text": "Mua sắm là sở thích không thể thiếu."
+  },
+  {
+   "topic": "mua sắm và giá cả",
+   "text": "Khuyên mọi người đừng mua đồ rẻ quá."
+  },
+  {
+   "topic": "mua sắm và giá cả",
+   "text": "Shop đó có tiếng mà chưa thử lần nào."
+  },
+  {
+   "topic": "mua sắm và giá cả",
+   "text": "Mua sắm với bạn bè thường vui hơn."
+  },
+  {
+   "topic": "mua sắm và giá cả",
+   "text": "Cần xem trước màu sắc thật khi mua."
+  },
+  {
+   "topic": "mua sắm và giá cả",
+   "text": "Giữ hóa đơn để có thể đổi hàng."
+  },
+  {
+   "topic": "mua sắm và giá cả",
+   "text": "HÓng món mới ra mắt vào tháng sau."
+  },
+  {
+   "topic": "mua sắm và giá cả",
+   "text": "Cẩn thận tránh hàng giả khi mua sắm."
+  },
+  {
+   "topic": "thể thao",
+   "text": "Bóng đá là bộ môn mình thích nhất!"
+  },
+  {
+   "topic": "thể thao",
+   "text": "Hôm nay đá bóng với bạn, mệt quá."
+  },
+  {
+   "topic": "thể thao",
+   "text": "Tôi đang xem trận bóng đá hay quá."
+  },
+  {
+   "topic": "thể thao",
+   "text": "Cầu thủ này thật xuất sắc, không thể tin nổi!"
+  },
+  {
+   "topic": "thể thao",
+   "text": "Chạy bộ mỗi sáng giúp tôi tinh thần sảng khoái."
+  },
+  {
+   "topic": "thể thao",
+   "text": "Mon an dinh duong cho van dong vien bao nhieu?"
+  },
+  {
+   "topic": "thể thao",
+   "text": "Tối nay có trận đấu nào không nhỉ?"
+  },
+  {
+   "topic": "thể thao",
+   "text": "Làm sao để cải thiện kỹ thuật chơi bóng?"
+  },
+  {
+   "topic": "thể thao",
+   "text": "Đua xe hơi luôn là môn thể thao mạo hiểm nhất."
+  },
+  {
+   "topic": "thể thao",
+   "text": "Ai thích bóng rổ như mình không?"
+  },
+  {
+   "topic": "thể thao",
+   "text": "Bang xep hang Fifa hiện giờ như thế nào?"
+  },
+  {
+   "topic": "thể thao",
+   "text": "Hít đất mỗi ngày giúp tăng cường sức mạnh."
+  },
+  {
+   "topic": "thể thao",
+   "text": "Fan bóng đá chân chính phải biết kiên nhẫn."
+  },
+  {
+   "topic": "thể thao",
+   "text": "Một trận tennis thật tuyệt vời!"
+  },
+  {
+   "topic": "thể thao",
+   "text": "Tập gym ở nhà hay ngoài trời thì tốt hơn?"
+  },
+  {
+   "topic": "thể thao",
+   "text": "Tôi yêu bóng chuyền, nó rất thú vị!"
+  },
+  {
+   "topic": "thể thao",
+   "text": "Bước vào sân bóng là bước vào cuộc chiến."
+  },
+  {
+   "topic": "thể thao",
+   "text": "Đối thủ hôm nay rất mạnh, không thể chủ quan."
+  },
+  {
+   "topic": "thể thao",
+   "text": "Tập thể dục là 1 phần không thể thiếu trong cuộc sống."
+  },
+  {
+   "topic": "thể thao",
+   "text": "Nhìn đồng nghiệp đá cầu mà thấy phục quá!"
+  },
+  {
+   "topic": "thể thao",
+   "text": "Khoảng 5 năm gần đây, mình thích bóng đá hơn."
+  },
+  {
+   "topic": "thể thao",
+   "text": "Chơi thể thao giúp cơ thể khỏe mạnh và dẻo dai."
+  },
+  {
+   "topic": "thể thao",
+   "text": "Cuối tuần này có giải thể thao lớn đấy."
+  },
+  {
+   "topic": "thể thao",
+   "text": "100% sức lực là điều cần thiết khi thi đấu."
+  },
+  {
+   "topic": "thể thao",
+   "text": "Dưỡng sinh bằng thể thao giúp tôi kéo dài tuổi thọ."
+  },
+  {
+   "topic": "thể thao",
+   "text": "Tôi đang tập luyện để tham gia giải marathon sắp tới."
+  },
+  {
+   "topic": "thể thao",
+   "text": "Speedrun trong thể thao điện tử có gì thú vị?"
+  },
+  {
+   "topic": "thể thao",
+   "text": "Ai có tips ăn uống cho vận động viên không?"
+  },
+  {
+   "topic": "thể thao",
+   "text": "Tập bơi là kỹ năng sống rất cần thiết."
+  },
+  {
+   "topic": "thể thao",
+   "text": "Bóng đá giải trí hay chuyên nghiệp đều đáng xem!"
+  },
+  {
+   "topic": "thể thao",
+   "text": "Mình ước gì mình có thể chơi như Messi."
+  },
+  {
+   "topic": "thể thao",
+   "text": "Khí hậu hôm nay lý tưởng cho việc tập luyện ngoài trời."
+  },
+  {
+   "topic": "thể thao",
+   "text": "Có ai chơi game về thể thao không?"
+  },
+  {
+   "topic": "thể thao",
+   "text": "Thiền trước khi vận động rất tốt cho cơ thể."
+  },
+  {
+   "topic": "thể thao",
+   "text": "Hòa mình vào thể thao cùng bạn bè thật vui."
+  },
+  {
+   "topic": "thể thao",
+   "text": "Cầu lông giúp mình xóa tan căng thẳng."
+  },
+  {
+   "topic": "thể thao",
+   "text": "Cảm giác khi ghi bàn thật tuyệt vời!"
+  },
+  {
+   "topic": "thể thao",
+   "text": "Chạy marathon là thử thách lớn trong đời."
+  },
+  {
+   "topic": "thể thao",
+   "text": "Đừng bỏ lỡ những trận cầu đỉnh cao!"
+  },
+  {
+   "topic": "thể thao",
+   "text": "Ai đã thử môn thể thao mạo hiểm chưa nhỉ?"
+  },
+  {
+   "topic": "thể thao",
+   "text": "Rèn luyện thể thao để luôn tràn đầy năng lượng."
+  },
+  {
+   "topic": "thể thao",
+   "text": "Đủ sức khỏe để theo đuổi đam mê thể thao."
+  },
+  {
+   "topic": "thể thao",
+   "text": "Giải bóng quốc gia năm nay có bất ngờ không?"
+  },
+  {
+   "topic": "thể thao",
+   "text": "Có ý tưởng gì cho hoạt động thể thao sắp tới?"
+  },
+  {
+   "topic": "thể thao",
+   "text": "Tình bạn gắn bó nhờ vào những trận đấu với nhau."
+  },
+  {
+   "topic": "thể thao",
+   "text": "Dinh dưỡng tốt giúp tăng hiệu suất thể thao."
+  },
+  {
+   "topic": "thể thao",
+   "text": "Nghe nói bơi lội rất tốt cho sức khỏe."
+  },
+  {
+   "topic": "thể thao",
+   "text": "Tam giác thể thao: sức khỏe, tinh thần, kỹ năng."
+  },
+  {
+   "topic": "thể thao",
+   "text": "Trận đấu này cần một cổ động viên cuồng nhiệt!"
+  },
+  {
+   "topic": "thể thao",
+   "text": "Kiên trì tập luyện để chạm tới ước mơ."
+  },
+  {
+   "topic": "phim ảnh và âm nhạc",
+   "text": "Phim này hay quá, mình xem đi xem lại."
+  },
+  {
+   "topic": "phim ảnh và âm nhạc",
+   "text": "Nhạc của Trịnh Công Sơn luôn khiến mình cảm động."
+  },
+  {
+   "topic": "phim ảnh và âm nhạc",
+   "text": "Kham phuc nhung bai hat cua Snoop Dogg."
+  },
+  {
+   "topic": "phim ảnh và âm nhạc",
+   "text": "Mới ra rạp có phim hoạt hình nào không nhỉ?"
+  },
+  {
+   "topic": "phim ảnh và âm nhạc",
+   "text": "Nghe nhạc chill rất thích vào buổi tối."
+  },
+  {
+   "topic": "phim ảnh và âm nhạc",
+   "text": "Dàn diễn viên trong phim này quá chất lượng."
+  },
+  {
+   "topic": "phim ảnh và âm nhạc",
+   "text": "Phim ma mà không đáng sợ lắm."
+  },
+  {
+   "topic": "phim ảnh và âm nhạc",
+   "text": "Tôi nghe nhạc pop mỗi ngày."
+  },
+  {
+   "topic": "phim ảnh và âm nhạc",
+   "text": "Nên nghe nhạc của ai để thư giãn?"
+  },
+  {
+   "topic": "phim ảnh và âm nhạc",
+   "text": "Phim điện ảnh Việt ngày càng phát triển."
+  },
+  {
+   "topic": "phim ảnh và âm nhạc",
+   "text": "Coi trailer rồi, hóng phim này quá đi!"
+  },
+  {
+   "topic": "phim ảnh và âm nhạc",
+   "text": "Nghe album mới của Adele tuyệt quá."
+  },
+  {
+   "topic": "phim ảnh và âm nhạc",
+   "text": "Mình thích phim cổ trang nhất."
+  },
+  {
+   "topic": "phim ảnh và âm nhạc",
+   "text": "Cái nhạc nền trong phim này quá hay."
+  },
+  {
+   "topic": "phim ảnh và âm nhạc",
+   "text": "Nhạc Rock giúp mình tập trung hơn."
+  },
+  {
+   "topic": "phim ảnh và âm nhạc",
+   "text": "Thích nhất là nhạc hòa tấu vào buổi chiều."
+  },
+  {
+   "topic": "phim ảnh và âm nhạc",
+   "text": "Phim tâm lý khiến mình suy nghĩ rất nhiều."
+  },
+  {
+   "topic": "phim ảnh và âm nhạc",
+   "text": "Wow, giọng ca của cô ấy thật ấn tượng!"
+  },
+  {
+   "topic": "phim ảnh và âm nhạc",
+   "text": "Mẹo xem phim không mất tiền là gì nhỉ?"
+  },
+  {
+   "topic": "phim ảnh và âm nhạc",
+   "text": "Có ai nghe nhạc của Billie Eilish chưa?"
+  },
+  {
+   "topic": "phim ảnh và âm nhạc",
+   "text": "Hãy tìm kiếm những bộ phim về tình bạn."
+  },
+  {
+   "topic": "phim ảnh và âm nhạc",
+   "text": "Khán giả yêu phim phải xem tác phẩm này."
+  },
+  {
+   "topic": "phim ảnh và âm nhạc",
+   "text": "Gần đây có nhiều phim siêu anh hùng mới."
+  },
+  {
+   "topic": "phim ảnh và âm nhạc",
+   "text": "MV mới của BTS khiến mình phải xem lại."
+  },
+  {
+   "topic": "phim ảnh và âm nhạc",
+   "text": "Phim hành động quá đã, không thể rời mắt."
+  },
+  {
+   "topic": "phim ảnh và âm nhạc",
+   "text": "Nghe nhạc jazz thư giãn cuối tuần."
+  },
+  {
+   "topic": "phim ảnh và âm nhạc",
+   "text": "Lần này phim hài thật sự vui nhộn."
+  },
+  {
+   "topic": "phim ảnh và âm nhạc",
+   "text": "Ai là fan của nhạc Việt như mình?"
+  },
+  {
+   "topic": "phim ảnh và âm nhạc",
+   "text": "Bên cạnh phim còn có nhạc phim rất đặc sắc."
+  },
+  {
+   "topic": "phim ảnh và âm nhạc",
+   "text": "Thích nghe nhạc acoustic mỗi khi buồn."
+  },
+  {
+   "topic": "phim ảnh và âm nhạc",
+   "text": "Chưa thấy ai làm nhạc hay hơn anh ấy."
+  },
+  {
+   "topic": "phim ảnh và âm nhạc",
+   "text": "Xem phim xong vẫn thấy ám ảnh."
+  },
+  {
+   "topic": "phim ảnh và âm nhạc",
+   "text": "Tâm trạng mình thay đổi khi nghe nhạc."
+  },
+  {
+   "topic": "phim ảnh và âm nhạc",
+   "text": "Xem phim xong mới biết được ý nghĩa sâu sắc."
+  },
+  {
+   "topic": "phim ảnh và âm nhạc",
+   "text": "Ai yêu nhạc indie như mình không nhỉ?"
+  },
+  {
+   "topic": "phim ảnh và âm nhạc",
+   "text": "Thời gian trôi nhanh khi xem phim hay."
+  },
+  {
+   "topic": "phim ảnh và âm nhạc",
+   "text": "Cần tìm nhạc để tập thể dục hiệu quả."
+  },
+  {
+   "topic": "phim ảnh và âm nhạc",
+   "text": "Bad Bunny có bài nào mới không?"
+  },
+  {
+   "topic": "phim ảnh và âm nhạc",
+   "text": "Đạo diễn này thật tài ba, phim nào cũng hay!"
+  },
+  {
+   "topic": "phim ảnh và âm nhạc",
+   "text": "Phim cổ điển luôn có sức hút riêng."
+  },
+  {
+   "topic": "phim ảnh và âm nhạc",
+   "text": "Nên đọc review trước khi xem phim."
+  },
+  {
+   "topic": "phim ảnh và âm nhạc",
+   "text": "Nghe nhạc kèm podcast rất thú vị."
+  },
+  {
+   "topic": "phim ảnh và âm nhạc",
+   "text": "Khi nào ra mắt bộ phim mới nhỉ?"
+  },
+  {
+   "topic": "phim ảnh và âm nhạc",
+   "text": "Mình đã từng học nhảy theo video trên mạng!"
+  },
+  {
+   "topic": "phim ảnh và âm nhạc",
+   "text": "Âm nhạc giúp mình vượt qua stress."
+  },
+  {
+   "topic": "phim ảnh và âm nhạc",
+   "text": "Tạo playlist cho một buổi tiệc thật vui."
+  },
+  {
+   "topic": "phim ảnh và âm nhạc",
+   "text": "Dành cả chiều để xem phim và ăn snack."
+  },
+  {
+   "topic": "phim ảnh và âm nhạc",
+   "text": "Cần lời khuyên cho nhạc hay khi chạy bộ."
+  },
+  {
+   "topic": "phim ảnh và âm nhạc",
+   "text": "Phim này có nội dung rất mới mẻ!"
+  },
+  {
+   "topic": "phim ảnh và âm nhạc",
+   "text": "Thích cảm xúc mà nhạc mang lại."
+  },
+  {
+   "topic": "phim ảnh và âm nhạc",
+   "text": "Hoài niệm với những bài nhạc xưa."
+  },
+  {
+   "topic": "phim ảnh và âm nhạc",
+   "text": "Mỗi bài hát là một câu chuyện."
+  },
+  {
+   "topic": "phim ảnh và âm nhạc",
+   "text": "Phim nào mình cũng review hết trơn!"
+  },
+  {
+   "topic": "phim ảnh và âm nhạc",
+   "text": "Ya girl xong phim rồi, rất cảm động!"
+  },
+  {
+   "topic": "phim ảnh và âm nhạc",
+   "text": "Làm video reaction thôi các bạn ơi!"
+  },
+  {
+   "topic": "phim ảnh và âm nhạc",
+   "text": "Mặc dù không hợp nhưng vẫn nghe thử."
+  },
+  {
+   "topic": "phim ảnh và âm nhạc",
+   "text": "Dạo này có nhiều ca sĩ trẻ tài năng."
+  },
+  {
+   "topic": "phim ảnh và âm nhạc",
+   "text": "How about xem phim cuối tuần này?"
+  },
+  {
+   "topic": "ăn uống",
+   "text": "Món ăn này nhìn thật hấp dẫn quá!"
+  },
+  {
+   "topic": "ăn uống",
+   "text": "Thèm phở bò quá đi!"
+  },
+  {
+   "topic": "ăn uống",
+   "text": "Chả giò crispy, ngon hết ý!"
+  },
+  {
+   "topic": "ăn uống",
+   "text": "Hnay ăn gì cho ngon nhỉ?"
+  },
+  {
+   "topic": "ăn uống",
+   "text": "Nghe bảo quán này bánh mì ngon lắm."
+  },
+  {
+   "topic": "ăn uống",
+   "text": "Mình thích ăn sushi ở Tokyo!"
+  },
+  {
+   "topic": "ăn uống",
+   "text": "Cơm tấm sườn nướng đi kèm với trà đá."
+  },
+  {
+   "topic": "ăn uống",
+   "text": "Nhà hàng này có món gà rán siêu ngon."
+  },
+  {
+   "topic": "ăn uống",
+   "text": "Tai heo xào giòn, ăn với cơm thì tuyệt!"
+  },
+  {
+   "topic": "ăn uống",
+   "text": "Bánh xèo miền Tây mà ăn thì không chê!"
+  },
+  {
+   "topic": "ăn uống",
+   "text": "Thử làm bánh flan tại nhà có dễ không ta?"
+  },
+  {
+   "topic": "ăn uống",
+   "text": "Mình ăn kiêng, nhưng vẫn thèm đồ ngọt."
+  },
+  {
+   "topic": "ăn uống",
+   "text": "Có ai biết quán cà phê nào view đẹp không?"
+  },
+  {
+   "topic": "ăn uống",
+   "text": "Đợi mỹ vị từ bếp hoài không thấy!"
+  },
+  {
+   "topic": "ăn uống",
+   "text": "Tối nay đi ăn hải sản với mấy đứa bạn."
+  },
+  {
+   "topic": "ăn uống",
+   "text": "Nghe đồn quán lẩu khá ngon, đi thử không?"
+  },
+  {
+   "topic": "ăn uống",
+   "text": "Lần đầu nếm thử dim sum, mà sao mê thế!"
+  },
+  {
+   "topic": "ăn uống",
+   "text": "Chả lụa này có vị rất đặc biệt."
+  },
+  {
+   "topic": "ăn uống",
+   "text": "Đã thử món mì Ý nấu sốt pesto chưa?"
+  },
+  {
+   "topic": "ăn uống",
+   "text": "Quán phở bên đường hơi đông, nhưng ngon lắm."
+  },
+  {
+   "topic": "ăn uống",
+   "text": "Khô gà lá chanh, món nhậu yêu thích!"
+  },
+  {
+   "topic": "ăn uống",
+   "text": "Chế độ ăn kiêng giờ sao nhỉ? Ngon chưa?"
+  },
+  {
+   "topic": "ăn uống",
+   "text": "Bên mình có mì Quảng, mà ăn rất đã!"
+  },
+  {
+   "topic": "ăn uống",
+   "text": "Ngon quá đi, món thịt nướng này!"
+  },
+  {
+   "topic": "ăn uống",
+   "text": "Tui thích ăn đồ chay, ai giống tui không?"
+  },
+  {
+   "topic": "ăn uống",
+   "text": "Gần nhà có quán chè, trời ơi mê quá!"
+  },
+  {
+   "topic": "ăn uống",
+   "text": "Hnay ăn bánh tráng trộn với bạn bè là nhất!"
+  },
+  {
+   "topic": "ăn uống",
+   "text": "Ngóng mãi món bún đậu mắm tôm!"
+  },
+  {
+   "topic": "ăn uống",
+   "text": "Bánh mì thịt, cứu tinh của những ngày lười!"
+  },
+  {
+   "topic": "ăn uống",
+   "text": "Đi tìm món phở gà ngon mà không thấy."
+  },
+  {
+   "topic": "ăn uống",
+   "text": "Cần gấp địa chỉ ăn cua rang me!"
+  },
+  {
+   "topic": "ăn uống",
+   "text": "H yêu tôm hùm, phải ăn bao giờ mới đã."
+  },
+  {
+   "topic": "ăn uống",
+   "text": "Thèm kem quá, định đi ăn liền!"
+  },
+  {
+   "topic": "ăn uống",
+   "text": "Cơm rang dưa bò, món ruột của mình!"
+  },
+  {
+   "topic": "ăn uống",
+   "text": "Món kimbap này ai đã thử chưa?"
+  },
+  {
+   "topic": "ăn uống",
+   "text": "Nhà ai có recipe làm bánh, chia sẻ nào!"
+  },
+  {
+   "topic": "ăn uống",
+   "text": "Ra ngoài ăn ngao nướng, hảo hạng cực!"
+  },
+  {
+   "topic": "ăn uống",
+   "text": "Mấy ai thích ăn gỏi cuốn không?"
+  },
+  {
+   "topic": "ăn uống",
+   "text": "Tháng này quá trời món ngọt từ bánh mì."
+  },
+  {
+   "topic": "ăn uống",
+   "text": "Có bánh bèo, muốn ăn ngay và luôn!"
+  },
+  {
+   "topic": "ăn uống",
+   "text": "Các món ăn từ trứng đều rất ngon!"
+  },
+  {
+   "topic": "ăn uống",
+   "text": "Cua xào bơ tỏi, có ai thích không nào?"
+  },
+  {
+   "topic": "ăn uống",
+   "text": "Bánh chưng rán, vừa giòn vừa thơm!"
+  },
+  {
+   "topic": "ăn uống",
+   "text": "Nhà hàng sushi gần đây có lịch ưu đãi."
+  },
+  {
+   "topic": "ăn uống",
+   "text": "Đúng hôm mưa mà lại thèm bún riêu."
+  },
+  {
+   "topic": "ăn uống",
+   "text": "Món nào giúp giải ngán, gợi ý đi!"
+  },
+  {
+   "topic": "ăn uống",
+   "text": "Sushi rẻ mà ngon, quá lý tưởng luôn!"
+  },
+  {
+   "topic": "ăn uống",
+   "text": "Đồ ăn vặt đường phố là điểm hẹn lý tưởng."
+  },
+  {
+   "topic": "ăn uống",
+   "text": "Nghe nói kem tươi mùa hè luôn là best!"
+  },
+  {
+   "topic": "ăn uống",
+   "text": "Ai đã thử trà sữa tươi chưa, có ok không?"
+  },
+  {
+   "topic": "ăn uống",
+   "text": "Hóng video review món ăn cực hot!"
+  },
+  {
+   "topic": "ăn uống",
+   "text": "Tấm lòng của bếp qua từng món ăn."
+  },
+  {
+   "topic": "ăn uống",
+   "text": "Hôm nay ăn món gì lạ đời nhỉ?"
+  },
+  {
+   "topic": "ăn uống",
+   "text": "Sắp có tiệc, nghĩ đến món ăn đã thấy vui."
+  },
+  {
+   "topic": "giao thông",
+   "text": "Hôm nay đường đông quá, đi mãi không tới."
+  },
+  {
+   "topic": "giao thông",
+   "text": "Xe cộ nhiều quá, không còn chỗ trống."
+  },
+  {
+   "topic": "giao thông",
+   "text": "Ngồi trên xe bus chờ mãi không thấy đến."
+  },
+  {
+   "topic": "giao thông",
+   "text": "Chạy xe cẩn thận nhé mọi người!"
+  },
+  {
+   "topic": "giao thông",
+   "text": "Đường phố giờ cao điểm thật căng thẳng."
+  },
+  {
+   "topic": "giao thông",
+   "text": "Tôi ghét mỗi khi đi phép mà tắc đường."
+  },
+  {
+   "topic": "giao thông",
+   "text": "Có ai biết chỗ nào không tắc đường không?"
+  },
+  {
+   "topic": "giao thông",
+   "text": "Quên bật đèn xin lỗi mng nhé."
+  },
+  {
+   "topic": "giao thông",
+   "text": "Trời mưa mà đường trơn quá."
+  },
+  {
+   "topic": "giao thông",
+   "text": "Xe ô tô đỗ sai quy định, thiếu ý thức quá."
+  },
+  {
+   "topic": "giao thông",
+   "text": "Đã đến lúc cần cải thiện giao thông rồi."
+  },
+  {
+   "topic": "giao thông",
+   "text": "Cần lắp đặt thêm biển báo giao thông."
+  },
+  {
+   "topic": "giao thông",
+   "text": "Đoạn đường này sửa chữa mãi không xong."
+  },
+  {
+   "topic": "giao thông",
+   "text": "Tao nhớ hồi xưa đường phố vắng vẻ hơn."
+  },
+  {
+   "topic": "giao thông",
+   "text": "Thỉnh thoảng đường thì đông nhưng không tắc."
+  },
+  {
+   "topic": "giao thông",
+   "text": "Đang chạy thì thấy rẽ vào phố đó, không bít."
+  },
+  {
+   "topic": "giao thông",
+   "text": "Hôm qua đi xe máy bị ngã, đau quá."
+  },
+  {
+   "topic": "giao thông",
+   "text": "Mỗi ngày đi làm mà tắc đường là khổ."
+  },
+  {
+   "topic": "giao thông",
+   "text": "Dùng taxi tiện hơn xe buýt trong giờ cao điểm."
+  },
+  {
+   "topic": "giao thông",
+   "text": "Hết giờ làm mà đường về vẫn đông."
+  },
+  {
+   "topic": "giao thông",
+   "text": "Giao thông công cộng nên cải thiện hơn."
+  },
+  {
+   "topic": "giao thông",
+   "text": "Vi phạm luật giao thông là rất nguy hiểm."
+  },
+  {
+   "topic": "giao thông",
+   "text": "Rẽ trái nhưng không hiểu sao vẫn bị phạt."
+  },
+  {
+   "topic": "giao thông",
+   "text": "Có khi nào mng nghĩ đường phố chật chội không?"
+  },
+  {
+   "topic": "giao thông",
+   "text": "Chạy xe mà cứ nghĩ đến tắc đường là mệt."
+  },
+  {
+   "topic": "giao thông",
+   "text": "Đã cấm xe máy mà nhiều người vẫn đi."
+  },
+  {
+   "topic": "giao thông",
+   "text": "Tắc đường làm mất thời gian quá!"
+  },
+  {
+   "topic": "giao thông",
+   "text": "Xe đạp là một lựa chọn tốt cho giao thông."
+  },
+  {
+   "topic": "giao thông",
+   "text": "Thời tiết hôm nay đẹp, có ai đi dạo không?"
+  },
+  {
+   "topic": "giao thông",
+   "text": "Họp nhóm trên đường thật sự mệt mỏi."
+  },
+  {
+   "topic": "giao thông",
+   "text": "Có ai đi đường này chưa nhỉ? Đẹp lắm!"
+  },
+  {
+   "topic": "giao thông",
+   "text": "Trời nắng nóng mà lại kẹt xe, mệt ghê."
+  },
+  {
+   "topic": "giao thông",
+   "text": "Cái bảng điện tử báo nhầm đường rồi."
+  },
+  {
+   "topic": "giao thông",
+   "text": "Tạm biệt, mai lại tiếp tục với tắc đường!"
+  },
+  {
+   "topic": "giao thông",
+   "text": "Người dân nên ý thức hơn về giao thông."
+  },
+  {
+   "topic": "giao thông",
+   "text": "Cũng đã mất cả tiếng cho một đoạn đường ngắn."
+  },
+  {
+   "topic": "giao thông",
+   "text": "Đường thấp hay cao cũng đều có cái khổ."
+  },
+  {
+   "topic": "giao thông",
+   "text": "Nghĩ mà thấy giao thông ở đây hỗn độn quá."
+  },
+  {
+   "topic": "giao thông",
+   "text": "Chạy xe trong nội thành thật sự stress."
+  },
+  {
+   "topic": "giao thông",
+   "text": "Cảm giác lái xe trong giờ cao điểm thật kinh khủng."
+  },
+  {
+   "topic": "giao thông",
+   "text": "Xe cứu thương đi ngang mà vẫn không nhường."
+  },
+  {
+   "topic": "giao thông",
+   "text": "Thỉnh thoảng đừng quên quan sát tín hiệu giao thông."
+  },
+  {
+   "topic": "giao thông",
+   "text": "Nên có cảnh sát giao thông ở mọi nút giao."
+  },
+  {
+   "topic": "giao thông",
+   "text": "Bị tắc đường mà không biết hướng nào đi."
+  },
+  {
+   "topic": "giao thông",
+   "text": "Tôi đang tìm một cách nhanh nhất để đi."
+  },
+  {
+   "topic": "giao thông",
+   "text": "Xem video giao thông ở Sài Gòn mà ngao ngán."
+  },
+  {
+   "topic": "giao thông",
+   "text": "Rẽ vào ngõ mà lại gặp tắc đường hơn."
+  },
+  {
+   "topic": "giao thông",
+   "text": "Thời gian đi làm bắt đầu sớm sớm thôi."
+  },
+  {
+   "topic": "giao thông",
+   "text": "Mọi người có biết mấy giờ đường vắng không?"
+  },
+  {
+   "topic": "giao thông",
+   "text": "Xe khách đỗ bên đường nhiều lúc cũng bất tiện."
+  },
+  {
+   "topic": "giao thông",
+   "text": "Cuối tuần mà đi chơi thì tắc ghê lắm."
+  },
+  {
+   "topic": "giao thông",
+   "text": "Có ai muốn đạp xe đi chơi không?"
+  },
+  {
+   "topic": "giao thông",
+   "text": "Trời mưa nặng hạt, không dám chạy xe."
+  },
+  {
+   "topic": "giao thông",
+   "text": "Đường trên cao nhiều khi cũng chẳng đỡ hơn."
+  },
+  {
+   "topic": "giao thông",
+   "text": "Ra đường nào cũng thấy ùn tắc cả."
+  },
+  {
+   "topic": "quảng cáo và tin nhắn rác",
+   "text": "Quảng cáo quá nhiều trên Facebook thật phiền!"
+  },
+  {
+   "topic": "quảng cáo và tin nhắn rác",
+   "text": "Mình bị tin nhắn rác spam liên tục."
+  },
+  {
+   "topic": "quảng cáo và tin nhắn rác",
+   "text": "Ai cũng ghét quảng cáo, đúng không?"
+  },
+  {
+   "topic": "quảng cáo và tin nhắn rác",
+   "text": "Đã chặn hơn 100 số tin nhắn rác."
+  },
+  {
+   "topic": "quảng cáo và tin nhắn rác",
+   "text": "Quảng cáo làm mình bực mình ghê."
+  },
+  {
+   "topic": "quảng cáo và tin nhắn rác",
+   "text": "Cần một app chặn quảng cáo hiệu quả!"
+  },
+  {
+   "topic": "quảng cáo và tin nhắn rác",
+   "text": "Thỉnh thoảng thấy quảng cáo vui vui."
+  },
+  {
+   "topic": "quảng cáo và tin nhắn rác",
+   "text": "Sao các bạn không tắt quảng cáo đi nhỉ?"
+  },
+  {
+   "topic": "quảng cáo và tin nhắn rác",
+   "text": "Tin nhắn rác cũng mệt mỏi như quảng cáo."
+  },
+  {
+   "topic": "quảng cáo và tin nhắn rác",
+   "text": "Mọi người có biện pháp nào chặn quảng cáo không?"
+  },
+  {
+   "topic": "quảng cáo và tin nhắn rác",
+   "text": "Thích những quảng cáo hài hước!"
+  },
+  {
+   "topic": "quảng cáo và tin nhắn rác",
+   "text": "Phải làm gì với mấy tin nhắn lừa đảo?"
+  },
+  {
+   "topic": "quảng cáo và tin nhắn rác",
+   "text": "Rất khó để thoát khỏi quảng cáo online."
+  },
+  {
+   "topic": "quảng cáo và tin nhắn rác",
+   "text": "Bị gởi tin nhắn rác từ mấy số lạ."
+  },
+  {
+   "topic": "quảng cáo và tin nhắn rác",
+   "text": "Quảng cáo khiến mạng xã hội kém hấp dẫn."
+  },
+  {
+   "topic": "quảng cáo và tin nhắn rác",
+   "text": "Mình không muốn thấy quảng cáo về mỹ phẩm nữa."
+  },
+  {
+   "topic": "quảng cáo và tin nhắn rác",
+   "text": "Tin nhắn rác có ai chặn được không nhỉ?"
+  },
+  {
+   "topic": "quảng cáo và tin nhắn rác",
+   "text": "Đang dùng app chặn quảng cáo, thấy hiệu quả hơn!"
+  },
+  {
+   "topic": "quảng cáo và tin nhắn rác",
+   "text": "Sao mấy mảng quảng cáo lại to thế nhỉ?"
+  },
+  {
+   "topic": "quảng cáo và tin nhắn rác",
+   "text": "Chán thật, quảng cáo liên tục trong video."
+  },
+  {
+   "topic": "quảng cáo và tin nhắn rác",
+   "text": "quang cao tren mang xh lam mat thoi gian."
+  },
+  {
+   "topic": "quảng cáo và tin nhắn rác",
+   "text": "Mệt quá với tin nhắn rác mỗi ngày."
+  },
+  {
+   "topic": "quảng cáo và tin nhắn rác",
+   "text": "Có ai thích quảng cáo giữa video không?"
+  },
+  {
+   "topic": "quảng cáo và tin nhắn rác",
+   "text": "Rác rưởi đã đầy inbox của mình rồi!"
+  },
+  {
+   "topic": "quảng cáo và tin nhắn rác",
+   "text": "Người ta ngày càng sáng tạo trong quảng cáo."
+  },
+  {
+   "topic": "quảng cáo và tin nhắn rác",
+   "text": "Chỉ muốn xem nội dung mà toàn quảng cáo."
+  },
+  {
+   "topic": "quảng cáo và tin nhắn rác",
+   "text": "Bấm vào quảng cáo là mất thời gian!"
+  },
+  {
+   "topic": "quảng cáo và tin nhắn rác",
+   "text": "Tin nhắn rác làm phiền ghê."
+  },
+  {
+   "topic": "quảng cáo và tin nhắn rác",
+   "text": "Chưa bao giờ thấy quảng cáo nào buồn cười như thế!"
+  },
+  {
+   "topic": "quảng cáo và tin nhắn rác",
+   "text": "Mình đã chặn tất cả tin nhắn từ số lạ."
+  },
+  {
+   "topic": "quảng cáo và tin nhắn rác",
+   "text": "Sao phải xem quảng cáo khi đã mua hàng?"
+  },
+  {
+   "topic": "quảng cáo và tin nhắn rác",
+   "text": "Thích quảng cáo gây shock, nhưng không quá nhiều."
+  },
+  {
+   "topic": "quảng cáo và tin nhắn rác",
+   "text": "Nhận tin nhắn rác từ ví điện tử, hết sức khó chịu."
+  },
+  {
+   "topic": "quảng cáo và tin nhắn rác",
+   "text": "Mấy quảng cáo này làm mất hứng thật."
+  },
+  {
+   "topic": "quảng cáo và tin nhắn rác",
+   "text": "Có người nào đã thoát được quảng cáo chưa?"
+  },
+  {
+   "topic": "quảng cáo và tin nhắn rác",
+   "text": "Ai cũng biết quảng cáo là cần thiết nhưng đừng lạm dụng!"
+  },
+  {
+   "topic": "quảng cáo và tin nhắn rác",
+   "text": "Tưởng đang chat mà bị dính quảng cáo."
+  },
+  {
+   "topic": "quảng cáo và tin nhắn rác",
+   "text": "Nhắn tin rác thì làm sao chặn đây?"
+  },
+  {
+   "topic": "quảng cáo và tin nhắn rác",
+   "text": "Quảng cáo thật sự làm mất trải nghiệm của mình."
+  },
+  {
+   "topic": "quảng cáo và tin nhắn rác",
+   "text": "Mong là sẽ ngày càng ít quảng cáo hơn."
+  },
+  {
+   "topic": "quảng cáo và tin nhắn rác",
+   "text": "Gọi thì không bao giờ nhấc máy, gửi tin cũng không trả lời."
+  },
+  {
+   "topic": "quảng cáo và tin nhắn rác",
+   "text": "Tại sao không có luật cấm quảng cáo nhiều thế nhỉ?"
+  },
+  {
+   "topic": "quảng cáo và tin nhắn rác",
+   "text": "Những ngày không rác trong inbox là hiếm hoi!"
+  },
+  {
+   "topic": "quảng cáo và tin nhắn rác",
+   "text": "Thỉnh thoảng quảng cáo cũng hữu ích."
+  },
+  {
+   "topic": "quảng cáo và tin nhắn rác",
+   "text": "Tốt nhất là nên kiểm soát quảng cáo."
+  },
+  {
+   "topic": "quảng cáo và tin nhắn rác",
+   "text": "Cần chặn quảng cáo ngay lập tức!"
+  },
+  {
+   "topic": "quảng cáo và tin nhắn rác",
+   "text": "Mấy thằng quảng cáo trên mạng hay gây khó chịu."
+  },
+  {
+   "topic": "quảng cáo và tin nhắn rác",
+   "text": "Chắc chắn không ai thích tin nhắn lạ!"
+  },
+  {
+   "topic": "quảng cáo và tin nhắn rác",
+   "text": "Phải có cách nào đấy để chấm dứt quảng cáo!"
+  },
+  {
+   "topic": "quảng cáo và tin nhắn rác",
+   "text": "Mình đã thất vọng về quảng cáo này."
+  },
+  {
+   "topic": "quảng cáo và tin nhắn rác",
+   "text": "Tìm hiểu về cách ngăn chặn quảng cáo tốt nhất!"
+  },
+  {
+   "topic": "quảng cáo và tin nhắn rác",
+   "text": "Cảm giác rất khó chịu với những tin nhắn quảng cáo!"
+  },
+  {
+   "topic": "quảng cáo và tin nhắn rác",
+   "text": "Quảng cáo vượt quá giới hạn, làm phiền không chịu nổi."
+  },
+  {
+   "topic": "quảng cáo và tin nhắn rác",
+   "text": "Quá nhiều quảng cáo, không biết nên cư xử thế nào."
+  },
+  {
+   "topic": "quảng cáo và tin nhắn rác",
+   "text": "Tình trạng tin nhắn rác ngày càng gia tăng."
+  },
+  {
+   "topic": "chuyện gia đình",
+   "text": "Mẹ mình nấu ăn ngon vô đối!"
+  },
+  {
+   "topic": "chuyện gia đình",
+   "text": "Bố hôm nay lại xem bóng đá rồi."
+  },
+  {
+   "topic": "chuyện gia đình",
+   "text": "Gia đình là điều quý giá nhất."
+  },
+  {
+   "topic": "chuyện gia đình",
+   "text": "Có khi nào cả nhà cùng đi du lịch không nhỉ?"
+  },
+  {
+   "topic": "chuyện gia đình",
+   "text": "Cái Tết năm nay sẽ thế nào nhỉ?"
+  },
+  {
+   "topic": "chuyện gia đình",
+   "text": "Mỗi khi giận, bố sẽ im lặng, mẹ thì nói nhiều."
+  },
+  {
+   "topic": "chuyện gia đình",
+   "text": "Chị gái mình sắp lấy chồng rồi."
+  },
+  {
+   "topic": "chuyện gia đình",
+   "text": "Sáng nay cả nhà cùng ăn sáng thật vui."
+  },
+  {
+   "topic": "chuyện gia đình",
+   "text": "Mẹ bảo bây giờ ít thời gian cho gia đình."
+  },
+  {
+   "topic": "chuyện gia đình",
+   "text": "Nhà mình nuôi 2 chú mèo rất dễ thương."
+  },
+  {
+   "topic": "chuyện gia đình",
+   "text": "bà nội mình năm nay 80 tuổi rồi."
+  },
+  {
+   "topic": "chuyện gia đình",
+   "text": "Tâm sự với em trai là thứ mình thích nhất."
+  },
+  {
+   "topic": "chuyện gia đình",
+   "text": "Hôm qua cả nhà xem phim chung thật vui."
+  },
+  {
+   "topic": "chuyện gia đình",
+   "text": "Bố đang lên kế hoạch đưa cả nhà đi biển."
+  },
+  {
+   "topic": "chuyện gia đình",
+   "text": "Cố gắng giữ gìn những kỷ niệm gia đình nhé!"
+  },
+  {
+   "topic": "chuyện gia đình",
+   "text": "Mỗi tối, cả nhà cùng nhau đọc sách."
+  },
+  {
+   "topic": "chuyện gia đình",
+   "text": "Chúc mừng sinh nhật mẹ, yêu mẹ nhiều!"
+  },
+  {
+   "topic": "chuyện gia đình",
+   "text": "Em mình hay trêu là mình giỏi nấu ăn."
+  },
+  {
+   "topic": "chuyện gia đình",
+   "text": "Gia đình là mái ấm của trái tim."
+  },
+  {
+   "topic": "chuyện gia đình",
+   "text": "Sao mà cả nhà mình lại vui đến vậy nhỉ?"
+  },
+  {
+   "topic": "chuyện gia đình",
+   "text": "Nhà mình có truyền thống bàn luận về thời sự."
+  },
+  {
+   "topic": "chuyện gia đình",
+   "text": "Hôm nay mẹ mua cho mình cái bánh sinh nhật."
+  },
+  {
+   "topic": "chuyện gia đình",
+   "text": "Bố đã làm việc vất vả suốt cả năm."
+  },
+  {
+   "topic": "chuyện gia đình",
+   "text": "Lần cuối cùng đi chơi với ông bà là lâu lắm rồi."
+  },
+  {
+   "topic": "chuyện gia đình",
+   "text": "Cả nhà đang chuẩn bị cho bữa tiệc tối nay."
+  },
+  {
+   "topic": "chuyện gia đình",
+   "text": "Em bé nhà hàng xóm rất dễ thương."
+  },
+  {
+   "topic": "chuyện gia đình",
+   "text": "Mẹ muốn cả nhà đi đón ông bà vào cuối tuần."
+  },
+  {
+   "topic": "chuyện gia đình",
+   "text": "Hôm nay gia đình mình ăn lẩu rất ngon."
+  },
+  {
+   "topic": "chuyện gia đình",
+   "text": "có ai trong nhà vậy không?"
+  },
+  {
+   "topic": "chuyện gia đình",
+   "text": "Mỗi bữa cơm đều có những câu chuyện thú vị."
+  },
+  {
+   "topic": "chuyện gia đình",
+   "text": "Bố hay kể cho mình nghe chuyện hồi trẻ."
+  },
+  {
+   "topic": "chuyện gia đình",
+   "text": "Dạo này em gái mình hay chơi game."
+  },
+  {
+   "topic": "chuyện gia đình",
+   "text": "Hãy trân trọng thời gian bên gia đình."
+  },
+  {
+   "topic": "chuyện gia đình",
+   "text": "Cả nhà mình có thói quen đi bộ buổi chiều."
+  },
+  {
+   "topic": "chuyện gia đình",
+   "text": "Mùa hè này sẽ đưa cả nhà đi camping."
+  },
+  {
+   "topic": "chuyện gia đình",
+   "text": "Chúc mừng ngày của Mẹ, yêu mẹ lắm!"
+  },
+  {
+   "topic": "chuyện gia đình",
+   "text": "Mỗi lần đi du lịch, kỷ niệm lại thêm phong phú."
+  },
+  {
+   "topic": "chuyện gia đình",
+   "text": "Mọi người thích ăn bánh mì nhưng mình lại thích phở."
+  },
+  {
+   "topic": "chuyện gia đình",
+   "text": "Mình thật may mắn khi có gia đình như vậy."
+  },
+  {
+   "topic": "chuyện gia đình",
+   "text": "Có ai đã có kế hoạch đi chơi cuối tuần này chưa?"
+  },
+  {
+   "topic": "chuyện gia đình",
+   "text": "Mẹ dạy mình cách làm món xào thật ngon."
+  },
+  {
+   "topic": "chuyện gia đình",
+   "text": "Ai cũng nên có ít nhất một bức ảnh gia đình."
+  },
+  {
+   "topic": "chuyện gia đình",
+   "text": "Bố thích làm vườn, nhà mình có rất nhiều hoa."
+  },
+  {
+   "topic": "chuyện gia đình",
+   "text": "Giao thừa năm nay chúng mình cùng nhau xem pháo bông."
+  },
+  {
+   "topic": "chuyện gia đình",
+   "text": "Cả nhà mình có truyền thống trồng cây vào mùa xuân."
+  },
+  {
+   "topic": "chuyện gia đình",
+   "text": "Bà nội thường kể chuyện cổ tích cho mình nghe."
+  },
+  {
+   "topic": "chuyện gia đình",
+   "text": "Có lúc cãi nhau, nhưng tình yêu vẫn đong đầy."
+  },
+  {
+   "topic": "chuyện gia đình",
+   "text": "Mỗi năm sinh nhật đều có một chiếc bánh đặc biệt."
+  },
+  {
+   "topic": "chuyện gia đình",
+   "text": "Bố cứ thích làm những món ăn lạ."
+  },
+  {
+   "topic": "chuyện gia đình",
+   "text": "Gia đình mình rất thích chụp ảnh cùng nhau."
+  },
+  {
+   "topic": "chuyện gia đình",
+   "text": "Cùng đi bộ đến công viên mỗi tối thật tuyệt."
+  },
+  {
+   "topic": "sức khỏe",
+   "text": "Tập thể dục mỗi ngày giúp tăng cường sức khỏe."
+  },
+  {
+   "topic": "sức khỏe",
+   "text": "Uống đủ nước là chìa khóa cho sức khỏe tốt."
+  },
+  {
+   "topic": "sức khỏe",
+   "text": "Nên ngủ đủ 7-8 tiếng mỗi đêm để phục hồi sức khỏe."
+  },
+  {
+   "topic": "sức khỏe",
+   "text": "Chế độ ăn uống đa dạng rất quan trọng."
+  },
+  {
+   "topic": "sức khỏe",
+   "text": "Đừng quên bổ sung rau củ vào khẩu phần ăn nhé."
+  },
+  {
+   "topic": "sức khỏe",
+   "text": "Ngồi lâu hại sức khỏe, hãy đứng dậy đi lại thường xuyên."
+  },
+  {
+   "topic": "sức khỏe",
+   "text": "Căng thẳng lâu ngày có thể gây hại cho tim mạch."
+  },
+  {
+   "topic": "sức khỏe",
+   "text": "Thời gian dành cho bản thân cũng quan trọng lắm!"
+  },
+  {
+   "topic": "sức khỏe",
+   "text": "Rau xanh giúp cơ thể thanh lọc độc tố."
+  },
+  {
+   "topic": "sức khỏe",
+   "text": "Ăn sáng đầy đủ giúp tăng cường năng lượng cho ngày mới."
+  },
+  {
+   "topic": "sức khỏe",
+   "text": "Mỗi bữa ăn hãy cân nhắc khẩu phần nhé!"
+  },
+  {
+   "topic": "sức khỏe",
+   "text": "Duy trì lối sống lành mạnh để sống thọ."
+  },
+  {
+   "topic": "sức khỏe",
+   "text": "Hãy giảm đường, tốt cho sức khỏe mà!"
+  },
+  {
+   "topic": "sức khỏe",
+   "text": "Giải trí cũng là một cách tốt để chăm sóc sức khỏe tinh thần."
+  },
+  {
+   "topic": "sức khỏe",
+   "text": "Thời gian tiếp xúc với thiên nhiên cũng tốt cho cơ thể."
+  },
+  {
+   "topic": "sức khỏe",
+   "text": "Cần giữ gìn vệ sinh cá nhân để tránh bệnh tật."
+  },
+  {
+   "topic": "sức khỏe",
+   "text": "Tìm niềm vui từ những hoạt động thể chất nhé!"
+  },
+  {
+   "topic": "sức khỏe",
+   "text": "Khi căng thẳng, yoga là sự lựa chọn rất tốt."
+  },
+  {
+   "topic": "sức khỏe",
+   "text": "Uống 1-2 tách trà xanh mỗi ngày giúp tăng sức đề kháng."
+  },
+  {
+   "topic": "sức khỏe",
+   "text": "Đi bộ 30 phút mỗi ngày cho sức khỏe cường tráng!"
+  },
+  {
+   "topic": "sức khỏe",
+   "text": "Cần tránh xa thuốc lá và đồ uống có cồn."
+  },
+  {
+   "topic": "sức khỏe",
+   "text": "Biết cách thư giãn cũng là một nghệ thuật."
+  },
+  {
+   "topic": "sức khỏe",
+   "text": "Hãy tìm một sở thích vận động để yêu đời hơn."
+  },
+  {
+   "topic": "sức khỏe",
+   "text": "Đừng ngại tìm kiếm sự giúp đỡ khi cần thiết."
+  },
+  {
+   "topic": "sức khỏe",
+   "text": "Sinh hoạt điều độ giúp cơ thể khỏe mạnh."
+  },
+  {
+   "topic": "sức khỏe",
+   "text": "Bám vào các thói quen tồi hại sẽ gây hại sức khỏe."
+  },
+  {
+   "topic": "sức khỏe",
+   "text": "Nên đi khám sức khỏe định kỳ."
+  },
+  {
+   "topic": "sức khỏe",
+   "text": "Khi mệt mỏi, hãy lắng nghe cơ thể và nghỉ ngơi."
+  },
+  {
+   "topic": "sức khỏe",
+   "text": "Uống vitamin C hàng ngày để tăng cường miễn dịch."
+  },
+  {
+   "topic": "sức khỏe",
+   "text": "Mọi người nên giới hạn thời gian sử dụng điện thoại."
+  },
+  {
+   "topic": "sức khỏe",
+   "text": "Gầy hay béo không quan trọng, sức khỏe mới là điều cốt yếu."
+  },
+  {
+   "topic": "sức khỏe",
+   "text": "Nên bắt đầu một ngày mới bằng nước ấm nhé!"
+  },
+  {
+   "topic": "sức khỏe",
+   "text": "xyz, thế giới ngoài kia không thể ngăn cản ta khỏe mạnh!"
+  },
+  {
+   "topic": "sức khỏe",
+   "text": "Tinh thần thoải mái giúp bạn sống khỏe hơn."
+  },
+  {
+   "topic": "sức khỏe",
+   "text": "Chia sẻ cảm xúc và suy nghĩ giúp tinh thần thoải mái."
+  },
+  {
+   "topic": "sức khỏe",
+   "text": "Hãy thường xuyên tập thể thao cùng bạn bè."
+  },
+  {
+   "topic": "sức khỏe",
+   "text": "Cuộc sống không chỉ là về công việc"
+  },
+  {
+   "topic": "sức khỏe",
+   "text": "Mỗi bữa ăn hãy thử thêm gia vị giúp hấp dẫn hơn."
+  },
+  {
+   "topic": "sức khỏe",
+   "text": "Thời gian dành cho gia đình cũng rất quan trọng."
+  },
+  {
+   "topic": "sức khỏe",
+   "text": "Duy trì thói quen đọc sách trước khi ngủ có lợi cho tâm trí."
+  },
+  {
+   "topic": "sức khỏe",
+   "text": "Bịt khẩu trang khi ra ngoài trong mùa dịch."
+  },
+  {
+   "topic": "sức khỏe",
+   "text": "Nghe nhạc thư giãn cũng tốt cho sức khỏe tinh thần."
+  },
+  {
+   "topic": "sức khỏe",
+   "text": "Nhìn nhận cuộc sống một cách tích cực sẽ giúp bạn khỏe hơn."
+  },
+  {
+   "topic": "sức khỏe",
+   "text": "Bấm huyệt hay xoa bóp có thể giúp giảm stress."
+  },
+  {
+   "topic": "sức khỏe",
+   "text": "Lên kế hoạch cho bữa ăn hàng ngày để ăn uống lành mạnh."
+  },
+  {
+   "topic": "sức khỏe",
+   "text": "Chọn các món ăn tươi ngon thay vì chế biến sẵn."
+  },
+  {
+   "topic": "sức khỏe",
+   "text": "1 cuốn sách về sức khỏe hay sẽ thay đổi suy nghĩ của bạn."
+  },
+  {
+   "topic": "sức khỏe",
+   "text": "Đừng quên thường xuyên tập thở sâu."
+  },
+  {
+   "topic": "sức khỏe",
+   "text": "Chế độ ăn uống cân bằng là cách chăm sóc sức khỏe tốt nhất."
+  },
+  {
+   "topic": "sức khỏe",
+   "text": "Sống chậm lại để cảm nhận trị giá thực sự của sức khỏe."
+  },
+  {
+   "topic": "công nghệ và điện thoại",
+   "text": "Điện thoại mới ra mắt đẹp quá!"
+  },
+  {
+   "topic": "công nghệ và điện thoại",
+   "text": "Tôi cực thích camera của iPhone 14."
+  },
+  {
+   "topic": "công nghệ và điện thoại",
+   "text": "Hóng tin về Galaxy S23 nha!"
+  },
+  {
+   "topic": "công nghệ và điện thoại",
+   "text": "Mọi người đã thử AirDrop chưa?"
+  },
+  {
+   "topic": "công nghệ và điện thoại",
+   "text": "Mình vừa mua phụ kiện xịn cho điện thoại."
+  },
+  {
+   "topic": "công nghệ và điện thoại",
+   "text": "Đã ai dùng tai nghe không dây này chưa?"
+  },
+  {
+   "topic": "công nghệ và điện thoại",
+   "text": "Công nghệ 5G đang bùng nổ từng ngày."
+  },
+  {
+   "topic": "công nghệ và điện thoại",
+   "text": "Xem phim HD trên điện thoại sướng ghê."
+  },
+  {
+   "topic": "công nghệ và điện thoại",
+   "text": "Pin của điện thoại này trâu ghê!"
+  },
+  {
+   "topic": "công nghệ và điện thoại",
+   "text": "Chụp ảnh ban đêm thật tuyệt vời."
+  },
+  {
+   "topic": "công nghệ và điện thoại",
+   "text": "Làm sao để tăng tốc điện thoại nhanh hơn?"
+  },
+  {
+   "topic": "công nghệ và điện thoại",
+   "text": "Mới tải app nghe nhạc hay lắm."
+  },
+  {
+   "topic": "công nghệ và điện thoại",
+   "text": "Công nghệ AI đang thay đổi cuộc sống."
+  },
+  {
+   "topic": "công nghệ và điện thoại",
+   "text": "Tại sao điện thoại của mình lại bị lag nhỉ?"
+  },
+  {
+   "topic": "công nghệ và điện thoại",
+   "text": "Có ai biết xóa ứng dụng không cần dùng không?"
+  },
+  {
+   "topic": "công nghệ và điện thoại",
+   "text": "Mới cập nhật phần mềm lên phiên bản mới."
+  },
+  {
+   "topic": "công nghệ và điện thoại",
+   "text": "Mình thấy cực thích smartphone màn hình gập."
+  },
+  {
+   "topic": "công nghệ và điện thoại",
+   "text": "Bphone vừa ra mắt có tính năng gì mới?"
+  },
+  {
+   "topic": "công nghệ và điện thoại",
+   "text": "Đang tìm kiếm điện thoại cũ giá rẻ."
+  },
+  {
+   "topic": "công nghệ và điện thoại",
+   "text": "Nhu cầu sử dụng điện thoại càng ngày càng cao."
+  },
+  {
+   "topic": "công nghệ và điện thoại",
+   "text": "Nghe nói điện thoại Xiaomi pin trâu lắm."
+  },
+  {
+   "topic": "công nghệ và điện thoại",
+   "text": "Muốn thử điện thoại mà có camera 200MP."
+  },
+  {
+   "topic": "công nghệ và điện thoại",
+   "text": "Smartwatch nào tốt nhất hiện nay?"
+  },
+  {
+   "topic": "công nghệ và điện thoại",
+   "text": "Mọi người có dùng dịch vụ đám mây không?"
+  },
+  {
+   "topic": "công nghệ và điện thoại",
+   "text": "Cập nhật phần mềm liên tục là điều tốt."
+  },
+  {
+   "topic": "công nghệ và điện thoại",
+   "text": "Mọi người có thích màu sắc của điện thoại này không?"
+  },
+  {
+   "topic": "công nghệ và điện thoại",
+   "text": "Cần tìm điện thoại giá mềm nhưng chất lượng."
+  },
+  {
+   "topic": "công nghệ và điện thoại",
+   "text": "Làm thế nào để bảo vệ điện thoại khỏi va đập?"
+  },
+  {
+   "topic": "công nghệ và điện thoại",
+   "text": "Mới thử chơi game nặng trên điện thoại, mượt đáng ngạc nhiên."
+  },
+  {
+   "topic": "công nghệ và điện thoại",
+   "text": "Sao cái app chát này hay bị lag vậy ta?"
+  },
+  {
+   "topic": "công nghệ và điện thoại",
+   "text": "Muốn có điện thoại có khả năng chống nước tốt."
+  },
+  {
+   "topic": "công nghệ và điện thoại",
+   "text": "Tải game này về chơi cho giải trí."
+  },
+  {
+   "topic": "công nghệ và điện thoại",
+   "text": "Điện thoại của mình mất sóng liên tục, ai biết nguyên nhân không?"
+  },
+  {
+   "topic": "công nghệ và điện thoại",
+   "text": "Cần đổi mới điện thoại, chờ flash sale."
+  },
+  {
+   "topic": "công nghệ và điện thoại",
+   "text": "Mua sạc dự phòng để đi xa thật tiện."
+  },
+  {
+   "topic": "công nghệ và điện thoại",
+   "text": "Phụ kiện điện thoại mình mua hôm qua đẹp quá."
+  },
+  {
+   "topic": "công nghệ và điện thoại",
+   "text": "Có ai xài điện thoại OnePlus chưa?"
+  },
+  {
+   "topic": "công nghệ và điện thoại",
+   "text": "Con gái thường hay chụp selfie, kkk."
+  },
+  {
+   "topic": "công nghệ và điện thoại",
+   "text": "Đã ai dùng đồng hồ thông minh chưa?"
+  },
+  {
+   "topic": "công nghệ và điện thoại",
+   "text": "Tại sao điện thoại của mình nhanh hết pin?"
+  },
+  {
+   "topic": "công nghệ và điện thoại",
+   "text": "Có app nào giúp chỉnh sửa ảnh dễ không nhỉ?"
+  },
+  {
+   "topic": "công nghệ và điện thoại",
+   "text": "Màn hình OLED cho trải nghiệm tuyệt vời quá."
+  },
+  {
+   "topic": "công nghệ và điện thoại",
+   "text": "Hóng công nghệ sẽ đổi mới như thế nào tiếp theo."
+  },
+  {
+   "topic": "công nghệ và điện thoại",
+   "text": "Mẹ mình bảo không nên dùng điện thoại quá nhiều."
+  },
+  {
+   "topic": "công nghệ và điện thoại",
+   "text": "Ai chê màn hình nhỏ giờ không thuyết phục rồi."
+  },
+  {
+   "topic": "công nghệ và điện thoại",
+   "text": "Up rom cho điện thoại có khó không cả nhà ơi?"
+  },
+  {
+   "topic": "công nghệ và điện thoại",
+   "text": "Chạy ứng dụng nặng mà điện thoại vẫn ngon, ấn tượng ghê."
+  },
+  {
+   "topic": "công nghệ và điện thoại",
+   "text": "Mọi người có ý tưởng nào cho chụp ảnh sống ảo không?"
+  },
+  {
+   "topic": "công nghệ và điện thoại",
+   "text": "Điện thoại xịn nhưng giá lại hợp lý."
+  },
+  {
+   "topic": "công nghệ và điện thoại",
+   "text": "Cái tai nghe này hay thật, nghe nhạc sướng."
+  },
+  {
+   "topic": "công nghệ và điện thoại",
+   "text": "Xem livestream từ điện thoại mà không bị giật."
+  },
+  {
+   "topic": "công nghệ và điện thoại",
+   "text": "Dùng điện thoại nhiều cả ngày chắc hại mắt quá."
+  },
+  {
+   "topic": "công nghệ và điện thoại",
+   "text": "Chưa từng thấy thiết kế điện thoại nào lạ vậy."
+  }
+ ]
+}
