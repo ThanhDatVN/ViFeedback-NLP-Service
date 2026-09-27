@@ -89,12 +89,23 @@ Cells 1–3 (environment, repository, data) take about 3–5 minutes and always 
 run **only the cells the current cycle needs**. Each training cell is a multi-seed sweep, and every
 run that updates weights counts against the cycle budget in `configs/experiments/ledger.csv`.
 
-### Current cycle — Cycle 1 (`configs/experiments/cycle1.yaml`)
+### Current cycle — Cycle 2 (`configs/experiments/cycle2.yaml`)
 
 | Cell | What | Runs | Est. (T4) | Needed? |
 |---|---|---:|---|---|
-| **4e** | **H3: `xlmr-base` on raw text + on pyvi, same session, 5 seeds each, robustness in-run** | 10 | **~65 min** | **yes, the only Kaggle-only hypothesis** |
-| 4d | Release FP32 + dynamic INT8 + static INT8 through the verified release step | 1 | ~10 min | optional: INT8 needs `onnx`, blocked on the laptop |
+| **4f** | **H7 declared: Qwen3-4B, frozen prompt, challenge set + validation, 0-shot and 6-shot (seeds 1, 2)** | 0 (inference) | **~20–30 min** | **yes, the only Kaggle-only part of Cycle 2** |
+
+Cell 4f needs no checkpoint: the encoder baselines it compares against are committed files. It reuses
+the prompt frozen in `results/studies/llm_reference/prompt_dev.json`; do not edit it on Kaggle. Enable
+the GPU (T4) and internet; Qwen3-4B downloads about 8 GB. Bring the results home with
+`vifeedback results merge` (Step 7), which copies new `llm_reference/<model>/<run>` folders.
+
+### Cycle 1 (done; kept for reproduction)
+
+| Cell | What | Runs | Est. (T4) | Needed? |
+|---|---|---:|---|---|
+| 4e | H3: `xlmr-base` on raw text + on pyvi, same session, 5 seeds each, robustness in-run | 10 | ~65 min | done (H3 decided) |
+| 4d | Release FP32 + dynamic INT8 + static INT8 through the verified release step | 1 | ~10 min | done (INT8 blocked, ADR-022) |
 
 Cell 4e prints the paired result (raw − pyvi, 95% CI, wins, p) at the end, so the answer is visible
 before the session closes.
