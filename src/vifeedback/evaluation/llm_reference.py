@@ -156,8 +156,14 @@ class HFScorer:
         )
         self.tok = AutoTokenizer.from_pretrained(model_id, revision=self.revision)
         self.tok.padding_side = "left"
+        import transformers
+        from packaging.version import Version
+
+        # `dtype` replaced `torch_dtype` in 4.56; older versions (Kaggle images) would ignore it
+        # and load fp32, which does not fit a T4 at 4B parameters.
+        kw = "dtype" if Version(transformers.__version__) >= Version("4.56") else "torch_dtype"
         model: Any = AutoModelForCausalLM.from_pretrained(
-            model_id, revision=self.revision, dtype=getattr(torch, dtype)
+            model_id, revision=self.revision, **{kw: getattr(torch, dtype)}
         )
         self.model = model.to(self.device).eval()
         self.label_ids = [self.tok.encode(lab, add_special_tokens=False) for lab in LABELS]

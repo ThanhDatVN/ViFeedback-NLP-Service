@@ -1469,16 +1469,28 @@ def study_llm_reference(
         texts = dv.sentence.tolist()
         y = dv.sentiment.to_numpy().astype(float)
         scored = np.ones(len(y), dtype=bool)
-        x = load_variant("seg_pyvi", "validation").sentence.tolist()
-        enc_pred = {
-            "ce": EA.predict_proba("models/p6-sent-phobert-base-seg_pyvi-base-s42-ckp", x).argmax(
-                1
-            ),
-            "augmented": EA.predict_proba(
-                "models/p9-sent-phobert-base-seg_pyvi-aug-diac-teen-s42-599cf21f-ckp", x
-            ).argmax(1),
-        }
+        # Computed once from the local checkpoints and committed (labels only, no text), so a
+        # Kaggle session without the checkpoints compares against the same predictions.
+        cache = L.OUT / "encoder_validation_preds.csv"
+        if not cache.exists():
+            x = load_variant("seg_pyvi", "validation").sentence.tolist()
+            ckp = {
+                "ce": "models/p6-sent-phobert-base-seg_pyvi-base-s42-ckp",
+                "augmented": "models/p9-sent-phobert-base-seg_pyvi-aug-diac-teen-s42-599cf21f-ckp",
+            }
+            pd.DataFrame(
+                {f"{n}_pred": EA.predict_proba(p, x).argmax(1) for n, p in ckp.items()}
+            ).to_csv(cache, index_label="row")
+        cached = pd.read_csv(cache)
+        enc_pred = {n: cached[f"{n}_pred"].to_numpy() for n in ("ce", "augmented")}
 
+    import gc
+
+    import torch
+
+    gc.collect()  # the encoders' weights must leave the 4 GB GPU before the LLM arrives
+    if torch.cuda.is_available():
+        torch.cuda.empty_cache()
     scorer = L.OpenAIScorer(model) if backend == "openai" else L.HFScorer(model)
     r = L.run(scorer, texts, variant, demos, batch_size=batch_size)
     pred = r["probs"].argmax(1)
@@ -1607,6 +1619,12 @@ def results_merge(
         for m in manifests:
             if not (dst / m.name).exists():
                 shutil.copy(m, dst / m.name)
+    # H7 runs (Kaggle Qwen3-4B): one folder per model and configuration; never overwrite one.
+    for run in sorted((src / "studies" / "llm_reference").glob("*/*")):
+        dst = paths.RESULTS / "studies" / "llm_reference" / run.parent.name / run.name
+        if run.is_dir() and not dst.exists():
+            shutil.copytree(run, dst)
+            typer.echo(f"  llm_reference: {run.parent.name}/{run.name}")
     typer.echo(
         f"  merged. Now: vifeedback study tables   (registry has {len(pd.read_csv(paths.REGISTRY))} rows)"
     )
