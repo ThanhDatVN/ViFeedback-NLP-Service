@@ -1,0 +1,5 @@
+  v1_definitions                 macro-F1 0.6924  neutral F1 0.581
+  v2_policy                      macro-F1 0.6855  neutral F1 0.565
+  v3_policy_informal             macro-F1 0.7195  neutral F1 0.598
+  v4_policy_informal_contrast    macro-F1 0.7657  neutral F1 0.630
+frozen: v4_policy_informal_contrast -> D:\GitHub\ViFeedback NLP Service\results\studies\llm_reference\prompt_dev.json
