@@ -1676,6 +1676,60 @@ def study_s2a_gate() -> None:
     typer.echo(f"S2a development gate passed: {gate}")
 
 
+@study_app.command("ood-dev")
+def study_ood_dev(
+    checkpoint: str = typer.Option("", help="default: the served checkpoint (release manifest)"),
+) -> None:
+    """Cycle 3 S3 development: which out-of-scope score separates off-topic input, and where the
+    95%-retention threshold falls. Development data only; confirmation is challenge v2 (cycle3.yaml)."""
+    from vifeedback.data.loader import load
+    from vifeedback.evaluation import challenge as CH
+    from vifeedback.evaluation import ood as OOD
+    from vifeedback.evaluation.report import yaml_safe
+
+    if not checkpoint:
+        manifest = json.loads(
+            (paths.MODELS / "serve" / "sentiment" / "manifest.json").read_text(encoding="utf-8")
+        )
+        checkpoint = str(paths.ROOT / manifest["checkpoint"])
+    pipe = CH.pipeline("seg_pyvi")
+    tr, dv = load("train"), load("validation")
+    u4 = json.loads(
+        (paths.RESULTS / "studies" / "ood" / "u4_offtopic_dev.json").read_text(encoding="utf-8")
+    )
+    ch = CH.load()
+    off_v1 = ch[ch.category == CH.OUT_OF_SCOPE].text.tolist()
+    off_u4 = [r["text"] for r in u4["rows"]]
+
+    f_tr, _ = OOD.encode(checkpoint, pipe(tr.sentence.tolist()))
+    maha = OOD.fit_mahalanobis(f_tr, tr.sentiment.to_numpy())
+    f_dv, l_dv = OOD.encode(checkpoint, pipe(dv.sentence.tolist()))
+    f_o, l_o = OOD.encode(checkpoint, pipe(off_v1 + off_u4))
+    s_in, s_out = OOD.scores(l_dv, f_dv, maha), OOD.scores(l_o, f_o, maha)
+
+    result: dict = {
+        "checkpoint": checkpoint,
+        "in_domain": "UIT-VSFC validation",
+        "out_of_scope": {"challenge_v1": len(off_v1), "u4_generated": len(off_u4)},
+        "methods": {},
+    }
+    for method in s_in:
+        r = OOD.evaluate(s_in[method], s_out[method])
+        r["challenge_v1_only"] = OOD.evaluate(s_in[method], s_out[method][: len(off_v1)])
+        result["methods"][method] = r
+        typer.echo(
+            f"  {method:16s} AUROC {r['auroc']:.3f}  caught {r['out_of_scope_caught']:.2f} of off-topic at "
+            f"{r['in_domain_flagged']:.2f} of validation flagged  (v1 rows only: AUROC {r['challenge_v1_only']['auroc']:.3f})"
+        )
+    best = max(result["methods"], key=lambda m: result["methods"][m]["auroc"])
+    result["development_choice"] = best
+    out = paths.RESULTS / "studies" / "ood"
+    (out / "development.json").write_text(json.dumps(yaml_safe(result), indent=2), encoding="utf-8")
+    typer.echo(
+        f"development choice: {best} (confirmation: challenge v2, AUROC >= 0.90, <= 5% of validation flagged)"
+    )
+
+
 @study_app.command("external")
 def study_external(
     corpus: str = typer.Option("vilexnorm", help="vilexnorm | case | neu_esc"),
