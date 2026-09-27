@@ -16,9 +16,9 @@ not to intent.
 
 | Part of the review | ✅ | 🔶 | ⬜ | ⏸ | 👤 |
 |---|---:|---:|---:|---:|---:|
-| § 2 Issues R1–R12 | 10 | 2 | 0 | 0 | 0 |
+| § 2 Issues R1–R12 | 11 | 1 | 0 | 0 | 0 |
 | First five concrete tasks | 5 | 0 | 0 | 0 | 0 |
-| Recommended starting point (4 items) | 2 | 2 | 0 | 0 | 0 |
+| Recommended starting point (4 items) | 3 | 1 | 0 | 0 | 0 |
 | Implementation backlog (12 items) | 8 | 1 | 0 | 3 | 0 |
 
 **In one sentence:** every validity problem the review raised is fixed or has a named remaining step,
@@ -40,7 +40,7 @@ parallel.
 | R5 readiness / fallback semantics | Med | ✅ | `/readyz` is HTTP 503 unless every `REQUIRED_TASKS` model and its manifest's segmenter are loaded; no silent raw-text fallback. The fallback cost was **measured**: −0.052 macro-F1, not the documented −0.023 (`results/studies/robustness/raw_input_fallback.json`) | — |
 | R6 unbounded metrics buffer | Med | ✅ | Bounded `deque(maxlen=10_000)` plus a separate request counter; test pins the bound | Multi-worker aggregation design (single worker today) |
 | R7 over-strong statistical claims | High | ✅ | README/STATUS interval wording; seed-level and bootstrap both reported; no equivalence claimed from p > 0.05 | Cross-architecture seed pairing is labelled "pairs data order only" in the comparison family (below) |
-| R8 architecture search closed too early | Med | 🔶 | ADR-019 narrows ADR-016; tokenizer length profiles measured (`results/studies/tables/tokenizer_length_profiles.json`: XLM-R produces 36% more subwords on pyvi input) | XLM-R raw control running on Kaggle (Cycle 1 H3); comparable tuning budgets (LR sweep) not run |
+| R8 architecture search closed too early | Med | ✅ | ADR-019 narrows ADR-016; tokenizer profiles (+36% subwords on pyvi input); XLM-R raw control run (H3): +0.0097 over pyvi, still −0.014 vs PhoBERT-base | Per-model LR tuning not run (Cycle 2 option) |
 | R9 headline vs deployed config | Med | ✅ | README reports VnCoreNLP 0.8373 and pyvi 0.8288 separately; CV snippet quotes each correctly | — |
 | R10 docs and benchmark out of sync | Med | 🔶 | STATUS rewritten; run counts from the registry; texts/s naming; model-only on preprocessed input; instability no longer called "throttling" | Steady-state benchmark re-run on an idle machine (after Cycle 1's GPU runs) |
 | R11 reproducibility pinning | Med | ✅ | Config hash + overwrite guard; per-run metrics/config/env and validation predictions committed; model and dataset commits pinned; `source_sha256` in env.json; `requirements-lock.txt`; committed content-hash data reference verified on fetch; CPU training-integration tests in CI | Published checkpoint with checksum (👤 HF account); mypy still advisory |
@@ -63,7 +63,7 @@ parallel.
 | Complete the validity fixes | ✅ | R-table above |
 | Investigate neutral errors | 🔶 | Study A diagnosis done (confident errors, boundary test, OOF ranking); **the human audit is not** (👤) |
 | Evaluate calibration / robustness | ✅ | `results/studies/calibration/`, `results/studies/robustness/` |
-| **Test one shared sentiment/topic encoder** | 🔶 | Was missing from Cycle 1 v1. Now declared as H4 in `cycle1.yaml` v2 (ADR-021), before any H4 run; `training/multitask.py` built and tested |
+| **Test one shared sentiment/topic encoder** | ✅ | Declared as H4 (`cycle1.yaml` v2, ADR-021) before its runs; λ = 0.3: no material difference, λ = 1: negative transfer on sentiment (`results/studies/cycle1/decisions.json`) |
 
 ## Implementation backlog (§ 12)
 
@@ -86,12 +86,12 @@ parallel.
 
 | Q | Status |
 |---|---|
-| Q1 What limits neutral? | 🔶 Boundary explanation weakened (Study A); classifier-head explanation under test (H1: logit adjustment, cRT); label-ambiguity explanation needs the audit (👤) |
-| Q2 What transfers beyond clean text? | 🔶 Synthetic shift measured; augmentation under test (H2); no natural external set (👤 data) |
+| Q1 What limits neutral? | 🔶 Boundary and classifier-head explanations weakened (Study A; H1: logit adjustment and cRT both +0.003, not advanced); label ambiguity vs representation needs the audit (👤) |
+| Q2 What transfers beyond clean text? | 🔶 Synthetic shift measured; augmentation supported at 5 seeds, in-family only (H2); no natural external set (👤 data) |
 | Q3 Label efficiency | ⏸ Cycle 2 option |
-| Q4 Shared learning | 🔶 H4 declared; running next |
+| Q4 Shared learning | ✅ H4 decided at 3 seeds: no gain at λ = 0.3, sentiment cost at λ = 1 |
 | Q5 Uncertainty | ✅ Calibration, class-wise coverage, AURC for three signals; OOD detection ⏸ (no OOD set) |
-| Q6 Compute budget | 🔶 FP32 release verified; INT8 on Kaggle; latency re-run pending; distillation/LoRA ⏸ |
+| Q6 Compute budget | 🔶 FP32 release verified; INT8 blocked by the quality gate (neutral −0.088, ADR-022); latency re-run pending; distillation/LoRA ⏸ |
 
 ## § 4 Dataset extensions
 
@@ -109,29 +109,30 @@ parallel.
 
 | ID | Pri. | Status |
 |---|---|---|
-| E01 ranking depends on preprocessing/tuning | P0 | 🔶 XLM-R raw control running on Kaggle (H3); LR candidates not run |
-| E02 imbalance (logit adjustment) | P1 | 🔶 τ = 1 at 3 seeds done; decision pending the declared rule |
-| E03 balanced head retraining (cRT) | P1 | ✅ 3 seeds: +0.0028 mean, 2/3 wins → does not advance under the declared rule |
+| E01 ranking depends on preprocessing/tuning | P0 | ✅ preprocessing part answered (H3: yes, ~40% of XLM-R's gap); LR candidates not run |
+| E02 imbalance (logit adjustment) | P1 | ✅ τ = 1, 3 seeds: +0.0029, not advanced; neutral recall ↑ precision ↓ |
+| E03 balanced head retraining (cRT) | P1 | ✅ not advanced at 3 seeds (+0.0028); +0.0006 at 5 seeds (the extra seeds ran as H2 controls) |
 | E04 label noise / audit | P1 | 👤 |
-| E05 augmentation | P1 | 🔶 running (H2) |
+| E05 augmentation | P1 | ✅ supported at 5 seeds: `nodiacritic-50` degradation −43%, no material clean cost; out-of-family noise unchanged |
 | E06 regularization (LLRD, R-Drop, FGM) | P2 | ⏸ |
-| E07 multi-task | P1 | 🔶 H4 declared (v2), running next |
+| E07 multi-task | P1 | ✅ H4: λ = 0.3 no material difference; λ = 1 negative transfer on sentiment |
 | E08 sparse + dense stacking | P2 | ⏸ |
 | E09 calibration | P1 | ✅ on validation/OOF; test confirmation at the closing gate |
 | E10 selective prediction | P1 | ✅ risk–coverage by class; AURC for max-prob / margin / entropy (equal, ~77% of the random-to-oracle gap); OOD false acceptance ⏸ |
-| E11–E22 | P2–P3 | ⏸ Cycle 2 choice |
+| E16 quantization/runtime | P2 | ✅ PyTorch → ORT FP32 → dynamic → static INT8 with parity, per-class loss, size; INT8 blocked (ADR-022); latency pending re-run |
+| E11–E15, E17–E22 | P2–P3 | ⏸ Cycle 2 choice |
 | Models: TF-IDF, PhoBERT(VnCoreNLP/pyvi), PhoBERT-large | — | ✅ |
-| Models: XLM-R raw | Required | 🔶 H3 |
+| Models: XLM-R raw | Required | ✅ H3 |
 | Models: BamiBERT, ViSoBERT, e5-small, SetFit, Qwen3-4B, student | High/Opt. | ⏸ The review says to start with two new encoder controls, not all of them |
 
 ## § 7 Study designs
 
 | Study | Status |
 |---|---|
-| A — neutral | Steps 1, 3 ✅; step 2 guide ✅, annotation 👤; step 4 ✅ (CE vs logit adjustment vs cRT); step 5 depends on the audit |
-| B — robustness | Synthetic layer ✅ with grouped bootstrap and CheckList-style invariance/directional split; PhoBERT control ✅, augmentation 🔶 (H2), alternative encoder 🔶 (XLM-R in-run on Kaggle); natural external layer 👤 |
+| A — neutral | Steps 1, 3 ✅; step 2 guide ✅, annotation 👤; step 4 ✅ decided (neither intervention advances); step 5 depends on the audit |
+| B — robustness | Synthetic layer ✅ with grouped bootstrap and CheckList-style invariance/directional split; PhoBERT control ✅, augmentation ✅ (H2, 5 seeds), alternative encoder ✅ (XLM-R raw: no-diacritic 0.35 vs PhoBERT 0.27, augmented PhoBERT 0.65); natural external layer 👤 |
 | C — learning efficiency | ⏸ |
-| D — multi-task | 🔶 H4 declared (v2), running next |
+| D — multi-task | ✅ 3 seeds, both λ; joint exact match reported per run |
 | E — encoder vs LLM | ⏸ |
 
 ## § 8 Evaluation protocol
@@ -162,9 +163,9 @@ parallel.
 | Area | Minimum defensible | Status |
 |---|---|---|
 | Reproducibility | Recreate baseline from pinned config; regenerate tables | ✅ stage 1 of every cRT run reproduces the registry exactly; tables regenerate from the registry |
-| Scientific contribution | ≥ 3 questions answered with controls | 🔶 segmentation, calibration, boundary test, cRT answered; H2/H3 pending |
-| Minority quality | Explain dominant neutral errors; evaluate a targeted intervention | 🔶 explained up to the label question; cRT evaluated (neutral recall ↑, precision ↓, macro-F1 ≈) |
-| Robustness | Clean and challenging-slice results with support | ✅ |
+| Scientific contribution | ≥ 3 questions answered with controls | ✅ Q1 (partly, pending audit), Q2, Q4, Q5 answered with declared controls; H3 pending |
+| Minority quality | Explain dominant neutral errors; evaluate a targeted intervention | ✅ minimum met: errors characterized, two targeted interventions evaluated (recall ↑, precision ↓, macro-F1 ≈); the +0.03 neutral-F1 stretch target is not met |
+| Robustness | Clean and challenging-slice results with support | ✅ minimum met; **stretch target met**: a predefined slice's degradation reduced 43% (≥ 20%) with no material clean loss |
 | Uncertainty | Calibrated vs uncalibrated on independent data | ✅ |
 | Efficiency | Reproducible quality/latency/memory comparison | 🔶 quality parity ✅; latency/memory pending |
 
@@ -185,6 +186,8 @@ parallel.
 ---
 
 ## What happens next
+
+*Update: items 1–2 below are done (H4 decided; protocol gaps closed; see the tables above). Item 3 is running.*
 
 **Now, on the laptop, while Kaggle runs H3:**
 

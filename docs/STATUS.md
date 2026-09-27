@@ -28,7 +28,7 @@ stands, what is wrong with it, and what runs next.**
 | Cycle | Question | State |
 |---|---|---|
 | **0** | Fix validity problems; what does the current model get wrong? | ✅ [results/studies/](../results/studies/README.md) |
-| **1** | Three hypotheses chosen from Cycle 0, declared before running ([cycle1.yaml](../configs/experiments/cycle1.yaml)) | 🔶 laptop runs (H1, H2) in progress; H3 on Kaggle |
+| **1** | Four hypotheses, declared before running ([cycle1.yaml](../configs/experiments/cycle1.yaml) v1 + v2) | ✅ all four decided; closing gate (one logged test evaluation per finalist) next |
 
 **Compute to date** ([ledger](../configs/experiments/ledger.csv)): 55 weight-updating runs before
 Cycle 1 (40 laptop, 10 Kaggle T4, 5 OOF diagnostics), about 4.5 GPU-hours. The registry holds 97
@@ -61,7 +61,42 @@ Declared in [configs/experiments/cycle1.yaml](../configs/experiments/cycle1.yaml
 (0f3055d) before the first run. Decisions are computed by `vifeedback study cycle1` using exactly the
 declared rules (`evaluation/decisions.py`); output in `results/studies/cycle1/decisions.json`.
 
-<!-- CYCLE1_RESULTS -->
+| Hypothesis | Declared prediction | Result (validation, seed-paired vs same-seed control) | Decision by the declared rule |
+|---|---|---|---|
+| **H1a** logit adjustment τ=1 | < 0.01 macro-F1; neutral recall ↑, precision ↓ | +0.0029 mean [−0.047, +0.053], 2/3 seeds; neutral P 0.79→0.61–0.70, R 0.56→0.66–0.67 | **Not advanced** (needs ≥ +0.005). Prediction confirmed |
+| **H1b** balanced head retraining (cRT) | same | +0.0028 mean [−0.025, +0.031], 2/3 seeds; neutral P → 0.59–0.69, R → 0.64–0.77 | **Not advanced.** Seed spread 0.0012 vs 0.011 for CE (observation) |
+| **H2** diacritic/teencode augmentation, 30% | ≥ 20% less `nodiacritic-50` degradation, ≤ 0.005 clean loss | **5 seeds** (finalist): degradation 0.217 → 0.124 (**−43%**); full no-diacritic 0.28 → 0.65; teencode −54%; clean mean +0.004, but per seed −0.006 … +0.030 (median −0.002); character noise unchanged (−4%) | **Supported at 5 seeds.** Targeted, in-family robustness at no material clean cost |
+| **H3** XLM-R on raw text | raw − pyvi > 0 | Kaggle, same session, 5 seeds: **+0.0097** [+0.0014, +0.0179], 4/5 seeds, p = 0.032. Raw XLM-R 0.8499 vs PhoBERT-base 0.8643 | **Supported**: segmented input cost XLM-R ~0.01. Raw mean below the 0.8523 withdrawal threshold, so ADR-016's narrowed conclusion stands: ~40% of the gap was preprocessing, ~60% remains |
+| **H4** shared encoder, λ=0.3 | helps / harms / no difference | sentiment +0.0012, topic +0.0005 (3 seeds) | **No material difference**: one model serves both tasks at half the inference cost, no loss detected |
+| **H4** shared encoder, λ=1 | same | sentiment −0.0056 (0/3 seeds), topic +0.0031 (2/3) | **Negative transfer on sentiment** by the rule (interval still spans 0) |
+
+**Controls.** Every H1/H2 control is stage 1 of a cRT run at the same seed. All five reproduce the
+registry's CE rows **exactly**, so treatment and control differ only in the treatment. H4's controls
+are the single-task P4 runs at the same seeds.
+
+**What Cycle 1 establishes.**
+
+1. **The neutral gap is not in the classifier.** Two independent ways of re-placing the decision
+   boundary (training-time logit adjustment, post-hoc balanced head retraining) and Study A's post-hoc
+   bias all move macro-F1 by noise-sized amounts. Each one trades neutral precision for recall. The
+   remaining explanations, label ambiguity and representation, need the human audit.
+2. **Robustness to missing diacritics is cheaply trainable, but only in-family.** Augmentation repairs
+   the perturbations it was trained on at no material clean cost, and leaves character noise it never
+   saw unchanged (at 3 seeds it looked slightly harmful; at 5 it is −4%, i.e. nothing). It is a
+   targeted fix, not general robustness.
+3. **XLM-R's deficit was partly a preprocessing artifact.** Fed raw text it gains +0.010 over pyvi
+   input in the same session, but still trails PhoBERT-base by 0.014. Its robustness is not better
+   where it matters: without diacritics 0.35 (PhoBERT 0.27, PhoBERT + augmentation 0.65), with half
+   the diacritics 0.66 (PhoBERT 0.65). Augmentation buys more robustness than the architecture swap.
+4. **Sharing the encoder costs nothing at λ = 0.3 and something at λ = 1.** The engineering reading is
+   one model instead of two for serving. The scientific reading is that the tasks' measured
+   dependence (Cramér's V 0.344) does not translate into a gain at this data size.
+
+**Budget.** 19 laptop runs (H1 6, H2 3 + 4 finalist, H4 6; about 85 GPU-minutes) plus H3's 10 on
+Kaggle: 29 of the 30 declared. Cycle 0's 5 OOF folds are counted separately in the ledger. The Kaggle
+session also re-ran Tier E (10 runs, outside the budget) and reproduced every original row exactly;
+the 19 laptop runs were regenerated after `results/` was lost (ADR-023).
+
 
 ---
 

@@ -186,3 +186,52 @@ def compare(reports: list[dict[str, Any]], baseline_label: str | None = None) ->
     )
     df["speedup_vs_baseline"] = (ref / df.p95_ms).round(2)
     return df
+
+
+def summarize_passes(passes: list[dict[str, dict[str, Any]]], baseline: str) -> dict[str, Any]:
+    """Combine rotated benchmark passes into reportable numbers, or refuse to.
+
+    A pass counts for a configuration only if its repeats were steady (spread within tolerance).
+    Steady in both passes and agreeing: the mean is reported. Steady in one: that pass is reported
+    and the choice is recorded. Steady in none: `reportable` is False. Speedups are computed only
+    between reportable values, never against a measurement the machine had not settled for, which
+    is exactly the case the rotation exists to catch.
+    """
+    out: dict[str, Any] = {}
+    for name in passes[0]:
+        runs = [p[name] for p in passes]
+        steady = [r for r in runs if not r["throttling_suspected"]]
+        entry: dict[str, Any] = {
+            "p95_ms_by_pass": [r["p95_ms"] for r in runs],
+            "spread_by_pass": [r["p95_spread_across_repeats"] for r in runs],
+            "steady_passes": [i + 1 for i, r in enumerate(runs) if not r["throttling_suspected"]],
+        }
+        if len(steady) == 2:
+            a, b = steady[0]["p95_ms"], steady[1]["p95_ms"]
+            agree = abs(a - b) / min(a, b) <= THROTTLE_TOLERANCE
+            chosen = (
+                steady if agree else [min(steady, key=lambda r: r["p95_spread_across_repeats"])]
+            )
+            entry["basis"] = (
+                "mean of both steady passes" if agree else "steadier pass (passes disagree)"
+            )
+        elif len(steady) == 1:
+            chosen = steady
+            entry["basis"] = f"pass {entry['steady_passes'][0]} only (the other was not steady)"
+        else:
+            chosen = []
+            entry["basis"] = "no steady pass"
+        entry["reportable"] = bool(chosen)
+        if chosen:
+            for k in ("p50_ms", "p95_ms", "p99_ms"):
+                entry[k] = round(float(np.mean([r[k] for r in chosen])), 2)
+            entry["texts_per_s_b32"] = round(
+                float(np.mean([r["texts_per_s_b32"] for r in chosen])), 1
+            )
+        out[name] = entry
+    base = out.get(baseline, {})
+    for entry in out.values():
+        if entry["reportable"] and base.get("reportable"):
+            entry["speedup_p95_vs_baseline"] = round(base["p95_ms"] / entry["p95_ms"], 2)
+            entry["speedup_p50_vs_baseline"] = round(base["p50_ms"] / entry["p50_ms"], 2)
+    return out

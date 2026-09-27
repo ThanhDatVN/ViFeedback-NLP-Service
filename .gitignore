@@ -62,3 +62,7 @@ Thumbs.db
 
 # Upload archives built by `git archive` for Kaggle/Colab
 *.zip
+
+# Kaggle output staging: extract here, then `vifeedback results merge` (never over results/)
+/kaggle_results/
+/results_new/

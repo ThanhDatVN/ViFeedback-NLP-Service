@@ -132,11 +132,19 @@ Validation plus out-of-fold predictions over train; the test split was not touch
 | Robust to real typing? | No diacritics: macro-F1 0.863 → **0.268**, with 64% of predictions becoming neutral | A deployment risk the 99.86%-diacritized benchmark cannot show |
 | Is training reproducible? | 10 re-run seeds and Cycle 1's controls reproduce earlier runs **exactly** | Seed variance is the only run-to-run variance |
 
-**Cycle 1 — three hypotheses, declared before running**
-([configs/experiments/cycle1.yaml](configs/experiments/cycle1.yaml), committed before the first run):
-H1 is neutral fixable in the classifier (logit adjustment, balanced head retraining)? H2 does
-diacritic/teencode augmentation buy robustness without clean cost? H3 was XLM-R's deficit a
-preprocessing confound? Results: [STATUS § 3](docs/STATUS.md#3-cycle-1--declared-hypotheses-and-their-outcome).
+**Cycle 1 — four hypotheses, declared before running**
+([configs/experiments/cycle1.yaml](configs/experiments/cycle1.yaml), committed before the first run;
+decisions computed by code from the declared rules):
+
+| Hypothesis | Decision |
+|---|---|
+| H1 Neutral is fixable in the classifier (logit adjustment, balanced head retraining) | **No.** Both +0.003 macro-F1, not advanced; each trades neutral precision for recall |
+| H2 Diacritic/teencode augmentation buys robustness without clean cost | **Supported at 5 seeds**: missing-diacritic degradation −43%, clean accuracy flat. Only in-family: character noise unchanged |
+| H3 XLM-R's deficit was a preprocessing confound | **Partly.** Raw text +0.010 over pyvi input (4/5 seeds, p = 0.03), but XLM-R still trails PhoBERT-base by 0.014 |
+| H4 A shared sentiment/topic encoder helps | **No gain** at λ = 0.3 (one model for both tasks, no loss detected); sentiment cost at λ = 1 |
+
+Details: [STATUS § 3](docs/STATUS.md#3-cycle-1--declared-hypotheses-and-their-outcome) ·
+report: [RESEARCH_REPORT](docs/RESEARCH_REPORT.md).
 
 ---
 
@@ -203,7 +211,7 @@ curl -s localhost:8000/v1/classify \
 |---|---|
 | **[STATUS](docs/STATUS.md)** | **Progress, open problems, next experiments, compute plan** |
 | [ROADMAP](docs/ROADMAP.md) | Objectives, 8 phases, exit gates, risk register |
-| [DECISIONS](docs/DECISIONS.md) | 21 ADRs — every plan correction forced by measurement or review |
+| [DECISIONS](docs/DECISIONS.md) | 23 ADRs — every plan correction forced by measurement or review |
 | [DATA_CARD](docs/DATA_CARD.md) | Provenance, splits, distributions, 11 measured limitations |
 | [EVALUATION_PROTOCOL](docs/EVALUATION_PROTOCOL.md) | Metrics, seeds, significance, latency harness, error taxonomy, perturbation suites, calibration |
 | [ANNOTATION_GUIDE](docs/ANNOTATION_GUIDE.md) | Neutral-label audit: taxonomy, ambiguity vs incorrect gold, agreement and adjudication |

@@ -69,13 +69,32 @@ def export_fp32(model, tokenizer, out_dir: Path, max_length: int = 96) -> Path:
 
 
 def optimize_graph(src: Path, dst: Path) -> Path:
-    """ORT graph-level optimization (node fusion, constant folding). Lossless."""
+    """Offline ORT optimization at the EXTENDED level: node fusions, no layout transforms.
+
+    Not ORT_ENABLE_ALL. ALL adds layout optimizations tuned to the CPU that runs them, so a graph
+    optimized on Kaggle need not suit, or even run on, the reference laptop (review R3). EXTENDED
+    fusions are portable; the serving session applies the full level itself when it loads the graph
+    on the machine that will run it.
+    """
     import onnxruntime as ort
 
     opts = ort.SessionOptions()
-    opts.graph_optimization_level = ort.GraphOptimizationLevel.ORT_ENABLE_ALL
+    opts.graph_optimization_level = ort.GraphOptimizationLevel.ORT_ENABLE_EXTENDED
     opts.optimized_model_filepath = str(dst)
     ort.InferenceSession(str(src), opts, providers=["CPUExecutionProvider"])
+    return dst
+
+
+def preprocess_for_quantization(src: Path, dst: Path) -> Path:
+    """Shape inference + basic optimization, the input ORT's quantizer expects.
+
+    Quantizing a fused graph fails: its contrib ops defeat shape inference ("Unable to find data type
+    for weight_name ..."), which is exactly what stopped both INT8 releases on Kaggle. Quantization
+    therefore starts from the plain export, pre-processed, never from the optimized graph.
+    """
+    from onnxruntime.quantization.shape_inference import quant_pre_process
+
+    quant_pre_process(str(src), str(dst), skip_symbolic_shape=False)
     return dst
 
 

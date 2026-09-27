@@ -1,0 +1,33 @@
+{
+  "task": "sentiment",
+  "model_file": "model.opt.onnx",
+  "sha256": "85b2a8fbcb04e70abbef5ece3ad1da5e16c353e05b495166cf3ace82e205fc52",
+  "quantization": "none",
+  "preprocessing": "seg_pyvi",
+  "max_length": 96,
+  "labels": [
+    "negative",
+    "neutral",
+    "positive"
+  ],
+  "checkpoint": "models/p6-sent-phobert-base-seg_pyvi-base-s42-5532bb6c-ckp",
+  "calibration": null,
+  "acceptance": {
+    "n": 1583,
+    "max_abs_logit_diff": 2.041459083557129e-05,
+    "logits_close": true,
+    "label_agreement": 1.0,
+    "macro_f1_torch": 0.8643903276108125,
+    "macro_f1_onnx": 0.8643903276108125,
+    "macro_f1_drop": 0.0,
+    "batch_vs_single_max_diff": 0.0,
+    "batch_vs_single_label_agreement": 1.0,
+    "failures": [],
+    "passed": true
+  },
+  "created": "20260927-040635",
+  "software": {
+    "onnxruntime": "1.30.0",
+    "transformers": "5.17.0"
+  }
+}

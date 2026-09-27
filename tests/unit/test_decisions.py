@@ -99,7 +99,7 @@ class TestH2:
         out = D.h2(r)
         assert out["suites"]["nodiacritic-50"]["relative_reduction"] == pytest.approx(0.5)
         assert out["clean"]["mean_delta"] == pytest.approx(-0.002)
-        assert out["supported_at_3_seeds"] is True
+        assert out["supported"] is True
 
     def test_clean_cost_over_budget_is_not_supported(self, tmp_path) -> None:
         _write(
@@ -124,7 +124,7 @@ class TestH2:
         )
         out = D.h2(D.load_runs(8, tmp_path))
         assert out["suites"]["nodiacritic-50"]["relative_reduction"] > 0.2
-        assert out["supported_at_3_seeds"] is False  # loses 0.010 clean > 0.005 budget
+        assert out["supported"] is False  # loses 0.010 clean > 0.005 budget
 
     def test_charnoise_is_marked_out_of_family(self, runs) -> None:
         r, _ = runs
@@ -164,3 +164,39 @@ class TestH4:
     def test_small_changes_are_no_material_difference(self, tmp_path) -> None:
         r = self._mtl(tmp_path, "mtl-l0.3", sent_delta=0.001, topic_delta=-0.002)
         assert r["verdict"] == "no_material_difference"
+
+
+class TestH3:
+    def _reg(self, raw, pyvi):
+        import pandas as pd
+
+        rows = [
+            {
+                "run_id": f"p8-sent-xlmr-base-raw-base-s{s}-h-val",
+                "seed": s,
+                "split": "validation",
+                "macro_f1": v,
+            }
+            for s, v in raw.items()
+        ]
+        rows += [
+            {
+                "run_id": f"p8-sent-xlmr-base-seg_pyvi-base-s{s}-h-val",
+                "seed": s,
+                "split": "validation",
+                "macro_f1": v,
+            }
+            for s, v in pyvi.items()
+        ]
+        return pd.DataFrame(rows)
+
+    def test_consistent_raw_gain_is_supported_but_below_withdrawal(self) -> None:
+        pyvi = {7: 0.833, 42: 0.839, 1337: 0.850, 2024: 0.842, 31337: 0.837}
+        raw = {s: v + 0.01 for s, v in pyvi.items()}
+        r = D.h3(self._reg(raw, pyvi))
+        assert r["supported"] is True
+        assert r["withdraw_adr016"] is False  # mean ~0.850 < 0.8523
+
+    def test_missing_runs_are_reported(self) -> None:
+        r = D.h3(self._reg({}, {}))
+        assert "note" in r

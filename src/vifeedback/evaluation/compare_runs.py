@@ -8,8 +8,8 @@ silently applied:
 
 1. **Exact duplicate run ids** — the same run logged twice (a re-invoked script). Kept once.
 2. **Re-runs of one condition and seed under different ids** — e.g. Phase 3 conditions re-trained in
-   Phase 4. Counting both would double the seed count and shrink the standard deviation. Kept once;
-   the disagreement between them is reported, since it measures run-to-run determinism.
+   Phase 4. Counting both would double the seed count and shrink the standard deviation. The first
+   (original) is kept; the disagreement is reported, since it measures run-to-run determinism.
 3. **Grouping by condition, not phase** — the phase is bookkeeping; the condition
    (task, model, preprocessing, recipe, split) is what the number describes.
 
@@ -46,7 +46,10 @@ def load(registry: Any = None) -> tuple[pd.DataFrame, dict[str, Any]]:
         "n_condition_seeds": len(spread),
         "max_abs_macro_f1_disagreement": float(spread.max()) if len(spread) else None,
     }
-    df = df.drop_duplicates(key, keep="last")
+    # Keep the original run. A later re-run of the same condition and seed may come from other
+    # hardware: same-GPU re-runs agree exactly here, but a Kaggle T4 re-run of a laptop result
+    # differed by 0.001. The canonical number is the one decisions were made on.
+    df = df.drop_duplicates(key, keep="first")
     hygiene["rows_used"] = len(df)
     return df.reset_index(drop=True), hygiene
 

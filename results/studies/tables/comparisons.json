@@ -1,6 +1,6 @@
 {
   "hygiene": {
-    "rows_in_registry": 97,
+    "rows_in_registry": 120,
     "duplicate_run_ids": [
       "p4-topi-phobert-base-seg_pyvi-base-s1337-val",
       "p4-topi-phobert-base-seg_pyvi-base-s2024-val",
@@ -8,10 +8,10 @@
       "p4-topi-phobert-base-seg_pyvi-base-s7-val"
     ],
     "reruns": {
-      "n_condition_seeds": 10,
-      "max_abs_macro_f1_disagreement": 0.0
+      "n_condition_seeds": 20,
+      "max_abs_macro_f1_disagreement": 0.0010000000000000009
     },
-    "rows_used": 83
+    "rows_used": 90
   },
   "comparisons": [
     {
@@ -38,6 +38,7 @@
         31337
       ],
       "n": 5,
+      "pairing": "same architecture: data order and head initialization",
       "mean_a": 0.84364,
       "mean_b": 0.8642800000000002,
       "mean_diff": 0.020640000000000013,
@@ -75,6 +76,7 @@
         31337
       ],
       "n": 5,
+      "pairing": "same architecture: data order and head initialization",
       "mean_a": 0.84364,
       "mean_b": 0.86706,
       "mean_diff": 0.023420000000000017,
@@ -112,6 +114,7 @@
         31337
       ],
       "n": 5,
+      "pairing": "same architecture: data order and head initialization",
       "mean_a": 0.84364,
       "mean_b": 0.8618400000000002,
       "mean_diff": 0.018200000000000015,
@@ -149,6 +152,7 @@
         31337
       ],
       "n": 5,
+      "pairing": "same architecture: data order and head initialization",
       "mean_a": 0.8642800000000002,
       "mean_b": 0.86706,
       "mean_diff": 0.0027800000000000047,
@@ -186,6 +190,7 @@
         31337
       ],
       "n": 5,
+      "pairing": "cross-architecture: data order only",
       "mean_a": 0.8642800000000002,
       "mean_b": 0.8560399999999999,
       "mean_diff": -0.00823999999999998,
@@ -223,6 +228,7 @@
         31337
       ],
       "n": 5,
+      "pairing": "cross-architecture: data order only",
       "mean_a": 0.8642800000000002,
       "mean_b": 0.8402800000000001,
       "mean_diff": -0.024,
@@ -260,6 +266,7 @@
         31337
       ],
       "n": 5,
+      "pairing": "same architecture: data order and head initialization",
       "mean_a": 0.79708,
       "mean_b": 0.81114,
       "mean_diff": 0.014059999999999984,

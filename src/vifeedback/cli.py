@@ -911,6 +911,7 @@ def study_cycle1() -> None:
         "runs_found": {k: sorted(v) for k, v in runs.items()},
         "H1": D.h1(runs, registry_ce),
         "H2": D.h2(runs),
+        "H3": D.h3(reg),
         "H4": D.h4(D.load_multitask(8), single),
     }
     dst = paths.RESULTS / "studies" / "cycle1"
@@ -919,6 +920,220 @@ def study_cycle1() -> None:
         json.dumps(yaml_safe(out), indent=2, ensure_ascii=False), encoding="utf-8"
     )
     typer.echo(json.dumps(yaml_safe(out), indent=2, ensure_ascii=False)[:6000])
+
+
+@study_app.command("latency")
+def study_latency(
+    checkpoint: str = typer.Option("models/p6-sent-phobert-base-seg_pyvi-base-s42-ckp"),
+    onnx_dir: str = typer.Option("models/serve/sentiment", help="a released artifact (manifest)"),
+    timed: int = typer.Option(300, help="timed single-sentence calls per repeat"),
+    repeats: int = typer.Option(5),
+    extra_onnx: str = typer.Option(
+        "", help="comma-separated extra ONNX files to time, e.g. an INT8 graph that failed its gate"
+    ),
+) -> None:
+    """Steady-state CPU latency ladder on the reference machine (review R10, § 8.4).
+
+    Model-only timing on inputs segmented once up front, so every configuration runs the same
+    workload. Configurations run in two passes, forward then reversed, so a machine that warms up
+    over the session shows as a pass disagreement instead of favouring whichever ran first.
+    Throughput is texts/s. Peak RSS is recorded. Never run this while training.
+    """
+    import os
+    import subprocess
+    from pathlib import Path
+
+    import psutil
+    import torch
+    from transformers import AutoModelForSequenceClassification, AutoTokenizer
+
+    from vifeedback import env
+    from vifeedback.data.loader import load
+    from vifeedback.evaluation.report import yaml_safe
+    from vifeedback.inference import benchmark as BM
+    from vifeedback.inference.onnx_export import OnnxClassifier
+    from vifeedback.preprocess.segment import get_segmenter
+
+    torch.set_grad_enabled(False)
+    try:  # nvidia-smi rather than torch.cuda.utilization(), which needs nvidia-ml-py
+        util = subprocess.run(
+            ["nvidia-smi", "--query-gpu=utilization.gpu", "--format=csv,noheader,nounits"],
+            capture_output=True,
+            text=True,
+            timeout=10,
+            check=True,
+        ).stdout.split()
+        gpu_busy = any(int(u) > 5 for u in util)
+    except (OSError, subprocess.SubprocessError, ValueError):
+        gpu_busy = False
+        typer.secho("  could not read GPU utilization; make sure nothing is training", fg="yellow")
+    if gpu_busy:
+        raise typer.BadParameter("the GPU is busy: a latency benchmark during training is invalid")
+
+    seg = get_segmenter("pyvi")
+    texts = seg(load("test")["sentence"].tolist())  # timing inputs only; no labels are read
+    tok = AutoTokenizer.from_pretrained(checkpoint)
+    model = AutoModelForSequenceClassification.from_pretrained(checkpoint).eval()
+    onnx = OnnxClassifier(Path(onnx_dir))
+
+    def torch_dynamic(batch):
+        return model(
+            **tok(batch, return_tensors="pt", padding=True, truncation=True, max_length=96)
+        ).logits
+
+    def torch_padmax(batch):
+        return model(
+            **tok(batch, return_tensors="pt", padding="max_length", truncation=True, max_length=96)
+        ).logits
+
+    configs = {
+        "L0 torch fp32, pad to 96": torch_padmax,
+        "L1 torch fp32, dynamic padding": torch_dynamic,
+        f"L3 onnx fp32 ({onnx.path.name}), dynamic padding": onnx.logits,
+    }
+    for i, f in enumerate(p for p in extra_onnx.split(",") if p):
+        fp = Path(f)
+        clf = OnnxClassifier(fp.parent, model_file=fp.name)
+        # Timed only: an extra graph here need not have passed its release gate (it is labelled).
+        configs[f"X{i} {fp.parent.parent.name}/{fp.name} (not released)"] = clf.logits
+    proc = psutil.Process(os.getpid())
+    passes = []
+    for order in (list(configs), list(reversed(configs))):
+        res = {}
+        for name in order:
+            r = BM.time_callable(configs[name], texts, timed=timed, repeats=repeats)
+            r["rss_mb_after"] = round(proc.memory_info().rss / 1e6, 1)
+            r["texts_per_s_b32"] = BM.throughput(configs[name], texts, batch_sizes=(32,))[
+                "batch32_texts_per_s"
+            ]
+            res[name] = r
+            typer.echo(
+                f"  {name:45s} p50 {r['p50_ms']:7.2f}  p95 {r['p95_ms']:7.2f} ms  "
+                f"spread {r['p95_spread_across_repeats']:.1%}  {r['texts_per_s_b32']} texts/s"
+            )
+        passes.append(res)
+
+    summary = BM.summarize_passes(passes, baseline="L0 torch fp32, pad to 96")
+    report = {
+        "protocol": "model-only, pre-segmented test inputs, 200 warmup, median-of-repeats p95, "
+        "two passes in rotated order; texts/s at batch 32; RSS after each config",
+        "summary": summary,
+        "passes": passes,
+        "peak_rss_mb": round(proc.memory_info().rss / 1e6, 1),
+        "environment": env.capture(),
+    }
+    out = paths.RESULTS / "studies" / "latency" / "reference_cpu.json"
+    out.parent.mkdir(parents=True, exist_ok=True)
+    out.write_text(json.dumps(yaml_safe(report), indent=2, ensure_ascii=False), encoding="utf-8")
+    for k, v in summary.items():
+        if v["reportable"]:
+            typer.echo(
+                f"  {k:45s} p50 {v['p50_ms']:7.2f}  p95 {v['p95_ms']:7.2f} ms  [{v['basis']}]"
+            )
+        else:
+            typer.secho(f"  {k:45s} NOT REPORTABLE: no steady pass", fg="red")
+    typer.echo(f"  written {out}")
+
+
+@study_app.command("audit-sheet")
+def study_audit_sheet() -> None:
+    """Rebuild the local neutral-audit sheet from committed, text-free files. No GPU.
+
+    The sheet holds corpus text, so it lives in the gitignored local/ folder and is lost with it.
+    Everything needed to rebuild it is committed: which rows were sampled (audit_sample_index.csv)
+    and their predictions (split prediction files, keyed by row). Text is re-joined from data/raw.
+    """
+    import pandas as pd
+
+    from vifeedback.data.loader import load
+    from vifeedback.evaluation import error_analysis as EA
+
+    src = paths.RESULTS / "studies" / "study_a"
+    idx = pd.read_csv(src / "audit_sample_index.csv")
+    parts = []
+    for split, g in idx.groupby("split", sort=False):
+        preds = pd.read_csv(src / f"{split}_predictions.csv").set_index("row")
+        text = load(split)["sentence"]
+        rows = preds.loc[g.example_index].copy()
+        rows["text"] = text.iloc[g.example_index.to_numpy()].to_numpy()
+        rows["stratum"] = g.stratum.to_numpy()
+        rows.index.name = "example_index"
+        parts.append(rows.reset_index())
+    sample = pd.concat(parts, ignore_index=True)
+    assert (sample.gold.to_numpy() == idx.gold.to_numpy()).all(), "row alignment check failed"
+    sheet = EA.export_annotation_sheet(sample, src / "local" / "audit_sheet.csv")
+    typer.echo(f"  rebuilt {len(sample)} rows -> {sheet}")
+
+
+results_app = typer.Typer(help="Results housekeeping")
+app.add_typer(results_app, name="results")
+
+
+@results_app.command("merge")
+def results_merge(
+    source: str = typer.Argument(..., help="an extracted results folder, e.g. kaggle_results/"),
+    dry_run: bool = typer.Option(False, help="report what would be merged, change nothing"),
+) -> None:
+    """Merge another machine's results into results/: append-only, never overwriting.
+
+    Replaces a manual step that once cost a morning of runs: the Kaggle output was extracted over
+    the repository and results/, holding uncommitted local runs, was lost. This command refuses to
+    run without a local results/, migrates the registry schema first, appends only run ids not yet
+    present, and copies only run directories that do not exist locally.
+    """
+    import csv
+    import shutil
+    from pathlib import Path
+
+    import pandas as pd
+
+    from vifeedback.evaluation import report as R
+
+    src = Path(source)
+    if not paths.REGISTRY.exists():
+        raise typer.BadParameter(
+            f"{paths.REGISTRY} is missing. Restore results/ first (git checkout -- results/) instead of "
+            "replacing it with another machine's copy; that copy lacks this machine's runs."
+        )
+    if not (src / "registry.csv").exists():
+        raise typer.BadParameter(
+            f"{src} has no registry.csv; point at the extracted results folder"
+        )
+
+    local = pd.read_csv(paths.REGISTRY)
+    other = pd.read_csv(src / "registry.csv")
+    new = other[~other.run_id.isin(local.run_id)]
+    run_dirs = [
+        d
+        for d in sorted((src / "runs").glob("*"))
+        if d.is_dir() and not (paths.RUNS / d.name).exists()
+    ]
+    typer.echo(f"  registry: {len(new)} new rows ({len(other) - len(new)} already present)")
+    typer.echo(f"  run directories: {len(run_dirs)} new")
+    if dry_run:
+        for rid in new.run_id:
+            typer.echo(f"    + {rid}")
+        return
+
+    R._migrate_registry_schema()
+    with open(paths.REGISTRY, "a", encoding="utf-8", newline="") as f:
+        w = csv.DictWriter(f, fieldnames=R.REGISTRY_FIELDS)
+        for _, row in new.iterrows():
+            w.writerow(
+                {k: ("" if k not in row or pd.isna(row[k]) else row[k]) for k in R.REGISTRY_FIELDS}
+            )
+    for d in run_dirs:
+        shutil.copytree(d, paths.RUNS / d.name)
+    manifests = sorted((src / "studies" / "export").glob("*_manifest.json"))
+    if manifests:
+        dst = paths.RESULTS / "studies" / "export"
+        dst.mkdir(parents=True, exist_ok=True)
+        for m in manifests:
+            if not (dst / m.name).exists():
+                shutil.copy(m, dst / m.name)
+    typer.echo(
+        f"  merged. Now: vifeedback study tables   (registry has {len(pd.read_csv(paths.REGISTRY))} rows)"
+    )
 
 
 if __name__ == "__main__":

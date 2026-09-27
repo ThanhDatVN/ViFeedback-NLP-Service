@@ -135,32 +135,20 @@ costs seconds rather than a repeat of the whole sweep.
 **Save Version → Save & Run All (Commit)** persists `/kaggle/working` with the notebook version.
 Cell 6 also writes `kaggle_results.zip`, downloadable from the **Output** panel.
 
-On the laptop, merge **by `run_id`** — never append blind, because the archive's `registry.csv` also
-holds the rows that were already committed when you built the dataset:
+> **Never extract the Kaggle output over the repository, and never delete or replace `results/`.**
+> The Kaggle `results/` only knows about Kaggle's runs. On 2026-09-27 the output was extracted into
+> the repository and the local `results/`, holding 19 uncommitted laptop runs, was lost. The runs had
+> to be regenerated (training is deterministic, so they came back identical, at a cost of ~2 GPU-hours).
 
 ```bash
-unzip -o kaggle_results.zip -d /tmp/kag
-cp -rn /tmp/kag/runs/* results/runs/
-python - <<'EOF'
-import pandas as pd
-a = pd.read_csv('results/registry.csv')
-b = pd.read_csv('/tmp/kag/registry.csv')
-out = pd.concat([a, b]).drop_duplicates(subset='run_id', keep='first')
-out.to_csv('results/registry.csv', index=False)
-print(f'{len(out) - len(a)} new rows merged')
-EOF
+# 1. extract kaggle_results.zip into its own folder (gitignored), e.g. kaggle_results/
+# 2. check what would be merged, then merge: append-only, never overwrites a run directory
+python -m vifeedback.cli results merge kaggle_results --dry-run
+python -m vifeedback.cli results merge kaggle_results
+python -m vifeedback.cli study tables
 ```
 
-Then, still on the laptop:
-
-```bash
-python -m vifeedback.cli study tables       # regenerate tables; reports duplicate ids and re-runs
-cp /tmp/kag/studies/export/*_manifest.json results/studies/export/ 2>/dev/null || true
-```
-
-and add the session's weight-updating runs to `configs/experiments/ledger.csv` (10 for §4e, 1 for
-§4d). The registry schema changed once (a `config_hash` column); the merge above takes the union of
-columns, so older and newer rows coexist.
+Then add the session's weight-updating runs to `configs/experiments/ledger.csv`.
 
 **Latency of the INT8 artifacts** must be measured on the reference machine (see below): download
 `models/serve_int8_dynamic/` and `models/serve_int8_static/` from the Output panel, place them

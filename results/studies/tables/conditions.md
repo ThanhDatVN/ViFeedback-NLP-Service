@@ -19,10 +19,12 @@
 | sentiment | phobert-base | raw | base | validation | 5 | 0.8436 ± 0.0079 | 0.8355 | 0.8566 |
 | sentiment | phobert-base | seg_pyvi | base | test | 5 | 0.8288 ± 0.0108 | 0.8151 | 0.8437 |
 | sentiment | phobert-base | seg_pyvi | base | validation | 5 | 0.8643 ± 0.0098 | 0.8494 | 0.8750 |
+| sentiment | phobert-base | seg_pyvi | crt | validation | 2 | 0.8641 ± 0.0016 | 0.8630 | 0.8653 |
 | sentiment | phobert-base | seg_underthesea | base | validation | 5 | 0.8618 ± 0.0063 | 0.8552 | 0.8695 |
 | sentiment | phobert-base | seg_vncorenlp | base | test | 5 | 0.8373 ± 0.0031 | 0.8334 | 0.8414 |
 | sentiment | phobert-base | seg_vncorenlp | base | validation | 5 | 0.8671 ± 0.0073 | 0.8598 | 0.8751 |
 | sentiment | phobert-large | seg_pyvi | base | validation | 5 | 0.8560 ± 0.0036 | 0.8520 | 0.8604 |
+| sentiment | xlmr-base | raw | base | validation | 5 | 0.8499 ± 0.0048 | 0.8422 | 0.8546 |
 | sentiment | xlmr-base | seg_pyvi | base | validation | 5 | 0.8403 ± 0.0063 | 0.8329 | 0.8499 |
 | topic | b0 | raw | base | validation | 1 | 0.2105 | 0.2105 | 0.2105 |
 | topic | b0b | raw | base | validation | 1 | 0.2373 | 0.2373 | 0.2373 |

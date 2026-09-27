@@ -494,6 +494,8 @@ priority; Tier E does not.
 ## ADR-017 · 2026-09-23 · ONNX export moves off the reference machine; the benchmark stays on it · Accepted
 > **Narrowed by ADR-020.** Only INT8 *quantization* needs the blocked `onnx` package. With the
 > TorchScript exporter pinned, FP32 export and its verification run on the reference machine.
+> **Superseded by ADR-022.** The block applied only to freshly written DLLs; `onnx` 1.23 now imports
+> and INT8 builds on the reference machine too.
 
 **Context.** Phase 6's ONNX ladder (L3–L6) cannot run on the reference machine. Windows Application
 Control blocks the `onnx` package's native extension:
@@ -692,4 +694,66 @@ decisions had not been computed or inspected. No H1–H3 criterion changes.
 **Consequences.** Cycle 1 now covers every item of the review's recommended starting point. The
 single-task controls are the P4 registry rows at the same seeds, valid because Cycle 1's stage-1 runs
 reproduced them exactly under the current code.
+
+---
+
+## ADR-022 · 2026-09-27 · INT8 does not pass the quality gate; FP32 ONNX is the serving artifact · Accepted
+
+**Context.** Both INT8 releases failed on Kaggle with no manifest. Reproduced on the reference machine
+(`onnx` now imports: the host policy had blocked it only while its DLLs were freshly written):
+quantizing the `ORT_ENABLE_ALL` graph raises *"Unable to find data type for weight_name … shape
+inference failed"*. Fused contrib operators defeat the quantizer's shape inference.
+
+**Fixes.**
+
+* Quantization starts from the plain export after `quant_pre_process`, never from a fused graph.
+* The offline FP32 graph is optimized at `ORT_ENABLE_EXTENDED` only. `ENABLE_ALL` adds CPU-specific
+  layout transforms, so a graph optimized on one machine need not suit another (review R3). The
+  serving session applies the full level itself on the machine that runs it.
+* A failed build now writes its manifest with the error before stopping.
+
+**Result, full validation set, non-inferiority margin 0.005 (one-sided 95%):**
+
+| Artifact | Size | Macro-F1 (PyTorch 0.8672) | Neutral F1 | Label agreement | Gate |
+|---|---:|---:|---:|---:|---|
+| FP32 ONNX | 540 MB | 0.8672 | 0.672 | 100% | ✅ released |
+| INT8 dynamic | 136 MB | −0.030 (upper bound 0.054) | **0.584** | 98.7% | ❌ blocked |
+| INT8 static (per-tensor MinMax) | 136 MB | 0.342 | — | 54% | ❌ blocked |
+
+**Decision.** Serve FP32 ONNX. INT8 as configured costs the minority class: dynamic quantization
+leaves both majority classes unchanged and drops neutral F1 by 0.088. An accuracy-only check
+(98.7% agreement) would have shipped it; the macro-F1 gate did not. Static per-tensor calibration
+breaks the model outright, as expected for transformer activations with outliers.
+
+**Consequences.** Phase 6's question ("does INT8 add anything on this CPU?") is answered: not at this
+margin. Untried, and only worth trying with selection on a held-out subset rather than on the
+acceptance set: per-channel weights, excluding sensitive layers, percentile/entropy calibration,
+distillation to a smaller FP32 student (E15).
+
+---
+
+## ADR-023 · 2026-09-27 · Commit run artifacts as runs finish; merge other machines' results by command · Accepted
+
+**Context.** The Kaggle output was extracted into the repository and `results/`, holding 19 finished
+but **uncommitted** Cycle 1 laptop runs, was lost; it was not recoverable from the Recycle Bin. The
+committed part came back from git. The decisions and their numbers survived in the run logs, but the
+per-run artifacts (metrics, validation predictions, stage-1 robustness) did not. This is the second
+loss of `results/` (see the earlier deletion restored at 5692a1d), and both happened to artifacts that
+existed only on disk.
+
+**Decision.**
+
+1. **Regenerate, don't reconstruct.** The 19 runs are re-run with the same code and seeds. Training
+   is deterministic (every stage-1 control reproduced the registry exactly), so the regenerated
+   numbers are checked against the logged originals instead of being typed back in.
+2. **Commit artifacts as each batch of runs finishes**, not when a cycle closes. Holding results
+   uncommitted until they were "complete" is what made them losable.
+3. **`vifeedback results merge <dir>`** replaces the manual merge: it refuses to run without a local
+   registry, migrates the schema, appends only new run ids and never overwrites a run directory.
+   `kaggle_results/` is gitignored as the staging folder.
+4. `vifeedback study audit-sheet` rebuilds the local audit sheet (which holds corpus text and is
+   never committed) from committed, text-free files.
+
+**Cost.** About 2 GPU-hours to regenerate. Recorded in the ledger as regeneration, not new
+experiments: the decisions were already taken under the declared rules.
 

@@ -200,14 +200,34 @@ def release(
     tok = AutoTokenizer.from_pretrained(str(checkpoint))
 
     fp32 = OX.export_fp32(model, tok, staging, max_length)
-    served = OX.optimize_graph(fp32, staging / "model.opt.onnx")
-    if quantize == "dynamic":
-        served = OX.quantize_dynamic_int8(served, staging / "model.quant.onnx")
-    elif quantize == "static":
-        calib = pipeline(calib_raw)
-        served = OX.quantize_static_int8(
-            served, staging / "model.quant.onnx", calib, tok, max_length
+    try:
+        if quantize == "none":
+            served = OX.optimize_graph(fp32, staging / "model.opt.onnx")
+        else:
+            pre = OX.preprocess_for_quantization(fp32, staging / "model.pre.onnx")
+            if quantize == "dynamic":
+                served = OX.quantize_dynamic_int8(pre, staging / "model.quant.onnx")
+            else:
+                calib = pipeline(calib_raw)
+                served = OX.quantize_static_int8(
+                    pre, staging / "model.quant.onnx", calib, tok, max_length
+                )
+    except Exception as e:
+        # A failed build still leaves a manifest saying why; a staging dir with no explanation is
+        # what the first Kaggle INT8 attempt produced.
+        (staging / MANIFEST).write_text(
+            json.dumps(
+                {
+                    "task": task,
+                    "quantization": quantize,
+                    "passed": False,
+                    "build_error": f"{type(e).__name__}: {e}"[:2000],
+                },
+                indent=2,
+            ),
+            encoding="utf-8",
         )
+        raise
     for f in staging.glob("*.onnx"):
         if f != served:
             f.unlink()  # one model file per release: nothing stale left to be picked up

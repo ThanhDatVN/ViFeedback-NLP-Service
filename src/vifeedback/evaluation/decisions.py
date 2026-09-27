@@ -145,7 +145,8 @@ def h2(runs: dict[str, dict[int, dict[str, Any]]]) -> dict[str, Any]:
         "augmentation_exposure": {s: aug[s].get("augmentation") for s in seeds},
         "primary_suite": AUG_PRIMARY_SUITE,
         "criterion": f"relative reduction >= {AUG_MIN_RELATIVE_REDUCTION} and clean loss <= {AUG_MAX_CLEAN_LOSS}",
-        "supported_at_3_seeds": supported,
+        "n_seeds": len(seeds),
+        "supported": supported,
     }
 
 
@@ -212,4 +213,34 @@ def h4(
             },
             "advance_to_5_seeds": verdict == "helps",
         }
+    return out
+
+
+H3_WITHDRAW_THRESHOLD = 0.8523  # half the gap from xlmr+pyvi (0.8403) to phobert-base+pyvi (0.8643)
+
+
+def h3(registry: Any) -> dict[str, Any]:
+    """Apply the H3 rule of cycle1.yaml: XLM-R raw minus XLM-R pyvi, seed-paired, same session.
+
+    `registry` is the registry DataFrame. Only phase-8 rows are used, so both arms come from the one
+    Kaggle session that ran them together.
+    """
+    if registry.empty or "split" not in registry.columns:
+        return {"note": "H3 runs not found in the registry"}
+    v = registry[registry.split == "validation"]
+
+    def arm(prep: str) -> dict[int, float]:
+        q = v[v.run_id.astype(str).str.startswith(f"p8-sent-xlmr-base-{prep}-")]
+        return {int(s): float(m) for s, m in zip(q.seed, q.macro_f1, strict=True)}
+
+    raw, pyvi = arm("raw"), arm("seg_pyvi")
+    out: dict[str, Any] = {"raw": raw, "pyvi": pyvi, "paired": paired(pyvi, raw)}
+    if not raw or not pyvi:
+        out["note"] = "H3 runs not found in the registry"
+        return out
+    p = out["paired"]
+    out["supported"] = bool(p.get("ci95") and p["ci95"][0] > 0)
+    out["raw_mean"] = float(np.mean(list(raw.values())))
+    out["withdraw_adr016"] = out["raw_mean"] >= H3_WITHDRAW_THRESHOLD
+    out["threshold"] = H3_WITHDRAW_THRESHOLD
     return out

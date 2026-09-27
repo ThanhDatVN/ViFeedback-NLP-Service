@@ -24,7 +24,7 @@ under a laptop-GPU budget (RTX 3050, 4.29 GB) plus free Kaggle.
 | Q2 | What survives input that differs from clean benchmark text? | Robustness suite (Cycle 0), H2 (Cycle 1) |
 | Q4 | Do sentiment and topic share useful structure, or interfere? | H4 (Cycle 1) |
 | Q5 | Can the model's confidence be trusted, and used to abstain? | Calibration + selective prediction (Cycle 0) |
-| Q6 | What quality survives the move to a CPU serving artifact? | Release contract (ADR-020); INT8 *(pending, Kaggle)* |
+| Q6 | What quality survives the move to a CPU serving artifact? | Release contract (ADR-020); INT8 (ADR-022) |
 
 ## 3. Method
 
@@ -70,7 +70,8 @@ out-of-fold predictions moves dev macro-F1 by +0.004, which is noise.
 
 **H1 tested the classifier directly.** Both logit adjustment (τ = 1) and balanced head retraining (cRT)
 leave macro-F1 unchanged: +0.003 mean each, 2/3 seeds, 95% intervals spanning ±0.03–0.05. Neither
-meets the declared advance rule. Both trade neutral **precision** (0.79 → 0.59–0.70) for **recall**
+meets the declared advance rule. cRT was later run at two more seeds as H2's controls; at 5 seeds its
+mean is +0.0006. Both trade neutral **precision** (0.79 → 0.59–0.70) for **recall**
 (0.56 → 0.64–0.77). cRT also shrinks seed spread (0.8640 ± 0.0012 vs 0.8612 ± 0.011, 3 seeds): an
 observation, not a declared hypothesis.
 
@@ -86,37 +87,71 @@ Stripping all diacritics drops validation macro-F1 from 0.863 to **0.268**, with
 collapsing into neutral (3% → 64%), which makes neutral *recall* rise. Half-stripping gives 0.652;
 30% teencode costs 0.015.
 
-**H2, augmentation at 30% exposure (diacritic removal, teencode), is supported at 3 seeds:** the
-half-stripped degradation falls 39% (threshold 20%), full stripping recovers from 0.28 to 0.66, and
-teencode's degradation halves, with no clean-accuracy cost. **It does not generalize out of family:**
-on character noise, never used in training, the augmented model is slightly *worse* (−20% relative).
-*(5-seed confirmation pending.)*
+**H2, augmentation at 30% exposure (diacritic removal, teencode), is supported at 5 seeds:** the
+half-stripped degradation falls 43% (threshold 20%), full stripping recovers from 0.28 to 0.65, and
+teencode's degradation falls 54%. Clean accuracy is flat: the mean is +0.004, but one seed contributes
++0.030 and the typical seed moves −0.002. **It does not generalize out of family:** on character
+noise, never used in training, it changes nothing (−4% relative; the −20% seen at 3 seeds was noise).
 
 Negation is learned one-directionally: 36/36 positive→negated minimal pairs flip correctly, 2/8
 negative→negated pairs reach positive. The negative-pair labels are arguable, so this is a hypothesis
 for a larger probe.
 
-### 5.3 Shared encoder (Q4) *(pending: λ = 1 running)*
+### 5.3 XLM-R's deficit was partly preprocessing, mostly model (R8, H3)
 
-λ = 0.3 at 3 seeds: no material difference on either task against single-task controls. The
-engineering reading, if λ = 1 agrees: one model serves both tasks at half the inference cost with no
-loss detected at 3 seeds. That is not an equivalence claim.
+In one Kaggle session, XLM-R-base on raw text beats XLM-R-base on pyvi-segmented text by **+0.0097**
+[+0.0014, +0.0179], 4/5 seeds, p = 0.032. The tokenizer profile explains why: on segmented input XLM-R
+produces 36% more subwords. But raw XLM-R reaches 0.8499, still 0.014 below PhoBERT-base (0.8643) and
+below the pre-declared withdrawal threshold of 0.8523. So ADR-016's narrowed conclusion stands, now
+quantified: about 40% of the original gap was a preprocessing artifact, 60% is the model.
 
-### 5.4 Confidence is overconfident but ranks errors well (Q5)
+The same session re-ran PhoBERT-large and XLM-R from Tier E. **Every row matched the original,
+recorded weeks apart, to four decimals**, and same-session repeats were identical: seed-controlled
+training is reproducible on Kaggle as well as on the laptop.
+
+Robustness of the alternative encoder (Study B): raw XLM-R without diacritics scores 0.35 (PhoBERT
+0.27, PhoBERT + augmentation 0.65). With half the diacritics removed it is no better (0.66 vs 0.65).
+A different architecture buys less robustness than augmentation does.
+
+### 5.4 Sharing the encoder costs nothing at λ = 0.3, and sentiment at λ = 1 (Q4)
+
+One PhoBERT encoder with a sentiment head and a topic head, `L = L_sent + λ·L_topic`, epoch chosen by
+the mean of the two dev macro-F1 scores, against single-task runs at the same seeds:
+
+| λ | Sentiment Δ | Topic Δ | Declared verdict |
+|---|---|---|---|
+| 0.3 | +0.0012 (2/3 seeds) | +0.0005 (1/3) | no material difference |
+| 1 | **−0.0056 (0/3)** | +0.0031 (2/3) | negative transfer on sentiment |
+
+At λ = 0.3 one model serves both tasks at half the inference cost with no loss detected at 3 seeds.
+That is not an equivalence claim. At λ = 1 the topic loss pulls the shared representation away from
+sentiment. The measured dependence between the tasks (Cramér's V 0.344) does not become a gain at this
+data size.
+
+### 5.5 Confidence is overconfident but ranks errors well (Q5)
 
 Four independent temperature fits agree on T ≈ 1.5–1.6. Scaling cuts NLL by 17% and ECE from 0.034
 to 0.014 and changes no prediction. Max-probability, margin and entropy rank errors equally well
 (AURC 0.012 against 0.047 random, 0.001 oracle). **Abstention hides the minority class:** keeping the
 most confident 90% halves the error rate but keeps only 48% of neutral examples.
 
-### 5.5 What the serving artifact preserves (Q6)
+### 5.6 What the serving artifact preserves (Q6)
 
 The export now goes through a staged release (ADR-020): calibration and acceptance through the
 checkpoint's own preprocessing, the full validation set, FP32 logit parity (measured 8.2e-5), INT8
 non-inferiority at a 0.005 macro-F1 margin, and a checksummed manifest. Measuring the old silent
 fallback, a pyvi-trained model fed raw text, gave **−0.052 macro-F1** and neutral F1 0.672 → 0.557,
 more than twice the documented figure. The service now reports itself not ready instead.
-*(INT8 releases and a steady-state latency benchmark pending.)*
+
+**INT8 does not pass the gate** (ADR-022). Dynamic INT8 shrinks the model 4× (540 → 136 MB), leaves
+both majority classes unchanged, and drops **neutral F1 from 0.672 to 0.584**: macro-F1 −0.030,
+one-sided upper bound 0.054 against a 0.005 margin. Label agreement is 98.7%, so an accuracy-style
+check would have shipped it. Static per-tensor INT8 breaks the model (0.342). The first Kaggle attempt
+failed earlier still: quantizing a fused, `ENABLE_ALL`-optimized graph defeats shape inference. The
+pipeline now quantizes the pre-processed plain export, and ships FP32 optimized only to the portable
+EXTENDED level.
+
+*(Steady-state latency: re-run pending after the artifact loss, ADR-023.)*
 
 ## 6. Negative and inconclusive results
 
@@ -124,8 +159,10 @@ more than twice the documented figure. The service now reports itself not ready 
 |---|---|---|
 | Post-hoc neutral bias: +0.004 | Decision-boundary explanation | — |
 | Logit adjustment, cRT: +0.003, not advanced | Classifier-head / imbalance explanation | Label correction (E04), after the audit |
-| Augmentation hurts out-of-family noise | "Robustness" in general, beyond trained perturbations | Normalization front-end; natural noisy data |
-| PhoBERT-large −0.008, XLM-R −0.024 (pyvi input) | Nothing general: narrowed to "best among configurations tested" (ADR-019) | XLM-R on raw text (H3, Kaggle) |
+| Shared encoder: no gain at λ = 0.3; sentiment −0.0056 at λ = 1 | "Correlated tasks help each other" at this data size | Other weightings, gradient balancing (only justified after interference is shown, which λ = 1 now suggests) |
+| Augmentation leaves out-of-family noise unchanged | "Robustness" in general, beyond trained perturbations | Normalization front-end; natural noisy data |
+| PhoBERT-large −0.008; XLM-R −0.024 on pyvi, −0.014 on raw text | Capacity or multilinguality as the lever at this budget (H3 found ~40% of XLM-R's gap was preprocessing) | Tuned learning rates per model; BamiBERT, ViSoBERT |
+| INT8 dynamic: neutral F1 −0.088 | Quantization as a free speed-up here | Per-channel / partial quantization chosen on a held-out subset; distillation (E15) |
 | Threshold tuning, cross-fitted: 0 (ADR-015) | Thresholding as a lever on this dev set | — |
 
 ## 7. Limitations
@@ -158,7 +195,7 @@ integration, API contract and image-build jobs.
 
 ## 9. Next
 
-Close Cycle 1: H3 on Kaggle, the H2 5-seed confirmation, then one logged test evaluation per finalist
-(calibrated vs uncalibrated), including the overlap-excluded slice. Then the human audit, and one
+Close Cycle 1: one logged test evaluation per finalist (the deployed CE model and the H2-augmented
+model, calibrated vs uncalibrated), including the overlap-excluded slice. Then the human audit, and one
 Cycle 2 specialization: label efficiency (data science), compression or distillation (ML
 engineering), or an encoder-vs-LLM reference (AI engineering).

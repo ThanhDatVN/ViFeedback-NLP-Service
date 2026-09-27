@@ -434,7 +434,7 @@ ONNX export and no INT8. The S5 target (≤ 30 ms) is what Phase 6 must earn.
 | E | `p4-sent-phobert-base-seg_pyvi-base` | **phobert-base (135M)** | **0.8643 ± 0.0092** | *ref* | — | ✅ **ship** |
 | E | `p4-sent-phobert-large-seg_pyvi-base` | phobert-large (368M), Kaggle T4 | 0.8560 ± 0.0036 | −0.0083 | no (1.2 std) | ✗ |
 | E | `p4-sent-xlmr-base-seg_pyvi-base` | xlmr-base (277M), Kaggle T4, **pyvi input** | 0.8403 ± 0.0063 | −0.0240 | yes, **worse** | ✗ — confounded: XLM-R was never pretrained on segmented text (ADR-019) |
-| E | | xlmr-base, **raw input** | | | | **missing control** (review R8) |
+| E | `p8-sent-xlmr-base-raw-base` | xlmr-base, **raw input**, Kaggle | 0.8499 ± 0.0048 | −0.0144 | yes, worse | ✗ — +0.0097 over its pyvi run (H3); the rest of the gap is the model |
 | E | | phobert-base-v2 | | | | not run |
 | E | | ViSoBERT | | | | not run |
 | E | | CafeBERT (560M) | | | | not run, for cost — a budget decision, not a finding (ADR-019) |
@@ -476,9 +476,9 @@ robustness-for-accuracy trade stays visible.
 | L0 | torch fp32, pad max | | | | | | | *ref* | — |
 | L1 | + dynamic padding | | | | | | | | |
 | L2 | + thread tuning | | | | | | | | |
-| L3 | onnx fp32 + ORT optimization — **released and verified** (ADR-020) | 540 | *pending steady-state re-run* | | | | 0.8672 (fp32, = PyTorch fp32) | 0.00 | ✓ parity 8.2e-5 |
-| L4 | onnx int8 dynamic | | | | | | | | |
-| L5 | onnx int8 static | | | | | | | | |
+| L3 | onnx fp32, EXTENDED offline + ALL at load — **released and verified** (ADR-020/022) | 540 | *re-run pending (ADR-023)* | | | | 0.8672 (= PyTorch fp32) | 0.00 | ✓ parity 8.2e-5 |
+| L4 | onnx int8 dynamic | 136 | *timed for H3 only* | | | | 0.8370 | −3.02 | ✗ blocked: neutral F1 0.672 → 0.584 (ADR-022) |
+| L5 | onnx int8 static (per-tensor MinMax) | 136 | — | | | | 0.342 | −52 | ✗ blocked: breaks the model (ADR-022) |
 | L6 | openvino int8 | | | | | | | | |
 | L7 | + no segmentation | | | | | | | | |
 | L8 | distilled student | | | | | | | | |
@@ -489,6 +489,23 @@ last Phase 6 run was unstable (p95 spread 22–48% across repeats) and is not re
 **Reference machine** — fill once, cite everywhere: CPU `[model]`, `[n]` cores / `[m]` threads,
 AVX2 `[y/n]`, AVX512-VNNI `[y/n]`, RAM `[n]` GB, OS `[…]`, power plan `[…]`, AC `[y/n]`,
 ORT `[version]`, threads `[n]`.
+
+### 5.7 Research Cycle 1 — DECIDED by pre-registered rules (validation)
+
+Declared in `configs/experiments/cycle1.yaml` before any run; decisions computed by
+`vifeedback study cycle1` (`results/studies/cycle1/decisions.json`). Run ids `p8-*`.
+
+| Hypothesis | Declared prediction | Result (validation, seed-paired vs same-seed control) | Decision by the declared rule |
+|---|---|---|---|
+| **H1a** logit adjustment τ=1 | < 0.01 macro-F1; neutral recall ↑, precision ↓ | +0.0029 mean [−0.047, +0.053], 2/3 seeds; neutral P 0.79→0.61–0.70, R 0.56→0.66–0.67 | **Not advanced** (needs ≥ +0.005). Prediction confirmed |
+| **H1b** balanced head retraining (cRT) | same | +0.0028 mean [−0.025, +0.031], 2/3 seeds; neutral P → 0.59–0.69, R → 0.64–0.77 | **Not advanced.** Seed spread 0.0012 vs 0.011 for CE (observation) |
+| **H2** diacritic/teencode augmentation, 30% | ≥ 20% less `nodiacritic-50` degradation, ≤ 0.005 clean loss | **5 seeds** (finalist): degradation 0.217 → 0.124 (**−43%**); full no-diacritic 0.28 → 0.65; teencode −54%; clean mean +0.004, but per seed −0.006 … +0.030 (median −0.002); character noise unchanged (−4%) | **Supported at 5 seeds.** Targeted, in-family robustness at no material clean cost |
+| **H3** XLM-R on raw text | raw − pyvi > 0 | Kaggle, same session, 5 seeds: **+0.0097** [+0.0014, +0.0179], 4/5 seeds, p = 0.032. Raw XLM-R 0.8499 vs PhoBERT-base 0.8643 | **Supported**: segmented input cost XLM-R ~0.01. Raw mean below the 0.8523 withdrawal threshold, so ADR-016's narrowed conclusion stands: ~40% of the gap was preprocessing, ~60% remains |
+| **H4** shared encoder, λ=0.3 | helps / harms / no difference | sentiment +0.0012, topic +0.0005 (3 seeds) | **No material difference**: one model serves both tasks at half the inference cost, no loss detected |
+| **H4** shared encoder, λ=1 | same | sentiment −0.0056 (0/3 seeds), topic +0.0031 (2/3) | **Negative transfer on sentiment** by the rule (interval still spans 0) |
+
+
+Full discussion: [STATUS § 3](STATUS.md#3-cycle-1--declared-hypotheses-and-their-outcome).
 
 ---
 

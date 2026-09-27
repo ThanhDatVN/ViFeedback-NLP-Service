@@ -1,9 +1,13 @@
 cycle,purpose,conditions,weight_updating_runs,gpu_minutes,hardware,status,evidence
 pre-review,Phases 2-4: PhoBERT reproduction; segmentation ablation; locked test (G4),"phobert-base x {raw,vncorenlp,pyvi,underthesea} x sentiment/topic; 5 seeds; includes 10 exact re-runs",40,178.5,laptop RTX 3050,done,results/registry.csv
 pre-review,Tier E: larger encoders,"phobert-large, xlmr-base; sentiment; seg_pyvi; 5 seeds",10,71.2,Kaggle T4,done,results/registry.csv (rows restored from the Kaggle output after the results/ deletion)
-0,Study A step 3: out-of-fold predictions over train,"phobert-base; seg_pyvi; base recipe; 5 stratified folds; seed 42",5,18.4,laptop RTX 3050,done,results/studies/study_a/summary.json
-1,H1 imbalance: cRT (stage 1 = CE control),"phobert-base; seg_pyvi; seeds 42,1337,2024",3,,laptop RTX 3050,planned,configs/experiments/cycle1.yaml
-1,H1 imbalance: logit adjustment tau=1,"phobert-base; seg_pyvi; seeds 42,1337,2024",3,,laptop RTX 3050,planned,configs/experiments/cycle1.yaml
-1,H2 augmentation diac-teen p=0.3,"phobert-base; seg_pyvi; seeds 42,1337,2024",3,,laptop RTX 3050,planned,configs/experiments/cycle1.yaml
-1,H3 XLM-R input: raw + pyvi re-run,"xlmr-base; raw and seg_pyvi; 5 seeds each",10,,Kaggle GPU,planned,notebooks/kaggle_train.ipynb 4e
-1,H4 shared encoder (multi-task) lambda 0.3 and 1,"phobert-base; seg_pyvi; seeds 42,1337,2024",6,,laptop RTX 3050,planned,configs/experiments/cycle1.yaml v2
+0,Study A step 3: out-of-fold predictions over train,phobert-base; seg_pyvi; base recipe; 5 stratified folds; seed 42,5,18.4,laptop RTX 3050,done,results/studies/study_a/summary.json
+1,H1 imbalance: cRT (stage 1 = CE control),"phobert-base; seg_pyvi; seeds 42,1337,2024",3,12.6,laptop RTX 3050,done: not advanced (+0.0028); regenerated after results/ loss (ADR-023),results/studies/cycle1/decisions.json
+1,H1 imbalance: logit adjustment tau=1,"phobert-base; seg_pyvi; seeds 42,1337,2024",3,12.7,laptop RTX 3050,done: not advanced (+0.0029); regenerated after results/ loss (ADR-023),results/studies/cycle1/decisions.json
+1,H2 augmentation diac-teen p=0.3,"phobert-base; seg_pyvi; seeds 42,1337,2024",3,15.0,laptop RTX 3050,done: supported at 3 seeds; regenerated after results/ loss (ADR-023),results/studies/cycle1/decisions.json
+1,H2 finalist: controls (cRT recipe) + augmentation,"seeds 7,31337; 2 control + 2 augmented",4,17.700000000000003,laptop RTX 3050,done: supported at 5 seeds; regenerated after results/ loss (ADR-023),results/studies/cycle1/decisions.json
+1,H4 shared encoder lambda 0.3 and 1,"phobert-base; seg_pyvi; seeds 42,1337,2024",6,26.5,laptop RTX 3050,done: no difference (0.3); negative transfer (1); regenerated after results/ loss (ADR-023),results/studies/cycle1/decisions.json
+1,H3 XLM-R input: raw + pyvi re-run,xlmr-base; raw and seg_pyvi; 5 seeds each,10,48.9,Kaggle GPU,done: supported (+0.0097); ADR-016 not withdrawn (raw 0.8499 < 0.8523),results/runs/p8-sent-xlmr-base-*; registry
+1 (outside budget),"Tier E re-run on Kaggle by the owner (sections 4a, 4b)","phobert-large, xlmr-base; seg_pyvi; 5 seeds each",10,69.3,Kaggle GPU,done: reproduced every original Tier E row exactly (replication),results/runs/p4-sent-*-<hash>-val
+1,Section 4d: serving checkpoint for the INT8 release,phobert-base; seg_pyvi; seed 42,1,2.8,Kaggle GPU,"done: FP32 released; INT8 build failed (fixed, ADR-022)",results/studies/export/
+regeneration,Re-run of the 19 Cycle 1 laptop runs after results/ was lost,"identical code, configs and seeds",19,,laptop RTX 3050,running,ADR-023
