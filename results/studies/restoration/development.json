@@ -1,0 +1,27 @@
+{
+  "restorer": {
+    "threshold": 0.09090909090909091,
+    "keys": 1458,
+    "sha256": "7ed4a90368905eb6d532d795ced2f138c3a03434200e47d7b31cdf4b4f63c018",
+    "syllable_accuracy_on_stripped_validation": 0.9768043618889197,
+    "ms_per_sentence": 0.2086351231837691
+  },
+  "served_checkpoint": "models/p9-sent-phobert-base-seg_pyvi-aug-diac-teen-s42-599cf21f-ckp",
+  "validation_clean": {
+    "touched": 5,
+    "predictions_changed": 0,
+    "macro_f1": 0.8644104907582961
+  },
+  "validation_stripped": {
+    "macro_f1_without": 0.6859006599656943,
+    "macro_f1_with": 0.8569418279855149
+  },
+  "challenge_v1_unaccented": {
+    "n": 50,
+    "accuracy_without": 0.74,
+    "accuracy_with": 0.86,
+    "errors_only_without": 10,
+    "errors_only_with": 4,
+    "exact_mcnemar_p": 0.1795654296875
+  }
+}
