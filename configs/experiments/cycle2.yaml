@@ -19,7 +19,7 @@ budget:
 evaluation_data:
   challenge_set_v1:
     path: data/challenge/challenge_v1.csv
-    sha256: 4c8569dba8b18d66d88c1d47c31571812a7bc0e2588dbef23f7ab0f2a0cd877a
+    sha256: c4879de4ea7a6a23007358f12657cd0feaab4b499fec5834eafb2d18ab5b4a39  # LF line endings, as stored in git (.gitattributes)
     rows: 305            # 285 labelled positive/negative/neutral + 20 out_of_scope (label "none")
     read_with: pandas keep_default_na=False
     authored_by: project author (constructed; not drawn from UIT-VSFC), labelled under docs/ANNOTATION_GUIDE.md
