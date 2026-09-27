@@ -825,3 +825,37 @@ and before any H7 run:
 
 **Key handling.** The key is read from `OPENAI_API_KEY` (or a git-ignored `.env`), never logged,
 never written to a result file, never committed.
+
+---
+
+## ADR-027 · 2026-09-27 · The service runs the H2-augmented model (Cycle 2 H6) · Accepted
+
+**Context.** H2 (diacritic/teencode augmentation, p = 0.3) was supported on validation over 5 seeds
+and confirmed at the Cycle 1 closing gate. Whether to serve it was left to a rule declared in
+`cycle2.yaml` (H6) and evaluated on the frozen challenge set, whose typed noise was written by hand
+rather than produced by the augmentation code.
+
+**Evidence** (`results/studies/challenge/summary.json`, seed-42 checkpoints of both models):
+
+| Rows | CE | Augmented | Difference |
+|---|---:|---:|---|
+| Typed noise (unaccented + teencode, 90) | 0.611 | 0.800 | **+0.189 [+0.067, +0.311]** |
+| All other scored rows (195) | 0.867 | 0.867 | +0.000 (allowed: ≥ −0.02) |
+| `unaccented_typed` (50) | 0.320 | 0.740 | +0.42 |
+| `teencode_typed` (40) | 0.975 | 0.875 | **−0.10** |
+| `objective_neutral` (30) | 0.767 | 0.633 | **−0.13** |
+| Neutral F1 (285 scored rows) | 0.713 | 0.745 | +0.03 |
+
+**Decision.** The declared rule is met, so the service switches. The augmented model was released
+through the unchanged gate (FP32 ONNX, full validation: macro-F1 0.8644 in both PyTorch and ONNX,
+max logit difference 1.7e-5; manifest `results/studies/export/laptop_fp32_augmented_manifest.json`).
+The CE release is kept at `models/serve/.previous-sentiment` for rollback.
+
+**What the rule did not see.** Pooling the two typed categories hid a regression inside one of them,
+and "other rows" hid another. Hand-typed teencode, which the augmentation was meant to cover, got
+*worse* (4 rows, e.g. *ko hỉu j hết* → neutral). Short factual sentences drift to `negative` with
+confidence 0.5–0.7. Both are recorded here as known behaviour of the served model, and the next
+declared rule will require non-inferiority per category, not only in pools.
+
+**Test influence.** This is the first decision a test result influenced (EVALUATION_PROTOCOL § 4):
+the closing-gate test numbers were known when H6 was declared.

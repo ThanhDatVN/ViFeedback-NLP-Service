@@ -156,13 +156,13 @@ minority class, selecting on loss or accuracy selects the checkpoint that has le
 ### Decisions influenced by test results
 
 Review R7: count the *decisions* a test result influenced, not only the touches. Every test touch is
-in `results/test_evaluations.log`, 21 rows, all from Gate G4.
+in `results/test_evaluations.log`: 28 rows, 21 from Gate G4 and 7 from the Cycle 1 closing gate. Cycle 2 adds none.
 
 | Test evaluation | Decision it influenced |
 |---|---|
 | G4 baselines and PhoBERT (VnCoreNLP, pyvi; sentiment, topic) | **None.** The serving pipeline (pyvi) was chosen on dev + latency before G4 (ADR-012). The dev→test drop was reported, not acted on. No configuration, threshold or model choice since G4 used a test number |
-
 | Cycle 1 closing gate (7 touches: 5 H2 finalist runs, 2 seed-42 checkpoints) | **None.** Cycle 1's decisions were recorded on validation first; the gate confirmed H2 and the calibration temperature. Choosing the augmented model for deployment on the strength of this result would be the first test-influenced decision, and would be recorded here |
+| Cycle 2 H6 (no new test touch) | **The serving model: the H2-augmented checkpoint replaces CE (ADR-027). This is the first test-influenced decision.** The deciding evidence is a declared rule on the frozen challenge set, and H2 itself was decided on validation. But the closing-gate test result (no-diacritic 0.27 → 0.64) was known when H6 was declared, so it is counted here, as `cycle2.yaml` said it would be |
 
 ## Latency harness
 
