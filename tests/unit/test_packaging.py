@@ -301,3 +301,24 @@ class TestEditableInstallVisibility:
                 f"{nb_name} installs the package but never refreshes the import caches; "
                 "the in-process import will fail with a bare ModuleNotFoundError"
             )
+
+
+class TestProvenance:
+    """Review R11: Kaggle runs have no .git, so env.json must identify the code another way."""
+
+    def test_source_hash_is_stable_and_well_formed(self) -> None:
+        from vifeedback import env
+
+        a, b = env.source_hash(), env.source_hash()
+        assert a == b and len(a) == 64 and int(a, 16) >= 0
+
+    def test_every_model_key_has_a_pinned_revision(self) -> None:
+        from vifeedback.constants import MODEL_IDS, MODEL_REVISIONS
+
+        assert set(MODEL_REVISIONS) == set(MODEL_IDS)
+        assert all(len(r) == 40 for r in MODEL_REVISIONS.values()), "revisions must be commit SHAs"
+
+    def test_dataset_revision_is_a_commit_not_a_branch(self) -> None:
+        from vifeedback.data.loader import PARQUET_REVISION
+
+        assert len(PARQUET_REVISION) == 40 and "/" not in PARQUET_REVISION

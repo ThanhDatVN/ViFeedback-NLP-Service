@@ -99,3 +99,18 @@ class TestCalibrationSubset:
         assert np.array_equal(
             RL.stratified_subset(y, 60, seed=3), RL.stratified_subset(y, 60, seed=3)
         )
+
+
+class TestQuantizedBatchDependence:
+    def test_int8_logits_may_move_with_the_batch_but_labels_may_not(self) -> None:
+        """Dynamic INT8 scales activations per batch; a logit shift alone must not block it."""
+        z, y = _logits()
+        shifted_single = z[:32] + 0.8  # same argmax, different logits
+        assert RL.acceptance(z, z, y, 3, quantized=True, single_logits=shifted_single)["passed"]
+
+    def test_int8_label_flips_between_batch_and_single_are_blocked(self) -> None:
+        z, y = _logits()
+        flipped = z[:32].copy()
+        flipped[:4] = flipped[:4][:, ::-1] * 3  # 4 of 32 change label
+        r = RL.acceptance(z, z, y, 3, quantized=True, single_logits=flipped)
+        assert not r["passed"]

@@ -155,6 +155,22 @@ def gpu_info() -> dict[str, Any]:
         return {"available": False}
 
 
+def source_hash() -> str:
+    """SHA-256 over every source file of the package, in path order.
+
+    Kaggle runs execute from an archive with no `.git`, so their rows had no commit to point to
+    (review R11). This identifies the exact code any run executed, with or without git.
+    """
+    import hashlib
+
+    root = Path(__file__).resolve().parent
+    h = hashlib.sha256()
+    for f in sorted(root.rglob("*.py")):
+        h.update(f.relative_to(root).as_posix().encode())
+        h.update(f.read_bytes().replace(b"\r\n", b"\n"))  # line endings differ across OSes
+    return h.hexdigest()
+
+
 def capture(extra: dict[str, Any] | None = None) -> dict[str, Any]:
     cpu = cpu_info()
     env = {
@@ -171,6 +187,7 @@ def capture(extra: dict[str, Any] | None = None) -> dict[str, Any]:
         "gpu": gpu_info(),
         "packages": _pkg_versions(),
         "git": _git(),
+        "source_sha256": source_hash(),
     }
     if extra:
         env["extra"] = extra

@@ -97,8 +97,8 @@ also reproduces here: VnCoreNLP 0.8670 > pyvi 0.8643 > underthesea 0.8618 on dev
 
 ## What was got wrong, and corrected
 
-The decision log records four occasions where measurement overturned a plan — including one
-retraction of a result already written up as a success.
+The decision log records every occasion where measurement or review overturned a plan, including
+one retraction of a result already written up as a success.
 
 | ADR | What was claimed | What measurement showed |
 |---|---|---|
@@ -106,10 +106,37 @@ retraction of a result already written up as a success.
 | [008](docs/DECISIONS.md) | The TF-IDF baseline would reach ~0.70 macro-F1 | It reached **0.78**. Three pre-registered ranges falsified, all low; success criteria revised against the measured baseline |
 | [012](docs/DECISIONS.md) | Removing segmentation would be the biggest latency win | Segmentation **helps accuracy** and costs 0.6% of p95. The headline hypothesis was wrong |
 | [018](docs/DECISIONS.md) | We refuted a published paper's conclusion | **We did not.** That conclusion is conditional and our result *agrees* with it. Caught by external review. Three documents repeated the claim because none of them carried the quote that would have refuted it |
+| [019](docs/DECISIONS.md) | Scaling the encoder buys nothing; multilingual loses to monolingual | Only *among the configurations tested*: XLM-R was only ever given pyvi-segmented text it never saw in pretraining. Narrowed after review; the missing control is Cycle 1 H3 |
+| [020](docs/DECISIONS.md) | The export verified its artifact | It calibrated and checked parity on **raw** text while the service feeds segmented text, and ignored its own logit check. Replaced by a staged release with a manifest |
 | [015](docs/DECISIONS.md) | Threshold tuning is "the single largest lever", +0.035 | Cross-fitted, the gain on PhoBERT is **zero**. Retracted — and the correction *raised* the reported lift, because the inflated baseline had been understating the model |
 
 ADR-015 is the one worth reading. The bug was not convenient, and it surfaced because a result that
 had already been written up got re-tested.
+
+---
+
+## Research cycles after external review
+
+An external review ([REVIEW_AND_RESEARCH_PLAN](docs/REVIEW_AND_RESEARCH_PLAN.md)) set the next
+workflow: *observe an error → propose competing explanations → design a controlled intervention →
+evaluate independently → record the decision and its limits.*
+
+**Cycle 0 — what the deployed model gets wrong** ([results/studies](results/studies/README.md)).
+Validation plus out-of-fold predictions over train; the test split was not touched.
+
+| Question | Measured | So |
+|---|---|---|
+| Is neutral's gap a threshold problem? | 66–72% of neutral errors are at p ≥ 0.9; a tuned neutral bias gains +0.004 | No. The errors are confident, so the question is labels vs representation, and a human audit is next |
+| Are probabilities trustworthy? | Overconfident, T ≈ 1.5–1.6 in four independent fits; NLL −17% after scaling | Ship temperature scaling; it changes no prediction |
+| Does abstention help? | 90% coverage halves the error rate **and keeps only 48% of neutral** | Report coverage per class, or it hides the minority class |
+| Robust to real typing? | No diacritics: macro-F1 0.863 → **0.268**, with 64% of predictions becoming neutral | A deployment risk the 99.86%-diacritized benchmark cannot show |
+| Is training reproducible? | 10 re-run seeds and Cycle 1's controls reproduce earlier runs **exactly** | Seed variance is the only run-to-run variance |
+
+**Cycle 1 — three hypotheses, declared before running**
+([configs/experiments/cycle1.yaml](configs/experiments/cycle1.yaml), committed before the first run):
+H1 is neutral fixable in the classifier (logit adjustment, balanced head retraining)? H2 does
+diacritic/teencode augmentation buy robustness without clean cost? H3 was XLM-R's deficit a
+preprocessing confound? Results: [STATUS § 3](docs/STATUS.md#3-cycle-1--declared-hypotheses-and-their-outcome).
 
 ---
 
@@ -126,13 +153,23 @@ make baseline         # TF-IDF ladder
 make train            # fine-tune PhoBERT (needs a GPU; ~5 min/seed on an RTX 3050)
 ```
 
+Research studies are CLI calls too, each writing to `results/studies/`:
+
+```bash
+vifeedback study tables              # result tables + paired comparisons from the registry
+vifeedback study neutral-audit       # dev + out-of-fold predictions, stratified audit sheet
+vifeedback study calibration         # cross-fitted temperature scaling, per-class coverage
+vifeedback study robustness          # perturbation suites, slices, negation probe
+vifeedback study cycle1              # apply Cycle 1's declared decision rules
+```
+
 `make help` lists every target. Models too large for a 4.29 GB GPU go to Kaggle —
 see [KAGGLE_GUIDE](docs/KAGGLE_GUIDE.md).
 
 ### Serving
 
 ```bash
-make export           # checkpoint -> ONNX, optimize, quantize, verify parity
+make export           # checkpoint -> ONNX in staging -> verify on full dev -> release + manifest
 make docker && make docker-run
 curl -s localhost:8000/v1/classify \
   -H 'content-type: application/json' \
@@ -216,7 +253,7 @@ does not enter the registry.
 |---|---|
 | CPU | AMD Ryzen 5 6600H · 6C/12T · AVX2 · **no AVX512-VNNI** |
 | GPU | RTX 3050 Laptop, 4.29 GB — 69 s/epoch for PhoBERT-base |
-| Runs to date | 94 registry rows (73 dev, 21 test). Ten rows come from two models run on a Kaggle T4; the rest are local |
+| Runs to date | 97 registry rows (83 distinct results after removing duplicates and same-seed re-runs; 21 test rows). Ten come from a Kaggle T4; every weight-updating run is in [the ledger](configs/experiments/ledger.csv) |
 
 `max_length` 96 (from the Gate G0 subword profile) plus dynamic padding already cut FP32 CPU p95
 from **177.5 ms to 50.8 ms — 3.49×, before any quantization**.
@@ -232,17 +269,17 @@ from **177.5 ms to 50.8 ms — 3.49×, before any quantization**.
 - [x] Word-segmentation ablation — *G3*
 - [x] API + Docker + CI — *G7*
 - [x] Reproducible from a clean clone — *G7*
-- [ ] ≥30 error cases coded by linguistic feature — *G5*
-- [ ] ONNX / quantization benchmark — *G6*
+- [ ] ≥30 error cases coded by linguistic feature — *G5: tooling, robustness suite and a 160-row audit sheet done; the human coding is not*
+- [ ] ONNX / quantization benchmark — *G6: FP32 release verified (8e-5 logit parity); INT8 on Kaggle and a steady-state benchmark pending*
 - [ ] HF model card — *G7*
 
 Open problems: **[docs/STATUS.md](docs/STATUS.md)**.
 External code review and the next research cycle:
 **[docs/REVIEW_AND_RESEARCH_PLAN.md](docs/REVIEW_AND_RESEARCH_PLAN.md)**.
 
-Known open issues from that review, tracked in `docs/STATUS.md`: export quality contract (R3),
-API inference tests with a real artifact (R4), readiness semantics (R5), unbounded metrics
-buffer (R6), dependency/revision pinning (R11).
+Review items still open, tracked in [STATUS § 5](docs/STATUS.md#5-external-review--item-status):
+readiness semantics (R5) and the metrics buffer (R6), deferred by the review's own scope; the
+latency re-run (R10); model and dataset revision pinning (R11).
 
 ---
 

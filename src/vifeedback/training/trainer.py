@@ -249,16 +249,18 @@ def train(
         DataCollatorWithPadding,
     )
 
-    from vifeedback.constants import LABELS, MODEL_IDS
+    from vifeedback.constants import LABELS, MODEL_IDS, MODEL_REVISIONS
 
     seed_everything(cfg.seed)
     device = cfg.resolved_device()
     k = n_classes(cfg.task)
     model_id = MODEL_IDS[cfg.model_key]
 
-    tokenizer = AutoTokenizer.from_pretrained(model_id)
+    revision = MODEL_REVISIONS.get(cfg.model_key)  # pinned commit (R11); None = branch head
+    tokenizer = AutoTokenizer.from_pretrained(model_id, revision=revision)
     model = AutoModelForSequenceClassification.from_pretrained(
         model_id,
+        revision=revision,
         num_labels=k,
         id2label={i: n for i, n in LABELS[cfg.task].items()},
         label2id={n: i for i, n in LABELS[cfg.task].items()},

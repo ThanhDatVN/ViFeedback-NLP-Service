@@ -85,15 +85,34 @@ run; add it if you hit a download error.
 
 ## Step 5 — Run
 
-**Run All** works, but cells 4a/4b/4c are each a full 5-seed sweep. Run only the ones you need:
+Cells 1–3 (environment, repository, data) take about 3–5 minutes and always run first. After that,
+run **only the cells the current cycle needs**. Each training cell is a multi-seed sweep, and every
+run that updates weights counts against the cycle budget in `configs/experiments/ledger.csv`.
 
-| Cell | Model | Why it is here | Est. |
-|---|---|---|---|
-| 4a | `phobert-large` | 368M params, ~7.9 GB — does not fit the laptop | **~75 min** |
-| 4b | `xlm-roberta-base` full | 277M, ~5.9 GB. *The frozen-embedding version fits the laptop — run that one there* | ~40 min |
-| 4c | `CafeBERT` | 560M, ~11 GB. Commented out; needs registering in `constants.MODEL_IDS` first | ~90 min |
+### Current cycle — Cycle 1 (`configs/experiments/cycle1.yaml`)
 
-Cells 1–3 (environment, repo, data) take about 3 minutes and must run first.
+| Cell | What | Runs | Est. (T4) | Needed? |
+|---|---|---:|---|---|
+| **4e** | **H3: `xlmr-base` on raw text + on pyvi, same session, 5 seeds each** | 10 | **~55 min** | **yes, the only Kaggle-only hypothesis** |
+| 4d | Release FP32 + dynamic INT8 + static INT8 through the verified release step | 1 | ~10 min | optional: INT8 needs `onnx`, blocked on the laptop |
+
+Cell 4e prints the paired result (raw − pyvi, 95% CI, wins, p) at the end, so the answer is visible
+before the session closes.
+
+Cell 4d reports each variant as `released` or `BLOCKED`. **A blocked INT8 release is a result, not a
+crash**: it means that quantization lost more than the pre-registered 0.005 macro-F1. Every
+manifest, released or blocked, is copied to `results/studies/export/` so it comes home in the archive.
+
+### History — Tier E (already in the registry)
+
+| Cell | Model | Est. |
+|---|---|---|
+| 4a | `phobert-large` (368M, ~7.9 GB) | ~75 min |
+| 4b | `xlm-roberta-base` full, pyvi (277M, ~5.9 GB) | ~40 min |
+| 4c | `CafeBERT` (560M). Commented out; not registered in `constants.MODEL_IDS` | ~90 min |
+
+Do not re-run these unless you are deliberately reproducing Tier E. Cell 4e already re-runs the one
+Tier E condition that Cycle 1 needs.
 
 **Check the effective batch.** The train command prints
 `effective batch = 16 x 2 = 32`. `phobert-large` uses batch 16 to fit, so `--grad-accum 2` restores
@@ -132,6 +151,21 @@ print(f'{len(out) - len(a)} new rows merged')
 EOF
 ```
 
+Then, still on the laptop:
+
+```bash
+python -m vifeedback.cli study tables       # regenerate tables; reports duplicate ids and re-runs
+cp /tmp/kag/studies/export/*_manifest.json results/studies/export/ 2>/dev/null || true
+```
+
+and add the session's weight-updating runs to `configs/experiments/ledger.csv` (10 for §4e, 1 for
+§4d). The registry schema changed once (a `config_hash` column); the merge above takes the union of
+columns, so older and newer rows coexist.
+
+**Latency of the INT8 artifacts** must be measured on the reference machine (see below): download
+`models/serve_int8_dynamic/` and `models/serve_int8_static/` from the Output panel, place them
+under `models/`, and run `vifeedback serve bench --model-dir models/serve_int8_dynamic/sentiment`.
+
 ---
 
 ## Troubleshooting
@@ -159,8 +193,8 @@ EOF
 | Idle timeout | ~20 minutes with the browser closed (use *Save & Run All* for long sweeps) |
 | Output persisted | yes, with the notebook version |
 
-The whole remaining external workload — `phobert-large` and `xlm-roberta-base` at 5 seeds each — is
-about **2 GPU-hours**, so roughly 7% of one week's quota.
+Cycle 1's Kaggle workload, cells 4e and 4d, is about **65 GPU-minutes**, roughly 4% of one
+week's quota.
 
 ---
 

@@ -420,16 +420,17 @@ ONNX export and no INT8. The S5 target (≤ 30 ms) is what Phase 6 must earn.
 | — | | phobert-base reference | | *ref* | — | ✓ |
 | A | | class weights | | | | |
 | A | | focal loss γ=2 | | | | |
-| A | | logit adjustment | | | | |
-| A | | threshold tuning | | | | |
+| A | `p8-sent-…-logit-adjust` | logit adjustment τ=1 | → § 5.7 (Cycle 1 H1) | | | |
+| A | `p8-sent-…-crt` | balanced classifier re-training (cRT) | → § 5.7 (Cycle 1 H1) | | | |
+| A | | threshold tuning | cross-fitted gain 0 (ADR-015); Cycle 0 boundary test +0.004 | | no | ✗ |
 | B | | LLRD | | | | |
 | B | | lr/epoch sweep best | | | | |
 | C | | label smoothing | | | | |
 | C | | R-Drop | | | | |
 | C | | FGM adversarial | | | | |
 | D | | back-translation aug | | | | |
-| D | | teencode/diacritic aug | | | | |
-| D | | label-noise audit | | | | |
+| D | `p8-sent-…-aug-diac-teen` | teencode/diacritic aug, 30% exposure | → § 5.7 (Cycle 1 H2) | | | |
+| D | | label-noise audit | OOF ranking + 160-row audit sheet ready; human audit pending (Study A) | | | |
 | E | `p4-sent-phobert-base-seg_pyvi-base` | **phobert-base (135M)** | **0.8643 ± 0.0092** | *ref* | — | ✅ **ship** |
 | E | `p4-sent-phobert-large-seg_pyvi-base` | phobert-large (368M), Kaggle T4 | 0.8560 ± 0.0036 | −0.0083 | no (1.2 std) | ✗ |
 | E | `p4-sent-xlmr-base-seg_pyvi-base` | xlmr-base (277M), Kaggle T4, **pyvi input** | 0.8403 ± 0.0063 | −0.0240 | yes, **worse** | ✗ — confounded: XLM-R was never pretrained on segmented text (ADR-019) |
@@ -444,33 +445,46 @@ ONNX export and no INT8. The S5 target (≤ 30 ms) is what Phase 6 must earn.
 The **"> seed std?"** column is the point of the table. A +0.004 macro-F1 gain against a ±0.011 seed std is
 not an improvement, and marking it as one is the most common way these projects go wrong.
 
-### 5.5 Robustness (Phase 5)
+### 5.5 Robustness — MEASURED in Cycle 0 (validation, deployed checkpoint)
 
-| Perturbation | Macro-F1 | Δ vs clean | Most-affected class |
-|---|---|---|---|
-| Clean test | | *ref* | |
-| De-diacritized | | | |
-| Teencode-injected | | | |
-| Char noise 5% | | | |
-| Char noise 10% | | | |
-| Negation probe set (accuracy) | | | |
+Suite version 1 (`evaluation/robustness.py`). Perturbations applied to raw text, then segmented with pyvi.
+Paired on the same 1,583 sentences; 95% bootstrap CI over sentences. **Validation, not test:** the test
+split is reserved for the closing gate, when these suites run once, frozen.
 
-Repeat the whole table after the Phase 5 mitigation, and report **both** clean and perturbed columns so
-that any robustness-for-accuracy trade is visible rather than hidden.
+| Perturbation | Changed | Macro-F1 | Δ vs clean [95% CI] | Neutral recall (clean 0.562) | Predicted neutral (clean 3.2%) |
+|---|---:|---:|---|---:|---:|
+| Clean validation | — | 0.8634 | *ref* | 0.562 | 3.2% |
+| `nodiacritic` | 99.7% | **0.268** | −0.595 [−0.634, −0.555] | 0.795 ⚠ | **64.1%** |
+| `nodiacritic-50` | 97.2% | 0.652 | −0.211 [−0.252, −0.175] | 0.589 | 11.9% |
+| `teencode-30` | 19.3% | 0.848 | −0.015 [−0.029, −0.005] | 0.548 | 3.5% |
+| `teencode-100` | 49.4% | 0.821 | −0.042 [−0.067, −0.017] | 0.589 | 4.5% |
+| `charnoise-5` | 79.1% | 0.784 | −0.079 [−0.111, −0.050] | 0.452 | 3.7% |
+| `charnoise-10` | 92.3% | 0.769 | −0.094 [−0.133, −0.058] | 0.521 | 5.1% |
+| Negation probe, positive → negated (36 pairs) | — | pair accuracy **1.00** | — | — | — |
+| Negation probe, negative → negated (8 pairs, labels arguable) | — | pair accuracy 0.25 | — | — | — |
+
+⚠ Neutral recall *rises* without diacritics because predictions collapse into neutral. Read alone, that
+column would call a broken pipeline an improvement.
+
+The mitigation run is Cycle 1 H2 (§ 5.7): both the clean and the perturbed columns are reported, so a
+robustness-for-accuracy trade stays visible.
 
 ### 5.6 Inference benchmark (Phase 6, reference CPU)
 
-| Step | Configuration | Size (MB) | p50 (ms) | **p95 (ms)** | p99 (ms) | Throughput b=32 (req/s) | Macro-F1 | Δ F1 (pp) | Within budget? |
+| Step | Configuration | Size (MB) | p50 (ms) | **p95 (ms)** | p99 (ms) | Throughput b=32 (texts/s) | Macro-F1 | Δ F1 (pp) | Within budget? |
 |---|---|---|---|---|---|---|---|---|---|
 | L0 | torch fp32, pad max | | | | | | | *ref* | — |
 | L1 | + dynamic padding | | | | | | | | |
 | L2 | + thread tuning | | | | | | | | |
-| L3 | onnx fp32 + O3 | | | | | | | | |
+| L3 | onnx fp32 + ORT optimization — **released and verified** (ADR-020) | 540 | *pending steady-state re-run* | | | | 0.8672 (fp32, = PyTorch fp32) | 0.00 | ✓ parity 8.2e-5 |
 | L4 | onnx int8 dynamic | | | | | | | | |
 | L5 | onnx int8 static | | | | | | | | |
 | L6 | openvino int8 | | | | | | | | |
 | L7 | + no segmentation | | | | | | | | |
 | L8 | distilled student | | | | | | | | |
+
+Throughput counts **texts** per second through the in-process pipeline, not HTTP requests (R10). The
+last Phase 6 run was unstable (p95 spread 22–48% across repeats) and is not reported.
 
 **Reference machine** — fill once, cite everywhere: CPU `[model]`, `[n]` cores / `[m]` threads,
 AVX2 `[y/n]`, AVX512-VNNI `[y/n]`, RAM `[n]` GB, OS `[…]`, power plan `[…]`, AC `[y/n]`,

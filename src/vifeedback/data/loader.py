@@ -30,7 +30,9 @@ MANIFEST = paths.DATA_RAW / "manifest.json"
 _COLUMNS = ("sentence", "sentiment", "topic")
 
 # Hub-maintained parquet conversion of the script-based dataset. See the module docstring.
-PARQUET_REVISION = "refs/convert/parquet"
+# Pinned to the commit `refs/convert/parquet` pointed to on 2026-09-27 (review R11): the branch
+# name moves whenever the Hub re-converts. The SHA256 manifest still verifies the bytes.
+PARQUET_REVISION = "2d76906157232f87e9883fa37ebfc91ffdee1f83"
 PARQUET_FILES = {
     "train": "default/train/0000.parquet",
     "validation": "default/validation/0000.parquet",

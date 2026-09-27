@@ -99,9 +99,11 @@ def acceptance(
     }
     r["macro_f1_drop"] = r["macro_f1_torch"] - r["macro_f1_onnx"]
     if single_logits is not None:
-        # Batch-of-one must equal the padded batch: a dynamic-axis bug shows up exactly here.
-        r["batch_vs_single_max_diff"] = float(
-            np.abs(single_logits - got_logits[: len(single_logits)]).max()
+        # Batch-of-one must match the padded batch: a dynamic-axis bug shows up exactly here.
+        batched = got_logits[: len(single_logits)]
+        r["batch_vs_single_max_diff"] = float(np.abs(single_logits - batched).max())
+        r["batch_vs_single_label_agreement"] = float(
+            (single_logits.argmax(1) == batched.argmax(1)).mean()
         )
 
     failures = []
@@ -116,10 +118,16 @@ def acceptance(
         failures.append(
             f"FP32 logits diverge: max |diff| {r['max_abs_logit_diff']:.2e} > {FP32_ATOL}"
         )
-    if single_logits is not None and r["batch_vs_single_max_diff"] > (
-        0.5 if quantized else FP32_ATOL * 10
-    ):
-        failures.append(f"batch vs single mismatch {r['batch_vs_single_max_diff']:.2e}")
+    if single_logits is not None:
+        # FP32 must give the same logits whatever the batch. Dynamic INT8 computes activation
+        # scales per batch, so its logits legitimately move with batch composition; what must not
+        # move is the label. At most one flip in the 32 sentences checked.
+        if not quantized and r["batch_vs_single_max_diff"] > FP32_ATOL * 10:
+            failures.append(f"batch vs single logits differ by {r['batch_vs_single_max_diff']:.2e}")
+        if quantized and r["batch_vs_single_label_agreement"] < 0.96:
+            failures.append(
+                f"batch vs single labels agree on only {r['batch_vs_single_label_agreement']:.0%}"
+            )
     r["failures"] = failures
     r["passed"] = not failures
     return r

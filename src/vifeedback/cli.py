@@ -355,10 +355,18 @@ def serve_bench(
     from vifeedback.inference import benchmark as BM
     from vifeedback.inference.onnx_export import OnnxClassifier
     from vifeedback.preprocess.segment import get_segmenter
+    from vifeedback.preprocess.variants import VARIANTS
 
     d = Path(model_dir) if model_dir else paths.MODELS / "serve" / task
-    clf = OnnxClassifier(d, threads or None)
-    seg = get_segmenter("pyvi")
+    manifest = (
+        json.loads((d / "manifest.json").read_text(encoding="utf-8"))
+        if (d / "manifest.json").exists()
+        else {}
+    )
+    clf = OnnxClassifier(d, threads or None, manifest.get("max_length", 96))
+    # Time the preprocessing the artifact was verified with, not an assumed one (review R3/R10).
+    backend = VARIANTS[manifest["preprocessing"]][0] if manifest.get("preprocessing") else "pyvi"
+    seg = get_segmenter(backend)
     texts = load("test")["sentence"].tolist()
 
     rep = BM.benchmark_pipeline(
@@ -783,6 +791,38 @@ def study_neutral_diagnosis() -> None:
         json.dumps(yaml_safe(out), indent=2, ensure_ascii=False), encoding="utf-8"
     )
     typer.echo(json.dumps(yaml_safe(out), indent=2, ensure_ascii=False)[:4000])
+
+
+@study_app.command("cycle1")
+def study_cycle1() -> None:
+    """Apply the decision rules declared in configs/experiments/cycle1.yaml to the p8 runs."""
+    import pandas as pd
+
+    from vifeedback.evaluation import decisions as D
+    from vifeedback.evaluation.report import yaml_safe
+
+    runs = D.load_runs(phase=8)
+    reg = pd.read_csv(paths.REGISTRY)
+    ce = reg[
+        (reg.model == "phobert-base")
+        & (reg.preprocessing == "seg_pyvi")
+        & (reg.recipe == "base")
+        & (reg.task == "sentiment")
+        & (reg.split == "validation")
+    ].drop_duplicates("seed", keep="last")
+    registry_ce = {int(s): float(v) for s, v in zip(ce.seed, ce.macro_f1, strict=True)}
+
+    out = {
+        "runs_found": {k: sorted(v) for k, v in runs.items()},
+        "H1": D.h1(runs, registry_ce),
+        "H2": D.h2(runs),
+    }
+    dst = paths.RESULTS / "studies" / "cycle1"
+    dst.mkdir(parents=True, exist_ok=True)
+    (dst / "decisions.json").write_text(
+        json.dumps(yaml_safe(out), indent=2, ensure_ascii=False), encoding="utf-8"
+    )
+    typer.echo(json.dumps(yaml_safe(out), indent=2, ensure_ascii=False)[:6000])
 
 
 if __name__ == "__main__":

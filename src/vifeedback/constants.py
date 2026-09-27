@@ -77,5 +77,16 @@ MODEL_IDS: Final[dict[str, str]] = {
     "xlmr-base": "FacebookAI/xlm-roberta-base",
 }
 
+# Hub commits, pinned after review R11: a model id alone names a moving branch, so a re-run months
+# later could silently start from different weights. These are the commits `main` pointed to on
+# 2026-09-27; phobert-base's matches the weights every registry row was trained from (local cache).
+MODEL_REVISIONS: Final[dict[str, str]] = {
+    "phobert-base": "01daacda68afe13d83023d16ec647239e344a1e6",
+    "phobert-base-v2": "86cd7fd4c148980922ac11a2cf5e257f2ba639e1",
+    "phobert-large": "70e2cfcd3cce29c970aee4954ea34a32bb30afdc",
+    "visobert": "196a62afad9cbe4f52a54aabad828b13f0eec59a",
+    "xlmr-base": "e73636d4f797dec63c3081bb6ed5c7b0bb3f2089",
+}
+
 # Models pretrained on word-segmented Vietnamese; their model cards require segmented input.
 REQUIRES_WORD_SEGMENTATION: Final = frozenset({"phobert-base", "phobert-base-v2", "phobert-large"})

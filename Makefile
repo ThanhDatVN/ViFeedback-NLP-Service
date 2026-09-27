@@ -9,6 +9,9 @@ TASK ?= sentiment
 MODEL ?= phobert-base
 PREP ?= seg_pyvi
 SEEDS ?= all
+# A phase-6 checkpoint (lexically last match); pass CKPT=path to choose one explicitly. INT8 needs the `onnx` package (ADR-017/020).
+CKPT ?= $(lastword $(sort $(wildcard models/p6-sent-phobert-base-seg_pyvi-base-s42*ckp)))
+QUANT ?= none
 
 help:  ## Show this help
 	@grep -E '^[a-zA-Z_-]+:.*?## .*$$' $(MAKEFILE_LIST) | awk 'BEGIN{FS=":.*?## "}{printf "  \033[36m%-14s\033[0m %s\n",$$1,$$2}'
@@ -53,8 +56,8 @@ train:  ## Fine-tune MODEL on TASK across SEEDS
 	$(PY) -m vifeedback.cli train run --task $(TASK) --model $(MODEL) \
 		--preprocessing $(PREP) --seeds $(SEEDS)
 
-export:  ## Export the serving ONNX artifact
-	$(PY) -m vifeedback.cli serve export --task $(TASK)
+export:  ## Release the serving ONNX artifact (staging -> verify on full dev -> swap); CKPT=..., QUANT=none|dynamic|static
+	$(PY) -m vifeedback.cli serve export --task $(TASK) --checkpoint $(CKPT) --quantize $(QUANT)
 
 bench:  ## CPU latency benchmark on the reference machine
 	$(PY) -m vifeedback.cli serve bench --task $(TASK)

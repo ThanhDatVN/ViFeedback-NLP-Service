@@ -78,8 +78,9 @@ def time_callable(
     )
     if out["throttling_suspected"]:
         out["warning"] = (
-            f"p95 varied {spread:.1%} across repeats (>{THROTTLE_TOLERANCE:.0%}). The machine was "
-            "probably throttling; this number measures thermal state, not the model. Re-run cool."
+            f"p95 varied {spread:.1%} across repeats (>{THROTTLE_TOLERANCE:.0%}). The measurement was "
+            "not in a steady state (thermal throttling, power management or background load; the spread "
+            "alone cannot say which). Do not report it; re-run on an idle, cool machine."
         )
     return out
 
