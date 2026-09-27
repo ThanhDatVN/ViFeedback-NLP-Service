@@ -508,6 +508,36 @@ Declared in `configs/experiments/cycle1.yaml` before any run; decisions computed
 
 Full discussion: [STATUS § 3](STATUS.md#3-cycle-1--declared-hypotheses-and-their-outcome).
 
+### 5.8 Research Cycle 2 — track A, confirmed on new data
+
+Declared in `configs/experiments/cycle2.yaml` (v1 ADR-025; v2 ADR-026, which froze the challenge set
+by SHA-256 before any evaluation). No Cycle 2 decision uses the official test.
+
+| Hypothesis | Data | Result | Decision by the declared rule |
+|---|---|---|---|
+| **H5** topic stacking, TF-IDF B4 × PhoBERT (out-of-fold meta-model) | validation | Stacked − PhoBERT 5-fold ensemble **−0.0102** [−0.0228, +0.0013]; facility 0.929 → 0.922, others 0.621 → 0.585 | **Not supported.** Descriptive: facility F1, TF-IDF − PhoBERT −0.021 [−0.060, +0.015]: the "TF-IDF wins facility" gap does not hold up |
+| **H6** serve the H2-augmented model? | challenge set (305) | Typed noise (90 rows): accuracy 0.611 → 0.800, **+0.189** [+0.067, +0.311]; other rows 0.867 → 0.867 | **Switch** (ADR-027). Hidden by pooling: `teencode_typed` 0.975 → 0.875, `objective_neutral` 0.767 → 0.633 |
+| **H7 pilot** Qwen3-1.7B, label likelihood, frozen prompt | validation | macro-F1 0.680 (0-shot), 0.655 / 0.653 (6-shot); neutral F1 0.29 / 0.26 / 0.26 vs encoder 0.66 | Pilot, not declared. Neutral precision 0.16–0.18: the LLM over-calls neutral |
+| **H7 pilot** | challenge set | macro-F1 0.62 / 0.62 / 0.60 vs 0.77 (CE), 0.83 (augmented) | `objective_neutral` 0.97–1.00 (encoder 0.63–0.77); `mixed_aspect` 0.15–0.20 and `suggestion_cue` 0.40–0.60 (encoder 0.88–1.00) |
+| **H7 declared** Qwen3-4B | both | Kaggle cell 4f | 👤 pending |
+| **H7 API arm** gpt-4o-mini | challenge set | — | 👤 pending the owner's key |
+
+Challenge set accuracy per category (seed-42 encoders; Qwen3-1.7B zero-shot):
+
+| Category | n | CE | Augmented (served) | Qwen3-1.7B |
+|---|---:|---:|---:|---:|
+| `code_switch` | 25 | 0.920 | 0.960 | 0.800 |
+| `long_context` | 20 | 0.850 | 0.900 | 1.000 |
+| `mixed_aspect` | 40 | 0.875 | 0.925 | 0.175 |
+| `negation_pair` | 30 | 0.800 | 0.833 | 0.700 |
+| `objective_neutral` | 30 | 0.767 | 0.633 | 0.967 |
+| `suggestion_cue` | 25 | 1.000 | 1.000 | 0.600 |
+| `suggestion_implicit` | 25 | 0.880 | 0.840 | 0.440 |
+| `teencode_typed` | 40 | 0.975 | 0.875 | 0.825 |
+| `unaccented_typed` | 50 | 0.320 | 0.740 | 0.380 |
+
+Outputs: `results/studies/{topic_stacking,challenge,llm_reference}/`.
+
 ---
 
 ## 6. Experimental hygiene rules

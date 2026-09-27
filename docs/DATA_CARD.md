@@ -330,6 +330,13 @@ never contaminates training-time measurements and every model sees byte-identica
 
 Check the UIT NLP Group's terms at <https://nlp.uit.edu.vn/datasets/> before redistributing.
 Raw data is not committed; `vifeedback data fetch` retrieves it and the SHA256 manifest pins it.
+The same question governs sending corpus text to a third-party API (Cycle 2 H7): until the terms are
+confirmed to allow it, only the project's own challenge set goes to the API (`cycle2.yaml`,
+`data_egress`).
+
+**Additional evaluation data.** [`data/challenge/`](../data/challenge/README.md) holds 305 constructed
+sentences written for Cycle 2, none drawn from UIT-VSFC (checked after normalization), frozen by
+SHA-256. It has its own card in that folder.
 
 ```bibtex
 @inproceedings{van2018uit,

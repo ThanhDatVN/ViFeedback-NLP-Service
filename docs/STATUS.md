@@ -1,6 +1,6 @@
 # Status, Open Problems and Next Experiments
 
-**Updated:** 2026-09-27, during research Cycle 1. Living document. Results live in
+**Updated:** 2026-09-27, during research Cycle 2. Living document. Results live in
 [EXPERIMENT_MATRIX.md](EXPERIMENT_MATRIX.md) and [results/studies/](../results/studies/README.md);
 decisions in [DECISIONS.md](DECISIONS.md); the external review this cycle follows is
 [REVIEW_AND_RESEARCH_PLAN.md](REVIEW_AND_RESEARCH_PLAN.md). This file says **where the project
@@ -19,8 +19,8 @@ stands, what is wrong with it, and what runs next.**
 | **G2** | PhoBERT reproduction | ✅ | 10 runs, 5 seeds × 2 tasks |
 | **G3** | Word-segmentation ablation | ✅ | 15 runs + latency benchmark |
 | **G4** | Locked test evaluation | ✅ | 21 test rows, every touch in `results/test_evaluations.log` |
-| G5 | Error analysis & robustness | 🔶 | Tooling, robustness suite and audit sheet done ([Cycle 0](#2-cycle-0--what-the-current-model-gets-wrong)); the human audit is not |
-| G6 | CPU inference optimization | 🔶 | FP32 release verified on the reference machine (ADR-020); INT8 release on Kaggle and a steady-state benchmark still to run |
+| G5 | Error analysis & robustness | 🔶 | Tooling, robustness suite, audit sheet and its analysis (`study audit-report`) done ([Cycle 0](#2-cycle-0--what-the-current-model-gets-wrong)); the human annotation is not |
+| **G6** | CPU inference optimization | ✅ | FP32 ONNX released through the gate (ADR-020) and served (augmented model, ADR-027); latency ladder measured; INT8 blocked by the quality gate (ADR-022) |
 | **G7** | Service, Docker, CI | ✅ | FastAPI, multi-stage image, CI; API now also tested against a real artifact (R4) |
 
 ### Research cycles (after external review)
@@ -29,8 +29,9 @@ stands, what is wrong with it, and what runs next.**
 |---|---|---|
 | **0** | Fix validity problems; what does the current model get wrong? | ✅ [results/studies/](../results/studies/README.md) |
 | **1** | Four hypotheses, declared before running ([cycle1.yaml](../configs/experiments/cycle1.yaml) v1 + v2) | ✅ all four decided; closing gate on test done (H2 and calibration confirmed) |
+| **2** | Track A: confirmation on a frozen challenge set, the serving model, topic stacking, an LLM reference ([cycle2.yaml](../configs/experiments/cycle2.yaml) v2) | 🔶 H5 not supported; H6 switched the served model; H7 pilot done, declared Qwen3-4B and API runs pending (👤) |
 
-**Compute to date** ([ledger](../configs/experiments/ledger.csv)): 119 weight-updating runs, about 9.6 GPU-hours, of which 19 regenerated runs after the `results/` loss (ADR-023). The registry holds 153 rows.
+**Compute to date** ([ledger](../configs/experiments/ledger.csv)): 124 weight-updating runs, about 9.9 GPU-hours, of which 19 regenerated runs after the `results/` loss (ADR-023), plus 12 GPU-minutes of LLM inference. The registry holds 153 rows.
 
 ---
 
@@ -116,7 +117,34 @@ the 19 laptop runs were regenerated after `results/` was lost (ADR-023).
 
 ---
 
-## 4. Open problems
+## 4. Cycle 2 — confirmation on new data
+
+Declared in [cycle2.yaml](../configs/experiments/cycle2.yaml) before any Cycle 2 run (ADR-025). Version 2
+(ADR-026) froze a 305-row **challenge set** by SHA-256 before any model saw it. No Cycle 2 decision
+uses the official test.
+
+| Hypothesis | Result | Decision by the declared rule |
+|---|---|---|
+| **H5** topic stacking (TF-IDF B4 × PhoBERT, out-of-fold meta-model) | Stacked − PhoBERT 5-fold ensemble −0.0102 [−0.0228, +0.0013]; `facility` and `others` both lower | **Not supported.** The "TF-IDF wins facility" gap reverses under a paired interval: −0.021 [−0.060, +0.015] |
+| **H6** serve the H2-augmented model? | Hand-typed noise (90 rows): accuracy 0.611 → 0.800, +0.189 [+0.067, +0.311]; other rows unchanged (0.867) | **Switched** (ADR-027), released through the FP32 gate. Recorded regressions: typed teencode 0.975 → 0.875; short factual sentences 0.767 → 0.633 |
+| **H7 pilot** Qwen3-1.7B, label likelihood, frozen prompt | Validation macro-F1 0.68 / 0.65 (0- / 6-shot) vs 0.86; neutral F1 0.26–0.29 vs 0.66; over-calls neutral (precision 0.16–0.18) | Pilot only. Declared Qwen3-4B (Kaggle cell 4f) and gpt-4o-mini (owner's key) pending |
+
+**What Cycle 2 establishes so far.**
+
+1. **H2's robustness transfers to real unaccented typing** (0.32 → 0.74), which synthetic suites could
+   only suggest, but **not to real teencode**, where the scripted map differs from how people type.
+2. **The serving decision rests on new data, and its costs are named.** The pooled rule passed. The
+   per-category view shows a neutral-recall cost on short factual text, and the next rule will require
+   per-category non-inferiority.
+3. **Stacking does not help topic**, and the observation that motivated it was noise.
+4. **A small LLM fails where the encoder succeeds, and the reverse.** It rejects the corpus's policy
+   (suggestions and contrasts as polar), yet labels factual sentences correctly where the encoder
+   drifts. The two error sets are the audit's two hypotheses, label policy and representation.
+5. **Off-topic input is not flagged.** Both encoders label it with mean confidence 0.86–0.90.
+
+---
+
+## 5. Open problems
 
 Ordered by how much they threaten the conclusions.
 
@@ -139,15 +167,17 @@ E04 (training on corrected labels) and any further imbalance work.
 negative (91.1%), but implicit suggestions without a cue word appear among gold-neutral examples.
 The audit measures this within strata; test labels are never changed.
 
-### P4 — Topic is the weaker task and has had no intervention
+### P4 — Topic is the weaker task, and two interventions did not help
 Topic PhoBERT + pyvi: 0.8111 dev / 0.8038 test, against sentiment's 0.864 / 0.829. Segmentation helps
-topic too (+0.0141, p = 0.004). `facility` is the one class where TF-IDF beats PhoBERT (0.921 vs
-0.905). *Candidates:* TF-IDF × PhoBERT stacking (E08), multi-task (E07).
+topic too (+0.0141, p = 0.004). Multi-task (H4) gave no material gain, and TF-IDF × PhoBERT stacking
+(H5) lost 0.010. The apparent TF-IDF advantage on `facility` was noise. `others` (F1 about 0.6) is
+the weak class. *Open:* a topic audit of `others`, which is a residual category by construction.
 
 ### P5 — Robustness to informal orthography is a deployment risk
-Cycle 0 measured it; H2 tests the first mitigation. The no-diacritic failure is a whole-pipeline
-failure: pyvi also mis-segments unaccented text, and the suite does not separate the two. A diacritic
-restoration front-end is the untested alternative.
+Cycle 0 measured it; H2's augmentation is now served (ADR-027). On hand-typed text it lifts unaccented
+accuracy from 0.32 to 0.74 but lowers typed teencode from 0.975 to 0.875. The no-diacritic failure is a
+whole-pipeline failure: pyvi also mis-segments unaccented text. A diacritic-restoration front-end
+remains the untested alternative (NEXT_PLAN P5, conditional).
 
 ### P6 — Latency measured; INT8 is faster but blocked by the quality gate
 Reference CPU (Ryzen 5 6600H, AVX2, no AVX512-VNNI), single sentence, model-only on pre-segmented
@@ -169,12 +199,15 @@ input, two steady passes in rotated order agreeing within 1% (`results/studies/l
   efficiency stretch target (≥ 1.5× with neutral loss ≤ 0.02) is therefore not met.
 - Peak process memory with all four models loaded: 2.5 GB.
 
-### P7 — Reproducibility is partly pinned
+### P7 — Reproducibility is pinned
 Run identity includes a config hash, and run directories cannot be overwritten by a different
-configuration (R11). Per-run `metrics.json`/`config.yaml` are committed. *Open:* pretrained model and
-dataset revisions are not pinned yet (revisions recorded below), and Kaggle rows carry no git SHA.
+configuration (R11). Per-run `metrics.json`/`config.yaml`/`env.json` are committed. Model and dataset
+revisions are pinned in code (`constants.MODEL_REVISIONS`, `loader.PARQUET_REVISION`). Kaggle runs,
+which carry no git SHA, are resolved to their commit through their source hash
+(`results/provenance.json`): the 21 Kaggle runs executed 5b2858c. Two cRT runs executed an
+uncommitted tree; that is recorded, not hidden.
 
-| Artifact | Revision to pin |
+| Artifact | Pinned revision |
 |---|---|
 | `vinai/phobert-base` | `01daacda68afe13d83023d16ec647239e344a1e6` |
 | `vinai/phobert-large` | `70e2cfcd3cce29c970aee4954ea34a32bb30afdc` |
@@ -183,7 +216,7 @@ dataset revisions are not pinned yet (revisions recorded below), and Kaggle rows
 
 ---
 
-## 5. External review — item status
+## 6. External review — item status
 
 Full traceability, including the study designs, catalog and backlog:
 [REVIEW_COMPLIANCE.md](REVIEW_COMPLIANCE.md).
@@ -197,35 +230,35 @@ Full traceability, including the study designs, catalog and backlog:
 | R5 readiness semantics | Medium | ✅ 503 unless required tasks + segmenter loaded; fallback cost measured (−0.052) |
 | R6 unbounded metrics buffer | Medium | ✅ bounded buffer + counter |
 | R7 over-strong statistical claims | High | ✅ interval wording corrected |
-| R8 model comparison closed too early | Medium | 🔶 narrowed (ADR-019); tokenizer profiles measured; XLM-R raw control running (Cycle 1 H3) |
+| R8 model comparison closed too early | Medium | ✅ narrowed (ADR-019); tokenizer profiles measured; XLM-R raw control decided (H3: ~40% of the gap was preprocessing) |
 | R9 headline vs deployed config | Medium | ✅ reported separately in README |
-| R10 docs and benchmark out of sync | Medium | 🔶 docs synced; benchmark re-run pending (P6) |
+| R10 docs and benchmark out of sync | Medium | ✅ docs synced; latency ladder re-measured with steady passes (P6) |
 | R11 reproducibility pinning | Medium | ✅ run ids, overwrite guard, revisions pinned, source hash, lock file, data content reference, CI integration job |
 | R12 benchmark claims | Medium | ✅ no SOTA claim; BamiBERT reported as context |
 
 ---
 
-## 6. Next — Cycle 2 options
+## 7. Next
 
-The step-by-step plan, with decision rules and budgets: **[NEXT_PLAN.md](NEXT_PLAN.md)**.
+Every open item, with what closes it and who: **[NEXT_PLAN.md](NEXT_PLAN.md) § 1**. Needs the owner:
 
-Chosen after Cycle 1's decisions, one specialization at a time (review § 10):
-
-1. **Cycle 1 is closed** (all four hypotheses decided; closing gate on test done).
-2. **The human audit** (P2/P3). Cheapest remaining information, and it gates E04.
-3. **Data science track:** label-efficiency curves (E11), OOF-ranked label correction (E04).
-4. **ML engineering track:** INT8 on the reference CPU, distillation into a 4–6 layer student (E15).
-5. **AI engineering track:** an LLM reference row with frozen prompts, cost and latency (E19).
+1. **The declared H7 runs**: Kaggle cell 4f (Qwen3-4B); gpt-4o-mini once `OPENAI_API_KEY` is set
+   (challenge set only until the UIT-VSFC licence question is answered).
+2. **The human audit** (P2/P3), which gates E04. `study audit-report` analyses the filled sheet.
+3. **Publishing the model**: `vifeedback serve publish --repo-id <you>/<name>` builds the bundle and
+   card; add `--upload` after reviewing it.
 
 ---
 
-## 7. Compute plan
+## 8. Compute plan
 
 | Work | Where | Why |
 |---|---|---|
 | PhoBERT-base training, OOF, robustness, calibration, FP32 export | **Laptop RTX 3050** | ~65 s/epoch, no session limits |
 | Full-embedding XLM-R, PhoBERT-large, INT8 quantization | **Kaggle** | > 4.29 GB, or needs the blocked `onnx` package (ADR-017/020) |
 | **All latency benchmarking** | **Laptop only, idle** | the reference machine is recorded in `env.json`; no benchmark while training runs |
+| LLM pilot (Qwen3-1.7B, fp16) | Laptop | fits 4 GB; about 70 s per 1k sentences zero-shot |
+| Declared LLM (Qwen3-4B) | **Kaggle** (cell 4f) | 8 GB in fp16 |
 
-Notebook: [`notebooks/kaggle_train.ipynb`](../notebooks/kaggle_train.ipynb) (§ 4e for Cycle 1) and
+Notebook: [`notebooks/kaggle_train.ipynb`](../notebooks/kaggle_train.ipynb) (§ 4e for Cycle 1, § 4f for Cycle 2 H7) and
 [KAGGLE_GUIDE.md](KAGGLE_GUIDE.md).

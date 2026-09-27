@@ -1,4 +1,4 @@
-# Research studies — Cycle 0 (diagnosis) and Cycle 1 (declared interventions)
+# Research studies — Cycle 0 (diagnosis), Cycle 1 (declared interventions), Cycle 2 (new data)
 
 Generated artifacts for the first research cycle after external review
 ([REVIEW_AND_RESEARCH_PLAN.md](../../docs/REVIEW_AND_RESEARCH_PLAN.md)). Every number below comes from a
@@ -14,6 +14,11 @@ validation macro-F1 is **0.8634**, which reproduces the registry row for that se
 | `calibration/` | `vifeedback study calibration` | none |
 | `robustness/` | `vifeedback study robustness` | ~3 min: inference only |
 | `tables/` | `vifeedback study tables` | none |
+| `cycle1/`, `closing_gate/` | `vifeedback study cycle1`, `study closing-gate` | the runs themselves |
+| `latency/`, `export/` | `vifeedback study latency`, `serve export` | none (CPU) |
+| `topic_stacking/` | `vifeedback study topic-stacking` (`--reuse` re-scores from saved features) | ~18 min: 5 OOF fine-tunes |
+| `challenge/` | `vifeedback study challenge` | < 1 min: inference only |
+| `llm_reference/` | `vifeedback study llm-prompt-dev`, then `study llm-reference` | ~12 min for the pilot |
 
 Files containing corpus text go to `*/local/` and are gitignored ([DATA_CARD § 11](../../docs/DATA_CARD.md)).
 Committed prediction files are keyed by row index and carry no text.
@@ -227,4 +232,22 @@ deterministic and the regenerated numbers are checked against the original logs.
 4. **Sharing the encoder costs nothing at λ = 0.3 and something at λ = 1.** The engineering reading is
    one model instead of two for serving. The scientific reading is that the tasks' measured
    dependence (Cramér's V 0.344) does not translate into a gain at this data size.
+
+---
+
+## Cycle 2 — confirmation on new data (`topic_stacking/`, `challenge/`, `llm_reference/`)
+
+Declared in `configs/experiments/cycle2.yaml`; the challenge set (`data/challenge/`, 305 constructed
+rows) was frozen by SHA-256 before any model saw it, and `study challenge` refuses a file that does
+not match. Decisions: H5 not supported; H6 switched the served model (ADR-027); H7 at pilot stage.
+Tables and discussion: [EXPERIMENT_MATRIX § 5.8](../../docs/EXPERIMENT_MATRIX.md) and
+[STATUS § 4](../../docs/STATUS.md#4-cycle-2--confirmation-on-new-data).
+
+- `topic_stacking/`: out-of-fold dense probabilities and sparse scores for all train rows and for
+  validation (no text), the summary with the declared comparison and the descriptive facility check.
+- `challenge/`: per-row predictions of both seed-42 encoders (the challenge text is the project's own),
+  per-category accuracy, negation pairs, out-of-scope confidence, the H6 rule.
+- `llm_reference/`: the frozen prompt and its development scores (`prompt_dev.json`, train indices
+  only), one folder per model and configuration, and the encoders' validation predictions used as
+  the paired baseline. Few-shot demonstrations are recorded as train indices, never as text.
 
