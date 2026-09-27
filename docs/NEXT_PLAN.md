@@ -26,7 +26,7 @@ that decide serving changes are confirmed on challenge v2, which needs the owner
 | **S2b′** CE + restoration vs augmented + restoration (5 seeds, v4) | With restoration the augmentation's edge mostly disappears: unaccented 0.904 vs 0.880, contrast **0.875 vs 0.800** (p = 0.004), short factual 0.747 vs 0.660; but validation −0.004, code-switch −0.03, implicit suggestions −0.05 | ✅ dev · 👤 v2 decides |
 | **S3** out-of-scope score | Mahalanobis AUROC **0.949** (max-probability 0.862), catches 66% at 5% flagged | ✅ dev · 👤 v2 confirmation |
 | **S5** careful INT8 | 178.5 MB, neutral agreement 0.959; macro-F1 drop +0.0004 but upper bound 0.0095 > 0.005: **not passed**. Latency indicative only (no steady pass): p50 6.4 ms vs 11.1 ms for FP32 | ✅ negative → Cycle 4 |
-| NEU-ESC | Access needs the owner to accept the dataset's conditions on Hugging Face | 👤 |
+| NEU-ESC (6,613 real forum posts, 5 seeds per recipe) | macro-F1 CE **0.463**, augmented 0.434, S2a 0.433: all low (the model calls 30% of posts neutral, gold 69%); **augmentation hurts on real student text** (s42: −0.033 [−0.042, −0.024]; 4/5 seeds) | ✅ supports S2b′ (CE + restoration); v2 still decides |
 | Challenge v2 (human-typed) · neutral audit · Kaggle Qwen3-4B · HF upload | — | 👤 |
 
 ---

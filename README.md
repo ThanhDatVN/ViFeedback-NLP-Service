@@ -171,6 +171,7 @@ became development data; real text came from ViLexNorm (human-normalized social-
 | Is the model stable on real typing? | No: 17% of labels change between a real comment and its human normalization |
 | Diacritic restoration before the model | Stripped validation macro-F1 **0.686 → 0.857**, clean predictions unchanged (confirmation pending) |
 | Out-of-scope detection | Mahalanobis AUROC 0.949 vs 0.862 for max-probability (confirmation pending) |
+| Real student text from another university (NEU-ESC) | Macro-F1 drops to 0.46 (CE) and 0.43 (augmented): a domain and label-policy shift; the augmentation hurts here |
 | Real-typing lexicon, careful INT8 | Both failed their declared rules (negative results, kept) |
 
 Details: [STATUS § 3–4](docs/STATUS.md#3-cycle-1--declared-hypotheses-and-their-outcome) ·

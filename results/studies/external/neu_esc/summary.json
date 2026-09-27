@@ -1,0 +1,765 @@
+{
+  "corpus": "neu_esc",
+  "checkpoints": {
+    "aug-s1337": "models\\p10-sent-phobert-base-seg_pyvi-aug-diac-teen-s1337-6577cf17-ckp",
+    "aug-s2024": "models\\p10-sent-phobert-base-seg_pyvi-aug-diac-teen-s2024-6d4c703f-ckp",
+    "aug-s31337": "models\\p10-sent-phobert-base-seg_pyvi-aug-diac-teen-s31337-023d9372-ckp",
+    "aug-s7": "models\\p10-sent-phobert-base-seg_pyvi-aug-diac-teen-s7-c67ab4c7-ckp",
+    "ce-s1337": "models\\p10-sent-phobert-base-seg_pyvi-base-s1337-82199bc7-ckp",
+    "ce-s2024": "models\\p10-sent-phobert-base-seg_pyvi-base-s2024-225e8f6b-ckp",
+    "ce-s31337": "models\\p10-sent-phobert-base-seg_pyvi-base-s31337-684b7159-ckp",
+    "ce-s7": "models\\p10-sent-phobert-base-seg_pyvi-base-s7-c020562a-ckp",
+    "vln-s1337": "models\\p11-sent-phobert-base-seg_pyvi-aug-diac-teen-vln-s1337-e9edbd3b-ckp",
+    "vln-s2024": "models\\p11-sent-phobert-base-seg_pyvi-aug-diac-teen-vln-s2024-3ce32751-ckp",
+    "vln-s31337": "models\\p11-sent-phobert-base-seg_pyvi-aug-diac-teen-vln-s31337-e1848633-ckp",
+    "vln-s42": "models\\p11-sent-phobert-base-seg_pyvi-aug-diac-teen-vln-s42-1564b4f3-ckp",
+    "vln-s7": "models\\p11-sent-phobert-base-seg_pyvi-aug-diac-teen-vln-s7-22360c2d-ckp",
+    "ce-s42": "models\\p6-sent-phobert-base-seg_pyvi-base-s42-ckp",
+    "aug-s42": "models\\p9-sent-phobert-base-seg_pyvi-aug-diac-teen-s42-599cf21f-ckp"
+  },
+  "label_counts": {
+    "Neutral": 4558,
+    "Negative": 1046,
+    "Positive": 834,
+    "Toxic": 175
+  },
+  "views": {
+    "all": 6613,
+    "no_toxic": 6438,
+    "course_topics": 2578
+  },
+  "scores": {
+    "no_lowercase:aug-s1337:all": {
+      "macro_f1": 0.38372733737819,
+      "per_class_f1": {
+        "negative": 0.38570241064006655,
+        "neutral": 0.3060523938572719,
+        "positive": 0.4594272076372315
+      }
+    },
+    "no_lowercase:aug-s1337:no_toxic": {
+      "macro_f1": 0.37316401300867535,
+      "per_class_f1": {
+        "negative": 0.3515322296583304,
+        "neutral": 0.3063291139240506,
+        "positive": 0.4616306954436451
+      }
+    },
+    "no_lowercase:aug-s1337:course_topics": {
+      "macro_f1": 0.3672672578910036,
+      "per_class_f1": {
+        "negative": 0.3640238704177323,
+        "neutral": 0.3195002231146809,
+        "positive": 0.4182776801405976
+      }
+    },
+    "no_lowercase:aug-s2024:all": {
+      "macro_f1": 0.4334678051869027,
+      "per_class_f1": {
+        "negative": 0.41674743167280476,
+        "neutral": 0.4074197860962567,
+        "positive": 0.47623619779164666
+      }
+    },
+    "no_lowercase:aug-s2024:no_toxic": {
+      "macro_f1": 0.42379319633989637,
+      "per_class_f1": {
+        "negative": 0.3837089104817035,
+        "neutral": 0.40844362539788903,
+        "positive": 0.4792270531400966
+      }
+    },
+    "no_lowercase:aug-s2024:course_topics": {
+      "macro_f1": 0.42845052815974266,
+      "per_class_f1": {
+        "negative": 0.396833250865908,
+        "neutral": 0.42898076135898483,
+        "positive": 0.4595375722543353
+      }
+    },
+    "no_lowercase:aug-s31337:all": {
+      "macro_f1": 0.46587447761353395,
+      "per_class_f1": {
+        "negative": 0.4364334470989761,
+        "neutral": 0.48822336608953365,
+        "positive": 0.47296661965209214
+      }
+    },
+    "no_lowercase:aug-s31337:no_toxic": {
+      "macro_f1": 0.4593808405005231,
+      "per_class_f1": {
+        "negative": 0.4103848781598725,
+        "neutral": 0.49098039215686273,
+        "positive": 0.4767772511848341
+      }
+    },
+    "no_lowercase:aug-s31337:course_topics": {
+      "macro_f1": 0.4582531237530026,
+      "per_class_f1": {
+        "negative": 0.41416309012875535,
+        "neutral": 0.49883990719257537,
+        "positive": 0.46175637393767704
+      }
+    },
+    "no_lowercase:aug-s7:all": {
+      "macro_f1": 0.4236017293720952,
+      "per_class_f1": {
+        "negative": 0.40846400906858116,
+        "neutral": 0.3823026990092245,
+        "positive": 0.48003848003848004
+      }
+    },
+    "no_lowercase:aug-s7:no_toxic": {
+      "macro_f1": 0.4138542920301034,
+      "per_class_f1": {
+        "negative": 0.3754527162977867,
+        "neutral": 0.3832848090426443,
+        "positive": 0.4828253507498791
+      }
+    },
+    "no_lowercase:aug-s7:course_topics": {
+      "macro_f1": 0.41249894677880655,
+      "per_class_f1": {
+        "negative": 0.38534728829686016,
+        "neutral": 0.40670859538784065,
+        "positive": 0.445440956651719
+      }
+    },
+    "no_lowercase:ce-s1337:all": {
+      "macro_f1": 0.4584694308287596,
+      "per_class_f1": {
+        "negative": 0.43174603174603177,
+        "neutral": 0.4441558441558442,
+        "positive": 0.49950641658440287
+      }
+    },
+    "no_lowercase:ce-s1337:no_toxic": {
+      "macro_f1": 0.4488976532384794,
+      "per_class_f1": {
+        "negative": 0.3988978380669775,
+        "neutral": 0.4453125,
+        "positive": 0.5024826216484608
+      }
+    },
+    "no_lowercase:ce-s1337:course_topics": {
+      "macro_f1": 0.44970088062479735,
+      "per_class_f1": {
+        "negative": 0.41302136317395727,
+        "neutral": 0.46086261980830673,
+        "positive": 0.4752186588921282
+      }
+    },
+    "no_lowercase:ce-s2024:all": {
+      "macro_f1": 0.419742030905862,
+      "per_class_f1": {
+        "negative": 0.39972023080958213,
+        "neutral": 0.3480083857442348,
+        "positive": 0.511497476163769
+      }
+    },
+    "no_lowercase:ce-s2024:no_toxic": {
+      "macro_f1": 0.41010239094077566,
+      "per_class_f1": {
+        "negative": 0.36758160237388726,
+        "neutral": 0.348922753547031,
+        "positive": 0.5138028169014085
+      }
+    },
+    "no_lowercase:ce-s2024:course_topics": {
+      "macro_f1": 0.3927276642596143,
+      "per_class_f1": {
+        "negative": 0.3704686118479222,
+        "neutral": 0.3387026556377884,
+        "positive": 0.46901172529313234
+      }
+    },
+    "no_lowercase:ce-s31337:all": {
+      "macro_f1": 0.4771725706748204,
+      "per_class_f1": {
+        "negative": 0.43584784010315925,
+        "neutral": 0.5066260472201067,
+        "positive": 0.4890438247011952
+      }
+    },
+    "no_lowercase:ce-s31337:no_toxic": {
+      "macro_f1": 0.4701322452776975,
+      "per_class_f1": {
+        "negative": 0.4091848450057406,
+        "neutral": 0.5099662680159461,
+        "positive": 0.4912456228114057
+      }
+    },
+    "no_lowercase:ce-s31337:course_topics": {
+      "macro_f1": 0.46777687759418246,
+      "per_class_f1": {
+        "negative": 0.41888225718936517,
+        "neutral": 0.5163002274450341,
+        "positive": 0.46814814814814815
+      }
+    },
+    "no_lowercase:ce-s7:all": {
+      "macro_f1": 0.4640761478816644,
+      "per_class_f1": {
+        "negative": 0.43858937981353874,
+        "neutral": 0.45174870466321243,
+        "positive": 0.501890359168242
+      }
+    },
+    "no_lowercase:ce-s7:no_toxic": {
+      "macro_f1": 0.4549097564019386,
+      "per_class_f1": {
+        "negative": 0.4065005417118093,
+        "neutral": 0.45299561617145645,
+        "positive": 0.5052331113225499
+      }
+    },
+    "no_lowercase:ce-s7:course_topics": {
+      "macro_f1": 0.4619854749747902,
+      "per_class_f1": {
+        "negative": 0.41783307413167453,
+        "neutral": 0.4752866745749308,
+        "positive": 0.4928366762177651
+      }
+    },
+    "no_lowercase:vln-s1337:all": {
+      "macro_f1": 0.42707647921070446,
+      "per_class_f1": {
+        "negative": 0.40843214756258234,
+        "neutral": 0.39392405063291136,
+        "positive": 0.4788732394366197
+      }
+    },
+    "no_lowercase:vln-s1337:no_toxic": {
+      "macro_f1": 0.41775205073393257,
+      "per_class_f1": {
+        "negative": 0.37652713799319043,
+        "neutral": 0.39519133084998304,
+        "positive": 0.4815376833586242
+      }
+    },
+    "no_lowercase:vln-s1337:course_topics": {
+      "macro_f1": 0.42383262458020404,
+      "per_class_f1": {
+        "negative": 0.39136690647482014,
+        "neutral": 0.420008267879289,
+        "positive": 0.4601226993865031
+      }
+    },
+    "no_lowercase:vln-s2024:all": {
+      "macro_f1": 0.4120681101190336,
+      "per_class_f1": {
+        "negative": 0.40020953378732327,
+        "neutral": 0.3462214411247803,
+        "positive": 0.4897733554449972
+      }
+    },
+    "no_lowercase:vln-s2024:no_toxic": {
+      "macro_f1": 0.40211844684376086,
+      "per_class_f1": {
+        "negative": 0.3672410598480637,
+        "neutral": 0.34689205846099663,
+        "positive": 0.49222222222222217
+      }
+    },
+    "no_lowercase:vln-s2024:course_topics": {
+      "macro_f1": 0.408512237661522,
+      "per_class_f1": {
+        "negative": 0.37651277454056475,
+        "neutral": 0.36637931034482757,
+        "positive": 0.4826446280991735
+      }
+    },
+    "no_lowercase:vln-s31337:all": {
+      "macro_f1": 0.42783711684433395,
+      "per_class_f1": {
+        "negative": 0.4117982873453853,
+        "neutral": 0.38868305826877736,
+        "positive": 0.4830300049188392
+      }
+    },
+    "no_lowercase:vln-s31337:no_toxic": {
+      "macro_f1": 0.418893847200761,
+      "per_class_f1": {
+        "negative": 0.38072093965168086,
+        "neutral": 0.3900625316883556,
+        "positive": 0.4858980702622464
+      }
+    },
+    "no_lowercase:vln-s31337:course_topics": {
+      "macro_f1": 0.40932524940894055,
+      "per_class_f1": {
+        "negative": 0.3826169107227208,
+        "neutral": 0.3863922721545569,
+        "positive": 0.45896656534954405
+      }
+    },
+    "no_lowercase:vln-s42:all": {
+      "macro_f1": 0.4685150236410725,
+      "per_class_f1": {
+        "negative": 0.4341810783316378,
+        "neutral": 0.4819692693634368,
+        "positive": 0.4893947232281428
+      }
+    },
+    "no_lowercase:vln-s42:no_toxic": {
+      "macro_f1": 0.4593340454138964,
+      "per_class_f1": {
+        "negative": 0.40234884732492393,
+        "neutral": 0.48371361132966173,
+        "positive": 0.49193967758710355
+      }
+    },
+    "no_lowercase:vln-s42:course_topics": {
+      "macro_f1": 0.46475093261345757,
+      "per_class_f1": {
+        "negative": 0.4120394395433315,
+        "neutral": 0.5063291139240507,
+        "positive": 0.4758842443729904
+      }
+    },
+    "no_lowercase:vln-s7:all": {
+      "macro_f1": 0.43124598139327625,
+      "per_class_f1": {
+        "negative": 0.4103422619047619,
+        "neutral": 0.3936206311503223,
+        "positive": 0.4897750511247444
+      }
+    },
+    "no_lowercase:vln-s7:no_toxic": {
+      "macro_f1": 0.4211636242369498,
+      "per_class_f1": {
+        "negative": 0.3767082590612002,
+        "neutral": 0.3944907328685598,
+        "positive": 0.49229188078108943
+      }
+    },
+    "no_lowercase:vln-s7:course_topics": {
+      "macro_f1": 0.41619685705439724,
+      "per_class_f1": {
+        "negative": 0.382698636577339,
+        "neutral": 0.39747899159663863,
+        "positive": 0.46841294298921415
+      }
+    },
+    "no_lowercase:ce-s42:all": {
+      "macro_f1": 0.4943266557920503,
+      "per_class_f1": {
+        "negative": 0.449736564805058,
+        "neutral": 0.5261716372489349,
+        "positive": 0.5070717653221583
+      }
+    },
+    "no_lowercase:ce-s42:no_toxic": {
+      "macro_f1": 0.484956400287043,
+      "per_class_f1": {
+        "negative": 0.4170808856755535,
+        "neutral": 0.5277777777777778,
+        "positive": 0.5100105374077976
+      }
+    },
+    "no_lowercase:ce-s42:course_topics": {
+      "macro_f1": 0.48822253024790974,
+      "per_class_f1": {
+        "negative": 0.4295736643281166,
+        "neutral": 0.5527788138754197,
+        "positive": 0.48231511254019294
+      }
+    },
+    "no_lowercase:aug-s42:all": {
+      "macro_f1": 0.4616322375664083,
+      "per_class_f1": {
+        "negative": 0.4249358847898994,
+        "neutral": 0.4744697564807541,
+        "positive": 0.48549107142857134
+      }
+    },
+    "no_lowercase:aug-s42:no_toxic": {
+      "macro_f1": 0.4528455334815052,
+      "per_class_f1": {
+        "negative": 0.39385651167683566,
+        "neutral": 0.47619047619047616,
+        "positive": 0.4884896125772038
+      }
+    },
+    "no_lowercase:aug-s42:course_topics": {
+      "macro_f1": 0.4610283372561164,
+      "per_class_f1": {
+        "negative": 0.41075050709939154,
+        "neutral": 0.501356063541263,
+        "positive": 0.4709784411276948
+      }
+    },
+    "lowercased:aug-s1337:all": {
+      "macro_f1": 0.38372733737819,
+      "per_class_f1": {
+        "negative": 0.38570241064006655,
+        "neutral": 0.3060523938572719,
+        "positive": 0.4594272076372315
+      }
+    },
+    "lowercased:aug-s1337:no_toxic": {
+      "macro_f1": 0.37316401300867535,
+      "per_class_f1": {
+        "negative": 0.3515322296583304,
+        "neutral": 0.3063291139240506,
+        "positive": 0.4616306954436451
+      }
+    },
+    "lowercased:aug-s1337:course_topics": {
+      "macro_f1": 0.3672672578910036,
+      "per_class_f1": {
+        "negative": 0.3640238704177323,
+        "neutral": 0.3195002231146809,
+        "positive": 0.4182776801405976
+      }
+    },
+    "lowercased:aug-s2024:all": {
+      "macro_f1": 0.4334678051869027,
+      "per_class_f1": {
+        "negative": 0.41674743167280476,
+        "neutral": 0.4074197860962567,
+        "positive": 0.47623619779164666
+      }
+    },
+    "lowercased:aug-s2024:no_toxic": {
+      "macro_f1": 0.42379319633989637,
+      "per_class_f1": {
+        "negative": 0.3837089104817035,
+        "neutral": 0.40844362539788903,
+        "positive": 0.4792270531400966
+      }
+    },
+    "lowercased:aug-s2024:course_topics": {
+      "macro_f1": 0.42845052815974266,
+      "per_class_f1": {
+        "negative": 0.396833250865908,
+        "neutral": 0.42898076135898483,
+        "positive": 0.4595375722543353
+      }
+    },
+    "lowercased:aug-s31337:all": {
+      "macro_f1": 0.46587447761353395,
+      "per_class_f1": {
+        "negative": 0.4364334470989761,
+        "neutral": 0.48822336608953365,
+        "positive": 0.47296661965209214
+      }
+    },
+    "lowercased:aug-s31337:no_toxic": {
+      "macro_f1": 0.4593808405005231,
+      "per_class_f1": {
+        "negative": 0.4103848781598725,
+        "neutral": 0.49098039215686273,
+        "positive": 0.4767772511848341
+      }
+    },
+    "lowercased:aug-s31337:course_topics": {
+      "macro_f1": 0.4582531237530026,
+      "per_class_f1": {
+        "negative": 0.41416309012875535,
+        "neutral": 0.49883990719257537,
+        "positive": 0.46175637393767704
+      }
+    },
+    "lowercased:aug-s7:all": {
+      "macro_f1": 0.4236017293720952,
+      "per_class_f1": {
+        "negative": 0.40846400906858116,
+        "neutral": 0.3823026990092245,
+        "positive": 0.48003848003848004
+      }
+    },
+    "lowercased:aug-s7:no_toxic": {
+      "macro_f1": 0.4138542920301034,
+      "per_class_f1": {
+        "negative": 0.3754527162977867,
+        "neutral": 0.3832848090426443,
+        "positive": 0.4828253507498791
+      }
+    },
+    "lowercased:aug-s7:course_topics": {
+      "macro_f1": 0.41249894677880655,
+      "per_class_f1": {
+        "negative": 0.38534728829686016,
+        "neutral": 0.40670859538784065,
+        "positive": 0.445440956651719
+      }
+    },
+    "lowercased:ce-s1337:all": {
+      "macro_f1": 0.4584694308287596,
+      "per_class_f1": {
+        "negative": 0.43174603174603177,
+        "neutral": 0.4441558441558442,
+        "positive": 0.49950641658440287
+      }
+    },
+    "lowercased:ce-s1337:no_toxic": {
+      "macro_f1": 0.4488976532384794,
+      "per_class_f1": {
+        "negative": 0.3988978380669775,
+        "neutral": 0.4453125,
+        "positive": 0.5024826216484608
+      }
+    },
+    "lowercased:ce-s1337:course_topics": {
+      "macro_f1": 0.44970088062479735,
+      "per_class_f1": {
+        "negative": 0.41302136317395727,
+        "neutral": 0.46086261980830673,
+        "positive": 0.4752186588921282
+      }
+    },
+    "lowercased:ce-s2024:all": {
+      "macro_f1": 0.419742030905862,
+      "per_class_f1": {
+        "negative": 0.39972023080958213,
+        "neutral": 0.3480083857442348,
+        "positive": 0.511497476163769
+      }
+    },
+    "lowercased:ce-s2024:no_toxic": {
+      "macro_f1": 0.41010239094077566,
+      "per_class_f1": {
+        "negative": 0.36758160237388726,
+        "neutral": 0.348922753547031,
+        "positive": 0.5138028169014085
+      }
+    },
+    "lowercased:ce-s2024:course_topics": {
+      "macro_f1": 0.3927276642596143,
+      "per_class_f1": {
+        "negative": 0.3704686118479222,
+        "neutral": 0.3387026556377884,
+        "positive": 0.46901172529313234
+      }
+    },
+    "lowercased:ce-s31337:all": {
+      "macro_f1": 0.4771725706748204,
+      "per_class_f1": {
+        "negative": 0.43584784010315925,
+        "neutral": 0.5066260472201067,
+        "positive": 0.4890438247011952
+      }
+    },
+    "lowercased:ce-s31337:no_toxic": {
+      "macro_f1": 0.4701322452776975,
+      "per_class_f1": {
+        "negative": 0.4091848450057406,
+        "neutral": 0.5099662680159461,
+        "positive": 0.4912456228114057
+      }
+    },
+    "lowercased:ce-s31337:course_topics": {
+      "macro_f1": 0.46777687759418246,
+      "per_class_f1": {
+        "negative": 0.41888225718936517,
+        "neutral": 0.5163002274450341,
+        "positive": 0.46814814814814815
+      }
+    },
+    "lowercased:ce-s7:all": {
+      "macro_f1": 0.4640761478816644,
+      "per_class_f1": {
+        "negative": 0.43858937981353874,
+        "neutral": 0.45174870466321243,
+        "positive": 0.501890359168242
+      }
+    },
+    "lowercased:ce-s7:no_toxic": {
+      "macro_f1": 0.4549097564019386,
+      "per_class_f1": {
+        "negative": 0.4065005417118093,
+        "neutral": 0.45299561617145645,
+        "positive": 0.5052331113225499
+      }
+    },
+    "lowercased:ce-s7:course_topics": {
+      "macro_f1": 0.4619854749747902,
+      "per_class_f1": {
+        "negative": 0.41783307413167453,
+        "neutral": 0.4752866745749308,
+        "positive": 0.4928366762177651
+      }
+    },
+    "lowercased:vln-s1337:all": {
+      "macro_f1": 0.42707647921070446,
+      "per_class_f1": {
+        "negative": 0.40843214756258234,
+        "neutral": 0.39392405063291136,
+        "positive": 0.4788732394366197
+      }
+    },
+    "lowercased:vln-s1337:no_toxic": {
+      "macro_f1": 0.41775205073393257,
+      "per_class_f1": {
+        "negative": 0.37652713799319043,
+        "neutral": 0.39519133084998304,
+        "positive": 0.4815376833586242
+      }
+    },
+    "lowercased:vln-s1337:course_topics": {
+      "macro_f1": 0.42383262458020404,
+      "per_class_f1": {
+        "negative": 0.39136690647482014,
+        "neutral": 0.420008267879289,
+        "positive": 0.4601226993865031
+      }
+    },
+    "lowercased:vln-s2024:all": {
+      "macro_f1": 0.4120681101190336,
+      "per_class_f1": {
+        "negative": 0.40020953378732327,
+        "neutral": 0.3462214411247803,
+        "positive": 0.4897733554449972
+      }
+    },
+    "lowercased:vln-s2024:no_toxic": {
+      "macro_f1": 0.40211844684376086,
+      "per_class_f1": {
+        "negative": 0.3672410598480637,
+        "neutral": 0.34689205846099663,
+        "positive": 0.49222222222222217
+      }
+    },
+    "lowercased:vln-s2024:course_topics": {
+      "macro_f1": 0.408512237661522,
+      "per_class_f1": {
+        "negative": 0.37651277454056475,
+        "neutral": 0.36637931034482757,
+        "positive": 0.4826446280991735
+      }
+    },
+    "lowercased:vln-s31337:all": {
+      "macro_f1": 0.42783711684433395,
+      "per_class_f1": {
+        "negative": 0.4117982873453853,
+        "neutral": 0.38868305826877736,
+        "positive": 0.4830300049188392
+      }
+    },
+    "lowercased:vln-s31337:no_toxic": {
+      "macro_f1": 0.418893847200761,
+      "per_class_f1": {
+        "negative": 0.38072093965168086,
+        "neutral": 0.3900625316883556,
+        "positive": 0.4858980702622464
+      }
+    },
+    "lowercased:vln-s31337:course_topics": {
+      "macro_f1": 0.40932524940894055,
+      "per_class_f1": {
+        "negative": 0.3826169107227208,
+        "neutral": 0.3863922721545569,
+        "positive": 0.45896656534954405
+      }
+    },
+    "lowercased:vln-s42:all": {
+      "macro_f1": 0.4685150236410725,
+      "per_class_f1": {
+        "negative": 0.4341810783316378,
+        "neutral": 0.4819692693634368,
+        "positive": 0.4893947232281428
+      }
+    },
+    "lowercased:vln-s42:no_toxic": {
+      "macro_f1": 0.4593340454138964,
+      "per_class_f1": {
+        "negative": 0.40234884732492393,
+        "neutral": 0.48371361132966173,
+        "positive": 0.49193967758710355
+      }
+    },
+    "lowercased:vln-s42:course_topics": {
+      "macro_f1": 0.46475093261345757,
+      "per_class_f1": {
+        "negative": 0.4120394395433315,
+        "neutral": 0.5063291139240507,
+        "positive": 0.4758842443729904
+      }
+    },
+    "lowercased:vln-s7:all": {
+      "macro_f1": 0.43124598139327625,
+      "per_class_f1": {
+        "negative": 0.4103422619047619,
+        "neutral": 0.3936206311503223,
+        "positive": 0.4897750511247444
+      }
+    },
+    "lowercased:vln-s7:no_toxic": {
+      "macro_f1": 0.4211636242369498,
+      "per_class_f1": {
+        "negative": 0.3767082590612002,
+        "neutral": 0.3944907328685598,
+        "positive": 0.49229188078108943
+      }
+    },
+    "lowercased:vln-s7:course_topics": {
+      "macro_f1": 0.41619685705439724,
+      "per_class_f1": {
+        "negative": 0.382698636577339,
+        "neutral": 0.39747899159663863,
+        "positive": 0.46841294298921415
+      }
+    },
+    "lowercased:ce-s42:all": {
+      "macro_f1": 0.4943266557920503,
+      "per_class_f1": {
+        "negative": 0.449736564805058,
+        "neutral": 0.5261716372489349,
+        "positive": 0.5070717653221583
+      }
+    },
+    "lowercased:ce-s42:no_toxic": {
+      "macro_f1": 0.484956400287043,
+      "per_class_f1": {
+        "negative": 0.4170808856755535,
+        "neutral": 0.5277777777777778,
+        "positive": 0.5100105374077976
+      }
+    },
+    "lowercased:ce-s42:course_topics": {
+      "macro_f1": 0.48822253024790974,
+      "per_class_f1": {
+        "negative": 0.4295736643281166,
+        "neutral": 0.5527788138754197,
+        "positive": 0.48231511254019294
+      }
+    },
+    "lowercased:aug-s42:all": {
+      "macro_f1": 0.4616322375664083,
+      "per_class_f1": {
+        "negative": 0.4249358847898994,
+        "neutral": 0.4744697564807541,
+        "positive": 0.48549107142857134
+      }
+    },
+    "lowercased:aug-s42:no_toxic": {
+      "macro_f1": 0.4528455334815052,
+      "per_class_f1": {
+        "negative": 0.39385651167683566,
+        "neutral": 0.47619047619047616,
+        "positive": 0.4884896125772038
+      }
+    },
+    "lowercased:aug-s42:course_topics": {
+      "macro_f1": 0.4610283372561164,
+      "per_class_f1": {
+        "negative": 0.41075050709939154,
+        "neutral": 0.501356063541263,
+        "positive": 0.4709784411276948
+      }
+    }
+  },
+  "aug_minus_ce_s42": {
+    "score_a": 0.4616322375664083,
+    "score_b": 0.4943266557920503,
+    "observed_diff": -0.03269441822564201,
+    "mean_diff": -0.03271336625875145,
+    "ci_low": -0.04207384539700389,
+    "ci_high": -0.023519775654669544,
+    "p_value": 0.0003999200159968006,
+    "significant": true,
+    "n_resamples": 5000,
+    "alpha": 0.05
+  }
+}

@@ -246,6 +246,13 @@ two versions, for the plain and the augmented model alike.
 | Out-of-scope score | Mahalanobis on the sentence feature AUROC **0.949** vs 0.862 for max-probability | Development choice; confirmation on v2 |
 | Careful INT8 (per-channel, last two layers FP32) | 178.5 MB; macro-F1 drop +0.0004; neutral F1 0.661 → 0.667; p50 about 1.7× faster than FP32 ONNX (indicative, no steady pass) | **Not passed**: the 0.005 non-inferiority margin cannot be shown with 73 neutral examples (upper bound 0.0095) |
 
+**Real student text from another university** (NEU-ESC, 6,613 forum posts, human labels) is the
+hardest test so far: macro-F1 falls to 0.46 for CE and 0.43 for the augmented model (5 seeds each),
+mainly because the model calls 30% of posts neutral where annotators called 69%: forum posts are
+mostly non-evaluative, course surveys mostly evaluative. On this real text the augmentation is not
+neutral: it is worse than CE by 0.033 [−0.042, −0.024] at seed 42 and lower in 4 of 5 seeds, the same
+direction as its contrast-sentence and factual-sentence drops.
+
 The restoration result reframes Q2: most of the unaccented gap is recoverable *before* the model
 sees the text, at almost no cost, while augmentation recovered it only partly. The ViLexNorm result
 bounds what spelling fixes can do: on real, off-domain comments the instability is larger than

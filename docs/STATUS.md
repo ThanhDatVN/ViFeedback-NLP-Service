@@ -160,6 +160,7 @@ the evaluation matrix: [EVALUATION_DATA.md](EVALUATION_DATA.md). Challenge v1 is
 | S3: out-of-scope score | Mahalanobis AUROC 0.949 vs max-probability 0.862 | Development choice; confirmation on v2 👤 |
 | S5: careful INT8 | 178.5 MB, macro-F1 drop +0.0004, neutral 0.661 → 0.667, upper bound 0.0095; p50 about 6.4 ms vs 11.1 ms (indicative: no steady pass) | **Not passed** (0.005 margin not demonstrable with 73 neutral examples) |
 | H7 API arm | gpt-4o-mini neutral F1 0.955 vs 0.713 on challenge v1 (construction confound) | Recorded; confirm on NEU-ESC or v2 |
+| NEU-ESC (real forum posts, Tier B) | macro-F1 CE 0.463 · augmented 0.434 · S2a 0.433 (5 seeds each); predicted neutral 30% vs gold 69%; augmented − CE at s42 −0.033 [−0.042, −0.024] | Domain and label-policy shift is large; augmentation hurts on real text: evidence for CE + restoration |
 
 ---
 
