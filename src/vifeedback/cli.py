@@ -1730,6 +1730,107 @@ def study_ood_dev(
     )
 
 
+@study_app.command("restore-dev")
+def study_restore_dev() -> None:
+    """Cycle 3 S2b development: the served model with and without diacritic restoration, on
+    validation (clean and with diacritics stripped) and challenge v1 unaccented rows (cycle3.yaml)."""
+    import hashlib
+    import time
+
+    from vifeedback.data.loader import load
+    from vifeedback.evaluation import challenge as CH
+    from vifeedback.evaluation import error_analysis as EA
+    from vifeedback.evaluation import external as X
+    from vifeedback.evaluation import metrics as M
+    from vifeedback.evaluation.report import yaml_safe
+    from vifeedback.preprocess.diacritics import Restorer
+    from vifeedback.preprocess.normalize import model_text, strip_diacritics
+    from vifeedback.preprocess.segment import get_segmenter
+
+    tr, dv = load("train"), load("validation")
+    restorer = Restorer.fit(tr.sentence.tolist())
+    path = paths.MODELS / "diacritics" / "restorer.json"  # built from corpus text: git-ignored
+    restorer.save(path)
+    segment = get_segmenter("pyvi")
+    plain = lambda ts: segment([model_text(t) for t in ts])  # noqa: E731
+    restored = lambda ts: segment([restorer(model_text(t)) for t in ts])  # noqa: E731
+
+    manifest = json.loads(
+        (paths.MODELS / "serve" / "sentiment" / "manifest.json").read_text(encoding="utf-8")
+    )
+    served = str(paths.ROOT / manifest["checkpoint"])
+    predict = lambda x: EA.predict_proba(served, x).argmax(1)  # noqa: E731
+    y = dv.sentiment.to_numpy()
+    clean = dv.sentence.tolist()
+    stripped = [strip_diacritics(s) for s in clean]
+
+    p_clean, p_clean_r = predict(plain(clean)), predict(restored(clean))
+    p_str, p_str_r = predict(plain(stripped)), predict(restored(stripped))
+    ok = tot = 0
+    for s, g in zip(stripped, clean, strict=True):
+        r = restorer.restore(s).split()
+        ok += sum(a == b for a, b in zip(r, g.split(), strict=False))
+        tot += len(g.split())
+    t0 = time.perf_counter()
+    for s in stripped:
+        restorer(s)
+    ms = 1000 * (time.perf_counter() - t0) / len(stripped)
+
+    ch = CH.load()
+    m = (ch.category == "unaccented_typed").to_numpy()
+    yc = ch.y.to_numpy()[m].astype(int)
+    texts = ch.text[m].tolist()
+    a, b = predict(plain(texts)) == yc, predict(restored(texts)) == yc
+    mc = X.paired_flip_test(~a, ~b)  # errors without vs with restoration
+    result = {
+        "restorer": {
+            "threshold": restorer.threshold,
+            "keys": len(restorer.candidates),
+            "sha256": hashlib.sha256(path.read_bytes()).hexdigest(),
+            "syllable_accuracy_on_stripped_validation": ok / tot,
+            "ms_per_sentence": ms,
+        },
+        "served_checkpoint": manifest["checkpoint"],
+        "validation_clean": {
+            "touched": int(sum(restorer.needs_restoring(model_text(s)) for s in clean)),
+            "predictions_changed": int((p_clean != p_clean_r).sum()),
+            "macro_f1": M.macro_f1(y, p_clean, 3),
+        },
+        "validation_stripped": {
+            "macro_f1_without": M.macro_f1(y, p_str, 3),
+            "macro_f1_with": M.macro_f1(y, p_str_r, 3),
+        },
+        "challenge_v1_unaccented": {
+            "n": int(m.sum()),
+            "accuracy_without": float(a.mean()),
+            "accuracy_with": float(b.mean()),
+            "errors_only_without": mc["only_first_flips"],
+            "errors_only_with": mc["only_second_flips"],
+            "exact_mcnemar_p": mc["exact_mcnemar_p"],
+        },
+    }
+    out = paths.RESULTS / "studies" / "restoration"
+    out.mkdir(parents=True, exist_ok=True)
+    (out / "development.json").write_text(json.dumps(yaml_safe(result), indent=2), encoding="utf-8")
+    v, s, c = (
+        result["validation_clean"],
+        result["validation_stripped"],
+        result["challenge_v1_unaccented"],
+    )
+    typer.echo(
+        f"restorer: syllable accuracy {ok / tot:.4f}, {ms:.2f} ms per sentence, threshold {restorer.threshold:.3f}"
+    )
+    typer.echo(
+        f"validation clean: {v['touched']} touched, {v['predictions_changed']} predictions changed"
+    )
+    typer.echo(
+        f"validation stripped: macro-F1 {s['macro_f1_without']:.4f} -> {s['macro_f1_with']:.4f}"
+    )
+    typer.echo(
+        f"challenge v1 unaccented: {c['accuracy_without']:.3f} -> {c['accuracy_with']:.3f} (p = {c['exact_mcnemar_p']:.4g})"
+    )
+
+
 @study_app.command("external")
 def study_external(
     corpus: str = typer.Option("vilexnorm", help="vilexnorm | case | neu_esc"),
