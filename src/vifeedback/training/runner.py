@@ -79,15 +79,21 @@ def _augment_train(cfg: TrainConfig, x_tr: list[str]) -> tuple[list[str], dict[s
 ROBUSTNESS_SUITES = ("nodiacritic", "nodiacritic-50", "teencode-100", "charnoise-5")
 
 
-def _robustness(model, tokenizer, cfg: TrainConfig, device: str, seed: int = 42) -> dict[str, Any]:
-    """Validation macro-F1 under the Cycle 1 declared suites, for the final model of a run."""
+def _robustness(
+    model, tokenizer, cfg: TrainConfig, device: str, seed: int = 42, split: str = "validation"
+) -> dict[str, Any]:
+    """Macro-F1 under the Cycle 1 declared suites, for the final model of a run.
+
+    `split="test"` only at a closing gate: the suites were frozen on validation beforehand.
+    """
     from torch.utils.data import DataLoader
     from transformers import DataCollatorWithPadding
 
     from vifeedback.evaluation.robustness import perturb
 
-    raw, pipeline = _raw_and_pipeline(cfg.preprocessing, "validation")
-    _, (_, y_dv), _ = _splits(cfg.task, cfg.preprocessing)
+    raw, pipeline = _raw_and_pipeline(cfg.preprocessing, split)
+    _, (_, y_val), (_, y_te) = _splits(cfg.task, cfg.preprocessing)
+    y_dv = y_te if split == "test" else y_val
     collator = DataCollatorWithPadding(tokenizer, padding="longest", return_tensors="pt")
     k = n_classes(cfg.task)
     out: dict[str, Any] = {}
@@ -206,8 +212,8 @@ def run_once(
                 "per_class": stage1["per_class"],
                 "robustness": stage1.get("robustness"),
             }
-        if robustness and split == "validation":
-            metrics["robustness"] = _robustness(model, tokenizer, cfg, out["device"])
+        if robustness:
+            metrics["robustness"] = _robustness(model, tokenizer, cfg, out["device"], split=split)
             if verbose:
                 for suite, r in metrics["robustness"].items():
                     print(f"  robustness {suite:15s} macro-F1 {r['macro_f1']:.4f}")

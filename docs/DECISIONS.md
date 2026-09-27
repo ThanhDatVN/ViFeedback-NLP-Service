@@ -757,3 +757,25 @@ existed only on disk.
 **Cost.** About 2 GPU-hours to regenerate. Recorded in the ledger as regeneration, not new
 experiments: the decisions were already taken under the declared rules.
 
+---
+
+## ADR-024 · 2026-09-27 · Cycle 1 closing gate: retrain the finalist to evaluate it on test · Accepted
+
+**Context.** `cycle1.yaml` declares a closing gate: one logged test evaluation per finalist, with a
+temperature fitted on validation and applied once to test. H2 (augmentation) is the only supported
+intervention, so it is the finalist, against the deployed CE model. The Cycle 1 runs kept no
+checkpoints, so evaluating the finalist on test means retraining it.
+
+**Decision.** Retrain H2 at its 5 seeds with `--include-test --robustness` (phase 9, so run ids stay
+distinct from the phase-8 decision runs; validation must reproduce them exactly), keeping seed 42's
+checkpoint. `vifeedback study closing-gate` then evaluates both seed-42 checkpoints on test: the
+official split, the frozen overlap-excluded slice, validation-fitted calibration, and the robustness
+suites. The 5-seed test comparison uses G4's CE rows. Each test touch is logged with its reason.
+
+**Budget.** 5 runs beyond the declared 30, recorded in the ledger. The plan assumed checkpoints that
+were not kept; later cycles save the finalist checkpoint when a hypothesis advances.
+
+**Guard.** Nothing measured at the gate feeds back into Cycle 1's decisions, which are already
+recorded. The gate *reports*; any change it motivates belongs to Cycle 2 and is logged in
+EVALUATION_PROTOCOL § 4 as a decision influenced by a test result.
+
