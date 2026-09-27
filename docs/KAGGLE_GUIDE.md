@@ -95,6 +95,8 @@ run that updates weights counts against the cycle budget in `configs/experiments
 |---|---|---:|---|---|
 | **4f** | **H7 declared: Qwen3-4B, frozen prompt, challenge set + validation, 0-shot and 6-shot (seeds 1, 2)** | 0 (inference) | **~20–30 min** | **yes, the only Kaggle-only part of Cycle 2** |
 
+**Simpler: [`notebooks/kaggle_h7_llm.ipynb`](../notebooks/kaggle_h7_llm.ipynb)** runs the same six configurations on its own: it clones the code from GitHub (no Dataset upload), uses both GPUs of *GPU T4 x2* as two balanced queues, resumes after an interruption and packages `h7_results.zip`. Run it with *Save Version → Save & Run All (Commit)*; about 25–35 minutes in total.
+
 Cell 4f needs no checkpoint: the encoder baselines it compares against are committed files. It reuses
 the prompt frozen in `results/studies/llm_reference/prompt_dev.json`; do not edit it on Kaggle. Enable
 the GPU (T4) and internet; Qwen3-4B downloads about 8 GB. Bring the results home with

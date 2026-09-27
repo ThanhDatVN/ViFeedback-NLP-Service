@@ -1704,11 +1704,20 @@ def results_merge(
         for d in sorted((src / "runs").glob("*"))
         if d.is_dir() and not (paths.RUNS / d.name).exists()
     ]
+    llm_runs = [
+        r
+        for r in sorted((src / "studies" / "llm_reference").glob("*/*"))
+        if r.is_dir()
+        and not (paths.RESULTS / "studies" / "llm_reference" / r.parent.name / r.name).exists()
+    ]
     typer.echo(f"  registry: {len(new)} new rows ({len(other) - len(new)} already present)")
     typer.echo(f"  run directories: {len(run_dirs)} new")
+    typer.echo(f"  llm_reference runs: {len(llm_runs)} new")
     if dry_run:
         for rid in new.run_id:
             typer.echo(f"    + {rid}")
+        for r in llm_runs:
+            typer.echo(f"    + llm_reference/{r.parent.name}/{r.name}")
         return
 
     R._migrate_registry_schema()
@@ -1728,11 +1737,11 @@ def results_merge(
             if not (dst / m.name).exists():
                 shutil.copy(m, dst / m.name)
     # H7 runs (Kaggle Qwen3-4B): one folder per model and configuration; never overwrite one.
-    for run in sorted((src / "studies" / "llm_reference").glob("*/*")):
-        dst = paths.RESULTS / "studies" / "llm_reference" / run.parent.name / run.name
-        if run.is_dir() and not dst.exists():
-            shutil.copytree(run, dst)
-            typer.echo(f"  llm_reference: {run.parent.name}/{run.name}")
+    for run in llm_runs:
+        shutil.copytree(
+            run, paths.RESULTS / "studies" / "llm_reference" / run.parent.name / run.name
+        )
+        typer.echo(f"  llm_reference: {run.parent.name}/{run.name}")
     typer.echo(
         f"  merged. Now: vifeedback study tables   (registry has {len(pd.read_csv(paths.REGISTRY))} rows)"
     )
