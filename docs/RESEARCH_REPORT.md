@@ -168,8 +168,10 @@ EXTENDED level.
 The served FP32 ONNX artifact is 7.6× faster than padded PyTorch at the median with identical
 predictions. The project's original H3, that INT8 might be *slower* without VNNI, is falsified: it is
 1.7× faster than FP32 ONNX. Speed was never INT8's problem here; the minority class is. Absolute
-latency on a laptop shifts with its power state between sessions (the same ladder measured 23.9 ms
-p95 for L3 earlier the same day), while the ratios reproduce, so the ratios are the claim.
+latency on a laptop shifts with its power state between sessions. Three later sessions on AC power
+(served augmented model, same graph) measured L3 p95 at 19.2 and 20.0 ms where a steady pass
+existed, and L0 at 70–75 ms instead of 117 ms. So the 30 ms p95 target is met, the table above is a
+slow-state session, and the p50 speed-up over padded PyTorch is 6.3–7.6× depending on the state.
 
 ### 5.7 Closing gate: the finalists on test, once
 

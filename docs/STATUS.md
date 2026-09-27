@@ -191,9 +191,12 @@ input, two steady passes in rotated order agreeing within 1% (`results/studies/l
 | L4 ONNX INT8 dynamic (blocked) | 9.0 ms | 20.4 ms | 13.1× / 5.9× | 40.9 | neutral F1 −0.088: not released |
 
 - **Serve FP32 ONNX**: 7.6× faster than padded PyTorch at the median, identical predictions.
-  S5 (p95 ≤ 60 ms minimum, ≤ 30 ms target): minimum met; the target was met in an earlier session
-  (23.9 ms) but not this one (33.6 ms). Absolute latency on this laptop depends on its power state;
-  the ratios reproduce across sessions (3.52× vs 3.58× at p95), so ratios are the claim.
+  S5 (p95 ≤ 60 ms minimum, ≤ 30 ms target): **both met.** The one miss (33.6 ms, the table above) was
+  a slow machine state: PyTorch L0 was 117 ms there against 70–75 ms in three later sessions on AC
+  power, where the served model's p95 was 19.2 and 20.0 ms in the two reportable sessions (one
+  session had no steady pass; its passes read 18.7 and 20.7 ms). Files:
+  `results/studies/latency/sessions/`. Absolute latency depends on the laptop's state, and so does the
+  p50 ratio (6.3× in the later sessions vs 7.6× here), so claims quote a range.
 - **H3 is falsified.** INT8 was expected to be possibly *slower* without VNNI. It is 1.7× faster than
   FP32 ONNX on AVX2. It is still not shipped: it costs 0.088 neutral F1 (ADR-022). The review's
   efficiency stretch target (≥ 1.5× with neutral loss ≤ 0.02) is therefore not met.

@@ -1,0 +1,206 @@
+{
+  "protocol": "model-only, pre-segmented test inputs, 200 warmup, median-of-repeats p95, two passes in rotated order; texts/s at batch 32; RSS after each config",
+  "summary": {
+    "L0 torch fp32, pad to 96": {
+      "p95_ms_by_pass": [
+        79.194,
+        80.989
+      ],
+      "spread_by_pass": [
+        0.091,
+        0.0226
+      ],
+      "steady_passes": [
+        1,
+        2
+      ],
+      "basis": "mean of both steady passes",
+      "reportable": true,
+      "p50_ms": 69.76,
+      "p95_ms": 80.09,
+      "p99_ms": 82.29,
+      "texts_per_s_b32": 21.2,
+      "speedup_p95_vs_baseline": 1.0,
+      "speedup_p50_vs_baseline": 1.0
+    },
+    "L1 torch fp32, dynamic padding": {
+      "p95_ms_by_pass": [
+        40.9,
+        42.414
+      ],
+      "spread_by_pass": [
+        0.036,
+        0.0607
+      ],
+      "steady_passes": [
+        1,
+        2
+      ],
+      "basis": "mean of both steady passes",
+      "reportable": true,
+      "p50_ms": 30.48,
+      "p95_ms": 41.66,
+      "p99_ms": 53.26,
+      "texts_per_s_b32": 44.4,
+      "speedup_p95_vs_baseline": 1.92,
+      "speedup_p50_vs_baseline": 2.29
+    },
+    "L3 onnx fp32 (model.opt.onnx), dynamic padding": {
+      "p95_ms_by_pass": [
+        19.21,
+        19.094
+      ],
+      "spread_by_pass": [
+        0.0794,
+        0.0839
+      ],
+      "steady_passes": [
+        1,
+        2
+      ],
+      "basis": "mean of both steady passes",
+      "reportable": true,
+      "p50_ms": 11.14,
+      "p95_ms": 19.15,
+      "p99_ms": 26.41,
+      "texts_per_s_b32": 51.1,
+      "speedup_p95_vs_baseline": 4.18,
+      "speedup_p50_vs_baseline": 6.26
+    }
+  },
+  "passes": [
+    {
+      "L0 torch fp32, pad to 96": {
+        "p50_ms": 64.445,
+        "p95_ms": 79.194,
+        "p99_ms": 81.749,
+        "mean_ms": 65.194,
+        "repeats": 5,
+        "timed_per_repeat": 300,
+        "p95_spread_across_repeats": 0.091,
+        "throttling_suspected": false,
+        "rss_mb_after": 1986.2,
+        "texts_per_s_b32": 21.9
+      },
+      "L1 torch fp32, dynamic padding": {
+        "p50_ms": 30.283,
+        "p95_ms": 40.9,
+        "p99_ms": 49.158,
+        "mean_ms": 31.34,
+        "repeats": 5,
+        "timed_per_repeat": 300,
+        "p95_spread_across_repeats": 0.036,
+        "throttling_suspected": false,
+        "rss_mb_after": 1994.3,
+        "texts_per_s_b32": 47.1
+      },
+      "L3 onnx fp32 (model.opt.onnx), dynamic padding": {
+        "p50_ms": 11.256,
+        "p95_ms": 19.21,
+        "p99_ms": 25.125,
+        "mean_ms": 12.482,
+        "repeats": 5,
+        "timed_per_repeat": 300,
+        "p95_spread_across_repeats": 0.0794,
+        "throttling_suspected": false,
+        "rss_mb_after": 2063.3,
+        "texts_per_s_b32": 51.7
+      }
+    },
+    {
+      "L3 onnx fp32 (model.opt.onnx), dynamic padding": {
+        "p50_ms": 11.033,
+        "p95_ms": 19.094,
+        "p99_ms": 27.695,
+        "mean_ms": 12.277,
+        "repeats": 5,
+        "timed_per_repeat": 300,
+        "p95_spread_across_repeats": 0.0839,
+        "throttling_suspected": false,
+        "rss_mb_after": 2190.4,
+        "texts_per_s_b32": 50.5
+      },
+      "L1 torch fp32, dynamic padding": {
+        "p50_ms": 30.675,
+        "p95_ms": 42.414,
+        "p99_ms": 57.363,
+        "mean_ms": 31.779,
+        "repeats": 5,
+        "timed_per_repeat": 300,
+        "p95_spread_across_repeats": 0.0607,
+        "throttling_suspected": false,
+        "rss_mb_after": 2127.2,
+        "texts_per_s_b32": 41.6
+      },
+      "L0 torch fp32, pad to 96": {
+        "p50_ms": 75.076,
+        "p95_ms": 80.989,
+        "p99_ms": 82.828,
+        "mean_ms": 71.604,
+        "repeats": 5,
+        "timed_per_repeat": 300,
+        "p95_spread_across_repeats": 0.0226,
+        "throttling_suspected": false,
+        "rss_mb_after": 2146.2,
+        "texts_per_s_b32": 20.6
+      }
+    }
+  ],
+  "peak_rss_mb": 2173.7,
+  "environment": {
+    "captured_at": "2026-09-27T12:05:25+00:00",
+    "python": "3.11.9",
+    "executable": "C:\\Users\\thanh\\AppData\\Local\\Programs\\Python\\Python311\\python.exe",
+    "os": {
+      "system": "Windows",
+      "release": "10",
+      "version": "10.0.26200"
+    },
+    "cpu": {
+      "platform_processor": "AMD64 Family 25 Model 68 Stepping 1, AuthenticAMD",
+      "machine": "AMD64",
+      "logical_cores": 12,
+      "brand": "AMD Ryzen 5 6600H with Radeon Graphics",
+      "physical_cores": 6,
+      "flags": {
+        "avx": true,
+        "avx2": true,
+        "fma": true,
+        "avx512f": false,
+        "avx512_vnni": false,
+        "avx_vnni": false,
+        "sse4_2": true
+      },
+      "flags_source": "py-cpuinfo"
+    },
+    "has_vnni": false,
+    "gpu": {
+      "available": true,
+      "name": "NVIDIA GeForce RTX 3050 Laptop GPU",
+      "count": 1,
+      "capability": [
+        8,
+        6
+      ],
+      "cuda": "12.6"
+    },
+    "packages": {
+      "numpy": "2.4.6",
+      "pandas": "2.3.3",
+      "scikit-learn": "1.7.2",
+      "scipy": "1.17.1",
+      "torch": "2.14.0+cu126",
+      "transformers": "5.17.0",
+      "datasets": "5.0.1",
+      "onnxruntime": "1.30.0",
+      "optimum": null,
+      "fastapi": "0.141.1"
+    },
+    "git": {
+      "sha": "32080596cd530c6e552c4f7da78f8c91d5eedd7c",
+      "branch": "main",
+      "dirty": true
+    },
+    "source_sha256": "ec7550f842f3a914f9d2fc6552cc0d15f412cc1d315adbdd418033ec0b89a3fd"
+  }
+}

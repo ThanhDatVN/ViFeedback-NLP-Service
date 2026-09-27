@@ -1,0 +1,199 @@
+{
+  "protocol": "model-only, pre-segmented test inputs, 200 warmup, median-of-repeats p95, two passes in rotated order; texts/s at batch 32; RSS after each config",
+  "summary": {
+    "L0 torch fp32, pad to 96": {
+      "p95_ms_by_pass": [
+        84.655,
+        82.465
+      ],
+      "spread_by_pass": [
+        0.0594,
+        0.0161
+      ],
+      "steady_passes": [
+        1,
+        2
+      ],
+      "basis": "mean of both steady passes",
+      "reportable": true,
+      "p50_ms": 75.12,
+      "p95_ms": 83.56,
+      "p99_ms": 90.21,
+      "texts_per_s_b32": 20.6,
+      "speedup_p95_vs_baseline": 1.0,
+      "speedup_p50_vs_baseline": 1.0
+    },
+    "L1 torch fp32, dynamic padding": {
+      "p95_ms_by_pass": [
+        43.802,
+        43.753
+      ],
+      "spread_by_pass": [
+        0.172,
+        0.0236
+      ],
+      "steady_passes": [
+        2
+      ],
+      "basis": "pass 2 only (the other was not steady)",
+      "reportable": true,
+      "p50_ms": 32.22,
+      "p95_ms": 43.75,
+      "p99_ms": 53.19,
+      "texts_per_s_b32": 40.5,
+      "speedup_p95_vs_baseline": 1.91,
+      "speedup_p50_vs_baseline": 2.33
+    },
+    "L3 onnx fp32 (model.opt.onnx), dynamic padding": {
+      "p95_ms_by_pass": [
+        20.687,
+        18.656
+      ],
+      "spread_by_pass": [
+        0.1875,
+        0.206
+      ],
+      "steady_passes": [],
+      "basis": "no steady pass",
+      "reportable": false
+    }
+  },
+  "passes": [
+    {
+      "L0 torch fp32, pad to 96": {
+        "p50_ms": 76.72,
+        "p95_ms": 84.655,
+        "p99_ms": 95.365,
+        "mean_ms": 74.799,
+        "repeats": 5,
+        "timed_per_repeat": 300,
+        "p95_spread_across_repeats": 0.0594,
+        "throttling_suspected": false,
+        "rss_mb_after": 1985.0,
+        "texts_per_s_b32": 21.4
+      },
+      "L1 torch fp32, dynamic padding": {
+        "p50_ms": 32.06,
+        "p95_ms": 43.802,
+        "p99_ms": 52.573,
+        "mean_ms": 32.857,
+        "repeats": 5,
+        "timed_per_repeat": 300,
+        "p95_spread_across_repeats": 0.172,
+        "throttling_suspected": true,
+        "warning": "p95 varied 17.2% across repeats (>10%). The measurement was not in a steady state (thermal throttling, power management or background load; the spread alone cannot say which). Do not report it; re-run on an idle, cool machine.",
+        "rss_mb_after": 1993.0,
+        "texts_per_s_b32": 45.6
+      },
+      "L3 onnx fp32 (model.opt.onnx), dynamic padding": {
+        "p50_ms": 11.367,
+        "p95_ms": 20.687,
+        "p99_ms": 29.832,
+        "mean_ms": 12.656,
+        "repeats": 5,
+        "timed_per_repeat": 300,
+        "p95_spread_across_repeats": 0.1875,
+        "throttling_suspected": true,
+        "warning": "p95 varied 18.7% across repeats (>10%). The measurement was not in a steady state (thermal throttling, power management or background load; the spread alone cannot say which). Do not report it; re-run on an idle, cool machine.",
+        "rss_mb_after": 2063.1,
+        "texts_per_s_b32": 49.2
+      }
+    },
+    {
+      "L3 onnx fp32 (model.opt.onnx), dynamic padding": {
+        "p50_ms": 11.211,
+        "p95_ms": 18.656,
+        "p99_ms": 29.661,
+        "mean_ms": 12.468,
+        "repeats": 5,
+        "timed_per_repeat": 300,
+        "p95_spread_across_repeats": 0.206,
+        "throttling_suspected": true,
+        "warning": "p95 varied 20.6% across repeats (>10%). The measurement was not in a steady state (thermal throttling, power management or background load; the spread alone cannot say which). Do not report it; re-run on an idle, cool machine.",
+        "rss_mb_after": 2190.0,
+        "texts_per_s_b32": 50.7
+      },
+      "L1 torch fp32, dynamic padding": {
+        "p50_ms": 32.222,
+        "p95_ms": 43.753,
+        "p99_ms": 53.194,
+        "mean_ms": 33.036,
+        "repeats": 5,
+        "timed_per_repeat": 300,
+        "p95_spread_across_repeats": 0.0236,
+        "throttling_suspected": false,
+        "rss_mb_after": 2126.1,
+        "texts_per_s_b32": 40.5
+      },
+      "L0 torch fp32, pad to 96": {
+        "p50_ms": 73.518,
+        "p95_ms": 82.465,
+        "p99_ms": 85.054,
+        "mean_ms": 71.113,
+        "repeats": 5,
+        "timed_per_repeat": 300,
+        "p95_spread_across_repeats": 0.0161,
+        "throttling_suspected": false,
+        "rss_mb_after": 2109.6,
+        "texts_per_s_b32": 19.9
+      }
+    }
+  ],
+  "peak_rss_mb": 2192.0,
+  "environment": {
+    "captured_at": "2026-09-27T11:53:30+00:00",
+    "python": "3.11.9",
+    "executable": "C:\\Users\\thanh\\AppData\\Local\\Programs\\Python\\Python311\\python.exe",
+    "os": {
+      "system": "Windows",
+      "release": "10",
+      "version": "10.0.26200"
+    },
+    "cpu": {
+      "platform_processor": "AMD64 Family 25 Model 68 Stepping 1, AuthenticAMD",
+      "machine": "AMD64",
+      "logical_cores": 12,
+      "brand": "AMD Ryzen 5 6600H with Radeon Graphics",
+      "physical_cores": 6,
+      "flags": {
+        "avx": true,
+        "avx2": true,
+        "fma": true,
+        "avx512f": false,
+        "avx512_vnni": false,
+        "avx_vnni": false,
+        "sse4_2": true
+      },
+      "flags_source": "py-cpuinfo"
+    },
+    "has_vnni": false,
+    "gpu": {
+      "available": true,
+      "name": "NVIDIA GeForce RTX 3050 Laptop GPU",
+      "count": 1,
+      "capability": [
+        8,
+        6
+      ],
+      "cuda": "12.6"
+    },
+    "packages": {
+      "numpy": "2.4.6",
+      "pandas": "2.3.3",
+      "scikit-learn": "1.7.2",
+      "scipy": "1.17.1",
+      "torch": "2.14.0+cu126",
+      "transformers": "5.17.0",
+      "datasets": "5.0.1",
+      "onnxruntime": "1.30.0",
+      "optimum": null,
+      "fastapi": "0.141.1"
+    },
+    "git": {
+      "sha": "32080596cd530c6e552c4f7da78f8c91d5eedd7c",
+      "branch": "main",
+      "dirty": false
+    },
+    "source_sha256": "ec7550f842f3a914f9d2fc6552cc0d15f412cc1d315adbdd418033ec0b89a3fd"
+  }
+}
