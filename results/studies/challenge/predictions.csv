@@ -1,0 +1,306 @@
+id,category,pair_id,text,sentiment,ce_pred,ce_conf,augmented_pred,augmented_conf
+c001,negation_pair,n01,cô giảng bài rất cuốn hút,positive,positive,0.999,positive,0.999
+c002,negation_pair,n01,cô giảng bài chẳng cuốn hút chút nào,negative,negative,0.9978,negative,0.9966
+c003,negation_pair,n02,môn học áp dụng được vào thực tế,positive,positive,0.9879,positive,0.9485
+c004,negation_pair,n02,môn học đâu có áp dụng được gì vào thực tế,negative,negative,0.9972,negative,0.9965
+c005,negation_pair,n03,bài giảng của thầy hay,positive,positive,0.999,positive,0.9989
+c006,negation_pair,n03,bài giảng của thầy có hay đâu,negative,negative,0.9955,negative,0.972
+c007,negation_pair,n04,thầy từng đến lớp trễ nhiều lần,negative,negative,0.9952,negative,0.9869
+c008,negation_pair,n04,thầy chưa bao giờ đến lớp trễ,positive,negative,0.6782,negative,0.7344
+c009,negation_pair,n05,cô làm em thất vọng,negative,negative,0.9886,negative,0.9372
+c010,negation_pair,n05,cô chưa bao giờ làm em thất vọng,positive,positive,0.982,positive,0.9843
+c011,negation_pair,n06,cô ngại giải đáp thắc mắc của sinh viên,negative,negative,0.9538,negative,0.8617
+c012,negation_pair,n06,cô không hề ngại giải đáp thắc mắc của sinh viên,positive,positive,0.9986,positive,0.9981
+c013,negation_pair,n07,máy chiếu dùng ổn định suốt học kỳ,positive,negative,0.4652,negative,0.7701
+c014,negation_pair,n07,máy chiếu chẳng lúc nào dùng được suốt học kỳ,negative,negative,0.9979,negative,0.9979
+c015,negation_pair,n08,thầy trả lời email của sinh viên rất nhanh,positive,negative,0.8928,negative,0.8886
+c016,negation_pair,n08,thầy chẳng bao giờ trả lời email của sinh viên,negative,negative,0.9964,negative,0.9951
+c017,negation_pair,n09,sinh viên yếu bị bỏ lại phía sau trong lớp cô,negative,negative,0.9886,negative,0.9826
+c018,negation_pair,n09,cô không để sinh viên nào bị bỏ lại phía sau,positive,positive,0.9438,positive,0.894
+c019,negation_pair,n10,môn học khó như em nghĩ,negative,negative,0.9852,negative,0.9673
+c020,negation_pair,n10,môn học không khó như em nghĩ,positive,neutral,0.7745,neutral,0.7659
+c021,negation_pair,n11,đề thi bám sát nội dung học,positive,positive,0.9486,positive,0.8759
+c022,negation_pair,n11,đề thi chẳng liên quan gì tới nội dung học,negative,negative,0.9961,negative,0.9955
+c023,negation_pair,n12,thầy phân biệt đối xử với sinh viên,negative,negative,0.9905,negative,0.9914
+c024,negation_pair,n12,thầy không phân biệt đối xử với sinh viên nào,positive,positive,0.686,positive,0.8917
+c025,negation_pair,n13,chương trình học đã cập nhật công nghệ mới,positive,negative,0.7948,positive,0.4588
+c026,negation_pair,n13,chương trình học chưa cập nhật công nghệ mới,negative,negative,0.9969,negative,0.9971
+c027,negation_pair,n14,có nhiều điểm để phàn nàn về cách dạy của cô,negative,negative,0.972,negative,0.642
+c028,negation_pair,n14,không có gì để phàn nàn về cách dạy của cô,positive,positive,0.9777,positive,0.9737
+c029,negation_pair,n15,wifi phòng lab lúc nào cũng vào được,positive,negative,0.8242,negative,0.994
+c030,negation_pair,n15,wifi phòng lab không bao giờ vào được,negative,negative,0.998,negative,0.9977
+c031,mixed_aspect,,thầy dạy hay nhưng phòng học nóng quá,negative,negative,0.9672,negative,0.9472
+c032,mixed_aspect,,phòng học hơi nóng nhưng thầy dạy rất hay,positive,positive,0.9911,positive,0.9914
+c033,mixed_aspect,,cô nhiệt tình nhưng giảng hơi nhanh,negative,negative,0.9431,negative,0.9266
+c034,mixed_aspect,,bài tập nhiều nhưng giúp em hiểu bài hơn,positive,positive,0.9468,positive,0.9471
+c035,mixed_aspect,,môn học khó nhưng thầy hướng dẫn rất tận tình,positive,positive,0.9974,positive,0.9963
+c036,mixed_aspect,,giáo trình đầy đủ nhưng máy chiếu thường xuyên hỏng,negative,negative,0.9979,negative,0.9966
+c037,mixed_aspect,,thầy vui tính nhưng chấm điểm hơi khắt khe,negative,negative,0.8275,negative,0.6154
+c038,mixed_aspect,,đề thi khó nhưng công bằng,positive,positive,0.9168,positive,0.7964
+c039,mixed_aspect,,cô giảng dễ hiểu nhưng ít cho ví dụ thực tế,negative,negative,0.8886,negative,0.962
+c040,mixed_aspect,,lịch học dày nhưng nội dung rất bổ ích,positive,positive,0.98,positive,0.9865
+c041,mixed_aspect,,phòng lab máy yếu nhưng thầy hỗ trợ sinh viên rất nhiệt tình,positive,positive,0.9913,positive,0.9886
+c042,mixed_aspect,,thầy giỏi chuyên môn nhưng không biết cách truyền đạt,negative,negative,0.992,negative,0.9905
+c043,mixed_aspect,,môn học thú vị nhưng thời lượng quá ngắn,negative,negative,0.9943,negative,0.996
+c044,mixed_aspect,,slide hơi sơ sài nhưng thầy giải thích kỹ trên lớp,positive,negative,0.9836,positive,0.5382
+c045,mixed_aspect,,cô dạy tốt nhưng hay cho nghỉ học đột xuất,negative,negative,0.6828,negative,0.7985
+c046,mixed_aspect,,điều hòa hỏng nhưng cả lớp vẫn học rất vui vì cô,positive,positive,0.7879,positive,0.9641
+c047,mixed_aspect,,bài giảng nhiều lý thuyết nhưng có ví dụ minh họa dễ hiểu,positive,positive,0.9704,positive,0.9913
+c048,mixed_aspect,,thầy nhiệt huyết nhưng giọng nói nhỏ khó nghe,negative,negative,0.9346,negative,0.9739
+c049,mixed_aspect,,kiến thức hay nhưng thi cử nặng quá,negative,negative,0.9944,negative,0.9964
+c050,mixed_aspect,,môn này nặng nhưng học xong thấy rất đáng,positive,positive,0.592,positive,0.8826
+c051,mixed_aspect,,cô hơi nghiêm nhưng rất quan tâm đến sinh viên,positive,positive,0.9922,positive,0.9952
+c052,mixed_aspect,,thư viện đủ sách nhưng chỗ ngồi quá ít,negative,negative,0.9968,negative,0.9958
+c053,mixed_aspect,,thầy đến muộn vài buổi nhưng bù giờ đầy đủ,positive,negative,0.9586,negative,0.7199
+c054,mixed_aspect,,chương trình học hợp lý nhưng cơ sở vật chất xuống cấp,negative,negative,0.9948,negative,0.997
+c055,mixed_aspect,,cô giảng chậm nhưng ai cũng theo kịp,positive,positive,0.4667,positive,0.7188
+c056,mixed_aspect,,bài tập lớn khó nhưng học được nhiều thứ,positive,positive,0.9054,positive,0.6233
+c057,mixed_aspect,,phòng học rộng nhưng âm thanh rất tệ,negative,negative,0.9969,negative,0.9963
+c058,mixed_aspect,,thầy dạy hay tuy nhiên không cho sinh viên đặt câu hỏi,negative,positive,0.9441,positive,0.8707
+c059,mixed_aspect,,tuy lớp đông nhưng thầy vẫn nhớ tên từng bạn,positive,positive,0.5821,positive,0.778
+c060,mixed_aspect,,mặc dù đề cương rõ ràng nhưng giảng viên dạy không theo đề cương,negative,negative,0.9977,negative,0.9964
+c061,mixed_aspect,,giáo trình cũ nhưng thầy bổ sung tài liệu mới rất đầy đủ,positive,negative,0.7375,positive,0.9919
+c062,mixed_aspect,,cô rất dễ thương nhưng điểm quá trình chấm chưa minh bạch,negative,negative,0.9424,negative,0.9355
+c063,mixed_aspect,,môn học hữu ích nhưng lịch thi bị dời liên tục,negative,negative,0.9972,negative,0.9963
+c064,mixed_aspect,,máy chiếu mờ nhưng thầy in tài liệu phát cho cả lớp,positive,negative,0.9955,negative,0.9927
+c065,mixed_aspect,,thầy khó tính nhưng dạy rất có tâm,positive,positive,0.9975,positive,0.9979
+c066,mixed_aspect,,wifi mạnh nhưng phòng lab thiếu máy,negative,negative,0.9975,negative,0.9961
+c067,mixed_aspect,,cô giảng hơi lan man nhưng rất thân thiện và dễ gần,positive,positive,0.9885,positive,0.9952
+c068,mixed_aspect,,nội dung hay nhưng bài kiểm tra ra ngoài phạm vi,negative,negative,0.9884,negative,0.9886
+c069,mixed_aspect,,thầy trả bài chậm nhưng nhận xét rất chi tiết,positive,positive,0.9755,positive,0.9861
+c070,mixed_aspect,,phòng học sạch sẽ nhưng bàn ghế đã cũ và hỏng nhiều,negative,negative,0.9974,negative,0.9967
+c071,suggestion_cue,,thầy nên giảng chậm lại một chút,negative,negative,0.9972,negative,0.9971
+c072,suggestion_cue,,cô nên cho thêm ví dụ thực tế,negative,negative,0.9934,negative,0.9939
+c073,suggestion_cue,,khoa cần trang bị thêm máy chiếu cho các phòng,negative,negative,0.998,negative,0.9981
+c074,suggestion_cue,,mong thầy công bố điểm sớm hơn,negative,negative,0.9972,negative,0.9977
+c075,suggestion_cue,,nhà trường nên sửa lại điều hòa phòng học,negative,negative,0.9979,negative,0.9982
+c076,suggestion_cue,,thầy cần cập nhật slide cho mới hơn,negative,negative,0.9974,negative,0.9962
+c077,suggestion_cue,,mong cô dành thêm thời gian giải bài tập,negative,negative,0.9812,negative,0.9914
+c078,suggestion_cue,,nên có thêm giờ thực hành cho môn này,negative,negative,0.9974,negative,0.9978
+c079,suggestion_cue,,cần tăng số lượng máy tính trong phòng lab,negative,negative,0.9977,negative,0.998
+c080,suggestion_cue,,mong khoa mở thêm lớp buổi tối,negative,negative,0.9969,negative,0.9967
+c081,suggestion_cue,,thầy nên nói to hơn vì phía cuối lớp không nghe rõ,negative,negative,0.9965,negative,0.9971
+c082,suggestion_cue,,cô nên đăng tài liệu lên trước buổi học,negative,negative,0.9966,negative,0.9969
+c083,suggestion_cue,,cần có đáp án cho bài tập về nhà,negative,negative,0.9953,negative,0.9964
+c084,suggestion_cue,,mong thầy bớt khắt khe khi chấm điểm chuyên cần,negative,negative,0.9919,negative,0.9957
+c085,suggestion_cue,,nên chia nhóm nhỏ hơn để dễ làm việc,negative,negative,0.9951,negative,0.9966
+c086,suggestion_cue,,thư viện cần mở cửa muộn hơn vào mùa thi,negative,negative,0.9972,negative,0.9982
+c087,suggestion_cue,,mong giảng viên phản hồi email nhanh hơn,negative,negative,0.9962,negative,0.9978
+c088,suggestion_cue,,nên giảm bớt số bài kiểm tra giữa kỳ,negative,negative,0.9972,negative,0.9981
+c089,suggestion_cue,,cô cần giải thích rõ tiêu chí chấm điểm,negative,negative,0.9927,negative,0.991
+c090,suggestion_cue,,mong nhà trường lắp thêm ổ cắm điện,negative,negative,0.9973,negative,0.9978
+c091,suggestion_cue,,thầy nên dùng micro khi giảng,negative,negative,0.995,negative,0.9971
+c092,suggestion_cue,,cần sắp xếp lịch học hợp lý hơn,negative,negative,0.9972,negative,0.9976
+c093,suggestion_cue,,mong cô cho sinh viên xem lại bài thi,negative,negative,0.9946,negative,0.9908
+c094,suggestion_cue,,nên có thêm tài liệu tiếng việt cho môn này,negative,negative,0.9974,negative,0.9969
+c095,suggestion_cue,,khoa cần tuyển thêm trợ giảng cho các lớp đông,negative,negative,0.9962,negative,0.9967
+c096,suggestion_implicit,,giảng chậm lại một chút để sinh viên kịp ghi chép,negative,negative,0.996,negative,0.9921
+c097,suggestion_implicit,,cho thêm bài tập mẫu trước khi thi,negative,negative,0.996,negative,0.9967
+c098,suggestion_implicit,,tăng thời gian thực hành trên máy,negative,negative,0.995,negative,0.9968
+c099,suggestion_implicit,,phát đề cương sớm hơn,negative,negative,0.997,negative,0.9981
+c100,suggestion_implicit,,bổ sung thêm tài liệu tham khảo,negative,negative,0.9955,negative,0.9971
+c101,suggestion_implicit,,sửa lại wifi ở tầng ba,negative,negative,0.9943,negative,0.9879
+c102,suggestion_implicit,,đổi phòng học có điều hòa,negative,negative,0.9717,negative,0.9571
+c103,suggestion_implicit,,ước gì thầy cho thêm ví dụ,negative,negative,0.9954,negative,0.9928
+c104,suggestion_implicit,,giá mà cô công bố điểm sớm hơn,negative,negative,0.978,negative,0.9431
+c105,suggestion_implicit,,hy vọng học kỳ sau có thêm giờ lab,negative,negative,0.9923,negative,0.9923
+c106,suggestion_implicit,,thêm quạt cho phòng học,negative,negative,0.996,negative,0.9967
+c107,suggestion_implicit,,cho sinh viên nộp bài trễ một hai ngày,negative,negative,0.9972,negative,0.9971
+c108,suggestion_implicit,,giảm bài tập về nhà,negative,negative,0.9912,negative,0.9967
+c109,suggestion_implicit,,có thêm buổi ôn tập trước thi,negative,positive,0.7094,positive,0.5813
+c110,suggestion_implicit,,dạy thêm phần ứng dụng thực tế,negative,negative,0.9799,negative,0.9716
+c111,suggestion_implicit,,cho sinh viên chọn đề tài đồ án,negative,neutral,0.9768,neutral,0.8843
+c112,suggestion_implicit,,nói rõ yêu cầu của bài tập lớn,negative,negative,0.9841,negative,0.992
+c113,suggestion_implicit,,đưa bài giảng lên hệ thống sớm hơn,negative,negative,0.9977,negative,0.998
+c114,suggestion_implicit,,cho em hỏi lịch thi cuối kỳ khi nào ạ,neutral,neutral,0.9183,neutral,0.8571
+c115,suggestion_implicit,,em muốn biết điểm quá trình chiếm bao nhiêu phần trăm,neutral,negative,0.8336,negative,0.7036
+c116,suggestion_implicit,,môn này có được học lại không ạ,neutral,neutral,0.5689,neutral,0.8148
+c117,suggestion_implicit,,thầy ơi slide tuần sau có đăng không ạ,neutral,neutral,0.921,neutral,0.7051
+c118,suggestion_implicit,,cho em xin email của trợ giảng,neutral,neutral,0.9598,neutral,0.951
+c119,suggestion_implicit,,bao giờ có kết quả thi giữa kỳ vậy ạ,neutral,neutral,0.6136,negative,0.842
+c120,suggestion_implicit,,em hỏi phòng thi ở đâu ạ,neutral,neutral,0.9476,neutral,0.9073
+c121,unaccented_typed,,thay giang bai cuc ky de theo,positive,neutral,0.9421,positive,0.984
+c122,unaccented_typed,,co nhiet tinh chi bao tung ban,positive,neutral,0.5938,positive,0.9891
+c123,unaccented_typed,,mon hoc bo ich lam,positive,positive,0.9658,positive,0.9267
+c124,unaccented_typed,,thay giang hay va vui tinh,positive,positive,0.9657,positive,0.9776
+c125,unaccented_typed,,cam on co da tan tinh huong dan,positive,negative,0.9284,positive,0.99
+c126,unaccented_typed,,bai giang ro rang de theo doi,positive,neutral,0.8435,positive,0.71
+c127,unaccented_typed,,thay ho tro sinh vien rat nhiet tinh,positive,neutral,0.9579,positive,0.9969
+c128,unaccented_typed,,phong hoc sach se thoang mat,positive,positive,0.4907,negative,0.6005
+c129,unaccented_typed,,co giai thich ky cac phan kho,positive,neutral,0.7415,negative,0.9864
+c130,unaccented_typed,,em rat thich mon nay,positive,neutral,0.9724,positive,0.7443
+c131,unaccented_typed,,thay cham bai rat cong tam,positive,negative,0.9673,positive,0.9747
+c132,unaccented_typed,,tai lieu day du de on thi,positive,neutral,0.7812,positive,0.4685
+c133,unaccented_typed,,co day co tam lam,positive,neutral,0.9661,positive,0.5426
+c134,unaccented_typed,,hoc xong thay tien bo nhieu,positive,neutral,0.8709,positive,0.7266
+c135,unaccented_typed,,thay chua bao gio vao lop tre,positive,negative,0.9946,negative,0.9688
+c136,unaccented_typed,,slide dep va de nhin,positive,neutral,0.9589,positive,0.5853
+c137,unaccented_typed,,co than thien de gan,positive,neutral,0.5758,positive,0.7222
+c138,unaccented_typed,,bai tap sat voi bai giang,positive,neutral,0.9795,negative,0.8595
+c139,unaccented_typed,,thay truyen cam hung cho ca lop,positive,negative,0.8257,positive,0.9357
+c140,unaccented_typed,,mon nay hoc thay cuon lam,positive,neutral,0.8894,neutral,0.8252
+c141,unaccented_typed,,thay day kho hieu qua,negative,neutral,0.9711,negative,0.9908
+c142,unaccented_typed,,co giang nhanh qua khong theo kip,negative,positive,0.5807,negative,0.983
+c143,unaccented_typed,,phong hoc nong nhu lo,negative,positive,0.6844,neutral,0.6672
+c144,unaccented_typed,,may chieu hong hoai,negative,negative,0.9889,negative,0.9949
+c145,unaccented_typed,,de thi kho qua so voi bai hoc,negative,neutral,0.9657,negative,0.9925
+c146,unaccented_typed,,thay hay den tre,negative,negative,0.8489,negative,0.8231
+c147,unaccented_typed,,tai lieu thieu nhieu,negative,neutral,0.9293,negative,0.8981
+c148,unaccented_typed,,co cham diem kho qua,negative,neutral,0.9831,negative,0.8354
+c149,unaccented_typed,,wifi yeu khong vao duoc,negative,neutral,0.5759,negative,0.9759
+c150,unaccented_typed,,bai tap nhieu qua lam khong xue,negative,neutral,0.889,negative,0.9705
+c151,unaccented_typed,,thay giang lan man khong trong tam,negative,negative,0.9949,negative,0.9926
+c152,unaccented_typed,,mon nay chan qua,negative,neutral,0.9729,neutral,0.9328
+c153,unaccented_typed,,khong hieu gi het,negative,neutral,0.8699,negative,0.7154
+c154,unaccented_typed,,loa trong phong bi re,negative,neutral,0.675,negative,0.9611
+c155,unaccented_typed,,co it khi tra loi cau hoi,negative,neutral,0.4956,negative,0.9943
+c156,unaccented_typed,,lich hoc day dac met moi,negative,neutral,0.8681,positive,0.7202
+c157,unaccented_typed,,slide toan chu nhin rat roi,negative,negative,0.9387,negative,0.9828
+c158,unaccented_typed,,thay khong nhiet tinh,negative,neutral,0.6965,negative,0.9812
+c159,unaccented_typed,,ban ghe cu va hong,negative,neutral,0.9784,negative,0.9705
+c160,unaccented_typed,,diem qua trinh khong ro rang,negative,neutral,0.9581,negative,0.932
+c161,unaccented_typed,,mon hoc co 3 tin chi,neutral,neutral,0.9756,neutral,0.7727
+c162,unaccented_typed,,lop hoc vao buoi sang thu hai,neutral,neutral,0.9856,negative,0.7702
+c163,unaccented_typed,,cho em hoi lich thi,neutral,neutral,0.9869,neutral,0.6065
+c164,unaccented_typed,,em khong co gop y gi them cho mon nay,neutral,neutral,0.6652,neutral,0.5823
+c165,unaccented_typed,,thay day mon co so du lieu,neutral,neutral,0.8116,positive,0.9543
+c166,unaccented_typed,,hoc ky sau mon nay van mo lop,neutral,negative,0.9306,negative,0.8073
+c167,unaccented_typed,,hoc o phong b203,neutral,neutral,0.884,neutral,0.684
+c168,unaccented_typed,,em hoc lop nay hoc ky truoc,neutral,neutral,0.9705,neutral,0.9345
+c169,unaccented_typed,,co day thay thay trong 2 tuan,neutral,neutral,0.5192,positive,0.4954
+c170,unaccented_typed,,bai kiem tra giua ky vao tuan 8,neutral,neutral,0.8423,positive,0.5559
+c171,teencode_typed,,gv dạy hay wá,positive,positive,0.999,positive,0.9974
+c172,teencode_typed,,thầy dễ thương ghê hỏi j cũng trả lời,positive,positive,0.9896,positive,0.9943
+c173,teencode_typed,,cô dạy dễ hỉu lắm,positive,negative,0.9845,negative,0.9904
+c174,teencode_typed,,môn này học vui cực,positive,positive,0.9983,positive,0.9982
+c175,teencode_typed,,thầy nhiệt tình dã man,positive,positive,0.999,positive,0.9988
+c176,teencode_typed,,c dạy có tâm ghê,positive,positive,0.9988,positive,0.9984
+c177,teencode_typed,,bài giảng dễ hiểu tks thầy nhiều,positive,positive,0.9989,positive,0.9984
+c178,teencode_typed,,mn trong lớp ai cũng thích cô,positive,positive,0.9881,positive,0.977
+c179,teencode_typed,,thầy ok lắm luôn,positive,positive,0.9982,positive,0.9984
+c180,teencode_typed,,học xong thấy đc nhiều thứ bổ ích,positive,positive,0.9917,positive,0.9909
+c181,teencode_typed,,gv hỗ trợ sv nhiệt tình,positive,positive,0.9991,positive,0.999
+c182,teencode_typed,,c giảng kĩ tks c,positive,positive,0.9983,positive,0.9958
+c183,teencode_typed,,thầy vui tính học k chán,positive,positive,0.9175,positive,0.9923
+c184,teencode_typed,,môn hay recommend cho mn,positive,positive,0.701,positive,0.9965
+c185,teencode_typed,,slide đẹp dễ nhìn dc lắm,positive,positive,0.9964,positive,0.9945
+c186,teencode_typed,,thầy dạy chất lượng 10 điểm,positive,positive,0.9978,positive,0.9971
+c187,teencode_typed,,thầy dạy chán wá,negative,negative,0.997,negative,0.9961
+c188,teencode_typed,,ko hỉu j hết,negative,negative,0.9141,neutral,0.7625
+c189,teencode_typed,,cô giảng nhanh vãi ko kịp ghi,negative,negative,0.9968,negative,0.9941
+c190,teencode_typed,,phòng nóng như lò học ko nổi,negative,negative,0.9965,negative,0.9964
+c191,teencode_typed,,đề thi khó dã man,negative,negative,0.9972,negative,0.9973
+c192,teencode_typed,,máy chiếu hư hoài,negative,negative,0.998,negative,0.9981
+c193,teencode_typed,,thầy chấm điểm gắt quá trời,negative,negative,0.9977,negative,0.9978
+c194,teencode_typed,,bt nhiều qá làm k xuể,negative,negative,0.996,negative,0.9935
+c195,teencode_typed,,wifi lag muốn xỉu,negative,negative,0.9959,negative,0.9887
+c196,teencode_typed,,gv hay đến trễ,negative,negative,0.995,negative,0.9952
+c197,teencode_typed,,học mà ko hiểu gì chán,negative,negative,0.9981,negative,0.9975
+c198,teencode_typed,,tài liệu thiếu tùm lum,negative,negative,0.9976,negative,0.9976
+c199,teencode_typed,,cô ít khi rep tin nhắn,negative,negative,0.9839,negative,0.9818
+c200,teencode_typed,,môn này hơi phí thời gian,negative,negative,0.9975,negative,0.9984
+c201,teencode_typed,,loa rè nghe k rõ j,negative,negative,0.9964,negative,0.9972
+c202,teencode_typed,,thầy giảng lan man ko có trọng tâm,negative,negative,0.9968,negative,0.9952
+c203,teencode_typed,,cho e hỏi lịch thi vs ạ,neutral,neutral,0.9909,neutral,0.9872
+c204,teencode_typed,,bt tuần này nộp khi nào v,neutral,neutral,0.8617,neutral,0.8209
+c205,teencode_typed,,ko có ý kiến j,neutral,neutral,0.9929,neutral,0.989
+c206,teencode_typed,,mn ơi phòng học đổi chưa,neutral,neutral,0.9621,negative,0.5439
+c207,teencode_typed,,e học lớp chiều t5,neutral,neutral,0.9657,negative,0.5939
+c208,teencode_typed,,thầy có đăng slide chưa ạ,neutral,neutral,0.7864,neutral,0.9121
+c209,teencode_typed,,môn này 3 tc,neutral,neutral,0.9799,neutral,0.9584
+c210,teencode_typed,,bt,neutral,neutral,0.9474,positive,0.5044
+c211,code_switch,,slide của thầy rất clear,positive,negative,0.9976,negative,0.8686
+c212,code_switch,,deadline dày quá không kịp làm,negative,negative,0.9964,negative,0.9948
+c213,code_switch,,cô rất friendly với sinh viên,positive,positive,0.9979,positive,0.9987
+c214,code_switch,,lab thực hành ok,positive,positive,0.9848,positive,0.9094
+c215,code_switch,,thầy giải thích concept rất dễ hiểu,positive,positive,0.9987,positive,0.9989
+c216,code_switch,,project cuối kỳ quá nặng,negative,negative,0.9971,negative,0.9974
+c217,code_switch,,feedback của cô cho bài làm rất chi tiết,positive,positive,0.9971,positive,0.9979
+c218,code_switch,,quiz nào cũng khó,negative,negative,0.9955,negative,0.9885
+c219,code_switch,,thầy hay share kinh nghiệm thực tế,positive,positive,0.9985,positive,0.9987
+c220,code_switch,,giáo trình outdated rồi,negative,negative,0.8083,negative,0.9813
+c221,code_switch,,cô support nhiệt tình,positive,positive,0.9971,positive,0.9969
+c222,code_switch,,workload môn này quá tải,negative,negative,0.9981,negative,0.9975
+c223,code_switch,,thầy upload bài giảng lên drive đầy đủ,positive,positive,0.6303,positive,0.9817
+c224,code_switch,,mic trong phòng hay bị noise,negative,negative,0.9965,negative,0.9973
+c225,code_switch,,môn này rất useful cho sau này,positive,positive,0.9028,positive,0.9945
+c226,code_switch,,assignment không có hướng dẫn rõ,negative,negative,0.9976,negative,0.9973
+c227,code_switch,,cô dạy rất inspiring,positive,positive,0.9967,positive,0.9988
+c228,code_switch,,server của lab hay bị down,negative,negative,0.997,negative,0.9977
+c229,code_switch,,thầy chấm điểm rất fair,positive,positive,0.9979,positive,0.9981
+c230,code_switch,,presentation cuối kỳ chiếm 30 phần trăm,neutral,negative,0.4629,neutral,0.5334
+c231,code_switch,,lớp có 60 sinh viên và 2 teaching assistant,neutral,neutral,0.8952,neutral,0.6936
+c232,code_switch,,deadline bài tập là thứ sáu,neutral,neutral,0.9475,neutral,0.5691
+c233,code_switch,,course này học bằng tiếng anh,neutral,neutral,0.9681,neutral,0.9346
+c234,code_switch,,thầy review bài trước khi thi rất helpful,positive,positive,0.9985,positive,0.998
+c235,code_switch,,background của sinh viên khác nhau nên hơi khó theo,negative,negative,0.989,negative,0.9814
+c236,long_context,,hôm đầu tiên vào lớp em khá lo vì nghe nói môn này rất khó và nhiều người bị rớt nhưng sau vài tuần học với thầy em thấy mọi thứ trở nên dễ hiểu hơn rất nhiều,positive,negative,0.5521,negative,0.4263
+c237,long_context,,em đã học môn này ở học kỳ trước với một giảng viên khác và lần này đăng ký lại với cô nhưng thật sự cách cô dạy còn khó hiểu hơn nhiều,negative,negative,0.9958,negative,0.9741
+c238,long_context,,phòng học ở tầng năm không có thang máy nên mỗi lần lên lớp rất mệt lại thêm điều hòa không hoạt động nên cả buổi học ai cũng mệt mỏi,negative,negative,0.9986,negative,0.9982
+c239,long_context,,thầy thường bắt đầu buổi học bằng một câu chuyện thực tế trong ngành rồi mới đi vào lý thuyết nên sinh viên dễ hình dung và nhớ bài lâu hơn,positive,positive,0.8001,positive,0.7773
+c240,long_context,,môn học gồm mười lăm buổi lý thuyết và năm buổi thực hành cuối kỳ có một bài thi viết và một đồ án nhóm,neutral,neutral,0.4953,neutral,0.6289
+c241,long_context,,trong suốt học kỳ cô luôn trả lời câu hỏi của sinh viên trên diễn đàn môn học kể cả vào cuối tuần điều mà em chưa thấy ở nhiều giảng viên khác,positive,positive,0.9912,positive,0.992
+c242,long_context,,tài liệu được phát vào tuần đầu tiên nhưng đến tuần thứ sáu thì nội dung giảng dạy đã khác hoàn toàn so với tài liệu khiến sinh viên không biết ôn theo cái nào,negative,negative,0.9984,negative,0.9971
+c243,long_context,,em thấy nếu thầy có thể chia nhỏ các phần khó ra và cho thêm bài tập vừa sức thì sinh viên sẽ theo kịp tốt hơn vì hiện tại nhiều bạn đang bị hổng kiến thức,negative,negative,0.9962,negative,0.9965
+c244,long_context,,lớp học có khoảng tám mươi sinh viên chia thành mười nhóm mỗi nhóm thực hiện một đề tài riêng và báo cáo vào tuần cuối,neutral,negative,0.585,neutral,0.4659
+c245,long_context,,dù phải học vào ca tối sau một ngày dài nhưng cách giảng vui vẻ và nhiều ví dụ của cô khiến em không hề buồn ngủ,positive,positive,0.9937,positive,0.9955
+c246,long_context,,máy tính trong phòng thực hành đa số đã cũ cài đặt phần mềm mất rất nhiều thời gian và nhiều máy không chạy được chương trình mà môn học yêu cầu,negative,negative,0.9978,negative,0.998
+c247,long_context,,em rất biết ơn thầy vì đã kiên nhẫn giải thích lại nhiều lần cho những bạn học chậm và luôn động viên cả lớp trước mỗi kỳ thi,positive,positive,0.9927,positive,0.9955
+c248,long_context,,đề thi giữa kỳ có nhiều câu không nằm trong nội dung đã học trên lớp và cũng không có trong tài liệu tham khảo được giới thiệu,negative,negative,0.9946,negative,0.9897
+c249,long_context,,hệ thống đăng ký học phần mở vào tám giờ sáng và đóng vào năm giờ chiều cùng ngày sinh viên cần đăng ký trong khoảng thời gian này,neutral,negative,0.8905,negative,0.8944
+c250,long_context,,sau khi học xong môn này em đã tự làm được một ứng dụng nhỏ và thấy tự tin hơn khi đi thực tập tất cả là nhờ những bài tập thực hành mà thầy thiết kế,positive,positive,0.9143,positive,0.8576
+c251,long_context,,cô giao bài tập rất nhiều mỗi tuần lại không chữa trên lớp nên sinh viên làm sai cũng không biết sai ở đâu để sửa,negative,negative,0.9956,negative,0.9926
+c252,long_context,,buổi học đầu tiên thầy giới thiệu đề cương cách tính điểm và các tài liệu cần chuẩn bị cho cả học kỳ,neutral,neutral,0.5435,neutral,0.8999
+c253,long_context,,em nghĩ môn học này rất cần thiết cho ngành của mình và cách thầy tổ chức lớp học theo nhóm giúp sinh viên học hỏi lẫn nhau rất hiệu quả,positive,positive,0.9918,positive,0.9959
+c254,long_context,,loa trong hội trường bị rè suốt cả học kỳ đã phản ánh nhiều lần nhưng vẫn chưa được sửa khiến sinh viên ngồi cuối không nghe được gì,negative,negative,0.9983,negative,0.998
+c255,long_context,,nhìn chung môn học được tổ chức ổn giảng viên đúng giờ tài liệu đầy đủ và bài kiểm tra có đáp án rõ ràng,positive,positive,0.9958,positive,0.9975
+c256,objective_neutral,,môn học có ba tín chỉ,neutral,neutral,0.8312,negative,0.6327
+c257,objective_neutral,,lớp học vào sáng thứ hai hàng tuần,neutral,neutral,0.8737,neutral,0.7898
+c258,objective_neutral,,thầy dạy môn cấu trúc dữ liệu,neutral,neutral,0.9891,neutral,0.9768
+c259,objective_neutral,,giáo trình gồm mười hai chương,neutral,neutral,0.6583,neutral,0.7796
+c260,objective_neutral,,bài thi cuối kỳ là thi tự luận,neutral,neutral,0.9318,neutral,0.7491
+c261,objective_neutral,,cô là giảng viên khoa công nghệ thông tin,neutral,neutral,0.5043,positive,0.5912
+c262,objective_neutral,,lớp có năm mươi sinh viên,neutral,neutral,0.691,neutral,0.6874
+c263,objective_neutral,,môn học có hai bài kiểm tra giữa kỳ,neutral,negative,0.6904,negative,0.664
+c264,objective_neutral,,phòng học ở tòa nhà b,neutral,negative,0.9924,negative,0.9939
+c265,objective_neutral,,điểm quá trình chiếm bốn mươi phần trăm,neutral,neutral,0.9635,neutral,0.5494
+c266,objective_neutral,,thầy dạy thay trong hai tuần cuối,neutral,negative,0.647,neutral,0.6489
+c267,objective_neutral,,em không có nhận xét nào khác về môn học,neutral,neutral,0.9918,neutral,0.9889
+c268,objective_neutral,,em không có góp ý gì thêm,neutral,neutral,0.9877,neutral,0.9861
+c269,objective_neutral,,môn này học trên phòng máy,neutral,neutral,0.6889,neutral,0.6319
+c270,objective_neutral,,bài tập được nộp qua hệ thống trực tuyến,neutral,neutral,0.9037,negative,0.5961
+c271,objective_neutral,,đồ án làm theo nhóm ba người,neutral,neutral,0.6757,neutral,0.5502
+c272,objective_neutral,,môn học bắt đầu từ tuần thứ hai,neutral,neutral,0.8429,negative,0.5712
+c273,objective_neutral,,giờ học là từ bảy giờ đến chín giờ,neutral,neutral,0.5383,negative,0.724
+c274,objective_neutral,,em đã học môn này hai lần,neutral,neutral,0.9826,neutral,0.9608
+c275,objective_neutral,,tài liệu tham khảo bằng tiếng anh,neutral,neutral,0.9926,neutral,0.9857
+c276,objective_neutral,,lịch thi do phòng đào tạo sắp xếp,neutral,neutral,0.9748,neutral,0.9755
+c277,objective_neutral,,thầy yêu cầu mang laptop khi đi học,neutral,negative,0.9955,negative,0.993
+c278,objective_neutral,,không có gì để nói thêm,neutral,neutral,0.977,neutral,0.9813
+c279,objective_neutral,,môn học tiên quyết là nhập môn lập trình,neutral,negative,0.9893,negative,0.9773
+c280,objective_neutral,,lớp được chia thành hai ca thực hành,neutral,negative,0.5305,negative,0.5142
+c281,objective_neutral,,cô dạy lý thuyết còn trợ giảng dạy thực hành,neutral,negative,0.9502,positive,0.6598
+c282,objective_neutral,,điểm danh bằng cách ký tên,neutral,neutral,0.9876,neutral,0.787
+c283,objective_neutral,,môn này có bài thuyết trình cuối kỳ,neutral,neutral,0.9757,neutral,0.9173
+c284,objective_neutral,,em đi học đầy đủ các buổi,neutral,neutral,0.9754,neutral,0.9638
+c285,objective_neutral,,học kỳ này có mười lăm tuần,neutral,neutral,0.645,neutral,0.5609
+c286,out_of_scope,,hôm nay trời mưa to quá,none,negative,0.9945,negative,0.9941
+c287,out_of_scope,,cho mình hỏi đường đến ký túc xá,none,neutral,0.9884,neutral,0.9459
+c288,out_of_scope,,giá xăng lại tăng rồi,none,negative,0.9835,negative,0.9199
+c289,out_of_scope,,đội bóng tối qua đá hay quá,none,positive,0.9118,positive,0.5399
+c290,out_of_scope,,mình cần bán lại xe máy cũ,none,negative,0.9891,negative,0.9802
+c291,out_of_scope,,quán cơm gần trường nấu ngon,none,positive,0.9984,positive,0.9978
+c292,out_of_scope,,ai có sạc điện thoại cho mượn với,none,neutral,0.5004,negative,0.6215
+c293,out_of_scope,,tuần sau có phim mới ra rạp,none,neutral,0.6543,neutral,0.512
+c294,out_of_scope,,chúc mọi người năm mới vui vẻ,none,positive,0.9836,positive,0.975
+c295,out_of_scope,,con mèo nhà em rất lười,none,negative,0.9926,negative,0.9897
+c296,out_of_scope,,xe buýt số 8 hôm nay đến trễ,none,negative,0.9968,negative,0.9974
+c297,out_of_scope,,mình đang tìm người ở ghép,none,negative,0.6866,neutral,0.5193
+c298,out_of_scope,,bài hát này nghe hoài không chán,none,neutral,0.8298,neutral,0.4888
+c299,out_of_scope,,tối nay ăn gì bây giờ,none,neutral,0.8982,neutral,0.8943
+c300,out_of_scope,,cửa hàng tiện lợi mở cửa hai mươi bốn giờ,none,neutral,0.8091,negative,0.9401
+c301,out_of_scope,,điện thoại mới ra có camera đẹp,none,positive,0.9706,positive,0.9644
+c302,out_of_scope,,cuối tuần này đi biển không,none,neutral,0.9838,neutral,0.9633
+c303,out_of_scope,,nhà em có ba anh chị em,none,neutral,0.9775,neutral,0.9833
+c304,out_of_scope,,hôm qua mất điện cả khu phố,none,negative,0.9887,negative,0.9825
+c305,out_of_scope,,mình thích uống trà sữa,none,positive,0.8573,positive,0.9128

@@ -1,0 +1,188 @@
+{
+  "challenge_sha256": "c4879de4ea7a6a23007358f12657cd0feaab4b499fec5834eafb2d18ab5b4a39",
+  "checkpoints": {
+    "ce": "models/p6-sent-phobert-base-seg_pyvi-base-s42-ckp",
+    "augmented": "models/p9-sent-phobert-base-seg_pyvi-aug-diac-teen-s42-599cf21f-ckp"
+  },
+  "h6": {
+    "typed_rows": 90,
+    "typed_accuracy": {
+      "ce": 0.6111111111111112,
+      "augmented": 0.8
+    },
+    "typed_paired_aug_minus_ce": {
+      "score_a": 0.8,
+      "score_b": 0.6111111111111112,
+      "observed_diff": 0.18888888888888888,
+      "mean_diff": 0.18888888888888886,
+      "ci_low": 0.06666666666666665,
+      "ci_high": 0.3111111111111111,
+      "p_value": 0.0027997200279972004,
+      "significant": true,
+      "n_resamples": 10000,
+      "alpha": 0.05
+    },
+    "other_rows": 195,
+    "other_accuracy": {
+      "ce": 0.8666666666666667,
+      "augmented": 0.8666666666666667
+    },
+    "other_diff": 0.0,
+    "max_other_loss": 0.02,
+    "switch": true,
+    "decision": "serve the augmented model"
+  },
+  "ce": {
+    "scored_rows": 285,
+    "accuracy": 0.7859649122807018,
+    "macro_f1": 0.7739687536735507,
+    "per_class_f1": {
+      "negative": 0.8265682656826568,
+      "neutral": 0.7132867132867132,
+      "positive": 0.782051282051282
+    },
+    "by_category": {
+      "code_switch": {
+        "n": 25,
+        "accuracy": 0.92
+      },
+      "long_context": {
+        "n": 20,
+        "accuracy": 0.85
+      },
+      "mixed_aspect": {
+        "n": 40,
+        "accuracy": 0.875
+      },
+      "negation_pair": {
+        "n": 30,
+        "accuracy": 0.8
+      },
+      "objective_neutral": {
+        "n": 30,
+        "accuracy": 0.7666666666666667
+      },
+      "suggestion_cue": {
+        "n": 25,
+        "accuracy": 1.0
+      },
+      "suggestion_implicit": {
+        "n": 25,
+        "accuracy": 0.88
+      },
+      "teencode_typed": {
+        "n": 40,
+        "accuracy": 0.975
+      },
+      "unaccented_typed": {
+        "n": 50,
+        "accuracy": 0.32
+      }
+    },
+    "negation_pairs": {
+      "pairs": 15,
+      "both_correct": 0.6,
+      "prediction_flips": 0.6666666666666666
+    },
+    "out_of_scope_confidence": {
+      "out_of_scope": {
+        "n": 20,
+        "max_prob_mean": 0.8997364044189453,
+        "max_prob_median": 0.9805192947387695,
+        "share_above_0_9": 0.65,
+        "predicted": {
+          "negative": 7,
+          "neutral": 8,
+          "positive": 5
+        }
+      },
+      "objective_neutral": {
+        "n": 30,
+        "max_prob_mean": 0.8459271788597107,
+        "max_prob_median": 0.9409785270690918,
+        "share_above_0_9": 0.5666666666666667,
+        "predicted": {
+          "negative": 7,
+          "neutral": 23
+        }
+      }
+    }
+  },
+  "augmented": {
+    "scored_rows": 285,
+    "accuracy": 0.8456140350877193,
+    "macro_f1": 0.8274434485702091,
+    "per_class_f1": {
+      "negative": 0.8732394366197183,
+      "neutral": 0.7454545454545455,
+      "positive": 0.8636363636363636
+    },
+    "by_category": {
+      "code_switch": {
+        "n": 25,
+        "accuracy": 0.96
+      },
+      "long_context": {
+        "n": 20,
+        "accuracy": 0.9
+      },
+      "mixed_aspect": {
+        "n": 40,
+        "accuracy": 0.925
+      },
+      "negation_pair": {
+        "n": 30,
+        "accuracy": 0.8333333333333334
+      },
+      "objective_neutral": {
+        "n": 30,
+        "accuracy": 0.6333333333333333
+      },
+      "suggestion_cue": {
+        "n": 25,
+        "accuracy": 1.0
+      },
+      "suggestion_implicit": {
+        "n": 25,
+        "accuracy": 0.84
+      },
+      "teencode_typed": {
+        "n": 40,
+        "accuracy": 0.875
+      },
+      "unaccented_typed": {
+        "n": 50,
+        "accuracy": 0.74
+      }
+    },
+    "negation_pairs": {
+      "pairs": 15,
+      "both_correct": 0.6666666666666666,
+      "prediction_flips": 0.7333333333333333
+    },
+    "out_of_scope_confidence": {
+      "out_of_scope": {
+        "n": 20,
+        "max_prob_mean": 0.8561075329780579,
+        "max_prob_median": 0.9545961618423462,
+        "share_above_0_9": 0.7,
+        "predicted": {
+          "negative": 8,
+          "neutral": 7,
+          "positive": 5
+        }
+      },
+      "objective_neutral": {
+        "n": 30,
+        "max_prob_mean": 0.7796007394790649,
+        "max_prob_median": 0.764352560043335,
+        "share_above_0_9": 0.4,
+        "predicted": {
+          "negative": 9,
+          "neutral": 19,
+          "positive": 2
+        }
+      }
+    }
+  }
+}
