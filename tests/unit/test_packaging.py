@@ -123,6 +123,32 @@ def _is_environment_block(exc: BaseException) -> bool:
     return any(m in str(exc) for m in _ENV_BLOCK_MARKERS)
 
 
+# Top-level names provided only by optional extras (pyproject.toml). A module that needs one of these
+# is not broken when the extra is absent; a module that needs anything else is. CI failed on every
+# push for exactly this reason: serving/ imports fastapi, and the job installed only `.[dev]`.
+_OPTIONAL_EXTRAS = frozenset(
+    {
+        "torch",
+        "accelerate",
+        "fastapi",
+        "uvicorn",
+        "starlette",
+        "onnxruntime",
+        "pyvi",
+        "onnx",
+        "onnxscript",
+        "py_vncorenlp",
+        "underthesea",
+    }
+)
+
+
+def _missing_optional_extra(exc: BaseException) -> bool:
+    return (
+        isinstance(exc, ModuleNotFoundError) and (exc.name or "").split(".")[0] in _OPTIONAL_EXTRAS
+    )
+
+
 class TestImportability:
     def test_every_module_imports(self) -> None:
         """Catches a module that is tracked but broken - a missing dependency or a syntax
@@ -136,6 +162,7 @@ class TestImportability:
 
         failures: list[str] = []
         blocked: list[str] = []
+        optional: list[str] = []
         for path in _source_files():
             if path.name == "__init__.py":
                 module = ".".join(path.relative_to(SRC).parts[:-1])
@@ -146,8 +173,14 @@ class TestImportability:
             try:
                 importlib.import_module(module)
             except Exception as e:
-                target = blocked if _is_environment_block(e) else failures
-                target.append(f"{module}: {type(e).__name__}: {e}")
+                if _is_environment_block(e):
+                    blocked.append(f"{module}: {type(e).__name__}: {e}")
+                elif _missing_optional_extra(e):
+                    optional.append(f"{module}: needs the optional extra providing '{e.name}'")
+                else:
+                    failures.append(f"{module}: {type(e).__name__}: {e}")
+        if optional:
+            print("importable only with an optional extra (not a defect):", *optional, sep="\n  ")
 
         assert not failures, "modules failed to import:\n" + "\n".join(failures)
         if blocked:

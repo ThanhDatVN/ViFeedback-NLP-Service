@@ -164,3 +164,12 @@ class TestReadinessSemantics:
         import vifeedback.serving.app as A
 
         assert A._latencies.maxlen == 10_000
+
+
+def test_backend_mapping_agrees_with_the_variant_table() -> None:
+    """The app maps variants to segmenters without importing pandas; it must not drift."""
+    from vifeedback.preprocess.variants import VARIANTS
+    from vifeedback.serving.app import _backend_for
+
+    for name, (backend, _, _) in VARIANTS.items():
+        assert _backend_for(name) == backend, name

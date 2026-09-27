@@ -24,9 +24,11 @@ jobs:
           cache: pip
 
       - name: Install
+        # `serve` too: the unit suite imports every module, and serving/ needs fastapi. Without it
+        # the import test failed on every push, and the unit tests after it never ran.
         run: |
           python -m pip install --upgrade pip
-          pip install -e ".[dev]"
+          pip install -e ".[dev,serve]"
           pip install torch --index-url https://download.pytorch.org/whl/cpu
 
       - name: Lint
@@ -68,6 +70,14 @@ jobs:
         # Asserts split sizes 11,426 / 1,583 / 3,166, label ranges, cross-split leakage and the
         # class-distribution snapshot. Fails loudly if upstream data ever changes.
         run: python -m pytest tests/data -q
+
+      - name: Install CPU torch
+        run: pip install torch --index-url https://download.pytorch.org/whl/cpu
+
+      - name: Training integration (CPU)
+        # Review R11: the jobs never exercised the training loop. These cover gradient
+        # accumulation, FGM under AMP (the R2 bug), and checkpoint round-trips; ~3 min on CPU.
+        run: python -m pytest tests/integration -q
 
   api:
     name: API contract

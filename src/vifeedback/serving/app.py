@@ -105,13 +105,19 @@ def _load() -> None:
         log.error(_state["segmenter_error"] + " — /readyz will report not ready")
 
 
-def _backend_from_manifests(manifests: dict[str, dict[str, Any]]) -> str | None:
-    from vifeedback.preprocess.variants import VARIANTS
+def _backend_for(preprocessing: str) -> str:
+    """Variant name → segmenter backend, without importing preprocess.variants.
 
+    That module pulls in pandas, which the runtime image deliberately does not ship; importing it
+    here crashed start-up whenever SEGMENTER was unset. Variant names encode their backend
+    (`seg_pyvi`, `norm_seg_vncorenlp`, `raw`), so the mapping needs no table.
+    """
+    return preprocessing.rsplit("seg_", 1)[1] if "seg_" in preprocessing else "none"
+
+
+def _backend_from_manifests(manifests: dict[str, dict[str, Any]]) -> str | None:
     backends = {
-        VARIANTS[m["preprocessing"]][0]
-        for m in manifests.values()
-        if m.get("preprocessing") in VARIANTS
+        _backend_for(m["preprocessing"]) for m in manifests.values() if m.get("preprocessing")
     }
     if len(backends) > 1:
         log.warning(f"task artifacts disagree on preprocessing {sorted(backends)}; using the first")
