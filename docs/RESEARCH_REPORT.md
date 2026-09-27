@@ -242,6 +242,7 @@ two versions, for the plain and the augmented model alike.
 |---|---|---|
 | Teencode lexicon learned from real typing (ViLexNorm train, 288 variants at empirical rates) | ViLexNorm flips 0.169 → 0.177 (p = 0.13); validation +0.003; constructed teencode +0.05 | **Not passed**: spelling robustness improves, label stability on real text does not |
 | Diacritic restoration trained on UIT-VSFC train (bigram Viterbi, 0.2 ms) | Stripped validation macro-F1 0.686 → **0.857** (clean 0.864); no clean prediction changes | Development passed; confirmation on human-typed v2 |
+| CE + restoration vs augmented + restoration (5 seeds each) | Unaccented 0.904 vs 0.880; contrast 0.875 vs 0.800 (p = 0.004); validation 0.864 vs 0.869 | A serving candidate; decided on v2 |
 | Out-of-scope score | Mahalanobis on the sentence feature AUROC **0.949** vs 0.862 for max-probability | Development choice; confirmation on v2 |
 | Careful INT8 (per-channel, last two layers FP32) | 178.5 MB; macro-F1 drop +0.0004; neutral F1 0.661 → 0.667; p50 about 1.7× faster than FP32 ONNX (indicative, no steady pass) | **Not passed**: the 0.005 non-inferiority margin cannot be shown with 73 neutral examples (upper bound 0.0095) |
 
