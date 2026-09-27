@@ -1,0 +1,29 @@
+{
+  "what": "Cycle 1 decision values as computed BEFORE results/ was lost (ADR-023), transcribed from the printed output of `vifeedback study cycle1` at the time. Used only to check that the regenerated runs reproduce them.",
+  "rounding": "4 decimals, as printed",
+  "H1": {
+    "crt": {"seeds": [7, 42, 1337, 2024, 31337], "per_seed_delta": [0.0005, 0.0019, -0.0079, 0.0144, -0.0061]},
+    "logit-adjust": {"seeds": [42, 1337, 2024], "per_seed_delta": [0.0061, -0.0185, 0.021]},
+    "stage1_ce": {"7": 0.8627, "42": 0.8634, "1337": 0.8709, "2024": 0.8494, "31337": 0.8750}
+  },
+  "H2": {
+    "seeds": [7, 42, 1337, 2024, 31337],
+    "clean_per_seed_delta": [-0.0017, 0.001, -0.0026, 0.0301, -0.0058],
+    "control_shifted": {
+      "nodiacritic": [0.273, 0.2682, 0.318, 0.2562, 0.2883],
+      "nodiacritic-50": [0.6323, 0.6524, 0.6562, 0.6466, 0.6476],
+      "teencode-100": [0.8219, 0.8212, 0.8265, 0.8208, 0.8052],
+      "charnoise-5": [0.7807, 0.7841, 0.7974, 0.7813, 0.7915]
+    },
+    "augmented_shifted": {
+      "nodiacritic": [0.6626, 0.6859, 0.6425, 0.6383, 0.5394],
+      "nodiacritic-50": [0.746, 0.7504, 0.7299, 0.747, 0.7486],
+      "teencode-100": [0.8353, 0.8565, 0.849, 0.8503, 0.8475],
+      "charnoise-5": [0.7965, 0.7912, 0.7654, 0.7906, 0.7976]
+    }
+  },
+  "H4": {
+    "mtl-l0.3": {"seeds": [42, 1337, 2024], "sentiment": [0.0062, -0.0114, 0.0089], "topic": [-0.0034, -0.001, 0.006]},
+    "mtl-l1": {"seeds": [42, 1337, 2024], "sentiment": [-0.012, -0.0025, -0.0022], "topic": [0.0021, -0.0028, 0.0099]}
+  }
+}
