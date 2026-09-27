@@ -1,0 +1,47 @@
+{
+  "checkpoint": "D:\\GitHub\\ViFeedback NLP Service\\models\\p9-sent-phobert-base-seg_pyvi-aug-diac-teen-s42-599cf21f-ckp",
+  "in_domain": "UIT-VSFC validation",
+  "out_of_scope": {
+    "challenge_v1": 20,
+    "u4_generated": 531
+  },
+  "methods": {
+    "max_probability": {
+      "auroc": 0.861624703490925,
+      "threshold": 0.9409326314926147,
+      "in_domain_flagged": 0.05053695514845231,
+      "out_of_scope_caught": 0.37568058076225047,
+      "challenge_v1_only": {
+        "auroc": 0.8979153506001263,
+        "threshold": 0.9409326314926147,
+        "in_domain_flagged": 0.05053695514845231,
+        "out_of_scope_caught": 0.45
+      }
+    },
+    "neg_energy": {
+      "auroc": 0.8885423963551025,
+      "threshold": 2.7933757305145264,
+      "in_domain_flagged": 0.05053695514845231,
+      "out_of_scope_caught": 0.44646098003629764,
+      "challenge_v1_only": {
+        "auroc": 0.9170878079595705,
+        "threshold": 2.7933757305145264,
+        "in_domain_flagged": 0.05053695514845231,
+        "out_of_scope_caught": 0.5
+      }
+    },
+    "neg_mahalanobis": {
+      "auroc": 0.9494103066497139,
+      "threshold": -3624.2668373834144,
+      "in_domain_flagged": 0.05053695514845231,
+      "out_of_scope_caught": 0.6569872958257713,
+      "challenge_v1_only": {
+        "auroc": 0.9831017056222363,
+        "threshold": -3624.2668373834144,
+        "in_domain_flagged": 0.05053695514845231,
+        "out_of_scope_caught": 0.85
+      }
+    }
+  },
+  "development_choice": "neg_mahalanobis"
+}
