@@ -15,7 +15,9 @@ def test_scores_separate_a_far_cluster_and_threshold_keeps_95_percent():
     maha = O.fit_mahalanobis(f_train, y)
     f_in = centers[y] + rng.normal(size=(600, 4))
     f_out = np.array([0, 0, 0, 12.0]) + rng.normal(size=(100, 4))
-    logits_in = np.eye(3)[y] * 6
+    logits_in = np.eye(3)[y] * 6 + rng.normal(
+        scale=0.5, size=(600, 3)
+    )  # continuous, as real scores are
     logits_out = np.full((100, 3), 1.0)
     s_in, s_out = O.scores(logits_in, f_in, maha), O.scores(logits_out, f_out, maha)
     for method in ("max_probability", "neg_energy", "neg_mahalanobis"):
