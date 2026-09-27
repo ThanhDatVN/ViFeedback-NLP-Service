@@ -1,0 +1,25 @@
+=== challenge shots=0 seed=1
+Qwen/Qwen3-1.7B challenge-v4_policy_informal_contrast-k0: macro-F1 0.6227  neutral F1 0.551  (68.6 s per 1k)
+  vs ce        neutral F1 -0.162 [-0.244, -0.078] p=0.000; macro-F1 -0.151
+  vs augmented neutral F1 -0.194 [-0.308, -0.079] p=0.001; macro-F1 -0.205
+=== challenge shots=6 seed=1
+Qwen/Qwen3-1.7B challenge-v4_policy_informal_contrast-k6-s1: macro-F1 0.6216  neutral F1 0.533  (127.4 s per 1k)
+  vs ce        neutral F1 -0.181 [-0.264, -0.097] p=0.000; macro-F1 -0.152
+  vs augmented neutral F1 -0.213 [-0.327, -0.097] p=0.000; macro-F1 -0.206
+=== challenge shots=6 seed=2
+Qwen/Qwen3-1.7B challenge-v4_policy_informal_contrast-k6-s2: macro-F1 0.6034  neutral F1 0.521  (136.2 s per 1k)
+  vs ce        neutral F1 -0.193 [-0.273, -0.110] p=0.000; macro-F1 -0.171
+  vs augmented neutral F1 -0.225 [-0.337, -0.113] p=0.000; macro-F1 -0.224
+=== validation shots=0 seed=1
+Qwen/Qwen3-1.7B validation-v4_policy_informal_contrast-k0: macro-F1 0.6805  neutral F1 0.294  (71.3 s per 1k)
+  vs ce        neutral F1 -0.368 [-0.457, -0.275] p=0.000; macro-F1 -0.183
+  vs augmented neutral F1 -0.368 [-0.459, -0.275] p=0.000; macro-F1 -0.184
+=== validation shots=6 seed=1
+Qwen/Qwen3-1.7B validation-v4_policy_informal_contrast-k6-s1: macro-F1 0.6546  neutral F1 0.261  (144.0 s per 1k)
+  vs ce        neutral F1 -0.400 [-0.487, -0.310] p=0.000; macro-F1 -0.209
+  vs augmented neutral F1 -0.400 [-0.487, -0.311] p=0.000; macro-F1 -0.210
+=== validation shots=6 seed=2
+Qwen/Qwen3-1.7B validation-v4_policy_informal_contrast-k6-s2: macro-F1 0.6525  neutral F1 0.262  (142.6 s per 1k)
+  vs ce        neutral F1 -0.400 [-0.492, -0.306] p=0.000; macro-F1 -0.211
+  vs augmented neutral F1 -0.400 [-0.491, -0.307] p=0.000; macro-F1 -0.212
+=== done

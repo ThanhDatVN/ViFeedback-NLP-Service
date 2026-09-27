@@ -1469,17 +1469,15 @@ def study_llm_reference(
     variant = L.frozen_variant()
     frozen = json.loads(L.PROMPT_DEV_FILE.read_text(encoding="utf-8"))
     tr = load("train")
-    demos = (
-        L.draw_demos(
-            tr.sentence.tolist(),
-            tr.sentiment.to_numpy(),
-            demo_seed,
-            shots // 3,
-            exclude=frozen["subset"]["indices"],
+    tr_texts, tr_y = tr.sentence.tolist(), tr.sentiment.to_numpy()
+    demo_idx = (
+        L.draw_demo_indices(
+            tr_texts, tr_y, demo_seed, shots // 3, exclude=frozen["subset"]["indices"]
         )
         if shots
         else []
     )
+    demos = [(tr_texts[i], L.LABELS[int(tr_y[i])]) for i in demo_idx]
 
     if data == "challenge":
         df = CH.load()
@@ -1533,7 +1531,10 @@ def study_llm_reference(
         "variant": variant,
         "shots": shots,
         "demo_seed": demo_seed if shots else None,
-        "demos": demos,
+        # Train row indices and labels only: corpus text is never written to a result file.
+        "demos": [
+            {"train_index": i, "label": lab} for i, (_, lab) in zip(demo_idx, demos, strict=True)
+        ],
         "n_scored": int(scored.sum()),
         "macro_f1": ev["macro_f1"],
         "per_class": ev["per_class"],

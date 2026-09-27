@@ -83,3 +83,12 @@ def test_api_refuses_without_a_key(monkeypatch, tmp_path):
     monkeypatch.setattr(L.paths, "ROOT", tmp_path)
     with pytest.raises(RuntimeError, match="OPENAI_API_KEY is not set"):
         L.OpenAIScorer()
+
+
+def test_committed_summaries_record_demo_indices_not_corpus_text():
+    """Result files never hold UIT-VSFC sentences: demonstrations are stored as train indices."""
+    import json
+
+    for p in L.OUT.glob("*/*/summary.json"):
+        for d in json.loads(p.read_text(encoding="utf-8")).get("demos") or []:
+            assert set(d) == {"train_index", "label"}, p

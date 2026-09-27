@@ -107,17 +107,20 @@ def prompt_dev_subset(
     return np.sort(np.concatenate(idx))
 
 
-def draw_demos(
+def draw_demo_indices(
     texts: Sequence[str],
     y: np.ndarray,
     seed: int,
     per_class: int = 2,
     exclude: Sequence[int] = (),
     max_words: int = 30,
-) -> list[tuple[str, str]]:
+) -> list[int]:
     """Few-shot demonstrations from train: ``per_class`` per label, uniformly among sentences of at
     most ``max_words`` words, never from the prompt-development subset. Shuffled, so no label
-    always comes last."""
+    always comes last.
+
+    Returns train row indices: results record these, never the sentences, because corpus text is
+    not committed."""
     rng = np.random.default_rng(seed)
     ok = np.array([len(t.split()) <= max_words for t in texts])
     ok[list(exclude)] = False
@@ -129,7 +132,15 @@ def draw_demos(
         )
     ]
     rng.shuffle(picks)
-    return [(texts[i], LABELS[int(y[i])]) for i in picks]
+    return picks
+
+
+def draw_demos(
+    texts: Sequence[str], y: np.ndarray, seed: int, per_class: int = 2, **kw: Any
+) -> list[tuple[str, str]]:
+    """The demonstrations themselves, for building prompts (see `draw_demo_indices`)."""
+    idx = draw_demo_indices(texts, y, seed, per_class, **kw)
+    return [(texts[i], LABELS[int(y[i])]) for i in idx]
 
 
 # --- scoring: local HF model --------------------------------------------------------------------
