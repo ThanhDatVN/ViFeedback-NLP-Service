@@ -901,7 +901,10 @@ def study_cycle1() -> None:
             & (reg.recipe == "base")
             & (reg.task == task)
             & (reg.split == "validation")
-        ].drop_duplicates("seed", keep="last")
+            # The declared controls are the P4 laptop runs (cycle1.yaml). Not "the last row for
+            # the seed": a later Kaggle re-run of the same config on another GPU differs by 0.001.
+            & reg.run_id.astype(str).str.startswith("p4-")
+        ].drop_duplicates("seed", keep="first")
         return {int(s): float(v) for s, v in zip(q.seed, q.macro_f1, strict=True)}
 
     registry_ce = single_task("sentiment")

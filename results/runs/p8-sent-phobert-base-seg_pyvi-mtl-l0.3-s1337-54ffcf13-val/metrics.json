@@ -1,0 +1,125 @@
+{
+  "n": 1583,
+  "macro_f1": 0.8594595708863988,
+  "weighted_f1": 0.949381385147215,
+  "micro_f1": 0.9513581806696146,
+  "accuracy": 0.9513581806696146,
+  "balanced_accuracy": 0.8340730468896931,
+  "mcc": 0.9094305696800086,
+  "g_mean": 0.8086372149456342,
+  "cohen_kappa": 0.9091768685687035,
+  "per_class": {
+    "negative": {
+      "precision": 0.9553695955369595,
+      "recall": 0.9716312056737588,
+      "f1": 0.9634317862165963,
+      "support": 705,
+      "predicted": 717,
+      "average_precision": 0.9804563286551552
+    },
+    "neutral": {
+      "precision": 0.7735849056603774,
+      "recall": 0.5616438356164384,
+      "f1": 0.6507936507936508,
+      "support": 73,
+      "predicted": 53,
+      "average_precision": 0.73902667760544
+    },
+    "positive": {
+      "precision": 0.959409594095941,
+      "recall": 0.968944099378882,
+      "f1": 0.9641532756489494,
+      "support": 805,
+      "predicted": 813,
+      "average_precision": 0.9900199920551854
+    }
+  },
+  "confusion": [
+    [
+      685,
+      5,
+      15
+    ],
+    [
+      14,
+      41,
+      18
+    ],
+    [
+      18,
+      7,
+      780
+    ]
+  ],
+  "confusion_normalized": [
+    [
+      0.9716,
+      0.0071,
+      0.0213
+    ],
+    [
+      0.1918,
+      0.5616,
+      0.2466
+    ],
+    [
+      0.0224,
+      0.0087,
+      0.9689
+    ]
+  ],
+  "labels": [
+    "negative",
+    "neutral",
+    "positive"
+  ],
+  "ordinal_mae": 0.06948831332912192,
+  "qwk": 0.9418733518042528,
+  "adjacent_accuracy": 0.9791535060012634,
+  "log_loss": 0.19964031078240943,
+  "ece_10bin": 0.0339066346561748,
+  "macro_f1_ci": [
+    0.8248955491415013,
+    0.8909218416308728
+  ],
+  "history": [
+    {
+      "epoch": 1,
+      "loss": 0.5393438371907733,
+      "dev_sentiment": 0.8612573154186931,
+      "dev_topic": 0.7701954403383213,
+      "selection_score": 0.8157263778785072,
+      "seconds": 64.7
+    },
+    {
+      "epoch": 2,
+      "loss": 0.2525244348854159,
+      "dev_sentiment": 0.8555323767700639,
+      "dev_topic": 0.8041599858568956,
+      "selection_score": 0.8298461813134798,
+      "seconds": 129.8
+    },
+    {
+      "epoch": 3,
+      "loss": 0.198052362886169,
+      "dev_sentiment": 0.8630042761869503,
+      "dev_topic": 0.8120364758019244,
+      "selection_score": 0.8375203759944374,
+      "seconds": 194.9
+    },
+    {
+      "epoch": 4,
+      "loss": 0.1627372144786485,
+      "dev_sentiment": 0.8594595708863988,
+      "dev_topic": 0.8162655877213263,
+      "selection_score": 0.8378625793038625,
+      "seconds": 260.0
+    }
+  ],
+  "best_epoch": 4,
+  "multitask": {
+    "lambda_topic": 0.3,
+    "joint_exact_match": 0.8654453569172458,
+    "selection": "mean of sentiment and topic dev macro-F1"
+  }
+}

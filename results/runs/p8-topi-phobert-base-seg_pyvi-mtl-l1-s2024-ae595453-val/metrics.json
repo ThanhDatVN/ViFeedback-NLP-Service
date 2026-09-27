@@ -1,0 +1,149 @@
+{
+  "n": 1583,
+  "macro_f1": 0.8157049392310061,
+  "weighted_f1": 0.9016430004148503,
+  "micro_f1": 0.9065066329753633,
+  "accuracy": 0.9065066329753633,
+  "balanced_accuracy": 0.7854537614548578,
+  "mcc": 0.7812679555920826,
+  "g_mean": 0.747869140237883,
+  "cohen_kappa": 0.7793792628711282,
+  "per_class": {
+    "lecturer": {
+      "precision": 0.9372349448685326,
+      "recall": 0.9600347523892268,
+      "f1": 0.9484978540772532,
+      "support": 1151,
+      "predicted": 1179,
+      "average_precision": 0.9871209352526464
+    },
+    "training_program": {
+      "precision": 0.773972602739726,
+      "recall": 0.846441947565543,
+      "f1": 0.808586762075134,
+      "support": 267,
+      "predicted": 292,
+      "average_precision": 0.8689226640329183
+    },
+    "facility": {
+      "precision": 0.9552238805970149,
+      "recall": 0.9142857142857143,
+      "f1": 0.9343065693430657,
+      "support": 70,
+      "predicted": 67,
+      "average_precision": 0.9640229497976706
+    },
+    "others": {
+      "precision": 0.8888888888888888,
+      "recall": 0.42105263157894735,
+      "f1": 0.5714285714285714,
+      "support": 95,
+      "predicted": 45,
+      "average_precision": 0.6232495363213391
+    }
+  },
+  "confusion": [
+    [
+      1105,
+      43,
+      1,
+      2
+    ],
+    [
+      37,
+      226,
+      1,
+      3
+    ],
+    [
+      2,
+      4,
+      64,
+      0
+    ],
+    [
+      35,
+      19,
+      1,
+      40
+    ]
+  ],
+  "confusion_normalized": [
+    [
+      0.96,
+      0.0374,
+      0.0009,
+      0.0017
+    ],
+    [
+      0.1386,
+      0.8464,
+      0.0037,
+      0.0112
+    ],
+    [
+      0.0286,
+      0.0571,
+      0.9143,
+      0.0
+    ],
+    [
+      0.3684,
+      0.2,
+      0.0105,
+      0.4211
+    ]
+  ],
+  "labels": [
+    "lecturer",
+    "training_program",
+    "facility",
+    "others"
+  ],
+  "log_loss": 0.29811759647746655,
+  "ece_10bin": 0.027568942303466355,
+  "macro_f1_ci": [
+    0.7835507080051812,
+    0.8458259101751012
+  ],
+  "history": [
+    {
+      "epoch": 1,
+      "loss": 0.8994988055702028,
+      "dev_sentiment": 0.8267893147208482,
+      "dev_topic": 0.7997140251060513,
+      "selection_score": 0.8132516699134498,
+      "seconds": 65.1
+    },
+    {
+      "epoch": 2,
+      "loss": 0.4569480526547192,
+      "dev_sentiment": 0.8471941669706947,
+      "dev_topic": 0.8157049392310061,
+      "selection_score": 0.8314495531008503,
+      "seconds": 130.5
+    },
+    {
+      "epoch": 3,
+      "loss": 0.3609125018952279,
+      "dev_sentiment": 0.854185839208804,
+      "dev_topic": 0.8035023260054093,
+      "selection_score": 0.8288440826071066,
+      "seconds": 195.7
+    },
+    {
+      "epoch": 4,
+      "loss": 0.3057616239195096,
+      "dev_sentiment": 0.8476425831269379,
+      "dev_topic": 0.8127018451180185,
+      "selection_score": 0.8301722141224781,
+      "seconds": 260.6
+    }
+  ],
+  "best_epoch": 2,
+  "multitask": {
+    "lambda_topic": 1.0,
+    "joint_exact_match": 0.8673404927353127,
+    "selection": "mean of sentiment and topic dev macro-F1"
+  }
+}
