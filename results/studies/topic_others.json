@@ -1,0 +1,17 @@
+{
+  "source": "PhoBERT 5-fold ensemble on validation (results/studies/topic_stacking)",
+  "support": 95,
+  "recall": 0.5263157894736842,
+  "precision": 0.7575757575757576,
+  "gold_others_predicted_as": {
+    "lecturer": 27,
+    "training_program": 17,
+    "facility": 1
+  },
+  "predicted_others_gold": {
+    "lecturer": 8,
+    "training_program": 8,
+    "facility": 0
+  },
+  "share_of_validation": 0.06001263423878711
+}

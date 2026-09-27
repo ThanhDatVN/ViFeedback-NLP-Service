@@ -190,7 +190,9 @@ The audit measures this within strata; test labels are never changed.
 Topic PhoBERT + pyvi: 0.8111 dev / 0.8038 test, against sentiment's 0.864 / 0.829. Segmentation helps
 topic too (+0.0141, p = 0.004). Multi-task (H4) gave no material gain, and TF-IDF × PhoBERT stacking
 (H5) lost 0.010. The apparent TF-IDF advantage on `facility` was noise. `others` (F1 about 0.6) is
-the weak class. *Open:* a topic audit of `others`, which is a residual category by construction.
+the weak class. Cycle 3's review (`results/studies/topic_others.json`): recall 0.53, precision 0.76;
+missed `others` rows go to `lecturer` (27) and `training_program` (17), the neutral pattern again: a
+residual minority class absorbed by the majority. *Open:* include `others` in the audit design.
 
 ### P5 — Robustness to informal orthography is a deployment risk
 Cycle 0 measured it; H2's augmentation is now served (ADR-027). On constructed typed-style text it lifts
