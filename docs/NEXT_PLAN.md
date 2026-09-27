@@ -3,11 +3,30 @@
 **v3, 2026-09-27.** v2 closed every item that needed no owner input (its register is kept as
 [Appendix A](#appendix-a--v2-register-closed-2026-09-27)). v3 starts from what is still **not met**,
 the ROADMAP targets and the gaps Cycle 2 measured, and says how each is handled. It also sets what
-the OpenAI API is for. The rules below are proposals until they are frozen in
-`configs/experiments/cycle3.yaml`, which is committed after challenge v2 is frozen and before the
-first Cycle 3 run.
+the OpenAI API is for. The rules are frozen in `configs/experiments/cycle3.yaml` (v1 before the first
+Cycle 3 run; v2 external evaluation; v3 S2a, ADR-029). The challenge v2 hash goes into v4.
 
 Status key: ✅ done · ⏳ next, no owner input needed · 👤 needs the owner · ⏸ deferred, with the reason.
+
+## Progress, 2026-09-28
+
+Every step that needed no owner input has run. Development results are not confirmations: the rules
+that decide serving changes are confirmed on challenge v2, which needs the owner.
+
+| Step | Result | Status |
+|---|---|---|
+| V1: are the Cycle 2 drops real? (5 seeds, all reproduce exactly) | Teencode: noise (3/5 seeds, p = 0.09). Short factual: not confirmed (3/5, p = 0.02). **Contrast sentences: confirmed drop** 0.875 → 0.800 (4/5, p = 0.004, Holm-robust). Unaccented gain holds in 5/5 | ✅ |
+| Evaluation-data research | [EVALUATION_DATA.md](EVALUATION_DATA.md): CheckList matrix, metrics, power, NEU-ESC, ViLexNorm, EduPulse cross-check, v2 protocol | ✅ |
+| Case invariance (declared rule) | Served model flipped 1.07% of labels on capitalized input → **the service now lowercases** (0 flips, 0 validation changes) | ✅ |
+| ViLexNorm invariance (real typing) | 17% of labels flip between a real comment and its human normalization, for CE and augmented alike | ✅ measured |
+| U1 gpt-4o-mini on challenge v1 | neutral F1 0.955 vs 0.713 (CE); confounded by v1's construction; same pattern as EduPulse | ✅ |
+| U2 label check | 15 rows for owner review (`results/studies/challenge/label_review_v1.csv`) | 👤 review |
+| **S2a** real-typing lexicon (ViLexNorm train) | Development gate **not passed**: ViLexNorm flips 0.169 → 0.177 (p = 0.13); validation +0.003 | ✅ negative |
+| **S2b** diacritic restoration (train-only) | Stripped validation macro-F1 **0.686 → 0.857**; clean predictions unchanged; challenge unaccented 0.74 → 0.86; 0.2 ms | ✅ dev · 👤 v2 confirmation |
+| **S3** out-of-scope score | Mahalanobis AUROC **0.949** (max-probability 0.862), catches 66% at 5% flagged | ✅ dev · 👤 v2 confirmation |
+| **S5** careful INT8 | 178.5 MB, neutral agreement 0.959; macro-F1 drop +0.0004 but upper bound 0.0095 > 0.005: **not passed**. Latency indicative only (no steady pass): p50 6.4 ms vs 11.1 ms for FP32 | ✅ negative → Cycle 4 |
+| NEU-ESC | Access needs the owner to accept the dataset's conditions on Hugging Face | 👤 |
+| Challenge v2 (human-typed) · neutral audit · Kaggle Qwen3-4B · HF upload | — | 👤 |
 
 ---
 
