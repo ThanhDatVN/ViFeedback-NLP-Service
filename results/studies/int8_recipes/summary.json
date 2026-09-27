@@ -1,0 +1,64 @@
+{
+  "checkpoint": "models/p9-sent-phobert-base-seg_pyvi-aug-diac-teen-s42-599cf21f-ckp",
+  "fidelity_subset": {
+    "split": "train",
+    "n": 2000,
+    "per_class_min": 400,
+    "seed": 0
+  },
+  "candidates": {
+    "pc": {
+      "recipe": "pc",
+      "path": "models\\int8_candidates\\pc\\model.int8.onnx",
+      "fp32_nodes": 0,
+      "size_mb": 136.123346,
+      "label_agreement": 0.9825,
+      "neutral_agreement": 0.926984126984127,
+      "fp32_neutral_rows": 315,
+      "mean_abs_logit_diff": 0.2812960743904114,
+      "max_abs_logit_diff": 2.966636896133423
+    },
+    "pc-head": {
+      "recipe": "pc-head",
+      "path": "models\\int8_candidates\\pc-head\\model.int8.onnx",
+      "fp32_nodes": 2,
+      "size_mb": 136.123346,
+      "label_agreement": 0.9825,
+      "neutral_agreement": 0.926984126984127,
+      "fp32_neutral_rows": 315,
+      "mean_abs_logit_diff": 0.2812960743904114,
+      "max_abs_logit_diff": 2.966636896133423
+    },
+    "pc-head-last2": {
+      "recipe": "pc-head-last2",
+      "path": "models\\int8_candidates\\pc-head-last2\\model.int8.onnx",
+      "fp32_nodes": 18,
+      "size_mb": 178.505085,
+      "label_agreement": 0.9865,
+      "neutral_agreement": 0.9587301587301588,
+      "fp32_neutral_rows": 315,
+      "mean_abs_logit_diff": 0.1880912333726883,
+      "max_abs_logit_diff": 3.0378499031066895
+    },
+    "pc-head-ffnout": {
+      "recipe": "pc-head-ffnout",
+      "path": "models\\int8_candidates\\pc-head-ffnout\\model.int8.onnx",
+      "fp32_nodes": 14,
+      "size_mb": 220.994334,
+      "label_agreement": 0.9935,
+      "neutral_agreement": 0.9746031746031746,
+      "fp32_neutral_rows": 315,
+      "mean_abs_logit_diff": 0.07404347509145737,
+      "max_abs_logit_diff": 1.9969027042388916
+    }
+  },
+  "chosen": "pc-head-last2",
+  "validation": {
+    "macro_f1_drop": 0.00042132201798372737,
+    "macro_f1_drop_upper_95_one_sided": 0.009534960564431254,
+    "neutral_f1_fp32": 0.6614173228346456,
+    "neutral_f1_int8": 0.6666666666666666,
+    "neutral_f1_loss": -0.005249343832021025,
+    "quality_passed": false
+  }
+}
