@@ -1,0 +1,306 @@
+id,category,pair_id,text,sentiment
+c001,negation_pair,n01,cô giảng bài rất cuốn hút,positive
+c002,negation_pair,n01,cô giảng bài chẳng cuốn hút chút nào,negative
+c003,negation_pair,n02,môn học áp dụng được vào thực tế,positive
+c004,negation_pair,n02,môn học đâu có áp dụng được gì vào thực tế,negative
+c005,negation_pair,n03,bài giảng của thầy hay,positive
+c006,negation_pair,n03,bài giảng của thầy có hay đâu,negative
+c007,negation_pair,n04,thầy từng đến lớp trễ nhiều lần,negative
+c008,negation_pair,n04,thầy chưa bao giờ đến lớp trễ,positive
+c009,negation_pair,n05,cô làm em thất vọng,negative
+c010,negation_pair,n05,cô chưa bao giờ làm em thất vọng,positive
+c011,negation_pair,n06,cô ngại giải đáp thắc mắc của sinh viên,negative
+c012,negation_pair,n06,cô không hề ngại giải đáp thắc mắc của sinh viên,positive
+c013,negation_pair,n07,máy chiếu dùng ổn định suốt học kỳ,positive
+c014,negation_pair,n07,máy chiếu chẳng lúc nào dùng được suốt học kỳ,negative
+c015,negation_pair,n08,thầy trả lời email của sinh viên rất nhanh,positive
+c016,negation_pair,n08,thầy chẳng bao giờ trả lời email của sinh viên,negative
+c017,negation_pair,n09,sinh viên yếu bị bỏ lại phía sau trong lớp cô,negative
+c018,negation_pair,n09,cô không để sinh viên nào bị bỏ lại phía sau,positive
+c019,negation_pair,n10,môn học khó như em nghĩ,negative
+c020,negation_pair,n10,môn học không khó như em nghĩ,positive
+c021,negation_pair,n11,đề thi bám sát nội dung học,positive
+c022,negation_pair,n11,đề thi chẳng liên quan gì tới nội dung học,negative
+c023,negation_pair,n12,thầy phân biệt đối xử với sinh viên,negative
+c024,negation_pair,n12,thầy không phân biệt đối xử với sinh viên nào,positive
+c025,negation_pair,n13,chương trình học đã cập nhật công nghệ mới,positive
+c026,negation_pair,n13,chương trình học chưa cập nhật công nghệ mới,negative
+c027,negation_pair,n14,có nhiều điểm để phàn nàn về cách dạy của cô,negative
+c028,negation_pair,n14,không có gì để phàn nàn về cách dạy của cô,positive
+c029,negation_pair,n15,wifi phòng lab lúc nào cũng vào được,positive
+c030,negation_pair,n15,wifi phòng lab không bao giờ vào được,negative
+c031,mixed_aspect,,thầy dạy hay nhưng phòng học nóng quá,negative
+c032,mixed_aspect,,phòng học hơi nóng nhưng thầy dạy rất hay,positive
+c033,mixed_aspect,,cô nhiệt tình nhưng giảng hơi nhanh,negative
+c034,mixed_aspect,,bài tập nhiều nhưng giúp em hiểu bài hơn,positive
+c035,mixed_aspect,,môn học khó nhưng thầy hướng dẫn rất tận tình,positive
+c036,mixed_aspect,,giáo trình đầy đủ nhưng máy chiếu thường xuyên hỏng,negative
+c037,mixed_aspect,,thầy vui tính nhưng chấm điểm hơi khắt khe,negative
+c038,mixed_aspect,,đề thi khó nhưng công bằng,positive
+c039,mixed_aspect,,cô giảng dễ hiểu nhưng ít cho ví dụ thực tế,negative
+c040,mixed_aspect,,lịch học dày nhưng nội dung rất bổ ích,positive
+c041,mixed_aspect,,phòng lab máy yếu nhưng thầy hỗ trợ sinh viên rất nhiệt tình,positive
+c042,mixed_aspect,,thầy giỏi chuyên môn nhưng không biết cách truyền đạt,negative
+c043,mixed_aspect,,môn học thú vị nhưng thời lượng quá ngắn,negative
+c044,mixed_aspect,,slide hơi sơ sài nhưng thầy giải thích kỹ trên lớp,positive
+c045,mixed_aspect,,cô dạy tốt nhưng hay cho nghỉ học đột xuất,negative
+c046,mixed_aspect,,điều hòa hỏng nhưng cả lớp vẫn học rất vui vì cô,positive
+c047,mixed_aspect,,bài giảng nhiều lý thuyết nhưng có ví dụ minh họa dễ hiểu,positive
+c048,mixed_aspect,,thầy nhiệt huyết nhưng giọng nói nhỏ khó nghe,negative
+c049,mixed_aspect,,kiến thức hay nhưng thi cử nặng quá,negative
+c050,mixed_aspect,,môn này nặng nhưng học xong thấy rất đáng,positive
+c051,mixed_aspect,,cô hơi nghiêm nhưng rất quan tâm đến sinh viên,positive
+c052,mixed_aspect,,thư viện đủ sách nhưng chỗ ngồi quá ít,negative
+c053,mixed_aspect,,thầy đến muộn vài buổi nhưng bù giờ đầy đủ,positive
+c054,mixed_aspect,,chương trình học hợp lý nhưng cơ sở vật chất xuống cấp,negative
+c055,mixed_aspect,,cô giảng chậm nhưng ai cũng theo kịp,positive
+c056,mixed_aspect,,bài tập lớn khó nhưng học được nhiều thứ,positive
+c057,mixed_aspect,,phòng học rộng nhưng âm thanh rất tệ,negative
+c058,mixed_aspect,,thầy dạy hay tuy nhiên không cho sinh viên đặt câu hỏi,negative
+c059,mixed_aspect,,tuy lớp đông nhưng thầy vẫn nhớ tên từng bạn,positive
+c060,mixed_aspect,,mặc dù đề cương rõ ràng nhưng giảng viên dạy không theo đề cương,negative
+c061,mixed_aspect,,giáo trình cũ nhưng thầy bổ sung tài liệu mới rất đầy đủ,positive
+c062,mixed_aspect,,cô rất dễ thương nhưng điểm quá trình chấm chưa minh bạch,negative
+c063,mixed_aspect,,môn học hữu ích nhưng lịch thi bị dời liên tục,negative
+c064,mixed_aspect,,máy chiếu mờ nhưng thầy in tài liệu phát cho cả lớp,positive
+c065,mixed_aspect,,thầy khó tính nhưng dạy rất có tâm,positive
+c066,mixed_aspect,,wifi mạnh nhưng phòng lab thiếu máy,negative
+c067,mixed_aspect,,cô giảng hơi lan man nhưng rất thân thiện và dễ gần,positive
+c068,mixed_aspect,,nội dung hay nhưng bài kiểm tra ra ngoài phạm vi,negative
+c069,mixed_aspect,,thầy trả bài chậm nhưng nhận xét rất chi tiết,positive
+c070,mixed_aspect,,phòng học sạch sẽ nhưng bàn ghế đã cũ và hỏng nhiều,negative
+c071,suggestion_cue,,thầy nên giảng chậm lại một chút,negative
+c072,suggestion_cue,,cô nên cho thêm ví dụ thực tế,negative
+c073,suggestion_cue,,khoa cần trang bị thêm máy chiếu cho các phòng,negative
+c074,suggestion_cue,,mong thầy công bố điểm sớm hơn,negative
+c075,suggestion_cue,,nhà trường nên sửa lại điều hòa phòng học,negative
+c076,suggestion_cue,,thầy cần cập nhật slide cho mới hơn,negative
+c077,suggestion_cue,,mong cô dành thêm thời gian giải bài tập,negative
+c078,suggestion_cue,,nên có thêm giờ thực hành cho môn này,negative
+c079,suggestion_cue,,cần tăng số lượng máy tính trong phòng lab,negative
+c080,suggestion_cue,,mong khoa mở thêm lớp buổi tối,negative
+c081,suggestion_cue,,thầy nên nói to hơn vì phía cuối lớp không nghe rõ,negative
+c082,suggestion_cue,,cô nên đăng tài liệu lên trước buổi học,negative
+c083,suggestion_cue,,cần có đáp án cho bài tập về nhà,negative
+c084,suggestion_cue,,mong thầy bớt khắt khe khi chấm điểm chuyên cần,negative
+c085,suggestion_cue,,nên chia nhóm nhỏ hơn để dễ làm việc,negative
+c086,suggestion_cue,,thư viện cần mở cửa muộn hơn vào mùa thi,negative
+c087,suggestion_cue,,mong giảng viên phản hồi email nhanh hơn,negative
+c088,suggestion_cue,,nên giảm bớt số bài kiểm tra giữa kỳ,negative
+c089,suggestion_cue,,cô cần giải thích rõ tiêu chí chấm điểm,negative
+c090,suggestion_cue,,mong nhà trường lắp thêm ổ cắm điện,negative
+c091,suggestion_cue,,thầy nên dùng micro khi giảng,negative
+c092,suggestion_cue,,cần sắp xếp lịch học hợp lý hơn,negative
+c093,suggestion_cue,,mong cô cho sinh viên xem lại bài thi,negative
+c094,suggestion_cue,,nên có thêm tài liệu tiếng việt cho môn này,negative
+c095,suggestion_cue,,khoa cần tuyển thêm trợ giảng cho các lớp đông,negative
+c096,suggestion_implicit,,giảng chậm lại một chút để sinh viên kịp ghi chép,negative
+c097,suggestion_implicit,,cho thêm bài tập mẫu trước khi thi,negative
+c098,suggestion_implicit,,tăng thời gian thực hành trên máy,negative
+c099,suggestion_implicit,,phát đề cương sớm hơn,negative
+c100,suggestion_implicit,,bổ sung thêm tài liệu tham khảo,negative
+c101,suggestion_implicit,,sửa lại wifi ở tầng ba,negative
+c102,suggestion_implicit,,đổi phòng học có điều hòa,negative
+c103,suggestion_implicit,,ước gì thầy cho thêm ví dụ,negative
+c104,suggestion_implicit,,giá mà cô công bố điểm sớm hơn,negative
+c105,suggestion_implicit,,hy vọng học kỳ sau có thêm giờ lab,negative
+c106,suggestion_implicit,,thêm quạt cho phòng học,negative
+c107,suggestion_implicit,,cho sinh viên nộp bài trễ một hai ngày,negative
+c108,suggestion_implicit,,giảm bài tập về nhà,negative
+c109,suggestion_implicit,,có thêm buổi ôn tập trước thi,negative
+c110,suggestion_implicit,,dạy thêm phần ứng dụng thực tế,negative
+c111,suggestion_implicit,,cho sinh viên chọn đề tài đồ án,negative
+c112,suggestion_implicit,,nói rõ yêu cầu của bài tập lớn,negative
+c113,suggestion_implicit,,đưa bài giảng lên hệ thống sớm hơn,negative
+c114,suggestion_implicit,,cho em hỏi lịch thi cuối kỳ khi nào ạ,neutral
+c115,suggestion_implicit,,em muốn biết điểm quá trình chiếm bao nhiêu phần trăm,neutral
+c116,suggestion_implicit,,môn này có được học lại không ạ,neutral
+c117,suggestion_implicit,,thầy ơi slide tuần sau có đăng không ạ,neutral
+c118,suggestion_implicit,,cho em xin email của trợ giảng,neutral
+c119,suggestion_implicit,,bao giờ có kết quả thi giữa kỳ vậy ạ,neutral
+c120,suggestion_implicit,,em hỏi phòng thi ở đâu ạ,neutral
+c121,unaccented_typed,,thay giang bai cuc ky de theo,positive
+c122,unaccented_typed,,co nhiet tinh chi bao tung ban,positive
+c123,unaccented_typed,,mon hoc bo ich lam,positive
+c124,unaccented_typed,,thay giang hay va vui tinh,positive
+c125,unaccented_typed,,cam on co da tan tinh huong dan,positive
+c126,unaccented_typed,,bai giang ro rang de theo doi,positive
+c127,unaccented_typed,,thay ho tro sinh vien rat nhiet tinh,positive
+c128,unaccented_typed,,phong hoc sach se thoang mat,positive
+c129,unaccented_typed,,co giai thich ky cac phan kho,positive
+c130,unaccented_typed,,em rat thich mon nay,positive
+c131,unaccented_typed,,thay cham bai rat cong tam,positive
+c132,unaccented_typed,,tai lieu day du de on thi,positive
+c133,unaccented_typed,,co day co tam lam,positive
+c134,unaccented_typed,,hoc xong thay tien bo nhieu,positive
+c135,unaccented_typed,,thay chua bao gio vao lop tre,positive
+c136,unaccented_typed,,slide dep va de nhin,positive
+c137,unaccented_typed,,co than thien de gan,positive
+c138,unaccented_typed,,bai tap sat voi bai giang,positive
+c139,unaccented_typed,,thay truyen cam hung cho ca lop,positive
+c140,unaccented_typed,,mon nay hoc thay cuon lam,positive
+c141,unaccented_typed,,thay day kho hieu qua,negative
+c142,unaccented_typed,,co giang nhanh qua khong theo kip,negative
+c143,unaccented_typed,,phong hoc nong nhu lo,negative
+c144,unaccented_typed,,may chieu hong hoai,negative
+c145,unaccented_typed,,de thi kho qua so voi bai hoc,negative
+c146,unaccented_typed,,thay hay den tre,negative
+c147,unaccented_typed,,tai lieu thieu nhieu,negative
+c148,unaccented_typed,,co cham diem kho qua,negative
+c149,unaccented_typed,,wifi yeu khong vao duoc,negative
+c150,unaccented_typed,,bai tap nhieu qua lam khong xue,negative
+c151,unaccented_typed,,thay giang lan man khong trong tam,negative
+c152,unaccented_typed,,mon nay chan qua,negative
+c153,unaccented_typed,,khong hieu gi het,negative
+c154,unaccented_typed,,loa trong phong bi re,negative
+c155,unaccented_typed,,co it khi tra loi cau hoi,negative
+c156,unaccented_typed,,lich hoc day dac met moi,negative
+c157,unaccented_typed,,slide toan chu nhin rat roi,negative
+c158,unaccented_typed,,thay khong nhiet tinh,negative
+c159,unaccented_typed,,ban ghe cu va hong,negative
+c160,unaccented_typed,,diem qua trinh khong ro rang,negative
+c161,unaccented_typed,,mon hoc co 3 tin chi,neutral
+c162,unaccented_typed,,lop hoc vao buoi sang thu hai,neutral
+c163,unaccented_typed,,cho em hoi lich thi,neutral
+c164,unaccented_typed,,em khong co gop y gi them cho mon nay,neutral
+c165,unaccented_typed,,thay day mon co so du lieu,neutral
+c166,unaccented_typed,,hoc ky sau mon nay van mo lop,neutral
+c167,unaccented_typed,,hoc o phong b203,neutral
+c168,unaccented_typed,,em hoc lop nay hoc ky truoc,neutral
+c169,unaccented_typed,,co day thay thay trong 2 tuan,neutral
+c170,unaccented_typed,,bai kiem tra giua ky vao tuan 8,neutral
+c171,teencode_typed,,gv dạy hay wá,positive
+c172,teencode_typed,,thầy dễ thương ghê hỏi j cũng trả lời,positive
+c173,teencode_typed,,cô dạy dễ hỉu lắm,positive
+c174,teencode_typed,,môn này học vui cực,positive
+c175,teencode_typed,,thầy nhiệt tình dã man,positive
+c176,teencode_typed,,c dạy có tâm ghê,positive
+c177,teencode_typed,,bài giảng dễ hiểu tks thầy nhiều,positive
+c178,teencode_typed,,mn trong lớp ai cũng thích cô,positive
+c179,teencode_typed,,thầy ok lắm luôn,positive
+c180,teencode_typed,,học xong thấy đc nhiều thứ bổ ích,positive
+c181,teencode_typed,,gv hỗ trợ sv nhiệt tình,positive
+c182,teencode_typed,,c giảng kĩ tks c,positive
+c183,teencode_typed,,thầy vui tính học k chán,positive
+c184,teencode_typed,,môn hay recommend cho mn,positive
+c185,teencode_typed,,slide đẹp dễ nhìn dc lắm,positive
+c186,teencode_typed,,thầy dạy chất lượng 10 điểm,positive
+c187,teencode_typed,,thầy dạy chán wá,negative
+c188,teencode_typed,,ko hỉu j hết,negative
+c189,teencode_typed,,cô giảng nhanh vãi ko kịp ghi,negative
+c190,teencode_typed,,phòng nóng như lò học ko nổi,negative
+c191,teencode_typed,,đề thi khó dã man,negative
+c192,teencode_typed,,máy chiếu hư hoài,negative
+c193,teencode_typed,,thầy chấm điểm gắt quá trời,negative
+c194,teencode_typed,,bt nhiều qá làm k xuể,negative
+c195,teencode_typed,,wifi lag muốn xỉu,negative
+c196,teencode_typed,,gv hay đến trễ,negative
+c197,teencode_typed,,học mà ko hiểu gì chán,negative
+c198,teencode_typed,,tài liệu thiếu tùm lum,negative
+c199,teencode_typed,,cô ít khi rep tin nhắn,negative
+c200,teencode_typed,,môn này hơi phí thời gian,negative
+c201,teencode_typed,,loa rè nghe k rõ j,negative
+c202,teencode_typed,,thầy giảng lan man ko có trọng tâm,negative
+c203,teencode_typed,,cho e hỏi lịch thi vs ạ,neutral
+c204,teencode_typed,,bt tuần này nộp khi nào v,neutral
+c205,teencode_typed,,ko có ý kiến j,neutral
+c206,teencode_typed,,mn ơi phòng học đổi chưa,neutral
+c207,teencode_typed,,e học lớp chiều t5,neutral
+c208,teencode_typed,,thầy có đăng slide chưa ạ,neutral
+c209,teencode_typed,,môn này 3 tc,neutral
+c210,teencode_typed,,bt,neutral
+c211,code_switch,,slide của thầy rất clear,positive
+c212,code_switch,,deadline dày quá không kịp làm,negative
+c213,code_switch,,cô rất friendly với sinh viên,positive
+c214,code_switch,,lab thực hành ok,positive
+c215,code_switch,,thầy giải thích concept rất dễ hiểu,positive
+c216,code_switch,,project cuối kỳ quá nặng,negative
+c217,code_switch,,feedback của cô cho bài làm rất chi tiết,positive
+c218,code_switch,,quiz nào cũng khó,negative
+c219,code_switch,,thầy hay share kinh nghiệm thực tế,positive
+c220,code_switch,,giáo trình outdated rồi,negative
+c221,code_switch,,cô support nhiệt tình,positive
+c222,code_switch,,workload môn này quá tải,negative
+c223,code_switch,,thầy upload bài giảng lên drive đầy đủ,positive
+c224,code_switch,,mic trong phòng hay bị noise,negative
+c225,code_switch,,môn này rất useful cho sau này,positive
+c226,code_switch,,assignment không có hướng dẫn rõ,negative
+c227,code_switch,,cô dạy rất inspiring,positive
+c228,code_switch,,server của lab hay bị down,negative
+c229,code_switch,,thầy chấm điểm rất fair,positive
+c230,code_switch,,presentation cuối kỳ chiếm 30 phần trăm,neutral
+c231,code_switch,,lớp có 60 sinh viên và 2 teaching assistant,neutral
+c232,code_switch,,deadline bài tập là thứ sáu,neutral
+c233,code_switch,,course này học bằng tiếng anh,neutral
+c234,code_switch,,thầy review bài trước khi thi rất helpful,positive
+c235,code_switch,,background của sinh viên khác nhau nên hơi khó theo,negative
+c236,long_context,,hôm đầu tiên vào lớp em khá lo vì nghe nói môn này rất khó và nhiều người bị rớt nhưng sau vài tuần học với thầy em thấy mọi thứ trở nên dễ hiểu hơn rất nhiều,positive
+c237,long_context,,em đã học môn này ở học kỳ trước với một giảng viên khác và lần này đăng ký lại với cô nhưng thật sự cách cô dạy còn khó hiểu hơn nhiều,negative
+c238,long_context,,phòng học ở tầng năm không có thang máy nên mỗi lần lên lớp rất mệt lại thêm điều hòa không hoạt động nên cả buổi học ai cũng mệt mỏi,negative
+c239,long_context,,thầy thường bắt đầu buổi học bằng một câu chuyện thực tế trong ngành rồi mới đi vào lý thuyết nên sinh viên dễ hình dung và nhớ bài lâu hơn,positive
+c240,long_context,,môn học gồm mười lăm buổi lý thuyết và năm buổi thực hành cuối kỳ có một bài thi viết và một đồ án nhóm,neutral
+c241,long_context,,trong suốt học kỳ cô luôn trả lời câu hỏi của sinh viên trên diễn đàn môn học kể cả vào cuối tuần điều mà em chưa thấy ở nhiều giảng viên khác,positive
+c242,long_context,,tài liệu được phát vào tuần đầu tiên nhưng đến tuần thứ sáu thì nội dung giảng dạy đã khác hoàn toàn so với tài liệu khiến sinh viên không biết ôn theo cái nào,negative
+c243,long_context,,em thấy nếu thầy có thể chia nhỏ các phần khó ra và cho thêm bài tập vừa sức thì sinh viên sẽ theo kịp tốt hơn vì hiện tại nhiều bạn đang bị hổng kiến thức,negative
+c244,long_context,,lớp học có khoảng tám mươi sinh viên chia thành mười nhóm mỗi nhóm thực hiện một đề tài riêng và báo cáo vào tuần cuối,neutral
+c245,long_context,,dù phải học vào ca tối sau một ngày dài nhưng cách giảng vui vẻ và nhiều ví dụ của cô khiến em không hề buồn ngủ,positive
+c246,long_context,,máy tính trong phòng thực hành đa số đã cũ cài đặt phần mềm mất rất nhiều thời gian và nhiều máy không chạy được chương trình mà môn học yêu cầu,negative
+c247,long_context,,em rất biết ơn thầy vì đã kiên nhẫn giải thích lại nhiều lần cho những bạn học chậm và luôn động viên cả lớp trước mỗi kỳ thi,positive
+c248,long_context,,đề thi giữa kỳ có nhiều câu không nằm trong nội dung đã học trên lớp và cũng không có trong tài liệu tham khảo được giới thiệu,negative
+c249,long_context,,hệ thống đăng ký học phần mở vào tám giờ sáng và đóng vào năm giờ chiều cùng ngày sinh viên cần đăng ký trong khoảng thời gian này,neutral
+c250,long_context,,sau khi học xong môn này em đã tự làm được một ứng dụng nhỏ và thấy tự tin hơn khi đi thực tập tất cả là nhờ những bài tập thực hành mà thầy thiết kế,positive
+c251,long_context,,cô giao bài tập rất nhiều mỗi tuần lại không chữa trên lớp nên sinh viên làm sai cũng không biết sai ở đâu để sửa,negative
+c252,long_context,,buổi học đầu tiên thầy giới thiệu đề cương cách tính điểm và các tài liệu cần chuẩn bị cho cả học kỳ,neutral
+c253,long_context,,em nghĩ môn học này rất cần thiết cho ngành của mình và cách thầy tổ chức lớp học theo nhóm giúp sinh viên học hỏi lẫn nhau rất hiệu quả,positive
+c254,long_context,,loa trong hội trường bị rè suốt cả học kỳ đã phản ánh nhiều lần nhưng vẫn chưa được sửa khiến sinh viên ngồi cuối không nghe được gì,negative
+c255,long_context,,nhìn chung môn học được tổ chức ổn giảng viên đúng giờ tài liệu đầy đủ và bài kiểm tra có đáp án rõ ràng,positive
+c256,objective_neutral,,môn học có ba tín chỉ,neutral
+c257,objective_neutral,,lớp học vào sáng thứ hai hàng tuần,neutral
+c258,objective_neutral,,thầy dạy môn cấu trúc dữ liệu,neutral
+c259,objective_neutral,,giáo trình gồm mười hai chương,neutral
+c260,objective_neutral,,bài thi cuối kỳ là thi tự luận,neutral
+c261,objective_neutral,,cô là giảng viên khoa công nghệ thông tin,neutral
+c262,objective_neutral,,lớp có năm mươi sinh viên,neutral
+c263,objective_neutral,,môn học có hai bài kiểm tra giữa kỳ,neutral
+c264,objective_neutral,,phòng học ở tòa nhà b,neutral
+c265,objective_neutral,,điểm quá trình chiếm bốn mươi phần trăm,neutral
+c266,objective_neutral,,thầy dạy thay trong hai tuần cuối,neutral
+c267,objective_neutral,,em không có nhận xét nào khác về môn học,neutral
+c268,objective_neutral,,em không có góp ý gì thêm,neutral
+c269,objective_neutral,,môn này học trên phòng máy,neutral
+c270,objective_neutral,,bài tập được nộp qua hệ thống trực tuyến,neutral
+c271,objective_neutral,,đồ án làm theo nhóm ba người,neutral
+c272,objective_neutral,,môn học bắt đầu từ tuần thứ hai,neutral
+c273,objective_neutral,,giờ học là từ bảy giờ đến chín giờ,neutral
+c274,objective_neutral,,em đã học môn này hai lần,neutral
+c275,objective_neutral,,tài liệu tham khảo bằng tiếng anh,neutral
+c276,objective_neutral,,lịch thi do phòng đào tạo sắp xếp,neutral
+c277,objective_neutral,,thầy yêu cầu mang laptop khi đi học,neutral
+c278,objective_neutral,,không có gì để nói thêm,neutral
+c279,objective_neutral,,môn học tiên quyết là nhập môn lập trình,neutral
+c280,objective_neutral,,lớp được chia thành hai ca thực hành,neutral
+c281,objective_neutral,,cô dạy lý thuyết còn trợ giảng dạy thực hành,neutral
+c282,objective_neutral,,điểm danh bằng cách ký tên,neutral
+c283,objective_neutral,,môn này có bài thuyết trình cuối kỳ,neutral
+c284,objective_neutral,,em đi học đầy đủ các buổi,neutral
+c285,objective_neutral,,học kỳ này có mười lăm tuần,neutral
+c286,out_of_scope,,hôm nay trời mưa to quá,none
+c287,out_of_scope,,cho mình hỏi đường đến ký túc xá,none
+c288,out_of_scope,,giá xăng lại tăng rồi,none
+c289,out_of_scope,,đội bóng tối qua đá hay quá,none
+c290,out_of_scope,,mình cần bán lại xe máy cũ,none
+c291,out_of_scope,,quán cơm gần trường nấu ngon,none
+c292,out_of_scope,,ai có sạc điện thoại cho mượn với,none
+c293,out_of_scope,,tuần sau có phim mới ra rạp,none
+c294,out_of_scope,,chúc mọi người năm mới vui vẻ,none
+c295,out_of_scope,,con mèo nhà em rất lười,none
+c296,out_of_scope,,xe buýt số 8 hôm nay đến trễ,none
+c297,out_of_scope,,mình đang tìm người ở ghép,none
+c298,out_of_scope,,bài hát này nghe hoài không chán,none
+c299,out_of_scope,,tối nay ăn gì bây giờ,none
+c300,out_of_scope,,cửa hàng tiện lợi mở cửa hai mươi bốn giờ,none
+c301,out_of_scope,,điện thoại mới ra có camera đẹp,none
+c302,out_of_scope,,cuối tuần này đi biển không,none
+c303,out_of_scope,,nhà em có ba anh chị em,none
+c304,out_of_scope,,hôm qua mất điện cả khu phố,none
+c305,out_of_scope,,mình thích uống trà sữa,none

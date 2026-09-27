@@ -3,9 +3,14 @@
 # Follows docs/NEXT_PLAN.md. Track A (encoder vs LLM) is chosen, as NEXT_PLAN recommends for an
 # AI-engineer profile; track B (distillation / careful INT8) stays available for a later cycle.
 # Changing a rule below after results are seen requires a new file version and an ADR.
+#
+# Version 2 (ADR-026), committed before any model is evaluated on the challenge set and before any
+# H7 run: freezes challenge_set_v1 by hash, adds an API reference arm to H7, and adds two descriptive
+# measurements. No v1 rule is changed; H5 is running and its rule is untouched.
 
-version: 1
+version: 2
 declared: 2026-09-27
+revised: 2026-09-27
 track: A
 budget:
   weight_updating_runs: 5           # H5: five topic OOF folds. LLM work is inference only.
@@ -14,12 +19,19 @@ budget:
 evaluation_data:
   challenge_set_v1:
     path: data/challenge/challenge_v1.csv
+    sha256: 4c8569dba8b18d66d88c1d47c31571812a7bc0e2588dbef23f7ab0f2a0cd877a
+    rows: 305            # 285 labelled positive/negative/neutral + 20 out_of_scope (label "none")
+    read_with: pandas keep_default_na=False
     authored_by: project author (constructed; not drawn from UIT-VSFC), labelled under docs/ANNOTATION_GUIDE.md
     freeze: >
-      Its SHA-256 is recorded in this file (version 2) in a commit made before any model is evaluated
-      on it. After the freeze no row is edited; corrections go to challenge_v2.
+      Frozen by the sha256 above. No row is edited; corrections go to challenge_v2, and any v2 result
+      is reported next to v1, never instead of it.
     categories: [negation_pair, mixed_aspect, suggestion_cue, suggestion_implicit, unaccented_typed,
                  teencode_typed, code_switch, long_context, objective_neutral, out_of_scope]
+    scored_rows: >
+      Sentiment accuracy and F1 use the 285 labelled rows. out_of_scope rows are never scored; they
+      feed the descriptive confidence measurement below. mixed_aspect is always also reported alone,
+      because its contrast-clause policy is the least certain in the set (data/challenge/README.md).
     note: >
       "typed" rows are written as a person types them, not produced by the perturbation code, so they
       test H2's augmentation on noise it was not built from.
@@ -40,6 +52,9 @@ hypotheses:
     supported_if: >
       topic macro-F1 gain >= +0.005 with the 95% paired CI above 0, AND facility and others F1 not
       lower than PhoBERT alone.
+    descriptive: >
+      (v2) The facility claim itself (TF-IDF 0.921 vs PhoBERT 0.905 on dev, one model each) gets a
+      paired example bootstrap from the same validation predictions. Reported; decides nothing.
 
   H6_serving_model:
     question: Should the service switch to the H2-augmented model? (NEXT_PLAN step 0.3)
@@ -56,23 +71,44 @@ hypotheses:
     models:
       pilot: Qwen/Qwen3-1.7B, laptop fp16, to validate the pipeline; reported, but not the declared result
       declared: Qwen/Qwen3-4B, Kaggle T4 fp16
+      api_reference: >
+        (v2) gpt-4o-mini, snapshot gpt-4o-mini-2024-07-18, temperature 0, via the OpenAI API with the
+        owner's key read from the environment (OPENAI_API_KEY), never written to any file in the repo.
+        A closed model: reported as a reference point, not a deployable candidate.
       revisions: pinned to the Hub commit at run time and recorded in the output
     prompting: >
       Label definitions from the annotation guide, thinking disabled. Zero-shot, and few-shot with 6
       demonstrations (2 per class) drawn from train with seeds 1 and 2. Prompt development: at most 4
       variants, scored on a fixed stratified 200-example train subset; the best by macro-F1 is frozen.
       Validation and the challenge set are never used for prompt development.
+      (v2) Prompt development uses the pilot model only. The frozen prompt is reused unchanged for
+      Qwen3-4B and the API arm.
+    data_egress: >
+      (v2) Only data the project may send to a third party goes to the API. challenge_set_v1 is
+      constructed by the project, so it may. UIT-VSFC text (validation, and train demonstrations for
+      few-shot) goes to the API only after the owner confirms the dataset's licence allows it. Until
+      then the API arm runs zero-shot on challenge_set_v1 only, and this is stated with its result.
     scoring: >
       Label likelihood: the summed log-probability of each label's tokens after the prompt. Outputs
-      are valid by construction and come with probabilities.
+      are valid by construction and come with probabilities. Labels are the English words positive,
+      negative, neutral. (v2) API arm: the answer is one token; its top-20 log-probabilities are
+      read, and a label absent from them gets the smallest returned log-probability minus 1.
     comparison: paired per example against the seed-42 CE encoder, on validation and challenge_set_v1
-    report: [per-class P/R/F1, macro-F1, neutral F1, latency per sentence, GPU-seconds per 1k sentences]
+    report: [per-class P/R/F1, macro-F1, neutral F1, latency per sentence, GPU-seconds per 1k sentences,
+             (v2) USD per 1k sentences for the API arm, with network latency reported as such]
     outcomes:
+      multiplicity: (v2) two declared comparisons, Qwen3-4B and the API arm, each against the encoder; Holm over the two
       llm_better_on_neutral: >
-        LLM neutral F1 on challenge_set_v1 above the encoder's with a paired 95% CI above 0:
+        An LLM's neutral F1 on challenge_set_v1 above the encoder's with a paired 95% CI above 0 (Holm-adjusted):
         routing (encoder first, LLM on low-confidence predictions) becomes Cycle 3's question.
       encoder_better_or_equal: report cost-adjusted; the fine-tuned encoder is the answer at this budget.
     caveat: pretraining contamination of UIT-VSFC is unknown for a public LLM; the challenge set is the cleaner comparison.
+
+descriptive_v2:
+  out_of_scope_confidence: >
+    Max softmax probability of the served model on the 20 out_of_scope rows vs the 30
+    objective_neutral rows (the encoder has no abstain class). Answers a documented limitation
+    (RESEARCH_REPORT § 7: out-of-scope input untested); decides nothing.
 
 audit_decision_tree:   # NEXT_PLAN step 1; frozen here before any annotation is done
   scope: confident neutral-error strata of results/studies/study_a/audit_sample_index.csv

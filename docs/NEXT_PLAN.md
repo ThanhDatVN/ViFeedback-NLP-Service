@@ -1,142 +1,154 @@
-# Next Plan — experiments and improvements after Cycle 1
+# Next Plan — v2: close every open item, then Cycle 2
 
-**Written 2026-09-27, after Cycle 1 closed.** Each step follows from a measured result, not from a
-wish list. Steps run in order unless marked *parallel*. Every experiment step is declared in
-`configs/experiments/` **before** its first run, with its decision rule in `evaluation/decisions.py`,
-as Cycle 1 was.
+**v1** was written 2026-09-27 when Cycle 1 closed. **v2** (same day) was rewritten at the owner's
+request. It starts from a register of everything still open: outstanding issues, experiments not
+yet run, and results that rest on weaker evidence than their claim needs. Each item names what closes
+it, and the steps below close them in order. Cycle 2 is declared in
+[`configs/experiments/cycle2.yaml`](../configs/experiments/cycle2.yaml) (v2, ADR-025/026).
 
-## Where the evidence leaves us
-
-| What Cycle 0–1 established | What it means for the next steps |
-|---|---|
-| Neutral errors are confident; boundary shifts, logit adjustment and cRT all move macro-F1 by noise (H1) | The gap is **not in the classifier**. Label ambiguity vs representation is the open question, and only a human audit can split it |
-| Augmentation repairs missing diacritics (0.27 → 0.64 on test), clean accuracy unchanged, other noise unchanged (H2) | A deployable robustness gain exists. It is in-family only, so real noisy input is untested |
-| XLM-R lost ~40% of its gap to preprocessing, but still trails PhoBERT (H3) | More encoders are only worth running with a specific question, such as raw-text or social-domain pretraining |
-| Shared encoder: no gain at λ 0.3, sentiment cost at λ 1 (H4) | Multi-task is a serving-cost option, not a quality lever |
-| INT8 is 1.7× faster but costs 0.088 neutral F1; static INT8 breaks the model | The efficiency stretch target (≥ 1.5× with neutral loss ≤ 0.02) is unmet by exactly the minority class |
-| The test split has now been evaluated 28 times | **New claims need new evaluation data.** The official test remains for historical comparison only |
+Status key: ✅ done · 🔄 running · ⏳ next, no owner input needed · 👤 needs the owner ·
+⏸ deferred, with the reason.
 
 ---
 
-## Step 0 — Engineering debt and one deployment decision *(1–2 days; no GPU)*
+## 1. Open-items register
 
-| Task | Why | Done when |
-|---|---|---|
-| **0.1** Fix the 35 mypy errors; make `mypy` a blocking CI step | Type checking is advisory, so type errors can merge | CI fails on a type error |
-| **0.2** Run the Docker image with the released artifact mounted: `/readyz` 200, `/v1/classify` golden cases | CI smoke-tests the image without a model; the real-model path was only simulated | A scripted `make docker-e2e` passes locally |
-| **0.3** **Decide which model the service runs** (owner) | The H2-augmented model matches CE on clean text and is 2.3× more robust without diacritics. The decision rests on validation (H2 met its declared rule there); the test gate only confirmed it | Recorded as an ADR *and* in EVALUATION_PROTOCOL § 4 as a decision a test result touched; released through the gate |
-| **0.4** Publish the served checkpoint + ONNX with a model card and SHA-256 (owner: HF account) | Review R11: artifacts another researcher can fetch | Model card lists data, metrics per class, limitations, the manifest hash |
-| **0.5** Clean local leftovers (blocked INT8 staging, `.previous-sentiment`, `kaggle_results/`) | 1.3 GB of disk | — |
+### A. Outstanding issues (engineering, documentation)
 
-## Step 1 — The neutral audit *(owner: ~6–8 h of annotation; analysis: CPU)*
+| ID | Issue | What closes it | Who | Status |
+|---|---|---|---|---|
+| I1 | `mypy` is advisory in CI (35 errors in 13 files), so type errors can merge | Fix them; make `mypy` a blocking CI step | me | ⏳ |
+| I2 | The Docker image has never served the real model. CI smoke-tests it without one | `make docker-e2e`: build, mount the released artifact, `/readyz` 200, golden `/v1/classify` cases | me | ⏳ |
+| I3 | Status lines went stale: STATUS R8 ("XLM-R control running"), R10 ("benchmark pending"), P7 ("revisions not pinned"); REVIEW_COMPLIANCE ("H3 pending", an outdated "what happens next") | One consistency sweep, then the compliance audit re-run at Cycle 2 close | me | ⏳ |
+| I4 | Kaggle runs carry no git SHA: the code is uploaded as a zip. They do carry `source_sha256` | Map each recorded source hash to the commit whose `src/` produces it; record it | me | ⏳ |
+| I5 | The served model is not downloadable (R11: artifacts another researcher can fetch) | A publish command with a dry run, and a model card (data, per-class metrics, limits, manifest hash). The upload stays with the owner | me → 👤 | ⏳ |
+| I6 | 1.3 GB of local leftovers: blocked INT8 staging directories, `kaggle_results/` | Delete them. Keep `.previous-sentiment` (rollback) and the p9 checkpoint (H6) | me | ⏳ |
+| I7 | No explicit research-question list (review § 11, 🔶) | RQ1–RQ5 in RESEARCH_REPORT, each linked to its evidence | me | ⏳ |
 
-The single highest-value step: every remaining explanation for the neutral gap waits on it.
+### B. Experiments not yet run or not yet decided
 
-**Method** ([ANNOTATION_GUIDE.md](ANNOTATION_GUIDE.md)).
+| ID | Experiment | Status now | What closes it | Who | Status |
+|---|---|---|---|---|---|
+| H5 | Topic stacking, TF-IDF × PhoBERT (E08) | Declared; 5 OOF folds running on the laptop | Declared rule applied; code, features and summary committed | me | 🔄 |
+| H6 | Which model the service runs | Waiting for frozen evaluation data | Rule applied on the challenge set; if it switches, release through the gate, then ADR plus EVALUATION_PROTOCOL § 4 | me | ⏳ |
+| H7 | LLM reference on the hard cases (Study E) | Declared; no code | `evaluation/llm_reference.py`; pilot Qwen3-1.7B (laptop); declared Qwen3-4B (Kaggle cell); **gpt-4o-mini** (API, owner's key) | me, 👤 (Kaggle, key) | ⏳ |
+| A1 | Neutral audit (Step 1 of v1) | Sheet exported; decision tree frozen; no annotation; no analysis tool | `study audit-report` (κ, per-stratum rates, Wilson intervals on the random stratum, applies the frozen tree), with tests. The owner annotates | me → 👤 | ⏳ / 👤 |
+| E04 | Label correction of train | Gated by A1's outcome | Runs only if A1 finds ≥ 30% incorrect gold | — | ⏸ gated |
+| P5 | Diacritic-restoration front-end (alternative to H2) | Untested | Becomes the next robustness question **only if** H6 shows the augmented model failing on typed unaccented text | — | ⏸ conditional |
+| B | Distillation, careful INT8 (track B) | Designed in v1 | A later cycle. The review's rule is one specialization per cycle | — | ⏸ |
+| R8′ | Per-model learning-rate tuning for XLM-R and PhoBERT-large; gradient balancing for multi-task | Proposed in RESEARCH_REPORT § 6 | Only with a named question (see "What not to do") | — | ⏸ |
 
-1. `python -m vifeedback.cli study audit-sheet`, then annotate the 160 rows blind: model columns
-   hidden until the label, subtype and gold assessment are filled.
-2. Agreement: a second annotator on ≥ 50 rows, including all 40 random rows. If there is no second
-   person, re-annotate the same rows after ≥ 24 h and report *intra*-annotator agreement.
-3. Report per stratum: gold `agree / ambiguous / incorrect`, neutral subtypes, Cohen's κ. Estimate
-   corpus-level rates **only** from the random stratum (Wilson intervals).
+### C. Results not yet confirmed
 
-**Decision rule** (to be frozen in `cycle2.yaml` before annotation starts; thresholds are proposals):
+| ID | Claim | Why it is not confirmed | What confirms or refutes it | Status |
+|---|---|---|---|---|
+| C1 | H2 augmentation makes the model robust to missing diacritics | Shown only on *synthetic* noise (`strip_diacritics`, scripted teencode) | H6: `unaccented_typed` and `teencode_typed` rows, written by hand | ⏳ |
+| C2 | TF-IDF beats PhoBERT on `facility` (0.921 vs 0.905) | One model each on dev, no interval | H5 descriptive: paired bootstrap on the same validation rows, plus the 5-fold out-of-fold view | 🔄 |
+| C3 | The model handles negation | 44 templated pairs, simple *không* forms | `negation_pair` rows: *đâu có*, *chẳng … chút nào*, *chưa bao giờ*, negated negatives, both models | ⏳ |
+| C4 | Served p95 latency meets the 30 ms target | Met in one session (23.9 ms), missed in the latest (33.6 ms) | Three sessions on AC power in the same Windows power mode; report the median and range. The claim stays the ratio | ⏳ (laptop idle) |
+| C5 | Out-of-scope input behaves sensibly | Never measured (RESEARCH_REPORT § 7) | Confidence on the 20 `out_of_scope` rows vs `objective_neutral`, descriptive | ⏳ |
+| C6 | "The neutral gap is not in the classifier" (H1) | Rules out the head, but cannot tell label ambiguity from representation | A1 (human audit) | 👤 |
+| C7 | LLM results on UIT-VSFC are fair | Pretraining contamination unknown | The challenge set is the primary LLM comparison; validation is secondary | by design |
 
-| Audit finding, within the confident neutral-error strata | Next experiment |
+---
+
+## 2. Where the evidence leaves us
+
+| What Cycle 0–1 established | What it means now |
 |---|---|
-| **≥ 30% "incorrect gold"** | **E04 label correction**: OOF-ranked relabelling of *train* only, then a 2×2 (original/corrected labels × CE/augmented), 3 seeds. Evaluation labels never change |
-| **≥ 40% "ambiguous"** (mostly `mixed` / `insufficient_context`) | The task ceiling is annotation policy. Report it, try soft labels / label smoothing on neutral once, and stop optimizing neutral F1 on this benchmark |
-| **Mostly "agree"**: gold defensible, model wrong | Representation. Candidates in Step 3's encoder option: raw-text pretraining (BamiBERT), social-domain pretraining (ViSoBERT), or task-adaptive pretraining (E13) |
+| Neutral errors are confident; boundary shifts, logit adjustment and cRT all move macro-F1 by noise (H1) | The gap is not in the classifier. Only the audit (A1) can split label ambiguity from representation |
+| Augmentation repairs missing diacritics (0.27 → 0.64 on test), clean accuracy unchanged (H2) | A deployable gain, shown on synthetic noise. C1 tests real typing |
+| XLM-R lost ~40% of its gap to preprocessing but still trails PhoBERT (H3) | New encoders only with a named question |
+| Shared encoder: no gain at λ 0.3, sentiment cost at λ 1 (H4) | Multi-task is a serving-cost option, not a quality lever |
+| INT8: 1.7× faster, −0.088 neutral F1 | The efficiency stretch target is unmet by the minority class (track B) |
+| The test split has been evaluated 28 times | **New claims need new data**: the challenge set (frozen) |
 
-## Step 2 — Independent evaluation data *(owner + CPU; parallel with Step 1)*
+---
 
-The official test has been used 28 times, and all robustness evidence so far is synthetic. Before
-Cycle 2 makes a confirmatory claim, freeze new data it has never touched.
+## 3. Steps
 
-| Set | Size | Content | Status |
+### Step 0 — Engineering and documentation *(no GPU; runs while the GPU works)*
+
+I1 → I3 → I4 → I6 → I7, then I2 (Docker needs the machine quiet). I5's publish command and model
+card are written after H6, because H6 decides which model the card describes.
+
+### Step 1 — Neutral audit *(owner: ~6–8 h annotation; tooling: me)*
+
+Unchanged from v1 ([ANNOTATION_GUIDE.md](ANNOTATION_GUIDE.md)): 160 rows annotated blind, a second
+annotator on ≥ 50 rows (or intra-annotator after ≥ 24 h, labelled as such), per-stratum rates,
+Wilson intervals from the random stratum only. The decision tree is frozen in `cycle2.yaml`
+(`audit_decision_tree`). `study audit-report` applies it mechanically once the sheet is filled.
+
+**An LLM does not annotate the audit.** The audit measures whether *human* gold labels are
+defensible; an LLM label would be a model opinion. H7 reports LLM agreement with the adjudicated
+labels afterwards, as the declared link between the two.
+
+### Step 2 — Independent evaluation data
+
+| Set | Status |
+|---|---|
+| **Challenge set v1**, 305 rows, 10 categories ([data/challenge/README.md](../data/challenge/README.md)) | ✅ frozen by SHA-256 in `cycle2.yaml` v2, before any evaluation |
+| Natural sample, 500–1,000 real sentences with a clear licence | 👤 only if a lawful source exists; otherwise a stated limitation |
+
+### Step 3 — Cycle 2, track A
+
+| Order | Work | Where | Declared rule |
 |---|---|---|---|
-| **Challenge set v1** (constructed) | 300–500 | CheckList-style: negation minimal pairs (extend the 44), mixed aspects (teaching + facility), suggestions with and without cue words, unaccented and teencode text as typed by people rather than by a script, code-switching, long sentences, out-of-scope inputs | Author, label under the guide, commit, freeze **before** any Cycle 2 model is trained |
-| **Natural sample** (if obtainable) | 500–1,000 | Real student feedback from a source with a clear licence, labelled by the guide, deduplicated against UIT-VSFC | Only with a lawful source; otherwise state its absence as a limitation |
+| 1 | **H5** stacking finishes, rule applied, committed | laptop GPU (running) | macro-F1 +0.005, CI > 0, facility and others not lower |
+| 2 | **H6** CE vs augmented seed-42 on the challenge set | laptop, minutes | switch if typed-noise accuracy CI > 0 and other rows drop ≤ 0.02 |
+| 3 | **H7 pipeline + pilot**: prompt variants (≤ 4) on a 200-row train subset with Qwen3-1.7B; freeze the best | laptop GPU | pilot reported, not declared |
+| 4 | **H7 API arm**: gpt-4o-mini, frozen prompt, zero-shot on the challenge set | API, ~USD 0.05 | Holm over the two LLM comparisons |
+| 5 | **H7 declared**: Qwen3-4B zero- and few-shot on validation + challenge set | Kaggle T4 (notebook cell) | neutral F1 vs encoder, paired CI |
 
-The challenge set is also the first **natural-noise** test of H2's augmentation: a person's
-unaccented typing is not the same as `strip_diacritics`.
+**How the GPT-4o-mini key is used.** It is read from the `OPENAI_API_KEY` environment variable or a
+git-ignored `.env` at the repository root. It is never printed, never written to a result file and
+never committed. Only the constructed challenge set is sent to the API until the owner confirms that
+UIT-VSFC's licence allows sending its text to a third party. After that confirmation, validation and
+few-shot runs are added under the same frozen prompt. Every call's model snapshot, token counts and
+cost are logged next to the predictions.
 
-## Step 3 — Cycle 2: one specialization *(≤ 30 weight-updating runs or the GPU-hour equivalent)*
+### Step 4 — Confirm what is unconfirmed
 
-The review's rule: choose **one**. Two are designed below; the owner picks.
+C1, C3 and C5 come out of H6's evaluation on the challenge set. C2 comes out of H5. C4 needs the
+laptop idle, so it runs last: three benchmark sessions under a fixed power mode. C6 waits for A1.
 
-### Option A (recommended for an AI-engineer profile) — Encoder vs LLM on the hard cases (Study E)
+### Step 5 — Close Cycle 2
 
-**Question.** Where the encoder is weakest (neutral, mixed aspects, suggestions), does an
-instruction-tuned LLM do better, and at what cost?
+- Apply every declared rule (`evaluation/decisions.py`) and record the outcomes in `cycle2.yaml`'s
+  results file; log any test touch in EVALUATION_PROTOCOL § 4 (none is planned).
+- Update RESEARCH_REPORT (RQ list, H5–H7), STATUS, README, the model card; re-execute
+  `02_results.ipynb`; re-run the review compliance audit (I3).
+- Commit run artifacts as each batch finishes (ADR-023); rebuild the release zip.
 
-| Item | Design |
-|---|---|
-| Model | One open instruction model around 4B parameters (the review names Qwen3-4B), revision pinned; Kaggle T4 (it does not fit the 4 GB laptop GPU in fp16) |
-| Prompting | Label definitions from the annotation guide; structured output constrained to the three labels. Zero-shot, and few-shot with **two** demonstration draws from train only. Prompt development capped at a fixed budget on a train subset, never on validation |
-| Evaluation | Validation + challenge set, paired per example against the deployed encoder; per-class P/R/F1; invalid-output rate; tokens, latency and GPU-hours per 1k sentences |
-| Link to Step 1 | Agreement of the LLM with the audit's *adjudicated* labels, especially on items the audit marked `ambiguous`, which tests whether the LLM resolves the policy the way annotators did |
-| Caveat | Pretraining contamination of a public benchmark is unknown; the challenge set is the cleaner comparison |
-| Declared outcomes | *LLM ≥ encoder on neutral F1 on the challenge set* → a routing design (encoder first, LLM on low-confidence neutral) is Cycle 3's question. *LLM < encoder* → report cost-adjusted: the fine-tuned 135M encoder wins, which is itself the portfolio result |
+---
 
-Optional follow-up (E19): LLM labels for unlabelled or ambiguous **train** items, audited, against an
-equal-size repeated-data control. The LLM never defines evaluation truth.
+## 4. What not to do
 
-### Option B (for an ML-engineer profile) — Recover INT8's speed without losing neutral
+- No more neutral-F1 sweeps on the old validation set: 73 neutral examples cannot resolve the effects
+  Cycle 1 measured.
+- No decision on the official test.
+- No new encoder family, tuning sweep or loss variant without a named question.
+- No LLM output as evaluation truth, and no API call on data whose licence has not been confirmed.
 
-**Question.** Can the 1.5×-with-≤ 0.02-neutral-loss target be met by a smaller or more carefully
-quantized model?
+## 5. Decisions needed from the owner
 
-| Arm | Design | Selection |
+| # | Decision | Default until decided |
 |---|---|---|
-| B1 Distilled student | 6-layer PhoBERT student initialised from alternate teacher layers; CE + temperature-scaled KL to the (augmented) teacher; control: the same student on hard labels only; 3 seeds each | Dev macro-F1 as usual |
-| B2 Careful INT8 | Per-channel dynamic INT8; exclude embeddings/classifier from quantization; percentile or entropy calibration for static | Recipe chosen on a **held-out train subset**, then one acceptance on validation (review § 8.4: never select on the acceptance set) |
-| B3 Student + INT8 | The best of B1 through B2's recipe | — |
+| 1 | Set `OPENAI_API_KEY` in your own terminal or in `.env`. Do not paste it into chat | API arm waits |
+| 2 | Does UIT-VSFC's licence allow sending its text to OpenAI? | Challenge set only, zero-shot |
+| 3 | Who annotates the audit; is a second annotator available? | Intra-annotator after 24 h |
+| 4 | Run the Kaggle cell for Qwen3-4B | Only the pilot and the API arm are reported |
+| 5 | Upload the model to the HF Hub after reviewing the dry run | Not published |
+| 6 | Any lawful natural data source? | Stated as a limitation |
 
-Report a quality/latency/size Pareto table on the reference CPU (ratios, per the latency protocol).
-**Supported** if any artifact reaches ≥ 1.5× over L3 at p50 with neutral F1 loss ≤ 0.02 and macro-F1
-non-inferior at 0.005.
+## 6. Budget
 
-### Either way
-
-- Declare `configs/experiments/cycle2.yaml` (hypotheses, controls, budget, rules) before the first run.
-- Save the finalist checkpoint whenever a hypothesis advances (Cycle 1 had to retrain for its gate).
-- Commit run artifacts as each batch finishes (ADR-023).
-
-## Step 4 — Quick win for topic *(parallel, CPU only, ~half a day)*
-
-TF-IDF beats PhoBERT on `facility` (0.921 vs 0.905). **E08 stacking**: out-of-fold probabilities from
-TF-IDF B4 and PhoBERT, a logistic-regression meta-model fitted on OOF only, evaluated on validation.
-Declared success: topic macro-F1 +0.005 with 95% CI above 0 (paired by example), and `facility`/`others`
-F1 not lower. It needs no GPU if the OOF topic probabilities are generated alongside another run.
-
-## Step 5 — Close Cycle 2 and update the portfolio
-
-- One confirmation on the **new** data (challenge set, natural sample), logged; the official test only
-  for historical comparability.
-- Update RESEARCH_REPORT, STATUS, README, and the model card; re-execute `02_results.ipynb`.
-- Re-run the review compliance audit against the new state.
-
-## Timeline and budget
-
-| Week | Work | GPU |
+| Work | GPU | Money |
 |---|---|---|
-| 1 | Step 0; Step 1 annotation (owner); Step 4 stacking | none |
-| 2 | Step 2 challenge set (owner authoring, ~8–10 h); freeze v1; declare Cycle 2 | none |
-| 3–4 | Step 3 (A or B) | A: ~6–10 Kaggle GPU-h · B: ~3–4 laptop GPU-h |
-| 5 | Step 5: confirmation on new data, documents | < 1 h |
+| H5 (5 topic fine-tunes) | ~20 laptop GPU-min | — |
+| H6 (inference, 2 × 305 rows) | < 1 min | — |
+| H7 pilot (prompt development + challenge set) | ~30 laptop GPU-min | — |
+| H7 declared (Qwen3-4B) | ~1.5 Kaggle T4-h | — |
+| H7 API arm | — | ~USD 0.05 (challenge); ~USD 0.30 with validation |
 
-## What not to do
-
-- No more sweeps for neutral F1 on the old validation set: 73 neutral examples cannot resolve the
-  effects Cycle 1 measured, and three interventions already came back noise-sized.
-- No new decision taken on the official test.
-- No new encoder family without a named question it answers (Step 1's third branch is one).
-
-## Decisions needed from the owner
-
-1. Step 0.3: which model the service runs.
-2. Step 1: who annotates, and whether a second annotator is available.
-3. Step 2: whether any lawful natural data source exists.
-4. Step 3: Option A (AI engineering) or Option B (ML engineering).
+Weight-updating runs: 5 of 30 (H5 only). Everything else is inference.

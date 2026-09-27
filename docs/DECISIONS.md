@@ -797,3 +797,31 @@ asked for the plan to be carried out.
 * **Topic stacking** (H5) with a fixed-C sparse model, so no hidden dev-set tuning enters the stack.
 * **The audit decision tree** is frozen before any annotation exists.
 
+
+---
+
+## ADR-026 · 2026-09-27 · Cycle 2 v2: challenge set frozen; an API reference arm for H7 · Accepted
+
+**Context.** ADR-025 declared the challenge set but not its content. The owner then offered an OpenAI
+API key, which makes a stronger, closed LLM available at almost no cost (about USD 0.05 for the
+challenge set).
+
+**Decision.** `cycle2.yaml` version 2, committed before any model is evaluated on the challenge set
+and before any H7 run:
+
+* **`data/challenge/challenge_v1.csv` is frozen** by SHA-256 (305 rows, 10 categories;
+  `data/challenge/README.md`). Every row was checked against UIT-VSFC and the negation probe after
+  aggressive normalization; none matches.
+* **H7 gains an API arm**: `gpt-4o-mini-2024-07-18`, temperature 0, label likelihood from the first
+  token's top-20 log-probabilities. It is a reference point, not a serving candidate. The two LLM
+  comparisons are Holm-adjusted.
+* **Prompt development uses the open pilot model only**, so no prompt is tuned against the API.
+* **Data egress rule.** Only data the project may send to a third party goes to the API: the
+  constructed challenge set, yes; UIT-VSFC text, only after the owner confirms the licence allows it.
+* **Two descriptive measurements**, deciding nothing: a paired bootstrap for the facility claim
+  (TF-IDF vs PhoBERT), and model confidence on out-of-scope input.
+
+**Unchanged.** Every v1 rule. H5 was running when v2 was written; its rule is untouched.
+
+**Key handling.** The key is read from `OPENAI_API_KEY` (or a git-ignored `.env`), never logged,
+never written to a result file, never committed.
