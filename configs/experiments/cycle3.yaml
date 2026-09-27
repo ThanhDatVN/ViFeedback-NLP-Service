@@ -9,11 +9,14 @@
 #
 # Version 3 (ADR-029), after the V1 and ViLexNorm results: S2a runs now, because real typing
 # (ViLexNorm) flips 17% of labels and the Cycle 1 augmentation does not reduce it. Its confirmation
-# rule is unchanged; a development gate is added. The challenge v2 hash moves to version 4.
+# rule is unchanged; a development gate is added.
+#
+# Version 4, after V1 and the S2b development result: a new serving candidate, CE + restoration,
+# declared before it is measured. The challenge v2 hash moves to version 5.
 
-version: 3
+version: 4
 declared: 2026-09-27
-revised: 2026-09-27  # v2: external evaluation; v3: S2a runs now, lexicon from ViLexNorm train (ADR-029)
+revised: 2026-09-28  # v2 external evaluation; v3 S2a (ADR-029); v4 S2b-prime, declared before it is measured
 budget:
   weight_updating_runs: 30          # V1 8, Step 2 up to 10, Step 4 branch up to 12
   gpu_hours_estimate: {laptop_rtx3050: 3, kaggle_t4: 0.5}
@@ -73,6 +76,19 @@ steps:
     supported_if: >
       unaccented accuracy on v2 up with a paired CI above 0 over the served model alone; validation
       predictions identical (restorer skipped); added p95 latency <= 5 ms
+
+  S2b_prime_ce_plus_restoration:   # v4
+    why: >
+      V1 confirmed that augmentation costs contrast sentences (0.875 -> 0.800), and S2b's restorer
+      recovers unaccented input without retraining. CE (no augmentation) + restoration might keep
+      both.
+    candidates: CE + restorer vs augmented + restorer (the S2b candidate), five seeds each, same restorer
+    development: validation with diacritics stripped (macro-F1), validation as is, challenge v1 categories
+    development_note: descriptive; no serving change follows from development data
+    supported_if_on_v2: >
+      CE + restorer is not lower than augmented + restorer on unaccented rows by more than 0.02, is
+      higher on contrast rows with a paired CI above 0 (pooled over seeds), and no v2 category is
+      lower by more than 0.05.
 
   S2c_short_factual:
     runs_if: V1 confirms the objective_neutral drop

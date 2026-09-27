@@ -1839,6 +1839,79 @@ def study_restore_dev() -> None:
     )
 
 
+@study_app.command("restore-compare")
+def study_restore_compare() -> None:
+    """Cycle 3 S2b-prime development (cycle3.yaml v4): CE + restoration vs augmented + restoration,
+    five seeds each. Descriptive; the decision is taken on challenge v2."""
+    import numpy as np
+
+    from vifeedback.data.loader import load
+    from vifeedback.evaluation import challenge as CH
+    from vifeedback.evaluation import error_analysis as EA
+    from vifeedback.evaluation import external as X
+    from vifeedback.evaluation import metrics as M
+    from vifeedback.evaluation.report import yaml_safe
+    from vifeedback.preprocess.diacritics import Restorer
+    from vifeedback.preprocess.normalize import model_text, strip_diacritics
+    from vifeedback.preprocess.segment import get_segmenter
+
+    restorer = Restorer.load(paths.MODELS / "diacritics" / "restorer.json")
+    segment = get_segmenter("pyvi")
+    pipe = lambda ts: segment([restorer(model_text(t)) for t in ts])  # noqa: E731
+    ckps = _study_checkpoints("")
+    seeds = sorted({n.split("-s")[-1] for n in ckps if n.startswith("ce-")}, key=int)
+    seeds = [s for s in seeds if f"aug-s{s}" in ckps]
+
+    dv = load("validation")
+    y = dv.sentiment.to_numpy()
+    x_clean = pipe(dv.sentence.tolist())
+    x_strip = pipe([strip_diacritics(t) for t in dv.sentence])
+    ch = CH.load()
+    x_ch = pipe(ch.text.tolist())
+    scored = ch.scored.to_numpy()
+    yc = ch.y.to_numpy()
+
+    per: dict[str, dict] = {}
+    right: dict[str, dict[str, np.ndarray]] = {"ce": {}, "aug": {}}
+    for kind in ("ce", "aug"):
+        for s in seeds:
+            ckp = ckps[f"{kind}-s{s}"]
+            pc = EA.predict_proba(ckp, x_ch).argmax(1)
+            right[kind][s] = pc == np.where(scored, yc, -1)
+            per[f"{kind}-s{s}"] = {
+                "validation_clean": M.macro_f1(y, EA.predict_proba(ckp, x_clean).argmax(1), 3),
+                "validation_stripped": M.macro_f1(y, EA.predict_proba(ckp, x_strip).argmax(1), 3),
+                **{
+                    c: float(right[kind][s][scored & (ch.category == c).to_numpy()].mean())
+                    for c in sorted(ch[scored].category.unique())
+                },
+            }
+            typer.echo(f"  {kind}-s{s}: stripped {per[f'{kind}-s{s}']['validation_stripped']:.4f}")
+    cats = sorted(ch[scored].category.unique())
+    summary = {}
+    for key in ("validation_clean", "validation_stripped", *cats):
+        summary[key] = {
+            k: float(np.mean([per[f"{k}-s{s}"][key] for s in seeds])) for k in ("ce", "aug")
+        }
+        summary[key]["diff_ce_minus_aug"] = summary[key]["ce"] - summary[key]["aug"]
+    m = scored & (ch.category == "mixed_aspect").to_numpy()
+    contrast = X.paired_flip_test(
+        np.concatenate([~right["ce"][s][m] for s in seeds]),
+        np.concatenate([~right["aug"][s][m] for s in seeds]),
+    )  # errors: first = CE + restorer
+    result = {"seeds": seeds, "per_model": per, "mean": summary, "contrast_pooled": contrast}
+    out = paths.RESULTS / "studies" / "restoration"
+    out.mkdir(parents=True, exist_ok=True)
+    (out / "ce_vs_aug.json").write_text(json.dumps(yaml_safe(result), indent=2), encoding="utf-8")
+    for key, v in summary.items():
+        typer.echo(
+            f"  {key:22s} CE+R {v['ce']:.4f}  aug+R {v['aug']:.4f}  {v['diff_ce_minus_aug']:+.4f}"
+        )
+    typer.echo(
+        f"contrast, errors only CE+R {contrast['only_first_flips']} vs only aug+R {contrast['only_second_flips']}, p = {contrast['exact_mcnemar_p']:.4g}"
+    )
+
+
 @study_app.command("external")
 def study_external(
     corpus: str = typer.Option("vilexnorm", help="vilexnorm | case | neu_esc"),
