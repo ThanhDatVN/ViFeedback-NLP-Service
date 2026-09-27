@@ -104,3 +104,32 @@ def test_category_report_scores_only_labelled_rows():
     assert r["scored_rows"] == 3
     assert r["by_category"]["a"] == {"n": 2, "accuracy": 0.5}
     assert CH.OUT_OF_SCOPE not in r["by_category"]
+
+
+class TestSeedPairedDrops:
+    """Cycle 3 V1: a drop is confirmed only in >= 4 of 5 seeds and with pooled McNemar p < 0.05."""
+
+    def _df(self, n=40):
+        return _df([("teencode_typed", "", "positive")] * n)
+
+    def test_consistent_drop_is_confirmed(self):
+        df = self._df()
+        right = np.full(40, POS)
+        aug_pred = right.copy()
+        aug_pred[:3] = NEG  # 3 more errors per seed, every seed
+        ce = {s: right for s in ("1", "2", "3", "4", "5")}
+        aug = {s: aug_pred for s in ce}
+        r = CH.seed_paired_drops(df, ce, aug)["categories"]["teencode_typed"]
+        assert r["seeds_augmented_lower"] == 5 and r["ce_only_right"] == 15
+        assert r["confirmed_drop"] is True
+
+    def test_one_seed_drop_is_not_confirmed(self):
+        df = self._df()
+        right = np.full(40, POS)
+        worse = right.copy()
+        worse[:4] = NEG
+        ce = {s: right for s in ("1", "2", "3", "4", "5")}
+        aug = {**ce, "1": worse}
+        r = CH.seed_paired_drops(df, ce, aug)["categories"]["teencode_typed"]
+        assert r["seeds_augmented_lower"] == 1
+        assert r["confirmed_drop"] is False

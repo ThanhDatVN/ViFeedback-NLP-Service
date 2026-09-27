@@ -1396,6 +1396,197 @@ def study_topic_stacking(
     _print_stacking(result)
 
 
+@data_app.command("fetch-external")
+def data_fetch_external(
+    name: str = typer.Option("vilexnorm", help="vilexnorm | neu_esc"),
+) -> None:
+    """Download an external evaluation corpus at its pinned revision into data/external/ (git-ignored)."""
+    from vifeedback.evaluation import external as X
+
+    for split, sha in X.fetch(name).items():
+        typer.echo(f"  {name}/{split}  sha256={sha[:16]}...")
+    typer.echo(f"  reference: {X.REF} (commit it if a hash was added)")
+
+
+def _study_checkpoints(spec: str) -> dict[str, str]:
+    """Named checkpoints: explicit `name=path,...`, or every saved CE / augmented sentiment checkpoint."""
+    from pathlib import Path
+
+    if spec:
+        return dict(item.split("=", 1) for item in spec.split(","))
+    found: dict[str, str] = {}
+    for ckp in sorted(Path("models").glob("p*-sent-phobert-base-seg_pyvi-*-ckp")):
+        name = ckp.name
+        kind = (
+            "aug"
+            if "-seg_pyvi-aug-diac-teen-s" in name
+            else "ce"
+            if "-seg_pyvi-base-s" in name
+            else None
+        )
+        seed = next(
+            (p[1:] for p in ckp.name.split("-") if p.startswith("s") and p[1:].isdigit()), None
+        )
+        if kind and seed:
+            found.setdefault(f"{kind}-s{seed}", str(ckp))
+    return found
+
+
+@study_app.command("challenge-seeds")
+def study_challenge_seeds(
+    checkpoints: str = typer.Option(
+        "", help="name=path,...; default: every saved CE / augmented checkpoint"
+    ),
+) -> None:
+    """Cycle 3 V1: all five seeds of CE and augmented on challenge v1, and the declared drop rule."""
+
+    from vifeedback.constants import label_names
+    from vifeedback.evaluation import challenge as CH
+    from vifeedback.evaluation import error_analysis as EA
+    from vifeedback.evaluation.report import yaml_safe
+
+    ckps = _study_checkpoints(checkpoints)
+    df = CH.load()
+    x = CH.pipeline("seg_pyvi")(df.text.tolist())
+    preds = {name: EA.predict_proba(ckp, x).argmax(1) for name, ckp in ckps.items()}
+    ce = {n[4:]: p for n, p in preds.items() if n.startswith("ce-s")}
+    aug = {n[5:]: p for n, p in preds.items() if n.startswith("aug-s")}
+    result = {"checkpoints": ckps, **CH.seed_paired_drops(df, ce, aug)}
+    result["per_model"] = {name: CH.category_report(df, p) for name, p in preds.items()}
+
+    out = paths.RESULTS / "studies" / "challenge_seeds"
+    out.mkdir(parents=True, exist_ok=True)
+    names = label_names("sentiment")
+    table = df[["id", "category"]].copy()
+    for name, p in preds.items():
+        table[name] = [names[i] for i in p]
+    table.to_csv(out / "predictions.csv", index=False)
+    (out / "summary.json").write_text(json.dumps(yaml_safe(result), indent=2), encoding="utf-8")
+
+    typer.echo(f"seeds: {result['seeds']}")
+    typer.echo(
+        f"{'category':22s} {'n':>3s} {'CE':>6s} {'aug':>6s} {'aug<CE':>7s} {'p':>7s}  confirmed"
+    )
+    for cat, r in result["categories"].items():
+        typer.echo(
+            f"{cat:22s} {r['n']:3d} {r['mean_accuracy']['ce']:6.3f} {r['mean_accuracy']['augmented']:6.3f} "
+            f"{r['seeds_augmented_lower']:>5d}/5 {r['pooled_exact_mcnemar_p']:7.4f}  {r['confirmed_drop']}"
+        )
+
+
+@study_app.command("external")
+def study_external(
+    corpus: str = typer.Option("vilexnorm", help="vilexnorm | case | neu_esc"),
+    checkpoints: str = typer.Option(
+        "", help="name=path,...; default: every saved CE / augmented checkpoint"
+    ),
+) -> None:
+    """Real-input tests (docs/EVALUATION_DATA.md): invariance on ViLexNorm and on sentence case,
+    and NEU-ESC as a domain-shift test. Writes labels and counts only, never text."""
+    import numpy as np
+    import pandas as pd
+
+    from vifeedback.data.loader import load
+    from vifeedback.evaluation import bootstrap as B
+    from vifeedback.evaluation import challenge as CH
+    from vifeedback.evaluation import error_analysis as EA
+    from vifeedback.evaluation import external as X
+    from vifeedback.evaluation import metrics as M
+    from vifeedback.evaluation.report import yaml_safe
+    from vifeedback.preprocess.normalize import basic_clean
+
+    ckps = _study_checkpoints(checkpoints)
+    if not ckps:
+        raise typer.BadParameter("no checkpoints found under models/")
+    seg = CH.pipeline("seg_pyvi")
+    pipelines = {
+        "service": seg,  # what the service does today: segmentation only
+        "lowercased": lambda ts: seg([basic_clean(t).lower() for t in ts]),
+    }
+    predict = lambda ckp, texts: EA.predict_proba(ckp, texts).argmax(1)  # noqa: E731
+    out_dir = paths.RESULTS / "studies" / "external" / corpus
+    out_dir.mkdir(parents=True, exist_ok=True)
+    result: dict = {"corpus": corpus, "checkpoints": ckps}
+    preds: dict[str, np.ndarray] = {}
+
+    if corpus in ("vilexnorm", "case"):
+        if corpus == "vilexnorm":
+            df = X.load_vilexnorm("test")
+            a_texts, b_texts = df.original.tolist(), df.normalized.tolist()
+            result["pairs"] = "original vs human-normalized (ViLexNorm test)"
+        else:
+            v = load("validation")
+            variants = X.case_variants(v.sentence.tolist())
+            a_texts, b_texts = variants["sentence_case"], variants["as_is"]
+            y = v.sentiment.to_numpy()
+            result["pairs"] = "UIT-VSFC validation: first letter capitalized vs as in the corpus"
+        result["flip_rate"] = {}
+        for pname, fn in pipelines.items():
+            xa, xb = fn(a_texts), fn(b_texts)
+            for name, ckp in ckps.items():
+                pa, pb = predict(ckp, xa), predict(ckp, xb)
+                preds[f"{pname}:{name}:a"], preds[f"{pname}:{name}:b"] = pa, pb
+                r = X.flip_rate(pa, pb)
+                if corpus == "case":
+                    r["macro_f1_capitalized"] = M.macro_f1(y, pa, 3)
+                    r["macro_f1_as_is"] = M.macro_f1(y, pb, 3)
+                result["flip_rate"][f"{pname}:{name}"] = r
+                typer.echo(
+                    f"  {pname:10s} {name:10s} flips {r['flips']:4d}/{r['n']} ({r['rate']:.3f})"
+                )
+        # augmented vs CE at the same seed, service pipeline, pooled over seeds
+        pairs = [
+            (n, "aug-" + n[3:]) for n in ckps if n.startswith("ce-") and "aug-" + n[3:] in ckps
+        ]
+        if pairs:
+            fa = np.concatenate(
+                [preds[f"service:{c}:a"] != preds[f"service:{c}:b"] for c, _ in pairs]
+            )
+            fb = np.concatenate(
+                [preds[f"service:{a}:a"] != preds[f"service:{a}:b"] for _, a in pairs]
+            )
+            result["ce_vs_aug_pooled"] = {
+                "seeds": [c[3:] for c, _ in pairs],
+                **X.paired_flip_test(fa, fb),
+            }
+    elif corpus == "neu_esc":
+        df = X.load_neu_esc("test")
+        y = df.sentiment.map({"negative": 0, "neutral": 1, "positive": 2}).to_numpy()
+        views = {
+            "all": np.ones(len(df), bool),
+            "no_toxic": (df.source_label != "Toxic").to_numpy(),
+            "course_topics": df.topic.isin(X.NEU_ESC_COURSE_TOPICS).to_numpy(),
+        }
+        result["label_counts"] = df.source_label.value_counts().to_dict()
+        result["views"] = {k: int(m.sum()) for k, m in views.items()}
+        result["scores"] = {}
+        for pname, fn in pipelines.items():
+            x = fn(df.text.tolist())
+            for name, ckp in ckps.items():
+                p = predict(ckp, x)
+                preds[f"{pname}:{name}"] = p
+                for view, m in views.items():
+                    ev = M.evaluate(y[m], p[m], "sentiment")
+                    result["scores"][f"{pname}:{name}:{view}"] = {
+                        "macro_f1": ev["macro_f1"],
+                        "per_class_f1": {c: v["f1"] for c, v in ev["per_class"].items()},
+                    }
+                s = result["scores"][f"{pname}:{name}:all"]
+                typer.echo(f"  {pname:10s} {name:10s} macro-F1 {s['macro_f1']:.4f}")
+        if "service:ce-s42" in preds and "service:aug-s42" in preds:
+            result["aug_minus_ce_s42"] = B.paired_bootstrap(
+                y, preds["service:aug-s42"], preds["service:ce-s42"], 3, n_resamples=5000, seed=42
+            )
+    else:
+        raise typer.BadParameter("corpus must be vilexnorm, case or neu_esc")
+
+    pd.DataFrame({k: v for k, v in preds.items()}).to_csv(
+        out_dir / "predictions.csv", index_label="row"
+    )
+    (out_dir / "summary.json").write_text(json.dumps(yaml_safe(result), indent=2), encoding="utf-8")
+    typer.echo(f"  -> {out_dir}")
+
+
 results_app = typer.Typer(pretty_exceptions_show_locals=False, help="Results housekeeping")
 app.add_typer(results_app, name="results")
 

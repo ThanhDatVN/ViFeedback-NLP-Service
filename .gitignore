@@ -4,6 +4,9 @@ data/raw/*
 data/interim/*
 !data/interim/.gitkeep
 data/processed/*
+# External evaluation corpora (ViLexNorm, NEU-ESC): research licences, never redistributed here.
+data/external/*
+!data/external/README.md
 !data/processed/.gitkeep
 
 # Results — run artifacts are local; registry.csv IS committed

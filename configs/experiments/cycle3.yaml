@@ -3,9 +3,13 @@
 # Specialization: reliability of the served model on real input. Changing a rule below after its
 # results are seen requires a new file version and an ADR. Version 2 will add the SHA-256 of the
 # human-typed challenge set v2 before any model is evaluated on it.
+#
+# Version 2 adds the external evaluation (docs/EVALUATION_DATA.md), declared before any model was
+# run on ViLexNorm, NEU-ESC or the case variant. The challenge v2 hash moves to version 3.
 
-version: 1
+version: 2
 declared: 2026-09-27
+revised: 2026-09-27  # v2: external evaluation below, declared before any evaluation on it
 budget:
   weight_updating_runs: 30          # V1 8, Step 2 up to 10, Step 4 branch up to 12
   gpu_hours_estimate: {laptop_rtx3050: 3, kaggle_t4: 0.5}
@@ -77,3 +81,26 @@ h7_carry_over:
     inflated; the declared H7 outcome is recorded with this caveat and confirmed only on v2 or on
     human-labelled validation.
   qwen3_4b: Kaggle notebook notebooks/kaggle_h7_llm.ipynb (owner)
+
+external_evaluation:   # v2; corpora pinned in configs/data/external_reference.json, text never committed
+  models: every saved CE and augmented checkpoint (5 seeds each after V1)
+  pipelines:
+    service: segmentation only, what the service does today
+    lowercased: NFC + lowercase + segmentation (the corpus has no uppercase letter in any split)
+  case_invariance:
+    data: UIT-VSFC validation, each sentence with its first letter capitalized vs as in the corpus
+    metric: flip rate (Wilson interval), and macro-F1 on both versions
+    rule: >
+      If the served model's flip rate under the service pipeline exceeds 0.01, lowercasing becomes part
+      of the serving and evaluation pipelines, released through the gate. It must leave every
+      validation prediction unchanged (validation is already lowercase).
+  vilexnorm_invariance:
+    data: ViLexNorm test (1,045 pairs), original vs human-normalized
+    metric: flip rate per model and pipeline; CE vs augmented pooled over seeds (exact McNemar on flips)
+    role: descriptive for V1; for S2a a candidate must not flip more than the served recipe (pooled McNemar p < 0.05 counts as worse)
+  neu_esc:
+    data: NEU-ESC test (6,613 posts); Toxic -> negative; views all / no_toxic / course_topics (Academic, Service)
+    metric: macro-F1 and per-class F1; augmented - CE paired bootstrap
+    role: domain-shift and real-noise confirmation alongside challenge v2; needs the owner to accept the dataset's conditions
+    llm: the H7 comparison is repeated here only after the owner confirms that sending NEU-ESC text to the API is allowed
+

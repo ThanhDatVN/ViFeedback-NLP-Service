@@ -151,3 +151,49 @@ def h6(
         "switch": switch,
         "decision": "serve the augmented model" if switch else "keep the CE model",
     }
+
+
+def _exact_mcnemar(b: int, c: int) -> float:
+    from math import comb
+
+    n, k = b + c, min(b, c)
+    return min(1.0, 2 * sum(comb(n, i) for i in range(k + 1)) / 2**n) if n else 1.0
+
+
+def seed_paired_drops(
+    df: pd.DataFrame, ce: dict[str, np.ndarray], aug: dict[str, np.ndarray]
+) -> dict[str, Any]:
+    """Cycle 3 V1 (cycle3.yaml): per category, in how many seeds the augmented model is less
+    accurate than CE, and an exact McNemar test pooled over seeds (discordant pairs summed).
+
+    A drop is confirmed when augmented < CE in at least 4 of 5 seeds and the pooled p < 0.05.
+    """
+    s = df.scored.to_numpy()
+    y = df.y.to_numpy()
+    seeds = sorted(set(ce) & set(aug), key=int)
+    out: dict[str, Any] = {"seeds": seeds, "categories": {}}
+    for cat in sorted(df[s].category.unique()):
+        m = s & (df.category == cat).to_numpy()
+        yc = y[m].astype(int)
+        per_seed, lower, b, c = {}, 0, 0, 0
+        for sd in seeds:
+            right_ce, right_aug = ce[sd][m] == yc, aug[sd][m] == yc
+            per_seed[sd] = {"ce": float(right_ce.mean()), "augmented": float(right_aug.mean())}
+            lower += int(right_aug.mean() < right_ce.mean())
+            b += int((right_ce & ~right_aug).sum())
+            c += int((~right_ce & right_aug).sum())
+        p = _exact_mcnemar(b, c)
+        out["categories"][cat] = {
+            "n": int(m.sum()),
+            "mean_accuracy": {
+                "ce": float(np.mean([v["ce"] for v in per_seed.values()])),
+                "augmented": float(np.mean([v["augmented"] for v in per_seed.values()])),
+            },
+            "per_seed": per_seed,
+            "seeds_augmented_lower": lower,
+            "ce_only_right": b,
+            "augmented_only_right": c,
+            "pooled_exact_mcnemar_p": p,
+            "confirmed_drop": bool(lower >= 4 and p < 0.05 and b > c),
+        }
+    return out

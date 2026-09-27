@@ -1,0 +1,25 @@
+{
+  "_note": "External evaluation corpora (docs/EVALUATION_DATA.md). Pinned revisions and SHA-256 of the exact files; the text itself is never committed (data/external/ is git-ignored).",
+  "vilexnorm": {
+    "source": "github",
+    "repo": "ngxtnhi/ViLexNorm",
+    "revision": "1070c6b9b00830fad278f48d9797df9ae1c942ac",
+    "licence": "CC BY-NC-SA 4.0; research use only; cite Nguyen et al., EACL 2024",
+    "files": {
+      "train": {"path": "data/train.csv", "sha256": "616757088b9103d6f39ea2f790e9469bde5c39f13cfcf0f676aaf840916fc8b1"},
+      "dev": {"path": "data/dev.csv", "sha256": "c19c8334b903852ae0c549116a518ca8430a39b3042b6292a32b664dedd020d2"},
+      "test": {"path": "data/test.csv", "sha256": "a631e9a346e9de6144d87e6388b3a037830b63adf176d2ade187381f07df85bb"}
+    }
+  },
+  "neu_esc": {
+    "source": "huggingface",
+    "repo": "hung20gg/NEU-ESC",
+    "revision": "daf543ad1992153cd2be9fec3cb59aa0fc714147",
+    "licence": "CC BY 4.0 (paper) / Apache-2.0 (dataset card); gated: accept the conditions on the dataset page with the account whose HF_TOKEN is used; cite Mai et al., 2025",
+    "files": {
+      "train": {"path": "train_set.csv", "sha256": null},
+      "validation": {"path": "val_set.csv", "sha256": null},
+      "test": {"path": "test_set.csv", "sha256": null}
+    }
+  }
+}
