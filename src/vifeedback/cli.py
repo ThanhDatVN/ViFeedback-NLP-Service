@@ -12,17 +12,40 @@ import typer
 
 from vifeedback import paths
 
-app = typer.Typer(add_completion=False, help="ViFeedback — Vietnamese feedback classification")
+# Tracebacks never print local variables: a failing API call holds the key in its locals (.env).
+app = typer.Typer(
+    add_completion=False,
+    pretty_exceptions_show_locals=False,
+    help="ViFeedback — Vietnamese feedback classification",
+)
 
-data_app = typer.Typer(help="Phase 0: acquisition, integrity, profiling")
-baseline_app = typer.Typer(help="Phase 1: classical baselines")
+
+@app.callback()
+def _startup() -> None:
+    """ViFeedback — Vietnamese feedback classification."""
+    from vifeedback.env import load_dotenv
+
+    load_dotenv()  # keys from the git-ignored .env (OPENAI_API_KEY, HF_TOKEN); terminal values win
+
+
+data_app = typer.Typer(
+    pretty_exceptions_show_locals=False, help="Phase 0: acquisition, integrity, profiling"
+)
+baseline_app = typer.Typer(pretty_exceptions_show_locals=False, help="Phase 1: classical baselines")
 app.add_typer(data_app, name="data")
-train_app = typer.Typer(help="Phase 2+: transformer fine-tuning")
+train_app = typer.Typer(
+    pretty_exceptions_show_locals=False, help="Phase 2+: transformer fine-tuning"
+)
 app.add_typer(baseline_app, name="baseline")
-serve_app = typer.Typer(help="Phase 6-7: export, benchmark, serve")
+serve_app = typer.Typer(
+    pretty_exceptions_show_locals=False, help="Phase 6-7: export, benchmark, serve"
+)
 app.add_typer(train_app, name="train")
 app.add_typer(serve_app, name="serve")
-study_app = typer.Typer(help="Research studies (docs/REVIEW_AND_RESEARCH_PLAN.md § 7)")
+study_app = typer.Typer(
+    pretty_exceptions_show_locals=False,
+    help="Research studies (docs/REVIEW_AND_RESEARCH_PLAN.md § 7)",
+)
 app.add_typer(study_app, name="study")
 
 
@@ -1373,7 +1396,7 @@ def study_topic_stacking(
     _print_stacking(result)
 
 
-results_app = typer.Typer(help="Results housekeeping")
+results_app = typer.Typer(pretty_exceptions_show_locals=False, help="Results housekeeping")
 app.add_typer(results_app, name="results")
 
 

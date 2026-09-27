@@ -155,6 +155,33 @@ def gpu_info() -> dict[str, Any]:
         return {"available": False}
 
 
+def load_dotenv(path: Path | None = None) -> list[str]:
+    """Read KEY=VALUE lines from the repository's git-ignored `.env` into the process environment.
+
+    Existing variables win, so a key set in the terminal is never replaced. Returns the names it set
+    (never the values). Keys live here (OPENAI_API_KEY, HF_TOKEN) so they never reach a tracked file
+    or a chat; see `.env.example`.
+    """
+    import os
+
+    path = path or Path(__file__).resolve().parents[2] / ".env"
+    if not path.is_file():
+        return []
+    set_names = []
+    for raw in path.read_text(encoding="utf-8-sig").splitlines():
+        line = raw.strip()
+        if not line or line.startswith("#") or "=" not in line:
+            continue
+        name, value = (part.strip() for part in line.split("=", 1))
+        value = value.strip('"').strip("'")
+        if name.startswith("export "):
+            name = name[len("export ") :].strip()
+        if name and value and name not in os.environ:
+            os.environ[name] = value
+            set_names.append(name)
+    return set_names
+
+
 def source_hash() -> str:
     """SHA-256 over every source file of the package, in path order.
 

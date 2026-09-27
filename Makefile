@@ -1,20 +1,25 @@
 # ViFeedback — one target per reproducible step.
 # Every target is what CI runs and what the README documents; there is no second way to do anything.
 
-.PHONY: help install data report test test-all lint format typecheck baseline train export serve docker docker-run docker-e2e bench clean ci
+.PHONY: help venv install data report test test-all lint format typecheck baseline train export serve docker docker-run docker-e2e bench clean ci
 .DEFAULT_GOAL := help
 
-PY ?= python
+# The project's .venv when it exists (python scripts/setup_venv.py), otherwise whatever `python` is.
+VENV_PY := $(firstword $(wildcard .venv/Scripts/python.exe .venv/bin/python))
+PY ?= $(if $(VENV_PY),$(VENV_PY),python)
 TASK ?= sentiment
 MODEL ?= phobert-base
 PREP ?= seg_pyvi
 SEEDS ?= all
-# A phase-6 checkpoint (lexically last match); pass CKPT=path to choose one explicitly. INT8 needs the `onnx` package (ADR-017/020).
-CKPT ?= $(lastword $(sort $(wildcard models/p6-sent-phobert-base-seg_pyvi-base-s42*ckp)))
+# The served checkpoint (ADR-027: H2-augmented, seed 42); pass CKPT=path to choose another. INT8 needs the `onnx` package (ADR-017/020).
+CKPT ?= $(lastword $(sort $(wildcard models/p9-sent-phobert-base-seg_pyvi-aug-diac-teen-s42*ckp)))
 QUANT ?= none
 
 help:  ## Show this help
 	@grep -E '^[a-zA-Z_-]+:.*?## .*$$' $(MAKEFILE_LIST) | awk 'BEGIN{FS=":.*?## "}{printf "  \033[36m%-14s\033[0m %s\n",$$1,$$2}'
+
+venv:  ## Create .venv with every pinned package (CUDA torch if an NVIDIA GPU is present)
+	python scripts/setup_venv.py
 
 install:  ## Editable install with dev extras
 	$(PY) -m pip install -e ".[dev]"

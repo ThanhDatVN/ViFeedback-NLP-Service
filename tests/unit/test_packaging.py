@@ -139,6 +139,9 @@ _OPTIONAL_EXTRAS = frozenset(
         "onnxscript",
         "py_vncorenlp",
         "underthesea",
+        "jdk4py",
+        "psutil",
+        "cpuinfo",
     }
 )
 
@@ -355,3 +358,50 @@ class TestProvenance:
         from vifeedback.data.loader import PARQUET_REVISION
 
         assert len(PARQUET_REVISION) == 40 and "/" not in PARQUET_REVISION
+
+
+class TestDotenv:
+    """Keys come from the git-ignored .env; a value already in the environment always wins."""
+
+    def test_reads_keys_and_never_overrides(self, tmp_path, monkeypatch):
+        from vifeedback.env import load_dotenv
+
+        f = tmp_path / ".env"
+        f.write_text(
+            "# comment\nOPENAI_API_KEY='sk-test'\nexport HF_TOKEN=hf_x\nEMPTY=\nKEEP=from-file\n",
+            encoding="utf-8",
+        )
+        for k in ("OPENAI_API_KEY", "HF_TOKEN", "EMPTY"):
+            monkeypatch.delenv(k, raising=False)
+        monkeypatch.setenv("KEEP", "from-terminal")
+        assert sorted(load_dotenv(f)) == ["HF_TOKEN", "OPENAI_API_KEY"]
+        import os
+
+        assert os.environ["OPENAI_API_KEY"] == "sk-test"
+        assert os.environ["KEEP"] == "from-terminal"
+        assert "EMPTY" not in os.environ
+
+    def test_env_files_are_ignored_and_the_example_holds_no_secret(self):
+        import subprocess
+        from pathlib import Path
+
+        root = Path(__file__).resolve().parents[2]
+        ignored = subprocess.run(
+            ["git", "check-ignore", "-q", ".env"], cwd=root, capture_output=True
+        ).returncode
+        assert ignored == 0, ".env must be git-ignored"
+        example = (root / ".env.example").read_text(encoding="utf-8")
+        for line in example.splitlines():
+            if line and not line.startswith("#") and "=" in line:
+                assert line.split("=", 1)[1].strip() == "", (
+                    f"secret-looking value in .env.example: {line}"
+                )
+
+
+def test_cli_tracebacks_never_show_locals():
+    """A failing API call holds the key in its locals; rich tracebacks must not print them."""
+    pytest.importorskip("typer")
+    from vifeedback import cli
+
+    apps = [v for v in vars(cli).values() if type(v).__name__ == "Typer"]
+    assert apps and all(a.pretty_exceptions_show_locals is False for a in apps)

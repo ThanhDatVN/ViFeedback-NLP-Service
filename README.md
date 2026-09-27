@@ -169,13 +169,19 @@ report: [RESEARCH_REPORT](docs/RESEARCH_REPORT.md) · open items: [NEXT_PLAN § 
 ```bash
 git clone https://github.com/ThanhDatVN/ViFeedback-NLP-Service.git
 cd ViFeedback-NLP-Service
-make install          # editable install with dev extras
+python scripts/setup_venv.py   # .venv with the pinned versions; CUDA torch if an NVIDIA GPU is found
+.venv\Scripts\Activate.ps1      # Windows  (Linux/macOS: source .venv/bin/activate)
+cp .env.example .env           # optional: API keys, read by the CLI; .env is git-ignored
 make data             # fetch UIT-VSFC + run the integrity suite
 make test             # 335 fast tests
 make report           # Phase 0 profiling + EDA figures
 make baseline         # TF-IDF ladder
 make train            # fine-tune PhoBERT (needs a GPU; ~5 min/seed on an RTX 3050)
 ```
+
+`make` targets use `.venv` automatically when it exists. Keys go in `.env`, never in a tracked file
+or a chat: `OPENAI_API_KEY` only for the LLM reference measurements (NEXT_PLAN v3 § 2), `HF_TOKEN`
+only for publishing the model.
 
 Research studies are CLI calls too, each writing to `results/studies/`:
 
