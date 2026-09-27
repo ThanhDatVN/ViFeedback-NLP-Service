@@ -201,7 +201,7 @@ curl -s localhost:8000/v1/classify \
 │   └── cli.py         every experiment is a CLI call
 ├── notebooks/         EDA and results, both executed with outputs
 ├── configs/           one YAML per experiment · experiments/ = declared cycles + run ledger
-├── docs/              15 documents — see below
+├── docs/              16 documents — see below
 ├── tests/             unit · data · contract · integration · packaging guards
 ├── results/           registry.csv (append-only) · per-run metrics · studies/ (generated)
 └── Dockerfile · docker-compose.yml · Makefile · .github/workflows/ci.yml
@@ -218,6 +218,7 @@ curl -s localhost:8000/v1/classify \
 | [REVIEW_AND_RESEARCH_PLAN](docs/REVIEW_AND_RESEARCH_PLAN.md) | External review (R1–R12) and the research plan this cycle follows |
 | [REVIEW_COMPLIANCE](docs/REVIEW_COMPLIANCE.md) | Every review recommendation → status and evidence |
 | [RESEARCH_REPORT](docs/RESEARCH_REPORT.md) | Technical report: questions, method, findings, negative results, limitations |
+| [NEXT_PLAN](docs/NEXT_PLAN.md) | Next experiments and improvements, step by step, each tied to a measured result |
 | [EXPERIMENT_MATRIX](docs/EXPERIMENT_MATRIX.md) | Run-ID scheme, pre-registration scorecard, all result tables |
 | [BENCHMARK_COMPARISON](docs/BENCHMARK_COMPARISON.md) | Against published work — and what is not yet claimable |
 | [PROPOSALS](docs/PROPOSALS.md) | 6 techniques, 7 models, 6 workflow changes, each anchored to a measurement |

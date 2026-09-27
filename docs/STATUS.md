@@ -207,6 +207,8 @@ Full traceability, including the study designs, catalog and backlog:
 
 ## 6. Next — Cycle 2 options
 
+The step-by-step plan, with decision rules and budgets: **[NEXT_PLAN.md](NEXT_PLAN.md)**.
+
 Chosen after Cycle 1's decisions, one specialization at a time (review § 10):
 
 1. **Cycle 1 is closed** (all four hypotheses decided; closing gate on test done).
