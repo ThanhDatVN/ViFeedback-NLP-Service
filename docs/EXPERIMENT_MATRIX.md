@@ -538,6 +538,21 @@ Challenge set accuracy per category (seed-42 encoders; Qwen3-1.7B zero-shot):
 
 Outputs: `results/studies/{topic_stacking,challenge,llm_reference}/`.
 
+### 5.9 Research Cycle 3 — the served model on real input
+
+Declared in `configs/experiments/cycle3.yaml` (v1 before the first run; v2 external evaluation; v3 S2a,
+ADR-029). Challenge v1 is development data; confirmations wait for the human-typed challenge v2.
+
+| Step | Data | Result | Decision |
+|---|---|---|---|
+| V1 CE vs augmented, 5 seeds (all reproduce exactly) | challenge v1 | teencode −0.035 (3/5, p = 0.09); short factual −0.087 (3/5, p = 0.02); contrast −0.075 (4/5, p = 0.004); unaccented +0.33 (5/5) | contrast drop confirmed (exploratory); others not |
+| Case invariance | validation, first letter capitalized | served model 1.07% flips; lowercased 0% | service lowercases (rule met) |
+| ViLexNorm invariance | 1,045 real comment pairs | 17% flips, CE ≈ augmented (p = 0.93) | measured |
+| S2a lexicon from ViLexNorm train, 5 seeds | ViLexNorm test, validation, v1 | flips 0.169 → 0.177 (p = 0.13); validation +0.003 | gate not passed |
+| S2b diacritic restoration | validation stripped, v1 | 0.686 → 0.857; v1 unaccented 0.74 → 0.86; no clean change | development passed |
+| S3 out-of-scope score | validation vs 551 off-topic | Mahalanobis AUROC 0.949; energy 0.889; max-prob 0.862 | development choice: Mahalanobis |
+| S5 careful INT8 | train fidelity; validation | 178.5 MB; drop +0.0004, upper 0.0095 | not passed |
+
 ---
 
 ## 6. Experimental hygiene rules

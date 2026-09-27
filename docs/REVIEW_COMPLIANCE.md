@@ -104,7 +104,7 @@ and the Hugging Face upload.
 | Challenge set of 300–500 sentences | ✅ 305 rows in 10 categories, checked against the corpus, frozen by SHA-256 before evaluation (`data/challenge/`, ADR-026) |
 | Independent naturally sampled set (500–1,000) | 👤 needs new data |
 | Multi-aspect education set; UIT-ViSFD ABSA | ⏸ Stage C / Cycle 2 options |
-| Separate input-variation / domain-transfer / out-of-scope shift | 🔶 input variation done (synthetic and constructed typed-style); out-of-scope measured descriptively (20 rows); domain transfer ⏸ |
+| Separate input-variation / domain-transfer / out-of-scope shift | 🔶 input variation done (synthetic, constructed, and real typing via ViLexNorm, Cycle 3); out-of-scope score developed (Mahalanobis AUROC 0.949); domain transfer prepared (NEU-ESC pinned, access 👤) |
 
 ## § 5–6 Model ladder and experiment catalog
 
@@ -172,7 +172,7 @@ and the Hugging Face upload.
 | Minority quality | Explain dominant neutral errors; evaluate a targeted intervention | ✅ minimum met: errors characterized, two targeted interventions evaluated (recall ↑, precision ↓, macro-F1 ≈); the +0.03 neutral-F1 stretch target is not met |
 | Robustness | Clean and challenging-slice results with support | ✅ minimum met; **stretch target met**: a predefined slice's degradation reduced 43% (≥ 20%) with no material clean loss, and confirmed on constructed unaccented text |
 | Uncertainty | Calibrated vs uncalibrated on independent data | ✅ including test, with a validation-fitted temperature |
-| Efficiency | Reproducible quality/latency/memory comparison | ✅ minimum met; stretch (≥ 1.5× with neutral loss ≤ 0.02) not met: INT8 is 1.7× faster but loses 0.088 neutral F1 |
+| Efficiency | Reproducible quality/latency/memory comparison | ✅ minimum met; stretch not met: careful INT8 (Cycle 3) loses no measurable neutral F1 and is about 1.7× faster (indicative), but its 0.005 non-inferiority margin cannot be shown on validation |
 
 ## § 11 Portfolio checklist
 

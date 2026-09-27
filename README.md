@@ -159,6 +159,20 @@ before any model saw it ([data/challenge](data/challenge/README.md)).
 | H6 Serve the augmented model | **Yes, by the declared rule.** Constructed noisy text 0.61 → 0.80 accuracy, other rows unchanged. Possible costs, not significant at one seed: teencode 0.975 → 0.875 (p = 0.13), short factual sentences 0.77 → 0.63 (p = 0.22) |
 | H7 An instruction LLM does better on the hard cases | **Pilot (Qwen3-1.7B): no.** Neutral F1 0.26–0.29 against the encoder's 0.66. It rejects the corpus's label policy (requests as negative), yet gets factual sentences right where the encoder fails. Declared Qwen3-4B and gpt-4o-mini runs pending |
 
+**Cycle 3 — the served model on real input**
+([configs/experiments/cycle3.yaml](configs/experiments/cycle3.yaml),
+[docs/EVALUATION_DATA.md](docs/EVALUATION_DATA.md)). The Cycle 2 challenge set was constructed, so it
+became development data; real text came from ViLexNorm (human-normalized social-media comments).
+
+| Question | Result |
+|---|---|
+| Were Cycle 2's drops real? (5 seeds) | Teencode: no. Contrast sentences (*nhưng*): yes, 0.875 → 0.800 |
+| Does capitalization matter? | Yes: 1% of labels flipped (the corpus has no uppercase letter). **The service now lowercases input** |
+| Is the model stable on real typing? | No: 17% of labels change between a real comment and its human normalization |
+| Diacritic restoration before the model | Stripped validation macro-F1 **0.686 → 0.857**, clean predictions unchanged (confirmation pending) |
+| Out-of-scope detection | Mahalanobis AUROC 0.949 vs 0.862 for max-probability (confirmation pending) |
+| Real-typing lexicon, careful INT8 | Both failed their declared rules (negative results, kept) |
+
 Details: [STATUS § 3–4](docs/STATUS.md#3-cycle-1--declared-hypotheses-and-their-outcome) ·
 report: [RESEARCH_REPORT](docs/RESEARCH_REPORT.md) · open items: [NEXT_PLAN § 1](docs/NEXT_PLAN.md).
 
@@ -173,7 +187,7 @@ python scripts/setup_venv.py   # .venv with the pinned versions; CUDA torch if a
 .venv\Scripts\Activate.ps1      # Windows  (Linux/macOS: source .venv/bin/activate)
 cp .env.example .env           # optional: API keys, read by the CLI; .env is git-ignored
 make data             # fetch UIT-VSFC + run the integrity suite
-make test             # 335 fast tests
+make test             # 365 fast tests
 make report           # Phase 0 profiling + EDA figures
 make baseline         # TF-IDF ladder
 make train            # fine-tune PhoBERT (needs a GPU; ~5 min/seed on an RTX 3050)
@@ -237,7 +251,7 @@ curl -s localhost:8000/v1/classify \
 |---|---|
 | **[STATUS](docs/STATUS.md)** | **Progress, open problems, next experiments, compute plan** |
 | [ROADMAP](docs/ROADMAP.md) | Objectives, 8 phases, exit gates, risk register |
-| [DECISIONS](docs/DECISIONS.md) | 27 ADRs — every plan correction forced by measurement or review |
+| [DECISIONS](docs/DECISIONS.md) | 29 ADRs — every plan correction forced by measurement or review |
 | [DATA_CARD](docs/DATA_CARD.md) | Provenance, splits, distributions, 11 measured limitations |
 | [EVALUATION_PROTOCOL](docs/EVALUATION_PROTOCOL.md) | Metrics, seeds, significance, latency harness, error taxonomy, perturbation suites, calibration |
 | [ANNOTATION_GUIDE](docs/ANNOTATION_GUIDE.md) | Neutral-label audit: taxonomy, ambiguity vs incorrect gold, agreement and adjudication |
