@@ -1428,7 +1428,9 @@ def _study_checkpoints(spec: str) -> dict[str, str]:
     for ckp in sorted(Path("models").glob("p*-sent-phobert-base-seg_pyvi-*-ckp")):
         name = ckp.name
         kind = (
-            "aug"
+            "vln"
+            if "-seg_pyvi-aug-diac-teen-vln-s" in name
+            else "aug"
             if "-seg_pyvi-aug-diac-teen-s" in name
             else "ce"
             if "-seg_pyvi-base-s" in name
@@ -1558,6 +1560,120 @@ def study_int8_recipes(
     typer.echo(
         f"  -> {out} (latency: study latency --extra-onnx {w / (chosen or '')}/model.int8.onnx)"
     )
+
+
+@study_app.command("s2a-gate")
+def study_s2a_gate() -> None:
+    """Cycle 3 S2a development gate (cycle3.yaml v3): the ViLexNorm-lexicon recipe vs the served
+    augmented recipe at the same five seeds. Passing makes it a candidate, not the served model."""
+    import numpy as np
+    import pandas as pd
+
+    from vifeedback.evaluation import challenge as CH
+    from vifeedback.evaluation import error_analysis as EA
+    from vifeedback.evaluation import external as X
+    from vifeedback.evaluation.report import yaml_safe
+
+    ckps = _study_checkpoints("")
+    seeds = sorted({n.split("-s")[-1] for n in ckps if n.startswith("vln-")}, key=int)
+    seeds = [s for s in seeds if f"aug-s{s}" in ckps]
+    if len(seeds) < 5:
+        raise typer.BadParameter(f"need 5 seeds of both recipes, found {seeds}")
+    pipe = CH.pipeline("seg_pyvi")
+    predict = lambda ckp, x: EA.predict_proba(ckp, x).argmax(1)  # noqa: E731
+
+    # 1) ViLexNorm invariance, pooled over seeds
+    vl = X.load_vilexnorm("test")
+    xa, xb = pipe(vl.original.tolist()), pipe(vl.normalized.tolist())
+    flips: dict[str, list[np.ndarray]] = {"aug": [], "vln": []}
+    per_seed_flip = {}
+    for s in seeds:
+        for kind in ("aug", "vln"):
+            ckp = ckps[f"{kind}-s{s}"]
+            f = predict(ckp, xa) != predict(ckp, xb)
+            flips[kind].append(f)
+            per_seed_flip[f"{kind}-s{s}"] = float(f.mean())
+    fa, fv = np.concatenate(flips["aug"]), np.concatenate(flips["vln"])
+    mc = X.paired_flip_test(fv, fa)  # first = vln
+    vilexnorm = {
+        "flip_rate": {"control_aug": float(fa.mean()), "vln": float(fv.mean())},
+        "per_seed": per_seed_flip,
+        **mc,
+        "passed": bool(fv.mean() < fa.mean() and mc["exact_mcnemar_p"] < 0.05),
+    }
+
+    # 2) validation macro-F1, seed-paired against the registry
+    reg = pd.read_csv(paths.REGISTRY)
+    val = reg[reg.run_id.str.endswith("-val") & reg.run_id.str.contains("seg_pyvi")]
+
+    def f1(prefix: str, s: str) -> float:
+        row = val[val.run_id.str.startswith(prefix) & val.run_id.str.contains(f"-s{s}-")]
+        return float(row.macro_f1.iloc[0])
+
+    diffs = [
+        f1("p11-sent-phobert-base-seg_pyvi-aug-diac-teen-vln-", s)
+        - f1("p9-sent-phobert-base-seg_pyvi-aug-diac-teen-s", s)
+        for s in seeds
+    ]
+    validation = {
+        "per_seed_diff": dict(zip(seeds, diffs, strict=True)),
+        "mean_diff": float(np.mean(diffs)),
+        "passed": bool(np.mean(diffs) >= -0.005),
+    }
+
+    # 3) challenge v1 categories, 5-seed means
+    df = CH.load()
+    xc = pipe(df.text.tolist())
+    acc: dict[str, dict[str, list[float]]] = {}
+    s_mask = df.scored.to_numpy()
+    y = df.y.to_numpy()
+    for kind in ("aug", "vln"):
+        for s in seeds:
+            p = predict(ckps[f"{kind}-s{s}"], xc)
+            for cat in sorted(df[s_mask].category.unique()):
+                m = s_mask & (df.category == cat).to_numpy()
+                acc.setdefault(cat, {"aug": [], "vln": []})[kind].append(
+                    float((p[m] == y[m].astype(int)).mean())
+                )
+    cats = {
+        c: {
+            "aug": float(np.mean(v["aug"])),
+            "vln": float(np.mean(v["vln"])),
+            "diff": float(np.mean(v["vln"]) - np.mean(v["aug"])),
+        }
+        for c, v in acc.items()
+    }
+    worst = min(cats.values(), key=lambda v: v["diff"])["diff"]
+    challenge = {
+        "categories": cats,
+        "unaccented_diff": cats["unaccented_typed"]["diff"],
+        "worst_category_diff": worst,
+        "passed": bool(cats["unaccented_typed"]["diff"] >= -0.02 and worst >= -0.05),
+    }
+
+    gate = bool(vilexnorm["passed"] and validation["passed"] and challenge["passed"])
+    result = {
+        "seeds": seeds,
+        "vilexnorm": vilexnorm,
+        "validation": validation,
+        "challenge_v1": challenge,
+        "gate_passed": gate,
+    }
+    out = paths.RESULTS / "studies" / "s2a_gate"
+    out.mkdir(parents=True, exist_ok=True)
+    (out / "summary.json").write_text(json.dumps(yaml_safe(result), indent=2), encoding="utf-8")
+    typer.echo(
+        f"ViLexNorm flip rate: control {fa.mean():.4f} -> vln {fv.mean():.4f}, pooled p = {mc['exact_mcnemar_p']:.4g}  [{vilexnorm['passed']}]"
+    )
+    typer.echo(
+        f"validation macro-F1, vln - control: {np.mean(diffs):+.4f} per seed {[round(d, 4) for d in diffs]}  [{validation['passed']}]"
+    )
+    for c, v in cats.items():
+        typer.echo(f"  {c:22s} control {v['aug']:.3f}  vln {v['vln']:.3f}  {v['diff']:+.3f}")
+    typer.echo(
+        f"challenge v1: unaccented {challenge['unaccented_diff']:+.3f}, worst {worst:+.3f}  [{challenge['passed']}]"
+    )
+    typer.echo(f"S2a development gate passed: {gate}")
 
 
 @study_app.command("external")
