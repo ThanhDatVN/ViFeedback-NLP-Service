@@ -1484,6 +1484,82 @@ def study_challenge_seeds(
         )
 
 
+@study_app.command("int8-recipes")
+def study_int8_recipes(
+    work: str = typer.Option("models/int8_candidates", help="build directory (git-ignored)"),
+) -> None:
+    """Cycle 3 S5: build the INT8 recipes, choose one on fidelity to FP32 (train subset), then accept
+    or reject it once on validation (cycle3.yaml). Latency is measured separately, on an idle machine."""
+    from pathlib import Path
+
+    from transformers import AutoModelForSequenceClassification, AutoTokenizer
+
+    from vifeedback.data.loader import load
+    from vifeedback.evaluation import challenge as CH
+    from vifeedback.evaluation import llm_reference as LR
+    from vifeedback.evaluation.report import yaml_safe
+    from vifeedback.inference import int8_recipes as Q
+    from vifeedback.inference import onnx_export as OX
+
+    served = json.loads(
+        (paths.MODELS / "serve" / "sentiment" / "manifest.json").read_text(encoding="utf-8")
+    )
+    ckp = paths.ROOT / served["checkpoint"]
+    w = Path(work)
+    plain_dir = w / "fp32_plain"
+    if not (plain_dir / "pre.onnx").exists():
+        model = AutoModelForSequenceClassification.from_pretrained(ckp)
+        tok = AutoTokenizer.from_pretrained(ckp)
+        plain = OX.export_fp32(model, tok, plain_dir)
+        tok.save_pretrained(plain_dir)
+        OX.preprocess_for_quantization(plain, plain_dir / "pre.onnx")
+    fp32 = OX.OnnxClassifier(plain_dir, model_file="model.onnx")
+    pipeline = CH.pipeline("seg_pyvi")
+
+    tr = load("train")
+    idx = LR.prompt_dev_subset(tr.sentiment.to_numpy(), n=2000, per_class_min=400, seed=0)
+    x_tr = pipeline(tr.sentence.iloc[idx].tolist())
+    ref = fp32.logits(x_tr)
+
+    candidates = {}
+    for recipe in Q.RECIPES:
+        info = Q.build(plain_dir / "pre.onnx", plain_dir, w / recipe, recipe)
+        clf = OX.OnnxClassifier(w / recipe, model_file="model.int8.onnx")
+        candidates[recipe] = {**info, **Q.fidelity(ref, clf.logits(x_tr))}
+        c = candidates[recipe]
+        typer.echo(
+            f"  {recipe:15s} {c['size_mb']:6.1f} MB  agreement {c['label_agreement']:.4f}  "
+            f"neutral {c['neutral_agreement']:.4f}  |dlogit| {c['mean_abs_logit_diff']:.4f}"
+        )
+    chosen = Q.select(candidates)
+    result: dict = {
+        "checkpoint": served["checkpoint"],
+        "fidelity_subset": {"split": "train", "n": len(idx), "per_class_min": 400, "seed": 0},
+        "candidates": candidates,
+        "chosen": chosen,
+    }
+    if chosen:
+        dv = load("validation")
+        x_dv = pipeline(dv.sentence.tolist())
+        int8 = OX.OnnxClassifier(w / chosen, model_file="model.int8.onnx")
+        result["validation"] = Q.acceptance(
+            dv.sentiment.to_numpy(), fp32.logits(x_dv).argmax(1), int8.logits(x_dv).argmax(1)
+        )
+        v = result["validation"]
+        typer.echo(
+            f"chosen {chosen}: macro-F1 drop {v['macro_f1_drop']:+.4f} (upper {v['macro_f1_drop_upper_95_one_sided']:+.4f}), "
+            f"neutral F1 {v['neutral_f1_fp32']:.3f} -> {v['neutral_f1_int8']:.3f}; quality passed: {v['quality_passed']}"
+        )
+    else:
+        typer.echo("no recipe is at or under the size limit")
+    out = paths.RESULTS / "studies" / "int8_recipes"
+    out.mkdir(parents=True, exist_ok=True)
+    (out / "summary.json").write_text(json.dumps(yaml_safe(result), indent=2), encoding="utf-8")
+    typer.echo(
+        f"  -> {out} (latency: study latency --extra-onnx {w / (chosen or '')}/model.int8.onnx)"
+    )
+
+
 @study_app.command("external")
 def study_external(
     corpus: str = typer.Option("vilexnorm", help="vilexnorm | case | neu_esc"),
