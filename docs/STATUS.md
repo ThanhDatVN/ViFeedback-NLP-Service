@@ -133,11 +133,14 @@ Cycle 0 measured it; H2 tests the first mitigation. The no-diacritic failure is 
 failure: pyvi also mis-segments unaccented text, and the suite does not separate the two. A diacritic
 restoration front-end is the untested alternative.
 
-### P6 — Latency numbers need re-measuring
-The Phase 6 torch benchmark file was lost with the `results/` deletion, and its last run showed p95
-spreads of 22–48% across repeats: an unstable measurement that must not be reported (R10). The
-harness now times model-only on preprocessed input and names throughput texts/s. *Next:* benchmark
-the released FP32 artifact, and the Kaggle INT8 artifacts, on an idle, cool reference machine.
+### P6 — INT8 is blocked by the quality gate; latency is being re-measured
+FP32 ONNX is released and verified (logit parity 8.2e-5, 100% label agreement on 1,583 sentences).
+**INT8 does not pass** (ADR-022): dynamic INT8 keeps both majority classes and drops neutral F1
+0.672 → 0.584 (macro −0.030, upper bound 0.054 against a 0.005 margin); static per-tensor INT8
+breaks the model. The first Kaggle builds had failed for a different reason (quantizing a fused
+graph), now fixed. The steady-state latency ladder, with the blocked INT8 graph timed only to answer
+H3, is being re-measured after the `results/` loss (ADR-023). *Next if INT8 matters:* per-channel or
+partial quantization selected on a held-out subset, or a distilled FP32 student (E15).
 
 ### P7 — Reproducibility is partly pinned
 Run identity includes a config hash, and run directories cannot be overwritten by a different

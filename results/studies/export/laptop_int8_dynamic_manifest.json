@@ -1,0 +1,37 @@
+{
+  "task": "sentiment",
+  "model_file": "model.quant.onnx",
+  "sha256": "7a2b52923c64b72a1f2a0b7051c85c44a4c221877c312c29b3c5e0297fc830c4",
+  "quantization": "dynamic",
+  "preprocessing": "seg_pyvi",
+  "max_length": 96,
+  "labels": [
+    "negative",
+    "neutral",
+    "positive"
+  ],
+  "checkpoint": "models/p6-sent-phobert-base-seg_pyvi-base-s42-ckp",
+  "calibration": null,
+  "acceptance": {
+    "n": 1583,
+    "max_abs_logit_diff": 4.7558794021606445,
+    "logits_close": false,
+    "label_agreement": 0.9867340492735313,
+    "macro_f1_torch": 0.8671904175645571,
+    "macro_f1_onnx": 0.8370279844828453,
+    "macro_f1_drop": 0.030162433081711737,
+    "macro_f1_drop_upper95": 0.0536638804294866,
+    "batch_vs_single_max_diff": 0.5959172248840332,
+    "batch_vs_single_label_agreement": 1.0,
+    "failures": [
+      "INT8 not shown non-inferior: macro-F1 drop 0.0302, one-sided 95% upper bound 0.0537 > margin 0.005",
+      "INT8 label agreement 0.9867 < 0.99"
+    ],
+    "passed": false
+  },
+  "created": "20260927-130710",
+  "software": {
+    "onnxruntime": "1.30.0",
+    "transformers": "5.17.0"
+  }
+}
