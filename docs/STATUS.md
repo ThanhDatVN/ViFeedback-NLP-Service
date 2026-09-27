@@ -120,6 +120,9 @@ dataset revisions are not pinned yet (revisions recorded below), and Kaggle rows
 
 ## 5. External review — item status
 
+Full traceability, including the study designs, catalog and backlog:
+[REVIEW_COMPLIANCE.md](REVIEW_COMPLIANCE.md).
+
 | Item | Severity | Status |
 |---|---|---|
 | R1 segmentation paper misread | High | ✅ retracted (ADR-018) |
@@ -129,10 +132,10 @@ dataset revisions are not pinned yet (revisions recorded below), and Kaggle rows
 | R5 readiness semantics | Medium | ⬜ deferred (review scope) |
 | R6 unbounded metrics buffer | Medium | ⬜ deferred (review scope) |
 | R7 over-strong statistical claims | High | ✅ interval wording corrected |
-| R8 model comparison closed too early | Medium | ✅ narrowed (ADR-019); XLM-R raw control is Cycle 1 H3 |
+| R8 model comparison closed too early | Medium | 🔶 narrowed (ADR-019); tokenizer profiles measured; XLM-R raw control running (Cycle 1 H3) |
 | R9 headline vs deployed config | Medium | ✅ reported separately in README |
 | R10 docs and benchmark out of sync | Medium | 🔶 docs synced; benchmark re-run pending (P6) |
-| R11 reproducibility pinning | Medium | 🔶 run ids and overwrite guard done; revision pinning pending (P7) |
+| R11 reproducibility pinning | Medium | ✅ run ids, overwrite guard, model/dataset revisions pinned, source hash in env.json; dependency lock and CI integration job open |
 | R12 benchmark claims | Medium | ✅ no SOTA claim; BamiBERT reported as context |
 
 ---

@@ -1,0 +1,34 @@
+{
+  "phobert-base|raw": {
+    "vocab": 64000,
+    "train_mean_tokens": 16.6,
+    "p99": 55,
+    "p99.9": 87,
+    "truncated_at_96_train": 0.0007,
+    "truncated_at_96_val": 0.00063
+  },
+  "phobert-base|seg_pyvi": {
+    "vocab": 64000,
+    "train_mean_tokens": 13.56,
+    "p99": 46,
+    "p99.9": 72,
+    "truncated_at_96_train": 0.00018,
+    "truncated_at_96_val": 0.00063
+  },
+  "xlmr-base|raw": {
+    "vocab": 250002,
+    "train_mean_tokens": 18.27,
+    "p99": 59,
+    "p99.9": 94,
+    "truncated_at_96_train": 0.00079,
+    "truncated_at_96_val": 0.0019
+  },
+  "xlmr-base|seg_pyvi": {
+    "vocab": 250002,
+    "train_mean_tokens": 24.78,
+    "p99": 81,
+    "p99.9": 131,
+    "truncated_at_96_train": 0.0049,
+    "truncated_at_96_val": 0.00379
+  }
+}
