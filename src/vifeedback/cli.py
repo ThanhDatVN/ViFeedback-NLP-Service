@@ -2156,17 +2156,19 @@ def study_llm_prompt_dev(
 def study_llm_reference(
     model: str = typer.Option("Qwen/Qwen3-1.7B"),
     backend: str = typer.Option("hf", help="hf | openai"),
-    data: str = typer.Option("challenge", help="challenge | validation"),
+    data: str = typer.Option("challenge", help="challenge | validation | neu_esc"),
     shots: int = typer.Option(0, help="0, or 6 demonstrations (2 per class)"),
     demo_seed: int = typer.Option(1, help="demonstration draw (declared: 1 and 2)"),
     batch_size: int = typer.Option(8),
     dtype: str = typer.Option("float16", help="HF backend: float16 | bfloat16 | float32"),
     max_tokens: int = typer.Option(8192, help="HF backend: padded tokens per batch"),
     licence_confirmed: bool = typer.Option(
-        False, help="owner confirmed UIT-VSFC may be sent to the API (cycle2.yaml data_egress)"
+        False, help="owner confirmed the data may be sent to the API (cycle2.yaml data_egress)"
     ),
 ) -> None:
-    """Cycle 2 H7: score one LLM configuration with the frozen prompt; compare with the encoders."""
+    """H7: score one LLM configuration with the frozen prompt; compare with the encoders.
+
+    neu_esc (cycle3.yaml v5): zero-shot only, since demonstrations are UIT-VSFC text."""
     import numpy as np
     import pandas as pd
 
@@ -2177,9 +2179,11 @@ def study_llm_reference(
 
     if backend == "openai" and (data != "challenge" or shots) and not licence_confirmed:
         raise typer.BadParameter(
-            "UIT-VSFC text (validation, or train demonstrations) goes to the API only after the "
-            "owner confirms the licence allows it; pass --licence-confirmed once that is settled"
+            "corpus text (validation, NEU-ESC, or train demonstrations) goes to the API only after "
+            "the owner confirms the licence allows it; pass --licence-confirmed once that is settled"
         )
+    if data == "neu_esc" and shots:
+        raise typer.BadParameter("neu_esc is zero-shot only: demonstrations would be UIT-VSFC text")
     variant = L.frozen_variant()
     frozen = json.loads(L.PROMPT_DEV_FILE.read_text(encoding="utf-8"))
     tr = load("train")
@@ -2202,6 +2206,18 @@ def study_llm_reference(
             paths.RESULTS / "studies" / "challenge" / "predictions.csv", keep_default_na=False
         )
         enc_pred = {n: enc[f"{n}_pred"].map(L.LABELS.index).to_numpy() for n in ("ce", "augmented")}
+    elif data == "neu_esc":
+        from vifeedback.evaluation import external as X
+
+        ne = X.load_neu_esc("test")
+        texts = ne.text.tolist()
+        y = ne.sentiment.map({c: i for i, c in enumerate(L.LABELS)}).to_numpy().astype(float)
+        scored = np.ones(len(y), dtype=bool)
+        enc = pd.read_csv(paths.RESULTS / "studies" / "external" / "neu_esc" / "predictions.csv")
+        enc_pred = {
+            "ce": enc["lowercased:ce-s42"].to_numpy(),
+            "augmented": enc["lowercased:aug-s42"].to_numpy(),
+        }
     else:
         from vifeedback.evaluation import error_analysis as EA
         from vifeedback.preprocess.variants import load_variant
