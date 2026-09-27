@@ -779,3 +779,21 @@ were not kept; later cycles save the finalist checkpoint when a hypothesis advan
 recorded. The gate *reports*; any change it motivates belongs to Cycle 2 and is logged in
 EVALUATION_PROTOCOL § 4 as a decision influenced by a test result.
 
+---
+
+## ADR-025 · 2026-09-27 · Cycle 2 declared: track A, a frozen challenge set, and the serving rule · Accepted
+
+**Context.** Cycle 1 closed with the neutral gap located outside the classifier, a deployable
+robustness gain (H2), and a test split used 28 times. NEXT_PLAN proposed one specialization; the owner
+asked for the plan to be carried out.
+
+**Decision.** `configs/experiments/cycle2.yaml`, committed before any Cycle 2 run:
+
+* **Track A** (encoder vs LLM on the hard cases), the plan's recommendation for an AI-engineer
+  profile. Track B (distillation, careful INT8) is deferred, not rejected.
+* **A constructed challenge set** is the new confirmation data. Its hash is committed before any model
+  is evaluated on it; the official test is for historical comparison only.
+* **The serving model is decided by a declared rule** on the challenge set (H6), not by preference.
+* **Topic stacking** (H5) with a fixed-C sparse model, so no hidden dev-set tuning enters the stack.
+* **The audit decision tree** is frozen before any annotation exists.
+

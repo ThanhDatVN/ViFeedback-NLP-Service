@@ -1,0 +1,83 @@
+# Cycle 2 — declared 2026-09-27, before any Cycle 2 run and before the challenge set is evaluated.
+#
+# Follows docs/NEXT_PLAN.md. Track A (encoder vs LLM) is chosen, as NEXT_PLAN recommends for an
+# AI-engineer profile; track B (distillation / careful INT8) stays available for a later cycle.
+# Changing a rule below after results are seen requires a new file version and an ADR.
+
+version: 1
+declared: 2026-09-27
+track: A
+budget:
+  weight_updating_runs: 5           # H5: five topic OOF folds. LLM work is inference only.
+  gpu_hours_estimate: {laptop_rtx3050: 1.5, kaggle_t4: 3}
+
+evaluation_data:
+  challenge_set_v1:
+    path: data/challenge/challenge_v1.csv
+    authored_by: project author (constructed; not drawn from UIT-VSFC), labelled under docs/ANNOTATION_GUIDE.md
+    freeze: >
+      Its SHA-256 is recorded in this file (version 2) in a commit made before any model is evaluated
+      on it. After the freeze no row is edited; corrections go to challenge_v2.
+    categories: [negation_pair, mixed_aspect, suggestion_cue, suggestion_implicit, unaccented_typed,
+                 teencode_typed, code_switch, long_context, objective_neutral, out_of_scope]
+    note: >
+      "typed" rows are written as a person types them, not produced by the perturbation code, so they
+      test H2's augmentation on noise it was not built from.
+  official_test: historical comparison only; no Cycle 2 decision uses it.
+
+hypotheses:
+  H5_topic_stacking:
+    question: Do sparse and dense topic predictions carry complementary information? (E08, NEXT_PLAN step 4)
+    evidence: TF-IDF beats PhoBERT on facility (0.921 vs 0.905, dev).
+    method: >
+      5 stratified folds over train (seed 42). Per fold: PhoBERT-base + pyvi topic model (base recipe)
+      and TF-IDF B4 (union features, LinearSVC, C fixed at 1.0, no dev selection) fitted on the other
+      4 folds; out-of-fold PhoBERT probabilities and B4 decision scores on the held-out fold. A
+      multinomial logistic regression meta-model is fitted on the OOF features only.
+      Validation features: PhoBERT = mean of the 5 fold models' probabilities; B4 refitted on all of
+      train.
+    comparison: stacked vs PhoBERT fold-ensemble alone, same examples, paired bootstrap over examples
+    supported_if: >
+      topic macro-F1 gain >= +0.005 with the 95% paired CI above 0, AND facility and others F1 not
+      lower than PhoBERT alone.
+
+  H6_serving_model:
+    question: Should the service switch to the H2-augmented model? (NEXT_PLAN step 0.3)
+    evidence: H2 supported on validation (5 seeds) and confirmed on test (clean +0.0008; no-diacritic 0.27 -> 0.64).
+    comparison: seed-42 CE checkpoint vs seed-42 augmented checkpoint on challenge_set_v1
+    switch_if: >
+      On unaccented_typed + teencode_typed rows the augmented model's accuracy exceeds CE's with a
+      paired 95% CI above 0, AND on all other rows its accuracy is not lower by more than 0.02.
+      Otherwise the service keeps the CE model.
+    logged_as: a decision influenced by test results (EVALUATION_PROTOCOL § 4), because the test gate is part of its evidence
+
+  H7_llm_reference:
+    question: Where the encoder is weakest (neutral, mixed aspects, suggestions), does an instruction-tuned LLM do better, and at what cost? (Study E)
+    models:
+      pilot: Qwen/Qwen3-1.7B, laptop fp16, to validate the pipeline; reported, but not the declared result
+      declared: Qwen/Qwen3-4B, Kaggle T4 fp16
+      revisions: pinned to the Hub commit at run time and recorded in the output
+    prompting: >
+      Label definitions from the annotation guide, thinking disabled. Zero-shot, and few-shot with 6
+      demonstrations (2 per class) drawn from train with seeds 1 and 2. Prompt development: at most 4
+      variants, scored on a fixed stratified 200-example train subset; the best by macro-F1 is frozen.
+      Validation and the challenge set are never used for prompt development.
+    scoring: >
+      Label likelihood: the summed log-probability of each label's tokens after the prompt. Outputs
+      are valid by construction and come with probabilities.
+    comparison: paired per example against the seed-42 CE encoder, on validation and challenge_set_v1
+    report: [per-class P/R/F1, macro-F1, neutral F1, latency per sentence, GPU-seconds per 1k sentences]
+    outcomes:
+      llm_better_on_neutral: >
+        LLM neutral F1 on challenge_set_v1 above the encoder's with a paired 95% CI above 0:
+        routing (encoder first, LLM on low-confidence predictions) becomes Cycle 3's question.
+      encoder_better_or_equal: report cost-adjusted; the fine-tuned encoder is the answer at this budget.
+    caveat: pretraining contamination of UIT-VSFC is unknown for a public LLM; the challenge set is the cleaner comparison.
+
+audit_decision_tree:   # NEXT_PLAN step 1; frozen here before any annotation is done
+  scope: confident neutral-error strata of results/studies/study_a/audit_sample_index.csv
+  rules:
+    - {if: "share of 'incorrect' gold >= 0.30", then: "E04: train-label correction, 2x2 (labels x recipe), 3 seeds"}
+    - {if: "share of 'ambiguous' gold >= 0.40", then: "policy ceiling: one soft-label run, then stop optimizing neutral on this benchmark"}
+    - {else: "representation: raw-text or social-domain encoder (BamiBERT / ViSoBERT) or TAPT"}
+  agreement: Cohen's kappa on >= 50 rows including all 40 random rows (inter-annotator, or intra after >= 24 h, labelled as such)

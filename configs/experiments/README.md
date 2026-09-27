@@ -10,6 +10,7 @@ threshold cannot move after the numbers are seen
 |---|---|---|
 | [`ledger.csv`](ledger.csv) | all | Every run that updated model weights, including pilots and diagnostics |
 | [`cycle1.yaml`](cycle1.yaml) | 1 | Declared 2026-09-27: H1 imbalance (logit adjustment, cRT), H2 augmentation, H3 XLM-R input confound |
+| [`cycle2.yaml`](cycle2.yaml) | 2 | Declared 2026-09-27: H5 topic stacking, H6 serving model, H7 LLM reference (track A), audit decision tree |
 
 ## Rules
 
