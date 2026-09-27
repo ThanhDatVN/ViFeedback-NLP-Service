@@ -1,0 +1,184 @@
+{
+  "model": "gpt-4o-mini-2024-07-18",
+  "revision": "gpt-4o-mini-2024-07-18",
+  "backend": "openai",
+  "data": "challenge",
+  "variant": "v4_policy_informal_contrast",
+  "shots": 0,
+  "demo_seed": null,
+  "demos": [],
+  "n_scored": 285,
+  "macro_f1": 0.9440488112458736,
+  "per_class": {
+    "negative": {
+      "precision": 0.9333333333333333,
+      "recall": 0.9618320610687023,
+      "f1": 0.9473684210526315,
+      "support": 131,
+      "predicted": 135,
+      "average_precision": 0.99174783335818
+    },
+    "neutral": {
+      "precision": 0.9130434782608695,
+      "recall": 1.0,
+      "f1": 0.9545454545454545,
+      "support": 63,
+      "predicted": 69,
+      "average_precision": 0.9977505904365016
+    },
+    "positive": {
+      "precision": 0.9876543209876543,
+      "recall": 0.8791208791208791,
+      "f1": 0.9302325581395348,
+      "support": 91,
+      "predicted": 81,
+      "average_precision": 0.9925536838658714
+    }
+  },
+  "seconds": 100.09451620000073,
+  "seconds_per_1k": 328.17874163934664,
+  "vs_encoder": {
+    "ce": {
+      "neutral_f1": {
+        "score_a": 0.9545454545454546,
+        "score_b": 0.7132867132867133,
+        "observed_diff": 0.24125874125874125,
+        "mean_diff": 0.24304774760474146,
+        "ci_low": 0.16394934274154674,
+        "ci_high": 0.3293871710637963,
+        "p_value": 0.00019998000199980003,
+        "significant": true,
+        "n_resamples": 10000,
+        "alpha": 0.05
+      },
+      "macro_f1": {
+        "score_a": 0.9440488112458736,
+        "score_b": 0.7739687536735507,
+        "observed_diff": 0.17008005757232292,
+        "mean_diff": 0.1710851352717742,
+        "ci_low": 0.12152402759507681,
+        "ci_high": 0.22406369095073259,
+        "p_value": 0.00019998000199980003,
+        "significant": true,
+        "n_resamples": 10000,
+        "alpha": 0.05
+      }
+    },
+    "augmented": {
+      "neutral_f1": {
+        "score_a": 0.9545454545454546,
+        "score_b": 0.7454545454545455,
+        "observed_diff": 0.2090909090909091,
+        "mean_diff": 0.2110132824693611,
+        "ci_low": 0.11963732939750384,
+        "ci_high": 0.3107852580567294,
+        "p_value": 0.00019998000199980003,
+        "significant": true,
+        "n_resamples": 10000,
+        "alpha": 0.05
+      },
+      "macro_f1": {
+        "score_a": 0.9440488112458736,
+        "score_b": 0.8274434485702091,
+        "observed_diff": 0.11660536267566446,
+        "mean_diff": 0.11743077015562507,
+        "ci_low": 0.06775855660750546,
+        "ci_high": 0.16805038992298693,
+        "p_value": 0.00019998000199980003,
+        "significant": true,
+        "n_resamples": 10000,
+        "alpha": 0.05
+      }
+    }
+  },
+  "api": {
+    "prompt_tokens": 55583,
+    "completion_tokens": 305,
+    "calls": 305,
+    "served_models": [
+      "gpt-4o-mini-2024-07-18"
+    ],
+    "price_per_m_tokens_usd": [
+      0.15,
+      0.6
+    ],
+    "cost_usd": 0.008520449999999999,
+    "usd_per_1k": 0.027935901639344257,
+    "note": "latency includes the network round trip"
+  },
+  "challenge": {
+    "scored_rows": 285,
+    "accuracy": 0.9438596491228071,
+    "macro_f1": 0.9440488112458736,
+    "per_class_f1": {
+      "negative": 0.9473684210526315,
+      "neutral": 0.9545454545454545,
+      "positive": 0.9302325581395348
+    },
+    "by_category": {
+      "code_switch": {
+        "n": 25,
+        "accuracy": 1.0
+      },
+      "long_context": {
+        "n": 20,
+        "accuracy": 1.0
+      },
+      "mixed_aspect": {
+        "n": 40,
+        "accuracy": 0.875
+      },
+      "negation_pair": {
+        "n": 30,
+        "accuracy": 1.0
+      },
+      "objective_neutral": {
+        "n": 30,
+        "accuracy": 1.0
+      },
+      "suggestion_cue": {
+        "n": 25,
+        "accuracy": 0.96
+      },
+      "suggestion_implicit": {
+        "n": 25,
+        "accuracy": 0.92
+      },
+      "teencode_typed": {
+        "n": 40,
+        "accuracy": 1.0
+      },
+      "unaccented_typed": {
+        "n": 50,
+        "accuracy": 0.84
+      }
+    },
+    "negation_pairs": {
+      "pairs": 15,
+      "both_correct": 1.0,
+      "prediction_flips": 1.0
+    },
+    "out_of_scope_confidence": {
+      "out_of_scope": {
+        "n": 20,
+        "max_prob_mean": 0.9970858124724231,
+        "max_prob_median": 0.9999992487290238,
+        "share_above_0_9": 1.0,
+        "predicted": {
+          "negative": 1,
+          "neutral": 16,
+          "positive": 3
+        }
+      },
+      "objective_neutral": {
+        "n": 30,
+        "max_prob_mean": 0.9991400062380359,
+        "max_prob_median": 0.9999997248978162,
+        "share_above_0_9": 1.0,
+        "predicted": {
+          "neutral": 30
+        }
+      }
+    }
+  }
+}

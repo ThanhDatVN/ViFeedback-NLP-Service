@@ -92,3 +92,67 @@ def test_committed_summaries_record_demo_indices_not_corpus_text():
     for p in L.OUT.glob("*/*/summary.json"):
         for d in json.loads(p.read_text(encoding="utf-8")).get("demos") or []:
             assert set(d) == {"train_index", "label"}, p
+
+
+class _FakeTok:
+    """Prompt "p<k>" encodes to k + 1 copies of token k, left-padded with 0."""
+
+    def __call__(self, prompts, **kw):
+        import torch
+
+        ids = [[int(p[1:])] * (int(p[1:]) + 1) for p in prompts]
+        if "return_tensors" not in kw:
+            return {"input_ids": ids}
+        width = max(map(len, ids))
+        return _Enc(torch.tensor([[0] * (width - len(x)) + x for x in ids]))
+
+
+class _Enc(dict):
+    def __init__(self, input_ids):
+        super().__init__(input_ids=input_ids)
+
+    def to(self, device):
+        return self
+
+
+class _FakeLM:
+    """Last-position logits: token id in column 0, zeros elsewhere; records batch sizes."""
+
+    def __init__(self, fill=None):
+        self.fill, self.batches = fill, []
+
+    def forward(self, input_ids=None, use_cache=None, logits_to_keep=None):
+        import torch
+
+        self.batches.append(tuple(input_ids.shape))
+        logits = torch.zeros(input_ids.shape[0], 1, 5)
+        logits[:, -1, 0] = input_ids[:, -1].float()
+        if self.fill is not None:
+            logits[:] = self.fill
+        return type("Out", (), {"logits": logits})()
+
+    __call__ = forward
+
+
+def _scorer(model):
+    s = L.HFScorer.__new__(L.HFScorer)
+    s.device, s.single_token, s.label_ids = "cpu", True, [[0], [1], [2]]
+    s.tok, s.model = _FakeTok(), model
+    return s
+
+
+def test_scores_come_back_in_input_order_within_the_token_budget():
+    pytest.importorskip("torch")
+    ks = [7, 1, 12, 3, 9, 0, 5]
+    lm = _FakeLM()
+    out = _scorer(lm).score([f"p{k}" for k in ks], batch_size=3, max_tokens=20)
+    assert list(np.argsort(out[:, 0])) == list(np.argsort(ks))  # order restored
+    assert all((n <= 3 and n * width <= 20) or n == 1 for n, width in lm.batches)
+    assert sum(n for n, _ in lm.batches) == len(ks)
+
+
+def test_non_finite_scores_are_refused():
+    """An fp16 overflow must stop the run, not turn NaN into a label."""
+    pytest.importorskip("torch")
+    with pytest.raises(FloatingPointError, match="non-finite"):
+        _scorer(_FakeLM(fill=float("nan"))).score(["p1"])

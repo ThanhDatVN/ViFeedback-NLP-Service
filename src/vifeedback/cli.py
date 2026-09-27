@@ -1522,6 +1522,8 @@ def study_llm_reference(
     shots: int = typer.Option(0, help="0, or 6 demonstrations (2 per class)"),
     demo_seed: int = typer.Option(1, help="demonstration draw (declared: 1 and 2)"),
     batch_size: int = typer.Option(8),
+    dtype: str = typer.Option("float16", help="HF backend: float16 | bfloat16 | float32"),
+    max_tokens: int = typer.Option(8192, help="HF backend: padded tokens per batch"),
     licence_confirmed: bool = typer.Option(
         False, help="owner confirmed UIT-VSFC may be sent to the API (cycle2.yaml data_egress)"
     ),
@@ -1592,8 +1594,8 @@ def study_llm_reference(
     gc.collect()  # the encoders' weights must leave the 4 GB GPU before the LLM arrives
     if torch.cuda.is_available():
         torch.cuda.empty_cache()
-    scorer = L.OpenAIScorer(model) if backend == "openai" else L.HFScorer(model)
-    r = L.run(scorer, texts, variant, demos, batch_size=batch_size)
+    scorer = L.OpenAIScorer(model) if backend == "openai" else L.HFScorer(model, dtype=dtype)
+    r = L.run(scorer, texts, variant, demos, batch_size=batch_size, max_tokens=max_tokens)
     pred = r["probs"].argmax(1)
     ys, ps = y[scored].astype(int), pred[scored]
     ev = M.evaluate(ys, ps, "sentiment", y_prob=r["probs"][scored])
@@ -1630,6 +1632,8 @@ def study_llm_reference(
     else:
         summary["gpu_seconds_per_1k"] = r["seconds_per_1k"]
         summary["batch_size"] = batch_size
+        summary["dtype"] = dtype
+        summary["max_tokens"] = max_tokens
     if data == "challenge":
         summary["challenge"] = {
             **CH.category_report(df, pred),

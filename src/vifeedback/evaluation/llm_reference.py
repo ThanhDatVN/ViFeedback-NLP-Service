@@ -187,26 +187,64 @@ class HFScorer:
             )
         )
 
-    def score(self, prompts: list[str], batch_size: int = 8) -> np.ndarray:
-        """(n, 3) summed label log-probabilities."""
+    def _forward_kwargs(self) -> dict[str, Any]:
+        """Scoring reads one position: skip the KV cache, and compute logits for the last token only
+        when the model supports it (the vocabulary projection over every position costs memory)."""
+        import inspect
+
+        params = inspect.signature(self.model.forward).parameters
+        kw: dict[str, Any] = {"use_cache": False}
+        for name in ("logits_to_keep", "num_logits_to_keep"):
+            if name in params:
+                kw[name] = 1
+                break
+        return kw
+
+    def score(self, prompts: list[str], batch_size: int = 8, max_tokens: int = 8192) -> np.ndarray:
+        """(n, 3) summed label log-probabilities, in the order of `prompts`.
+
+        Prompts are scored shortest first, in batches of at most `batch_size` prompts and
+        `max_tokens` padded tokens, so padding is small and long few-shot prompts still fit. The
+        score of a prompt does not depend on its batch beyond floating-point rounding.
+        """
         import torch
 
         out = np.empty((len(prompts), len(LABELS)))
-        with torch.inference_mode():
-            for s in range(0, len(prompts), batch_size):
-                chunk = prompts[s : s + batch_size]
-                if self.single_token:
+        if not self.single_token:
+            for j, p in enumerate(prompts):
+                out[j] = self._score_multi(p)
+        else:
+            lengths = [len(x) for x in self.tok(prompts, add_special_tokens=False)["input_ids"]]
+            order = np.argsort(lengths, kind="stable")
+            label_cols = [ids[0] for ids in self.label_ids]
+            kw = self._forward_kwargs()
+            batches: list[list[int]] = []
+            cur: list[int] = []
+            for i in order:
+                width = max([lengths[j] for j in cur] + [lengths[i]])
+                if cur and (len(cur) >= batch_size or width * (len(cur) + 1) > max_tokens):
+                    batches.append(cur)
+                    cur = []
+                cur.append(int(i))
+            if cur:
+                batches.append(cur)
+            with torch.inference_mode():
+                for idx in batches:
                     enc = self.tok(
-                        chunk, return_tensors="pt", padding=True, add_special_tokens=False
+                        [prompts[i] for i in idx],
+                        return_tensors="pt",
+                        padding=True,
+                        add_special_tokens=False,
                     ).to(self.device)
-                    logits = self.model(**enc).logits[:, -1, :].float()
+                    logits = self.model(**enc, **kw).logits[:, -1, :].float()
                     lp = torch.log_softmax(logits, dim=-1)
-                    out[s : s + len(chunk)] = (
-                        lp[:, [ids[0] for ids in self.label_ids]].cpu().numpy()
-                    )
-                else:
-                    for j, p in enumerate(chunk):
-                        out[s + j] = self._score_multi(p)
+                    out[idx] = lp[:, label_cols].cpu().numpy()
+        if not np.isfinite(out).all():
+            # fp16 can overflow in larger models; a NaN score would silently become a label.
+            raise FloatingPointError(
+                f"{int((~np.isfinite(out)).any(axis=1).sum())} of {len(out)} prompts gave non-finite "
+                "label log-probabilities; re-run with --dtype bfloat16 (Ampere or newer) or float32"
+            )
         return out
 
     def _score_multi(self, prompt: str) -> np.ndarray:
@@ -356,6 +394,7 @@ def run(
     variant: str,
     demos: Sequence[tuple[str, str]] = (),
     batch_size: int = 8,
+    max_tokens: int = 8192,
 ) -> dict[str, Any]:
     """Score every text; returns log-likelihoods, probabilities and timing."""
     msgs = [messages(t, variant, demos) for t in texts]
@@ -363,7 +402,9 @@ def run(
     if isinstance(scorer, OpenAIScorer):
         ll = scorer.score_messages(msgs)
     else:
-        ll = scorer.score([scorer.prompt(m) for m in msgs], batch_size=batch_size)
+        ll = scorer.score(
+            [scorer.prompt(m) for m in msgs], batch_size=batch_size, max_tokens=max_tokens
+        )
     seconds = time.perf_counter() - t0
     return {
         "loglik": ll,
