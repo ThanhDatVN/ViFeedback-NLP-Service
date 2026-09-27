@@ -1,0 +1,97 @@
+{
+  "dense": {
+    "macro_f1": 0.818931315765234,
+    "per_class_f1": {
+      "lecturer": 0.9431176726009554,
+      "training_program": 0.7829181494661921,
+      "facility": 0.9285714285714286,
+      "others": 0.6211180124223601
+    }
+  },
+  "sparse": {
+    "macro_f1": 0.7667996803752257,
+    "per_class_f1": {
+      "lecturer": 0.9294677628732151,
+      "training_program": 0.7531083481349911,
+      "facility": 0.9078014184397163,
+      "others": 0.4768211920529802
+    }
+  },
+  "stacked": {
+    "macro_f1": 0.8087475862374273,
+    "per_class_f1": {
+      "lecturer": 0.9425587467362925,
+      "training_program": 0.7850799289520427,
+      "facility": 0.921985815602837,
+      "others": 0.5853658536585366
+    }
+  },
+  "paired_stacked_minus_dense": {
+    "score_a": 0.8087475862374273,
+    "score_b": 0.818931315765234,
+    "observed_diff": -0.010183729527806773,
+    "mean_diff": -0.010141424995771791,
+    "ci_low": -0.02281315435925215,
+    "ci_high": 0.0012986727810620263,
+    "p_value": 0.08478304339132174,
+    "significant": false,
+    "n_resamples": 5000,
+    "alpha": 0.05
+  },
+  "supported": false,
+  "descriptive_facility_sparse_minus_dense": {
+    "score_a": 0.9078014184397163,
+    "score_b": 0.9285714285714286,
+    "observed_diff": -0.020770010131712313,
+    "mean_diff": -0.0210798327959745,
+    "ci_low": -0.06040519687431773,
+    "ci_high": 0.014453227931488784,
+    "p_value": 0.3043391321735653,
+    "significant": false,
+    "n_resamples": 5000,
+    "alpha": 0.05
+  },
+  "folds": [
+    {
+      "fold": 0,
+      "n_train": 9138,
+      "n_heldout": 2288,
+      "best_epoch": 4,
+      "best_dev_macro_f1": 0.7999,
+      "train_seconds": 204.6
+    },
+    {
+      "fold": 1,
+      "n_train": 9140,
+      "n_heldout": 2286,
+      "best_epoch": 3,
+      "best_dev_macro_f1": 0.8013,
+      "train_seconds": 202.9
+    },
+    {
+      "fold": 2,
+      "n_train": 9142,
+      "n_heldout": 2284,
+      "best_epoch": 3,
+      "best_dev_macro_f1": 0.8042,
+      "train_seconds": 205.4
+    },
+    {
+      "fold": 3,
+      "n_train": 9142,
+      "n_heldout": 2284,
+      "best_epoch": 4,
+      "best_dev_macro_f1": 0.8218,
+      "train_seconds": 217.7
+    },
+    {
+      "fold": 4,
+      "n_train": 9142,
+      "n_heldout": 2284,
+      "best_epoch": 4,
+      "best_dev_macro_f1": 0.8193,
+      "train_seconds": 207.9
+    }
+  ],
+  "gpu_seconds": 1085.7
+}

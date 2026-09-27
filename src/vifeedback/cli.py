@@ -1192,8 +1192,172 @@ def study_closing_gate(
     typer.echo(f"  written {dst / 'summary.json'}")
 
 
+def _print_stacking(result: dict) -> None:
+    for name in ("dense", "sparse", "stacked"):
+        pc = result[name]["per_class_f1"]
+        typer.echo(
+            f"  {name:8s} macro-F1 {result[name]['macro_f1']:.4f}  "
+            f"facility {pc['facility']:.3f}  others {pc['others']:.3f}"
+        )
+    pb = result["paired_stacked_minus_dense"]
+    typer.echo(
+        f"  stacked - dense: {pb['observed_diff']:+.4f} [{pb['ci_low']:+.4f}, {pb['ci_high']:+.4f}]"
+        f"  supported={result['supported']}"
+    )
+    fc = result.get("descriptive_facility_sparse_minus_dense")
+    if fc:
+        typer.echo(
+            f"  facility F1, sparse - dense (descriptive): {fc['observed_diff']:+.4f} "
+            f"[{fc['ci_low']:+.4f}, {fc['ci_high']:+.4f}]"
+        )
+
+
+@study_app.command("topic-stacking")
+def study_topic_stacking(
+    seed: int = typer.Option(42),
+    k: int = typer.Option(5),
+    reuse: bool = typer.Option(
+        False, help="re-score from the saved validation features (no training, no refit)"
+    ),
+) -> None:
+    """Cycle 2 H5: out-of-fold PhoBERT + TF-IDF stacking for topic (5 fold fine-tunes, ~20 GPU-min)."""
+    import numpy as np
+    import pandas as pd
+
+    from vifeedback.evaluation import error_analysis as EA
+    from vifeedback.evaluation import stacking as ST
+    from vifeedback.evaluation.report import yaml_safe
+    from vifeedback.preprocess.variants import load_variant
+    from vifeedback.training.trainer import TrainConfig
+
+    task = "topic"
+    out = paths.RESULTS / "studies" / "topic_stacking"
+    if reuse:
+        v = pd.read_csv(out / "validation_features.csv")
+        prev = json.loads((out / "summary.json").read_text(encoding="utf-8"))
+        cols_of = lambda p: v.filter(regex=rf"^{p}_\d+$").to_numpy()  # noqa: E731
+        result = ST.compare(
+            v.gold.to_numpy(),
+            {
+                "dense": cols_of("dense").argmax(1),
+                "sparse": cols_of("sparse").argmax(1),
+                "stacked": v.stacked_pred.to_numpy(),
+            },
+            task,
+        )
+        result["folds"], result["gpu_seconds"] = prev["folds"], prev["gpu_seconds"]
+        (out / "summary.json").write_text(json.dumps(yaml_safe(result), indent=2), encoding="utf-8")
+        _print_stacking(result)
+        return
+
+    tr, dv = load_variant("seg_pyvi", "train"), load_variant("seg_pyvi", "validation")
+    y_tr, y_dv = tr[task].to_numpy(), dv[task].to_numpy()
+    cfg = TrainConfig(task=task, model_key="phobert-base", preprocessing="seg_pyvi", seed=seed)
+
+    typer.echo(f"dense OOF: {k} folds of phobert-base / topic")
+    r = EA.oof_predictions(
+        cfg, tr.sentence.tolist(), y_tr, dv.sentence.tolist(), y_dv, k=k, fold_seed=seed
+    )
+    dense_oof, fold_id = r["oof_probs"], r["fold_id"]
+    dense_dv = r["dev_probs"].mean(axis=0)
+
+    typer.echo("sparse OOF: TF-IDF B4, same folds, C fixed")
+    sparse_oof = ST.sparse_oof_scores(tr.sentence_raw.tolist(), y_tr, fold_id, seed)
+    sparse_full = ST.sparse_model(seed).fit(np.asarray(tr.sentence_raw, dtype=object), y_tr)
+    sparse_dv = sparse_full.decision_function(np.asarray(dv.sentence_raw, dtype=object))
+
+    meta = ST.fit_meta(ST.features(dense_oof, sparse_oof), y_tr, seed)
+    stacked_dv = meta.predict(ST.features(dense_dv, sparse_dv))
+    result = ST.compare(
+        y_dv,
+        {"dense": dense_dv.argmax(1), "sparse": sparse_dv.argmax(1), "stacked": stacked_dv},
+        task,
+    )
+    result["folds"] = r["folds"]
+    result["gpu_seconds"] = r["total_seconds"]
+
+    out.mkdir(parents=True, exist_ok=True)
+    cols = lambda p, a: {f"{p}_{i}": a[:, i] for i in range(a.shape[1])}  # noqa: E731
+    pd.DataFrame(
+        {"gold": y_tr, "fold": fold_id, **cols("dense", dense_oof), **cols("sparse", sparse_oof)}
+    ).to_csv(out / "train_oof_features.csv", index_label="row", float_format="%.6g")
+    pd.DataFrame(
+        {
+            "gold": y_dv,
+            **cols("dense", dense_dv),
+            **cols("sparse", sparse_dv),
+            "stacked_pred": stacked_dv,
+        }
+    ).to_csv(out / "validation_features.csv", index_label="row", float_format="%.6g")
+    (out / "summary.json").write_text(json.dumps(yaml_safe(result), indent=2), encoding="utf-8")
+    _print_stacking(result)
+
+
 results_app = typer.Typer(help="Results housekeeping")
 app.add_typer(results_app, name="results")
+
+
+@study_app.command("challenge")
+def study_challenge(
+    ce: str = typer.Option(
+        "models/p6-sent-phobert-base-seg_pyvi-base-s42-ckp", help="seed-42 CE checkpoint (served)"
+    ),
+    aug: str = typer.Option(
+        "models/p9-sent-phobert-base-seg_pyvi-aug-diac-teen-s42-599cf21f-ckp",
+        help="seed-42 H2-augmented checkpoint",
+    ),
+) -> None:
+    """Cycle 2 H6 on the frozen challenge set: per-category results and the declared serving rule."""
+    from vifeedback.constants import label_names
+    from vifeedback.evaluation import challenge as CH
+    from vifeedback.evaluation import error_analysis as EA
+    from vifeedback.evaluation.report import yaml_safe
+
+    df = CH.load()  # raises if the file differs from the hash frozen in cycle2.yaml
+    x = CH.pipeline("seg_pyvi")(df.text.tolist())
+    probs = {name: EA.predict_proba(ckp, x) for name, ckp in (("ce", ce), ("augmented", aug))}
+    pred = {name: p.argmax(1) for name, p in probs.items()}
+
+    result: dict = {
+        "challenge_sha256": CH.declared_sha256(),
+        "checkpoints": {"ce": ce, "augmented": aug},
+        "h6": CH.h6(df, pred["ce"], pred["augmented"]),
+    }
+    for name in probs:
+        result[name] = {
+            **CH.category_report(df, pred[name]),
+            "negation_pairs": CH.negation_pairs(df, pred[name]),
+            "out_of_scope_confidence": CH.out_of_scope_confidence(df, probs[name]),
+        }
+
+    out = paths.RESULTS / "studies" / "challenge"
+    out.mkdir(parents=True, exist_ok=True)
+    names = label_names("sentiment")
+    table = df[["id", "category", "pair_id", "text", "sentiment"]].copy()
+    for name, p in probs.items():
+        table[f"{name}_pred"] = [names[i] for i in pred[name]]
+        table[f"{name}_conf"] = p.max(1).round(4)
+    table.to_csv(out / "predictions.csv", index=False)  # constructed text only; no corpus rows
+    (out / "summary.json").write_text(json.dumps(yaml_safe(result), indent=2), encoding="utf-8")
+
+    cats = sorted(result["ce"]["by_category"])
+    typer.echo(f"{'category':22s} {'n':>4s} {'CE':>6s} {'aug':>6s}")
+    for c in cats:
+        a, b = result["ce"]["by_category"][c], result["augmented"]["by_category"][c]
+        typer.echo(f"{c:22s} {a['n']:4d} {a['accuracy']:6.3f} {b['accuracy']:6.3f}")
+    for name in probs:
+        r = result[name]
+        typer.echo(
+            f"{name:10s} macro-F1 {r['macro_f1']:.4f}  neutral F1 {r['per_class_f1']['neutral']:.3f}  "
+            f"negation pairs both-correct {r['negation_pairs']['both_correct']:.2f}"
+        )
+    h = result["h6"]
+    pb = h["typed_paired_aug_minus_ce"]
+    typer.echo(
+        f"H6 typed rows ({h['typed_rows']}): aug - CE {pb['observed_diff']:+.3f} "
+        f"[{pb['ci_low']:+.3f}, {pb['ci_high']:+.3f}]; other rows {h['other_diff']:+.3f} "
+        f"-> {h['decision']}"
+    )
 
 
 @results_app.command("merge")

@@ -1,0 +1,31 @@
+dense OOF: 5 folds of phobert-base / topic
+fold 1/5: train 9138  held-out 2288
+  epoch 1/4  loss 0.5510  dev macro-F1 0.7712  wtd 0.8835  acc 0.8913  facility F1 0.913  (52s)
+  epoch 2/4  loss 0.2900  dev macro-F1 0.7890  wtd 0.8883  acc 0.8939  facility F1 0.921  (103s)
+  epoch 3/4  loss 0.2317  dev macro-F1 0.7931  wtd 0.8885  acc 0.8926  facility F1 0.921  (153s)
+  epoch 4/4  loss 0.1925  dev macro-F1 0.7999  wtd 0.8891  acc 0.8920  facility F1 0.921  (204s)
+fold 2/5: train 9140  held-out 2286
+  epoch 1/4  loss 0.5475  dev macro-F1 0.7769  wtd 0.8808  acc 0.8850  facility F1 0.914  (51s)
+  epoch 2/4  loss 0.2872  dev macro-F1 0.7949  wtd 0.8914  acc 0.8939  facility F1 0.874  (101s)
+  epoch 3/4  loss 0.2285  dev macro-F1 0.8013  wtd 0.8909  acc 0.8920  facility F1 0.909  (152s)
+  epoch 4/4  loss 0.1897  dev macro-F1 0.7860  wtd 0.8877  acc 0.8901  facility F1 0.884  (203s)
+fold 3/5: train 9142  held-out 2284
+  epoch 1/4  loss 0.5614  dev macro-F1 0.7912  wtd 0.8850  acc 0.8876  facility F1 0.903  (50s)
+  epoch 2/4  loss 0.3012  dev macro-F1 0.7935  wtd 0.8882  acc 0.8920  facility F1 0.899  (102s)
+  epoch 3/4  loss 0.2433  dev macro-F1 0.8042  wtd 0.8894  acc 0.8913  facility F1 0.930  (153s)
+  epoch 4/4  loss 0.2038  dev macro-F1 0.7863  wtd 0.8836  acc 0.8876  facility F1 0.915  (205s)
+fold 4/5: train 9142  held-out 2284
+  epoch 1/4  loss 0.5499  dev macro-F1 0.7766  wtd 0.8821  acc 0.8901  facility F1 0.914  (56s)
+  epoch 2/4  loss 0.2887  dev macro-F1 0.7979  wtd 0.8847  acc 0.8831  facility F1 0.917  (109s)
+  epoch 3/4  loss 0.2358  dev macro-F1 0.8126  wtd 0.8939  acc 0.8945  facility F1 0.917  (163s)
+  epoch 4/4  loss 0.1949  dev macro-F1 0.8218  wtd 0.8990  acc 0.9008  facility F1 0.931  (217s)
+fold 5/5: train 9142  held-out 2284
+  epoch 1/4  loss 0.5522  dev macro-F1 0.7892  wtd 0.8866  acc 0.8945  facility F1 0.929  (54s)
+  epoch 2/4  loss 0.2906  dev macro-F1 0.8086  wtd 0.8915  acc 0.8932  facility F1 0.917  (106s)
+  epoch 3/4  loss 0.2266  dev macro-F1 0.8068  wtd 0.8940  acc 0.8958  facility F1 0.912  (157s)
+  epoch 4/4  loss 0.1949  dev macro-F1 0.8193  wtd 0.8970  acc 0.8996  facility F1 0.930  (208s)
+sparse OOF: TF-IDF B4, same folds, C fixed
+  dense    macro-F1 0.8189  facility 0.929  others 0.621
+  sparse   macro-F1 0.7668  facility 0.908  others 0.477
+  stacked  macro-F1 0.8087  facility 0.922  others 0.585
+  stacked - dense: -0.0102 [-0.0228, +0.0013]  supported=False
