@@ -16,7 +16,7 @@ not to intent.
 
 | Part of the review | ✅ | 🔶 | ⬜ | ⏸ | 👤 |
 |---|---:|---:|---:|---:|---:|
-| § 2 Issues R1–R12 | 11 | 1 | 0 | 0 | 0 |
+| § 2 Issues R1–R12 | 12 | 0 | 0 | 0 | 0 |
 | First five concrete tasks | 5 | 0 | 0 | 0 | 0 |
 | Recommended starting point (4 items) | 3 | 1 | 0 | 0 | 0 |
 | Implementation backlog (12 items) | 8 | 1 | 0 | 3 | 0 |
@@ -42,7 +42,7 @@ parallel.
 | R7 over-strong statistical claims | High | ✅ | README/STATUS interval wording; seed-level and bootstrap both reported; no equivalence claimed from p > 0.05 | Cross-architecture seed pairing is labelled "pairs data order only" in the comparison family (below) |
 | R8 architecture search closed too early | Med | ✅ | ADR-019 narrows ADR-016; tokenizer profiles (+36% subwords on pyvi input); XLM-R raw control run (H3): +0.0097 over pyvi, still −0.014 vs PhoBERT-base | Per-model LR tuning not run (Cycle 2 option) |
 | R9 headline vs deployed config | Med | ✅ | README reports VnCoreNLP 0.8373 and pyvi 0.8288 separately; CV snippet quotes each correctly | — |
-| R10 docs and benchmark out of sync | Med | 🔶 | STATUS rewritten; run counts from the registry; texts/s naming; model-only on preprocessed input; instability no longer called "throttling" | Steady-state benchmark re-run on an idle machine (after Cycle 1's GPU runs) |
+| R10 docs and benchmark out of sync | Med | ✅ | STATUS rewritten; texts/s; model-only on pre-segmented input; rotated two-pass benchmark reporting steady passes only (`results/studies/latency/reference_cpu.json`); cross-session variation disclosed, ratios claimed | — |
 | R11 reproducibility pinning | Med | ✅ | Config hash + overwrite guard; per-run metrics/config/env and validation predictions committed; model and dataset commits pinned; `source_sha256` in env.json; `requirements-lock.txt`; committed content-hash data reference verified on fetch; CPU training-integration tests in CI | Published checkpoint with checksum (👤 HF account); mypy still advisory |
 | R12 benchmark comparison claims | Med | ✅ | "No state-of-the-art claim is made"; BamiBERT reported as context incl. topic F1 79.90 | — |
 
@@ -91,7 +91,7 @@ parallel.
 | Q3 Label efficiency | ⏸ Cycle 2 option |
 | Q4 Shared learning | ✅ H4 decided at 3 seeds: no gain at λ = 0.3, sentiment cost at λ = 1 |
 | Q5 Uncertainty | ✅ Calibration, class-wise coverage, AURC for three signals; OOD detection ⏸ (no OOD set) |
-| Q6 Compute budget | 🔶 FP32 release verified; INT8 blocked by the quality gate (neutral −0.088, ADR-022); latency re-run pending; distillation/LoRA ⏸ |
+| Q6 Compute budget | ✅ quality/latency/memory ladder: FP32 ONNX 7.6× faster than padded PyTorch at the median, identical output; INT8 1.7× faster again but blocked (neutral −0.088); distillation/LoRA ⏸ |
 
 ## § 4 Dataset extensions
 
@@ -117,9 +117,9 @@ parallel.
 | E06 regularization (LLRD, R-Drop, FGM) | P2 | ⏸ |
 | E07 multi-task | P1 | ✅ H4: λ = 0.3 no material difference; λ = 1 negative transfer on sentiment |
 | E08 sparse + dense stacking | P2 | ⏸ |
-| E09 calibration | P1 | ✅ on validation/OOF; test confirmation at the closing gate |
+| E09 calibration | P1 | ✅ validation/OOF, and confirmed on test at the closing gate (NLL −21%, ECE 0.042 → 0.015) |
 | E10 selective prediction | P1 | ✅ risk–coverage by class; AURC for max-prob / margin / entropy (equal, ~77% of the random-to-oracle gap); OOD false acceptance ⏸ |
-| E16 quantization/runtime | P2 | ✅ PyTorch → ORT FP32 → dynamic → static INT8 with parity, per-class loss, size; INT8 blocked (ADR-022); latency pending re-run |
+| E16 quantization/runtime | P2 | ✅ PyTorch → ORT FP32 → dynamic → static INT8 with parity, per-class loss, size, p50/p95, texts/s, RSS; INT8 blocked (ADR-022) |
 | E11–E15, E17–E22 | P2–P3 | ⏸ Cycle 2 choice |
 | Models: TF-IDF, PhoBERT(VnCoreNLP/pyvi), PhoBERT-large | — | ✅ |
 | Models: XLM-R raw | Required | ✅ H3 |
@@ -147,7 +147,7 @@ parallel.
 | Paired example-level intervals for model comparisons | 🔶 validation predictions are now committed and cRT runs save their stage-1 control predictions, so this is possible from here on; Cycle 1's first runs predate it |
 | Cross-architecture pairing caveat | ✅ every comparison carries a `pairing` label |
 | Quantization judged by a non-inferiority margin with uncertainty | ✅ release requires the one-sided 95% upper bound of the paired macro-F1 drop ≤ 0.005 |
-| Latency: RSS, rotation of configuration order | ⬜ |
+| Latency: RSS, rotation of configuration order | ✅ two passes in rotated order; peak RSS recorded |
 | Track decisions influenced by test results | ✅ EVALUATION_PROTOCOL § 4 records it: none so far |
 
 ## Found by this audit, outside the review's list
@@ -166,8 +166,8 @@ parallel.
 | Scientific contribution | ≥ 3 questions answered with controls | ✅ Q1 (partly, pending audit), Q2, Q4, Q5 answered with declared controls; H3 pending |
 | Minority quality | Explain dominant neutral errors; evaluate a targeted intervention | ✅ minimum met: errors characterized, two targeted interventions evaluated (recall ↑, precision ↓, macro-F1 ≈); the +0.03 neutral-F1 stretch target is not met |
 | Robustness | Clean and challenging-slice results with support | ✅ minimum met; **stretch target met**: a predefined slice's degradation reduced 43% (≥ 20%) with no material clean loss |
-| Uncertainty | Calibrated vs uncalibrated on independent data | ✅ |
-| Efficiency | Reproducible quality/latency/memory comparison | 🔶 quality parity ✅; latency/memory pending |
+| Uncertainty | Calibrated vs uncalibrated on independent data | ✅ including test, with a validation-fitted temperature |
+| Efficiency | Reproducible quality/latency/memory comparison | ✅ minimum met; stretch (≥ 1.5× with neutral loss ≤ 0.02) not met: INT8 is 1.7× faster but loses 0.088 neutral F1 |
 
 ## § 11 Portfolio checklist
 
@@ -206,5 +206,5 @@ parallel.
 - Any new, naturally sampled evaluation data, if available.
 - Publishing a checkpoint (HF Hub) needs your account; the release manifest is already checksummed.
 
-**Then:** the Cycle 1 closing gate (one logged test evaluation per finalist, calibrated vs
-uncalibrated), `docs/RESEARCH_REPORT.md`, and the choice of one Cycle 2 specialization.
+**Done since:** the Cycle 1 closing gate (H2 and calibration confirmed on test) and the research report.
+**Then:** the choice of one Cycle 2 specialization.

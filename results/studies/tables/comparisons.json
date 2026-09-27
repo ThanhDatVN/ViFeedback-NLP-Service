@@ -1,6 +1,6 @@
 {
   "hygiene": {
-    "rows_in_registry": 120,
+    "rows_in_registry": 153,
     "duplicate_run_ids": [
       "p4-topi-phobert-base-seg_pyvi-base-s1337-val",
       "p4-topi-phobert-base-seg_pyvi-base-s2024-val",
@@ -8,10 +8,10 @@
       "p4-topi-phobert-base-seg_pyvi-base-s7-val"
     ],
     "reruns": {
-      "n_condition_seeds": 20,
+      "n_condition_seeds": 25,
       "max_abs_macro_f1_disagreement": 0.0010000000000000009
     },
-    "rows_used": 90
+    "rows_used": 118
   },
   "comparisons": [
     {

@@ -28,11 +28,9 @@ stands, what is wrong with it, and what runs next.**
 | Cycle | Question | State |
 |---|---|---|
 | **0** | Fix validity problems; what does the current model get wrong? | ✅ [results/studies/](../results/studies/README.md) |
-| **1** | Four hypotheses, declared before running ([cycle1.yaml](../configs/experiments/cycle1.yaml) v1 + v2) | ✅ all four decided; closing gate (one logged test evaluation per finalist) next |
+| **1** | Four hypotheses, declared before running ([cycle1.yaml](../configs/experiments/cycle1.yaml) v1 + v2) | ✅ all four decided; closing gate on test done (H2 and calibration confirmed) |
 
-**Compute to date** ([ledger](../configs/experiments/ledger.csv)): 55 weight-updating runs before
-Cycle 1 (40 laptop, 10 Kaggle T4, 5 OOF diagnostics), about 4.5 GPU-hours. The registry holds 97
-rows. After removing 4 duplicated ids and 10 same-seed re-runs, 83 distinct results remain.
+**Compute to date** ([ledger](../configs/experiments/ledger.csv)): 119 weight-updating runs, about 9.6 GPU-hours, of which 19 regenerated runs after the `results/` loss (ADR-023). The registry holds 153 rows.
 
 ---
 
@@ -69,6 +67,24 @@ declared rules (`evaluation/decisions.py`); output in `results/studies/cycle1/de
 | **H3** XLM-R on raw text | raw − pyvi > 0 | Kaggle, same session, 5 seeds: **+0.0097** [+0.0014, +0.0179], 4/5 seeds, p = 0.032. Raw XLM-R 0.8499 vs PhoBERT-base 0.8643 | **Supported**: segmented input cost XLM-R ~0.01. Raw mean below the 0.8523 withdrawal threshold, so ADR-016's narrowed conclusion stands: ~40% of the gap was preprocessing, ~60% remains |
 | **H4** shared encoder, λ=0.3 | helps / harms / no difference | sentiment +0.0012, topic +0.0005 (3 seeds) | **No material difference**: one model serves both tasks at half the inference cost, no loss detected |
 | **H4** shared encoder, λ=1 | same | sentiment −0.0056 (0/3 seeds), topic +0.0031 (2/3) | **Negative transfer on sentiment** by the rule (interval still spans 0) |
+
+### Closing gate — the finalists on test, once (ADR-024)
+
+| | Deployed CE | H2 augmented |
+|---|---:|---:|
+| Test macro-F1, 5 seeds (mean) | 0.8288 | 0.8296 |
+| Paired, augmented − CE | — | **+0.0008** [−0.012, +0.013], 2/5 seeds |
+| Seed 42: test macro-F1 / without the 55 train-overlapping rows | 0.8437 / 0.8431 | 0.8371 / 0.8364 |
+| Seed 42, test: no diacritics | 0.271 | **0.635** |
+| Seed 42, test: half the diacritics | 0.649 | **0.731** |
+| Seed 42, test: teencode / char noise | 0.803 / 0.783 | 0.825 / 0.797 |
+| Temperature fitted on validation → test NLL | 0.259 → **0.205** | 0.262 → **0.207** |
+| → test ECE (15 bins) | 0.042 → **0.015** | 0.043 → **0.015** |
+
+**H2 is confirmed on test**: clean accuracy unchanged, missing-diacritic robustness more than doubled.
+**Calibration is confirmed on test**: a temperature fitted only on validation transfers. Removing the
+train-overlapping test rows moves macro-F1 by at most 0.0007, so overlap does not inflate the headline.
+Seven test evaluations were logged; none changes a Cycle 1 decision.
 
 **Controls.** Every H1/H2 control is stage 1 of a cRT run at the same seed. All five reproduce the
 registry's CE rows **exactly**, so treatment and control differ only in the treatment. H4's controls
@@ -133,14 +149,25 @@ Cycle 0 measured it; H2 tests the first mitigation. The no-diacritic failure is 
 failure: pyvi also mis-segments unaccented text, and the suite does not separate the two. A diacritic
 restoration front-end is the untested alternative.
 
-### P6 — INT8 is blocked by the quality gate; latency is being re-measured
-FP32 ONNX is released and verified (logit parity 8.2e-5, 100% label agreement on 1,583 sentences).
-**INT8 does not pass** (ADR-022): dynamic INT8 keeps both majority classes and drops neutral F1
-0.672 → 0.584 (macro −0.030, upper bound 0.054 against a 0.005 margin); static per-tensor INT8
-breaks the model. The first Kaggle builds had failed for a different reason (quantizing a fused
-graph), now fixed. The steady-state latency ladder, with the blocked INT8 graph timed only to answer
-H3, is being re-measured after the `results/` loss (ADR-023). *Next if INT8 matters:* per-channel or
-partial quantization selected on a held-out subset, or a distilled FP32 student (E15).
+### P6 — Latency measured; INT8 is faster but blocked by the quality gate
+Reference CPU (Ryzen 5 6600H, AVX2, no AVX512-VNNI), single sentence, model-only on pre-segmented
+input, two steady passes in rotated order agreeing within 1% (`results/studies/latency/reference_cpu.json`):
+
+| Configuration | p50 | p95 | vs L0, p50 / p95 | texts/s (b=32) | Quality |
+|---|---:|---:|---|---:|---|
+| L0 PyTorch FP32, pad to 96 | 117.4 ms | 120.5 ms | 1× | 12.0 | reference |
+| L1 PyTorch FP32, dynamic padding | 46.7 ms | 64.1 ms | 2.5× / 1.9× | 24.1 | identical |
+| **L3 ONNX FP32 (served)** | **15.5 ms** | **33.6 ms** | **7.6× / 3.6×** | 24.9 | identical (parity 8.2e-5) |
+| L4 ONNX INT8 dynamic (blocked) | 9.0 ms | 20.4 ms | 13.1× / 5.9× | 40.9 | neutral F1 −0.088: not released |
+
+- **Serve FP32 ONNX**: 7.6× faster than padded PyTorch at the median, identical predictions.
+  S5 (p95 ≤ 60 ms minimum, ≤ 30 ms target): minimum met; the target was met in an earlier session
+  (23.9 ms) but not this one (33.6 ms). Absolute latency on this laptop depends on its power state;
+  the ratios reproduce across sessions (3.52× vs 3.58× at p95), so ratios are the claim.
+- **H3 is falsified.** INT8 was expected to be possibly *slower* without VNNI. It is 1.7× faster than
+  FP32 ONNX on AVX2. It is still not shipped: it costs 0.088 neutral F1 (ADR-022). The review's
+  efficiency stretch target (≥ 1.5× with neutral loss ≤ 0.02) is therefore not met.
+- Peak process memory with all four models loaded: 2.5 GB.
 
 ### P7 — Reproducibility is partly pinned
 Run identity includes a config hash, and run directories cannot be overwritten by a different
@@ -182,8 +209,7 @@ Full traceability, including the study designs, catalog and backlog:
 
 Chosen after Cycle 1's decisions, one specialization at a time (review § 10):
 
-1. **Finish Cycle 1**: H3 on Kaggle; finalist seeds for any method that met its advance rule; the
-   closing gate (one logged test evaluation per finalist, calibrated vs uncalibrated).
+1. **Cycle 1 is closed** (all four hypotheses decided; closing gate on test done).
 2. **The human audit** (P2/P3). Cheapest remaining information, and it gates E04.
 3. **Data science track:** label-efficiency curves (E11), OOF-ranked label correction (E04).
 4. **ML engineering track:** INT8 on the reference CPU, distillation into a 4–6 layer student (E15).

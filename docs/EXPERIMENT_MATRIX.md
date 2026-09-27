@@ -473,18 +473,19 @@ robustness-for-accuracy trade stays visible.
 
 | Step | Configuration | Size (MB) | p50 (ms) | **p95 (ms)** | p99 (ms) | Throughput b=32 (texts/s) | Macro-F1 | Δ F1 (pp) | Within budget? |
 |---|---|---|---|---|---|---|---|---|---|
-| L0 | torch fp32, pad max | | | | | | | *ref* | — |
-| L1 | + dynamic padding | | | | | | | | |
+| L0 | torch fp32, pad to 96 | 540 | 117.4 | 120.5 | — | 12.0 | 0.8672 | *ref* | — |
+| L1 | + dynamic padding | 540 | 46.7 | 64.1 | — | 24.1 | 0.8672 | 0.00 | ✓ |
 | L2 | + thread tuning | | | | | | | | |
-| L3 | onnx fp32, EXTENDED offline + ALL at load — **released and verified** (ADR-020/022) | 540 | *re-run pending (ADR-023)* | | | | 0.8672 (= PyTorch fp32) | 0.00 | ✓ parity 8.2e-5 |
-| L4 | onnx int8 dynamic | 136 | *timed for H3 only* | | | | 0.8370 | −3.02 | ✗ blocked: neutral F1 0.672 → 0.584 (ADR-022) |
+| L3 | onnx fp32, EXTENDED offline + ALL at load — **released and verified** (ADR-020/022) | 540 | **15.5** | **33.6** | — | 24.9 | 0.8672 (= PyTorch fp32) | 0.00 | ✓ parity 8.2e-5 |
+| L4 | onnx int8 dynamic | 136 | 9.0 | 20.4 | — | 40.9 | 0.8370 | −3.02 | ✗ blocked: neutral F1 0.672 → 0.584 (ADR-022). 1.7× faster than L3: H3 falsified |
 | L5 | onnx int8 static (per-tensor MinMax) | 136 | — | | | | 0.342 | −52 | ✗ blocked: breaks the model (ADR-022) |
 | L6 | openvino int8 | | | | | | | | |
 | L7 | + no segmentation | | | | | | | | |
 | L8 | distilled student | | | | | | | | |
 
-Throughput counts **texts** per second through the in-process pipeline, not HTTP requests (R10). The
-last Phase 6 run was unstable (p95 spread 22–48% across repeats) and is not reported.
+Throughput counts **texts** per second, not HTTP requests (R10). Measured 2026-09-27 on the reference
+CPU, two steady passes in rotated order agreeing within 1% (`results/studies/latency/reference_cpu.json`).
+Absolute times vary between laptop sessions; ratios reproduce (see STATUS § 4 P6).
 
 **Reference machine** — fill once, cite everywhere: CPU `[model]`, `[n]` cores / `[m]` threads,
 AVX2 `[y/n]`, AVX512-VNNI `[y/n]`, RAM `[n]` GB, OS `[…]`, power plan `[…]`, AC `[y/n]`,

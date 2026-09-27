@@ -17,9 +17,14 @@
 | sentiment | b5 | raw | base | validation | 1 | 0.7679 | 0.7679 | 0.7679 |
 | sentiment | b5 | raw | threshold-tuned | validation | 1 | 0.7745 | 0.7745 | 0.7745 |
 | sentiment | phobert-base | raw | base | validation | 5 | 0.8436 ± 0.0079 | 0.8355 | 0.8566 |
+| sentiment | phobert-base | seg_pyvi | aug-diac-teen | test | 5 | 0.8296 ± 0.0071 | 0.8179 | 0.8371 |
+| sentiment | phobert-base | seg_pyvi | aug-diac-teen | validation | 5 | 0.8685 ± 0.0070 | 0.8609 | 0.8795 |
 | sentiment | phobert-base | seg_pyvi | base | test | 5 | 0.8288 ± 0.0108 | 0.8151 | 0.8437 |
 | sentiment | phobert-base | seg_pyvi | base | validation | 5 | 0.8643 ± 0.0098 | 0.8494 | 0.8750 |
-| sentiment | phobert-base | seg_pyvi | crt | validation | 2 | 0.8641 ± 0.0016 | 0.8630 | 0.8653 |
+| sentiment | phobert-base | seg_pyvi | crt | validation | 5 | 0.8649 ± 0.0025 | 0.8630 | 0.8690 |
+| sentiment | phobert-base | seg_pyvi | logit-adjust | validation | 3 | 0.8641 ± 0.0101 | 0.8524 | 0.8704 |
+| sentiment | phobert-base | seg_pyvi | mtl-l0.3 | validation | 3 | 0.8625 ± 0.0062 | 0.8583 | 0.8696 |
+| sentiment | phobert-base | seg_pyvi | mtl-l1 | validation | 3 | 0.8557 ± 0.0112 | 0.8472 | 0.8684 |
 | sentiment | phobert-base | seg_underthesea | base | validation | 5 | 0.8618 ± 0.0063 | 0.8552 | 0.8695 |
 | sentiment | phobert-base | seg_vncorenlp | base | test | 5 | 0.8373 ± 0.0031 | 0.8334 | 0.8414 |
 | sentiment | phobert-base | seg_vncorenlp | base | validation | 5 | 0.8671 ± 0.0073 | 0.8598 | 0.8751 |
@@ -43,3 +48,5 @@
 | topic | phobert-base | raw | base | validation | 5 | 0.7971 ± 0.0018 | 0.7948 | 0.7989 |
 | topic | phobert-base | seg_pyvi | base | test | 5 | 0.8038 ± 0.0045 | 0.7966 | 0.8090 |
 | topic | phobert-base | seg_pyvi | base | validation | 5 | 0.8111 ± 0.0048 | 0.8058 | 0.8173 |
+| topic | phobert-base | seg_pyvi | mtl-l0.3 | validation | 3 | 0.8129 ± 0.0030 | 0.8106 | 0.8163 |
+| topic | phobert-base | seg_pyvi | mtl-l1 | validation | 3 | 0.8154 ± 0.0008 | 0.8145 | 0.8161 |

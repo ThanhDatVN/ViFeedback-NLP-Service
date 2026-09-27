@@ -162,7 +162,7 @@ in `results/test_evaluations.log`, 21 rows, all from Gate G4.
 |---|---|
 | G4 baselines and PhoBERT (VnCoreNLP, pyvi; sentiment, topic) | **None.** The serving pipeline (pyvi) was chosen on dev + latency before G4 (ADR-012). The dev→test drop was reported, not acted on. No configuration, threshold or model choice since G4 used a test number |
 
-The Cycle 1 closing gate adds one row per finalist here, with what, if anything, it changed.
+| Cycle 1 closing gate (7 touches: 5 H2 finalist runs, 2 seed-42 checkpoints) | **None.** Cycle 1's decisions were recorded on validation first; the gate confirmed H2 and the calibration temperature. Choosing the augmented model for deployment on the strength of this result would be the first test-influenced decision, and would be recorded here |
 
 ## Latency harness
 

@@ -64,13 +64,13 @@ results are weighted F1 or accuracy — within reach of a model that learned not
 
 ---
 
-## Three hypotheses, two falsified
+## Three hypotheses, all resolved
 
 | | Hypothesis | Outcome |
 |---|---|---|
 | **H1** | Macro-F1 is the binding constraint | **Supported.** On test, PhoBERT's advantage over TF-IDF is +0.057 weighted F1 but **+0.175 neutral F1** (+0.092 macro-F1) |
 | **H2** | Word segmentation is unnecessary and dominates p95 latency | **Both halves wrong, for different reasons.** *Latency*: falsified by measurement — 0.31 ms p95, 0.6% of the model's cost. *Accuracy*: segmentation is worth **+0.0234 macro-F1** (t = 8.58, p = 0.0010, 5/5 seeds), which **agrees with** the source paper. My reading of that paper was the error (ADR-018) |
-| **H3** | INT8 may be slower than FP32 without AVX512-VNNI | **Open.** Reference CPU measured: AMD Ryzen 5 6600H, `avx2=true`, **`avx512_vnni=false`** |
+| **H3** | INT8 may be slower than FP32 without AVX512-VNNI | **Falsified.** On the Ryzen 5 6600H (AVX2, no VNNI) dynamic INT8 is **1.7× faster** than FP32 ONNX. It is still not shipped: it costs 0.088 neutral F1 (ADR-022) |
 
 ### Segmentation: an independent replication, not a refutation
 
@@ -139,7 +139,7 @@ decisions computed by code from the declared rules):
 | Hypothesis | Decision |
 |---|---|
 | H1 Neutral is fixable in the classifier (logit adjustment, balanced head retraining) | **No.** Both +0.003 macro-F1, not advanced; each trades neutral precision for recall |
-| H2 Diacritic/teencode augmentation buys robustness without clean cost | **Supported at 5 seeds**: missing-diacritic degradation −43%, clean accuracy flat. Only in-family: character noise unchanged |
+| H2 Diacritic/teencode augmentation buys robustness without clean cost | **Supported at 5 seeds, confirmed on test**: no-diacritic test macro-F1 0.27 → 0.64, clean test accuracy unchanged (+0.0008). Only in-family: character noise barely moves |
 | H3 XLM-R's deficit was a preprocessing confound | **Partly.** Raw text +0.010 over pyvi input (4/5 seeds, p = 0.03), but XLM-R still trails PhoBERT-base by 0.014 |
 | H4 A shared sentiment/topic encoder helps | **No gain** at λ = 0.3 (one model for both tasks, no loss detected); sentiment cost at λ = 1 |
 
@@ -263,10 +263,19 @@ does not enter the registry.
 |---|---|
 | CPU | AMD Ryzen 5 6600H · 6C/12T · AVX2 · **no AVX512-VNNI** |
 | GPU | RTX 3050 Laptop, 4.29 GB — 69 s/epoch for PhoBERT-base |
-| Runs to date | 97 registry rows (83 distinct results after removing duplicates and same-seed re-runs; 21 test rows). Ten come from a Kaggle T4; every weight-updating run is in [the ledger](configs/experiments/ledger.csv) |
+| Runs to date | 153 registry rows, 118 distinct results after removing duplicate ids and same-condition re-runs; 119 weight-updating runs, ~9.6 GPU-hours, all in [the ledger](configs/experiments/ledger.csv) |
 
-`max_length` 96 (from the Gate G0 subword profile) plus dynamic padding already cut FP32 CPU p95
-from **177.5 ms to 50.8 ms — 3.49×, before any quantization**.
+Single-sentence latency, model-only, two steady passes (`vifeedback study latency`):
+
+| Configuration | p50 | p95 | vs L0, p50 / p95 | texts/s (b=32) | Quality |
+|---|---:|---:|---|---:|---|
+| L0 PyTorch FP32, pad to 96 | 117.4 ms | 120.5 ms | 1× | 12.0 | reference |
+| L1 PyTorch FP32, dynamic padding | 46.7 ms | 64.1 ms | 2.5× / 1.9× | 24.1 | identical |
+| **L3 ONNX FP32 (served)** | **15.5 ms** | **33.6 ms** | **7.6× / 3.6×** | 24.9 | identical (parity 8.2e-5) |
+| L4 ONNX INT8 dynamic (blocked) | 9.0 ms | 20.4 ms | 13.1× / 5.9× | 40.9 | neutral F1 −0.088: not released |
+
+Absolute times shift between laptop sessions with the CPU's power state; the speed-up ratios
+reproduce, so they are the claim.
 
 ---
 
