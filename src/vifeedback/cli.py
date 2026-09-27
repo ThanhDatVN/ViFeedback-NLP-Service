@@ -1612,5 +1612,36 @@ def results_merge(
     )
 
 
+@results_app.command("provenance")
+def results_provenance() -> None:
+    """Resolve every run's recorded source hash to the commit whose code it executed (R11).
+
+    Kaggle runs carry no git SHA; their `source_sha256` is matched against every commit's source.
+    Writes results/provenance.json.
+    """
+    from collections import defaultdict
+
+    from vifeedback.env import source_hash_by_commit
+
+    by_commit = source_hash_by_commit(paths.ROOT)
+    runs: dict[str, list[str]] = defaultdict(list)
+    for env_file in sorted((paths.RESULTS / "runs").glob("*/env.json")):
+        h = json.loads(env_file.read_text(encoding="utf-8")).get("source_sha256") or "none"
+        runs[h].append(env_file.parent.name)
+    out = {
+        h: {
+            "first_commit": by_commit[h][0] if h in by_commit else None,
+            "commits_with_identical_source": len(by_commit.get(h, [])),
+            "note": None if h in by_commit else "no commit has this source: an uncommitted tree",
+            "runs": names,
+        }
+        for h, names in sorted(runs.items())
+    }
+    (paths.RESULTS / "provenance.json").write_text(json.dumps(out, indent=2), encoding="utf-8")
+    for h, r in out.items():
+        where = (r["first_commit"] or "uncommitted")[:10]
+        typer.echo(f"  {h[:12]}  {len(r['runs']):3d} runs  -> {where}")
+
+
 if __name__ == "__main__":
     app()

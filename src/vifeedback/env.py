@@ -171,6 +171,49 @@ def source_hash() -> str:
     return h.hexdigest()
 
 
+def source_hash_by_commit(repo: Path) -> dict[str, list[str]]:
+    """`source_hash()` of every commit's `src/vifeedback`, inverted: hash -> commits (oldest first).
+
+    Resolves a run recorded without a git SHA (Kaggle) to the commit whose code it executed. A hash
+    no commit produces means the run executed an uncommitted working tree.
+    """
+    import hashlib
+    from pathlib import PurePosixPath
+
+    def git(*args: str, data: bytes | None = None) -> bytes:
+        return subprocess.run(
+            ["git", *args], cwd=repo, input=data, capture_output=True, check=True
+        ).stdout
+
+    commits = git("rev-list", "--reverse", "HEAD").decode().split()
+    trees = {}
+    for c in commits:
+        entries = []
+        for line in git("ls-tree", "-r", c, "src/vifeedback").decode().splitlines():
+            meta, path = line.split("\t", 1)
+            if path.endswith(".py"):
+                entries.append((PurePosixPath(path).relative_to("src/vifeedback"), meta.split()[2]))
+        trees[c] = sorted(entries, key=lambda e: e[0].parts)
+
+    blobs = sorted({b for t in trees.values() for _, b in t})
+    raw = git("cat-file", "--batch", data="\n".join(blobs).encode() + b"\n")
+    content, pos = {}, 0
+    for b in blobs:  # --batch output: "<sha> blob <size>\n<bytes>\n", in request order
+        header_end = raw.index(b"\n", pos)
+        size = int(raw[pos:header_end].split()[2])
+        content[b] = raw[header_end + 1 : header_end + 1 + size]
+        pos = header_end + 1 + size + 1
+
+    out: dict[str, list[str]] = {}
+    for c, entries in trees.items():
+        h = hashlib.sha256()
+        for rel, b in entries:
+            h.update(rel.as_posix().encode())
+            h.update(content[b].replace(b"\r\n", b"\n"))
+        out.setdefault(h.hexdigest(), []).append(c)
+    return out
+
+
 def capture(extra: dict[str, Any] | None = None) -> dict[str, Any]:
     cpu = cpu_info()
     env = {
