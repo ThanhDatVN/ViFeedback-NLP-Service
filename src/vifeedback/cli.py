@@ -1360,6 +1360,191 @@ def study_challenge(
     )
 
 
+@study_app.command("llm-prompt-dev")
+def study_llm_prompt_dev(
+    model: str = typer.Option("Qwen/Qwen3-1.7B", help="the pilot; never an API model"),
+    force: bool = typer.Option(False, help="overwrite a frozen prompt_dev.json"),
+) -> None:
+    """Cycle 2 H7 prompt development: score the prompt variants on a fixed train subset, freeze the best."""
+    import datetime as dt
+
+    from vifeedback.data.loader import load
+    from vifeedback.evaluation import llm_reference as L
+    from vifeedback.evaluation import metrics as M
+
+    if L.PROMPT_DEV_FILE.exists() and not force:
+        raise typer.BadParameter(
+            f"{L.PROMPT_DEV_FILE} exists: the prompt is frozen (--force to redo)"
+        )
+    tr = load("train")
+    y = tr.sentiment.to_numpy()
+    idx = L.prompt_dev_subset(y)
+    texts = tr.sentence.iloc[idx].tolist()
+    scorer = L.HFScorer(model)
+    rows = {}
+    for variant in L.VARIANTS:
+        r = L.run(scorer, texts, variant)
+        ev = M.evaluate(y[idx], r["probs"].argmax(1), "sentiment")
+        rows[variant] = {
+            "macro_f1": ev["macro_f1"],
+            "per_class_f1": {c: v["f1"] for c, v in ev["per_class"].items()},
+            "seconds": r["seconds"],
+        }
+        typer.echo(
+            f"  {variant:30s} macro-F1 {ev['macro_f1']:.4f}  "
+            f"neutral F1 {rows[variant]['per_class_f1']['neutral']:.3f}"
+        )
+    best = max(L.VARIANTS, key=lambda v: rows[v]["macro_f1"])  # ties keep the earlier, simpler one
+    per_class = {L.LABELS[c]: int((y[idx] == c).sum()) for c in range(len(L.LABELS))}
+    L.write(
+        L.PROMPT_DEV_FILE,
+        {
+            "model": model,
+            "revision": scorer.revision,
+            "subset": {"split": "train", "indices": idx.tolist(), "per_class": per_class},
+            "variants": rows,
+            "frozen_variant": best,
+            "frozen_on": dt.date.today().isoformat(),
+            "prompts": {v: "\n\n".join(parts) for v, parts in L.VARIANTS.items()},
+        },
+    )
+    typer.echo(f"frozen: {best} -> {L.PROMPT_DEV_FILE}")
+
+
+@study_app.command("llm-reference")
+def study_llm_reference(
+    model: str = typer.Option("Qwen/Qwen3-1.7B"),
+    backend: str = typer.Option("hf", help="hf | openai"),
+    data: str = typer.Option("challenge", help="challenge | validation"),
+    shots: int = typer.Option(0, help="0, or 6 demonstrations (2 per class)"),
+    demo_seed: int = typer.Option(1, help="demonstration draw (declared: 1 and 2)"),
+    batch_size: int = typer.Option(8),
+    licence_confirmed: bool = typer.Option(
+        False, help="owner confirmed UIT-VSFC may be sent to the API (cycle2.yaml data_egress)"
+    ),
+) -> None:
+    """Cycle 2 H7: score one LLM configuration with the frozen prompt; compare with the encoders."""
+    import numpy as np
+    import pandas as pd
+
+    from vifeedback.data.loader import load
+    from vifeedback.evaluation import challenge as CH
+    from vifeedback.evaluation import llm_reference as L
+    from vifeedback.evaluation import metrics as M
+
+    if backend == "openai" and (data != "challenge" or shots) and not licence_confirmed:
+        raise typer.BadParameter(
+            "UIT-VSFC text (validation, or train demonstrations) goes to the API only after the "
+            "owner confirms the licence allows it; pass --licence-confirmed once that is settled"
+        )
+    variant = L.frozen_variant()
+    frozen = json.loads(L.PROMPT_DEV_FILE.read_text(encoding="utf-8"))
+    tr = load("train")
+    demos = (
+        L.draw_demos(
+            tr.sentence.tolist(),
+            tr.sentiment.to_numpy(),
+            demo_seed,
+            shots // 3,
+            exclude=frozen["subset"]["indices"],
+        )
+        if shots
+        else []
+    )
+
+    if data == "challenge":
+        df = CH.load()
+        texts = df.text.tolist()
+        scored = df.scored.to_numpy()
+        y = df.y.to_numpy()
+        enc = pd.read_csv(
+            paths.RESULTS / "studies" / "challenge" / "predictions.csv", keep_default_na=False
+        )
+        enc_pred = {n: enc[f"{n}_pred"].map(L.LABELS.index).to_numpy() for n in ("ce", "augmented")}
+    else:
+        from vifeedback.evaluation import error_analysis as EA
+        from vifeedback.preprocess.variants import load_variant
+
+        dv = load("validation")
+        texts = dv.sentence.tolist()
+        y = dv.sentiment.to_numpy().astype(float)
+        scored = np.ones(len(y), dtype=bool)
+        x = load_variant("seg_pyvi", "validation").sentence.tolist()
+        enc_pred = {
+            "ce": EA.predict_proba("models/p6-sent-phobert-base-seg_pyvi-base-s42-ckp", x).argmax(
+                1
+            ),
+            "augmented": EA.predict_proba(
+                "models/p9-sent-phobert-base-seg_pyvi-aug-diac-teen-s42-599cf21f-ckp", x
+            ).argmax(1),
+        }
+
+    scorer = L.OpenAIScorer(model) if backend == "openai" else L.HFScorer(model)
+    r = L.run(scorer, texts, variant, demos, batch_size=batch_size)
+    pred = r["probs"].argmax(1)
+    ys, ps = y[scored].astype(int), pred[scored]
+    ev = M.evaluate(ys, ps, "sentiment", y_prob=r["probs"][scored])
+    summary: dict = {
+        "model": model,
+        "revision": scorer.revision,
+        "backend": backend,
+        "data": data,
+        "variant": variant,
+        "shots": shots,
+        "demo_seed": demo_seed if shots else None,
+        "demos": demos,
+        "n_scored": int(scored.sum()),
+        "macro_f1": ev["macro_f1"],
+        "per_class": ev["per_class"],
+        "seconds": r["seconds"],
+        "seconds_per_1k": r["seconds_per_1k"],
+        "vs_encoder": {
+            name: L.compare_to_encoder(ys, ps, p[scored]) for name, p in enc_pred.items()
+        },
+    }
+    if isinstance(scorer, L.OpenAIScorer):
+        summary["api"] = {
+            **scorer.usage,
+            "served_models": sorted(scorer.served_models),
+            "price_per_m_tokens_usd": L.API_PRICE_PER_M,
+            "cost_usd": scorer.cost_usd(),
+            "usd_per_1k": 1000 * scorer.cost_usd() / len(texts),
+            "note": "latency includes the network round trip",
+        }
+    else:
+        summary["gpu_seconds_per_1k"] = r["seconds_per_1k"]
+        summary["batch_size"] = batch_size
+    if data == "challenge":
+        summary["challenge"] = {
+            **CH.category_report(df, pred),
+            "negation_pairs": CH.negation_pairs(df, pred),
+            "out_of_scope_confidence": CH.out_of_scope_confidence(df, r["probs"]),
+        }
+
+    run_name = f"{data}-{variant}-k{shots}" + (f"-s{demo_seed}" if shots else "")
+    out = L.OUT / L.slug(model) / run_name
+    L.write(out / "summary.json", summary)
+    table = pd.DataFrame(r["probs"].round(5), columns=[f"p_{c}" for c in L.LABELS])
+    table.insert(0, "pred", [L.LABELS[i] for i in pred])
+    if data == "challenge":  # constructed text ids only; corpus text is never written here
+        table.insert(0, "id", df.id)
+    table.to_csv(out / "predictions.csv", index_label="row")
+
+    pc = ev["per_class"]
+    typer.echo(
+        f"{model} {run_name}: macro-F1 {ev['macro_f1']:.4f}  neutral F1 {pc['neutral']['f1']:.3f}"
+        f"  ({r['seconds_per_1k']:.1f} s per 1k)"
+    )
+    for name, c in summary["vs_encoder"].items():
+        n = c["neutral_f1"]
+        typer.echo(
+            f"  vs {name:9s} neutral F1 {n['observed_diff']:+.3f} [{n['ci_low']:+.3f}, "
+            f"{n['ci_high']:+.3f}] p={n['p_value']:.3f}; macro-F1 {c['macro_f1']['observed_diff']:+.3f}"
+        )
+    if isinstance(scorer, L.OpenAIScorer):
+        typer.echo(f"  API: {scorer.usage['calls']} calls, USD {scorer.cost_usd():.4f}")
+
+
 @results_app.command("merge")
 def results_merge(
     source: str = typer.Argument(..., help="an extracted results folder, e.g. kaggle_results/"),
