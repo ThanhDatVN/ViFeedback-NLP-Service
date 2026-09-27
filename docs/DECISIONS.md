@@ -859,3 +859,27 @@ declared rule will require non-inferiority per category, not only in pools.
 
 **Test influence.** This is the first decision a test result influenced (EVALUATION_PROTOCOL § 4):
 the closing-gate test numbers were known when H6 was declared.
+
+---
+
+## ADR-028 · 2026-09-27 · Correction: constructed, not typed; two drops are not yet regressions · Accepted
+
+**What was claimed.** The Cycle 2 write-up (ADR-027, STATUS, RESEARCH_REPORT, README) called the
+challenge set's noisy rows "hand-typed" and "real typing", and listed two per-category drops of the
+served model as regressions.
+
+**What is true.** The rows were *constructed* to imitate typing. None was typed by a real user on a
+device. They are independent of the augmentation code, which is all H6's rule needed, but they are not
+a sample of real typing. And at one seed the two drops are not significant:
+
+| Category | CE right only | Augmented right only | Exact McNemar p |
+|---|---:|---:|---:|
+| `teencode_typed` (40) | 4 | 0 | 0.125 |
+| `objective_neutral` (30) | 5 | 1 | 0.219 |
+| `unaccented_typed` (50), for contrast | 5 | 26 | < 0.001 |
+
+**Consequences.** H6's decision stands: its declared rule (pooled typed rows, paired CI above 0,
+p = 0.003) is met, and the unaccented gain is significant alone. The two drops become hypotheses,
+checked at five seeds before anything is built to fix them (NEXT_PLAN v3, step 0). A likely cause is
+already visible: the augmentation's teencode map has 14 entries. Claims about real user typing wait for
+a human-typed challenge set (v2).

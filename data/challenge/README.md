@@ -26,7 +26,7 @@ Read it with `keep_default_na=False`: pandas would otherwise parse an empty `pai
 | `mixed_aspect` | 40 | 20 / 0 / 20 | Two evaluations joined by *nhưng* / *tuy* / *mặc dù*, often across aspects (lecturer vs room) |
 | `suggestion_cue` | 25 | 25 / 0 / 0 | Requests for change with *nên* / *cần* / *mong* |
 | `suggestion_implicit` | 25 | 18 / 7 / 0 | Requests without a cue word (18), and questions or information requests (7) |
-| `unaccented_typed` | 50 | 20 / 10 / 20 | Written without diacritics by hand, not by `strip_diacritics` |
+| `unaccented_typed` | 50 | 20 / 10 / 20 | Written without diacritics in the style of typing, not produced by `strip_diacritics` |
 | `teencode_typed` | 40 | 16 / 8 / 16 | Abbreviations and informal spelling as typed (*ko*, *wá*, *hỉu*, *bt*, *tks*) |
 | `code_switch` | 25 | 9 / 4 / 12 | English words inside Vietnamese sentences (*deadline*, *slide*, *support*) |
 | `long_context` | 20 | 8 / 4 / 8 | 23–38 words, no punctuation: the evaluation comes late or is spread out |
@@ -51,8 +51,9 @@ corpus's own conventions:
 
 - One author wrote and labelled every row, so there is no agreement estimate. The set tests
   phenomena, not the label distribution of real feedback.
-- Typed noise reflects one writer's habits, so it is wider than the synthetic suites but not a
-  sample of real users.
+- The noisy rows were constructed to imitate typing; none was typed by a real user on a device.
+  They are independent of the augmentation code, which is what H6 needed, but they are not a sample
+  of real typing. A human-typed set is planned as challenge v2 (NEXT_PLAN v3).
 - `sentiment` only. Topic is not labelled: `mixed_aspect` rows have two topics by design.
 
 The CSV is the artifact. The script that wrote it is not part of the pipeline.

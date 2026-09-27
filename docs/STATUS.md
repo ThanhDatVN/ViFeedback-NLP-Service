@@ -30,6 +30,7 @@ stands, what is wrong with it, and what runs next.**
 | **0** | Fix validity problems; what does the current model get wrong? | ✅ [results/studies/](../results/studies/README.md) |
 | **1** | Four hypotheses, declared before running ([cycle1.yaml](../configs/experiments/cycle1.yaml) v1 + v2) | ✅ all four decided; closing gate on test done (H2 and calibration confirmed) |
 | **2** | Track A: confirmation on a frozen challenge set, the serving model, topic stacking, an LLM reference ([cycle2.yaml](../configs/experiments/cycle2.yaml) v2) | 🔶 H5 not supported; H6 switched the served model; H7 pilot done, declared Qwen3-4B and API runs pending (👤) |
+| **3** | Reliability of the served model on real input: verify the Cycle 2 drops, human-typed challenge v2, teencode lexicon, diacritic restoration, an out-of-scope score; size (S7) as a side track | ⏳ planned ([NEXT_PLAN v3](NEXT_PLAN.md)) |
 
 **Compute to date** ([ledger](../configs/experiments/ledger.csv)): 124 weight-updating runs, about 9.9 GPU-hours, of which 19 regenerated runs after the `results/` loss (ADR-023), plus 12 GPU-minutes of LLM inference. The registry holds 153 rows.
 
@@ -126,16 +127,17 @@ uses the official test.
 | Hypothesis | Result | Decision by the declared rule |
 |---|---|---|
 | **H5** topic stacking (TF-IDF B4 × PhoBERT, out-of-fold meta-model) | Stacked − PhoBERT 5-fold ensemble −0.0102 [−0.0228, +0.0013]; `facility` and `others` both lower | **Not supported.** The "TF-IDF wins facility" gap reverses under a paired interval: −0.021 [−0.060, +0.015] |
-| **H6** serve the H2-augmented model? | Hand-typed noise (90 rows): accuracy 0.611 → 0.800, +0.189 [+0.067, +0.311]; other rows unchanged (0.867) | **Switched** (ADR-027), released through the FP32 gate. Recorded regressions: typed teencode 0.975 → 0.875; short factual sentences 0.767 → 0.633 |
+| **H6** serve the H2-augmented model? | Constructed typed-style noise (90 rows): accuracy 0.611 → 0.800, +0.189 [+0.067, +0.311]; other rows unchanged (0.867) | **Switched** (ADR-027), released through the FP32 gate. Possible regressions, not significant at one seed (ADR-028): teencode 0.975 → 0.875 (p = 0.13); short factual sentences 0.767 → 0.633 (p = 0.22) |
 | **H7 pilot** Qwen3-1.7B, label likelihood, frozen prompt | Validation macro-F1 0.68 / 0.65 (0- / 6-shot) vs 0.86; neutral F1 0.26–0.29 vs 0.66; over-calls neutral (precision 0.16–0.18) | Pilot only. Declared Qwen3-4B (Kaggle cell 4f) and gpt-4o-mini (owner's key) pending |
 
 **What Cycle 2 establishes so far.**
 
-1. **H2's robustness transfers to real unaccented typing** (0.32 → 0.74), which synthetic suites could
-   only suggest, but **not to real teencode**, where the scripted map differs from how people type.
+1. **H2's robustness transfers to unaccented text the augmentation code did not produce** (0.32 → 0.74,
+   p < 0.001), but **not demonstrably to teencode** beyond its 14-entry map (0.975 → 0.875, p = 0.13 at one
+   seed). Neither set was typed by real users (ADR-028).
 2. **The serving decision rests on new data, and its costs are named.** The pooled rule passed. The
-   per-category view shows a neutral-recall cost on short factual text, and the next rule will require
-   per-category non-inferiority.
+   per-category view shows a possible neutral-recall cost on short factual text (p = 0.22 at one seed,
+   to be checked at 5 seeds), and the next rule will require per-category non-inferiority.
 3. **Stacking does not help topic**, and the observation that motivated it was noise.
 4. **A small LLM fails where the encoder succeeds, and the reverse.** It rejects the corpus's policy
    (suggestions and contrasts as polar), yet labels factual sentences correctly where the encoder
@@ -174,8 +176,8 @@ topic too (+0.0141, p = 0.004). Multi-task (H4) gave no material gain, and TF-ID
 the weak class. *Open:* a topic audit of `others`, which is a residual category by construction.
 
 ### P5 — Robustness to informal orthography is a deployment risk
-Cycle 0 measured it; H2's augmentation is now served (ADR-027). On hand-typed text it lifts unaccented
-accuracy from 0.32 to 0.74 but lowers typed teencode from 0.975 to 0.875. The no-diacritic failure is a
+Cycle 0 measured it; H2's augmentation is now served (ADR-027). On constructed typed-style text it lifts
+unaccented accuracy from 0.32 to 0.74 (p < 0.001); teencode moves 0.975 → 0.875, not significant at one seed. The no-diacritic failure is a
 whole-pipeline failure: pyvi also mis-segments unaccented text. A diacritic-restoration front-end
 remains the untested alternative (NEXT_PLAN P5, conditional).
 
@@ -243,7 +245,8 @@ Full traceability, including the study designs, catalog and backlog:
 
 ## 7. Next
 
-Every open item, with what closes it and who: **[NEXT_PLAN.md](NEXT_PLAN.md) § 1**. Needs the owner:
+Every unmet target and gap, with where it is handled: **[NEXT_PLAN.md](NEXT_PLAN.md) v3 § 1**; the
+Cycle 3 steps are in § 3. Needs the owner:
 
 1. **The declared H7 runs**: Kaggle cell 4f (Qwen3-4B); gpt-4o-mini once `OPENAI_API_KEY` is set
    (challenge set only until the UIT-VSFC licence question is answered).

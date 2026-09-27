@@ -49,8 +49,8 @@ than the model. Reporting the dev number would have been wrong, and only running
 revealed it.
 
 The augmented model matches the plain one on clean test text and keeps working when accents are
-missing: no-diacritic test macro-F1 **0.64 vs 0.27**, and on hand-typed unaccented sentences from a
-frozen challenge set, accuracy **0.74 vs 0.32**. That is why the service switched to it (Cycle 2).
+missing: no-diacritic test macro-F1 **0.64 vs 0.27**, and on constructed unaccented sentences that the
+augmentation code did not produce (a frozen challenge set), accuracy **0.74 vs 0.32**. That is why the service switched to it (Cycle 2).
 
 ---
 
@@ -156,7 +156,7 @@ before any model saw it ([data/challenge](data/challenge/README.md)).
 | Hypothesis | Decision |
 |---|---|
 | H5 Stacking TF-IDF with PhoBERT helps topic | **No.** −0.010 macro-F1; TF-IDF's apparent edge on `facility` was noise |
-| H6 Serve the augmented model | **Yes, by the declared rule.** Hand-typed noisy text 0.61 → 0.80 accuracy, other rows unchanged. Recorded costs: typed teencode 0.975 → 0.875, short factual sentences drift to negative |
+| H6 Serve the augmented model | **Yes, by the declared rule.** Constructed noisy text 0.61 → 0.80 accuracy, other rows unchanged. Possible costs, not significant at one seed: teencode 0.975 → 0.875 (p = 0.13), short factual sentences 0.77 → 0.63 (p = 0.22) |
 | H7 An instruction LLM does better on the hard cases | **Pilot (Qwen3-1.7B): no.** Neutral F1 0.26–0.29 against the encoder's 0.66. It rejects the corpus's label policy (requests as negative), yet gets factual sentences right where the encoder fails. Declared Qwen3-4B and gpt-4o-mini runs pending |
 
 Details: [STATUS § 3–4](docs/STATUS.md#3-cycle-1--declared-hypotheses-and-their-outcome) ·

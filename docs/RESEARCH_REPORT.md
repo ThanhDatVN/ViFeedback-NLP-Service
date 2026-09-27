@@ -23,7 +23,7 @@ under a laptop-GPU budget (RTX 3050, 4.29 GB) plus free Kaggle.
 | | Question | Answered by |
 |---|---|---|
 | Q1 | What limits neutral performance: imbalance, annotation ambiguity, representation, or the decision boundary? | Study A (Cycle 0), H1 (Cycle 1); the human audit is the open step |
-| Q2 | What survives input that differs from clean benchmark text? | Robustness suite (Cycle 0), H2 (Cycle 1); hand-typed noise on the challenge set, H6 (Cycle 2) |
+| Q2 | What survives input that differs from clean benchmark text? | Robustness suite (Cycle 0), H2 (Cycle 1); constructed typed-style noise on the challenge set, H6 (Cycle 2) |
 | Q3 | Which method uses labels most efficiently? | Not selected: the review allows one specialization per cycle. Deferred |
 | Q4 | Do sentiment and topic share useful structure, or interfere? | H4 (Cycle 1) |
 | Q5 | Can the model's confidence be trusted, and used to abstain? | Calibration + selective prediction (Cycle 0); out-of-scope confidence (Cycle 2) |
@@ -185,15 +185,16 @@ Excluding the 55 test rows that overlap train moves macro-F1 by at most 0.0007.
 
 The official test had been evaluated 28 times, so Cycle 2 confirms on data it has never touched: a
 **challenge set** of 305 constructed sentences in 10 categories, checked against the corpus and frozen
-by SHA-256 before any model saw it (ADR-026). Its typed noise was written by hand, not by the
-augmentation code, so it is the first natural-noise test of H2.
+by SHA-256 before any model saw it (ADR-026). Its noisy rows imitate typing and were not
+produced by the augmentation code, so they test H2 on noise it was not built from. They were
+constructed, not typed by real users (ADR-028).
 
-**H6: the service now runs the augmented model** (ADR-027). On hand-typed noisy rows its accuracy is
+**H6: the service now runs the augmented model** (ADR-027). On the typed-style noisy rows its accuracy is
 0.800 against 0.611 for CE (+0.189 [+0.067, +0.311]); on all other rows both score 0.867. The
-declared rule is met. Pooling hid two regressions, which the decision records: hand-typed teencode
-0.975 → 0.875 (scripted teencode had improved), and short factual sentences 0.767 → 0.633, drifting
-to `negative` at confidence 0.5–0.7. Unaccented typing, the case that motivated H2, rises from
-0.32 to 0.74. This is the project's first decision influenced by a test result, and is logged as one.
+declared rule is met. Pooling hid two possible regressions, recorded although neither is significant at
+one seed: teencode 0.975 → 0.875 (4 discordant rows, exact McNemar p = 0.13; scripted teencode had
+improved), and short factual sentences 0.767 → 0.633 (p = 0.22), drifting to `negative` at
+confidence 0.5–0.7. Unaccented text, the case that motivated H2, rises from 0.32 to 0.74 (p < 0.001). This is the project's first decision influenced by a test result, and is logged as one.
 
 **H5: sparse and dense topic models are not complementary enough to stack.** An out-of-fold
 logistic meta-model over PhoBERT probabilities and TF-IDF scores loses to the PhoBERT fold ensemble
@@ -228,12 +229,12 @@ does not flag off-topic input; an abstention rule would need an out-of-scope det
 | INT8 dynamic: neutral F1 −0.088 | Quantization as a free speed-up here | Per-channel / partial quantization chosen on a held-out subset; distillation (E15) |
 | Threshold tuning, cross-fitted: 0 (ADR-015) | Thresholding as a lever on this dev set | — |
 | Topic stacking TF-IDF × PhoBERT: −0.010 (H5) | Sparse/dense complementarity; the "TF-IDF wins facility" reading | — |
-| Augmentation on hand-typed teencode: −0.10 accuracy (40 rows) | "Scripted teencode ≈ real teencode" | A teencode map built from real typing |
+| Augmentation on typed-style teencode: −0.10 accuracy (40 rows; p = 0.13, one seed) | "Scripted teencode ≈ real teencode" | A teencode map built from real typing |
 | Qwen3-1.7B, zero- and few-shot: neutral F1 0.26–0.29 (pilot) | A small instruction model as a drop-in classifier here | The declared Qwen3-4B and gpt-4o-mini runs |
 
 ## 7. Limitations
 
-- **One benchmark, one domain.** No natural external sample. The challenge set adds hand-written
+- **One benchmark, one domain.** No natural external sample. The challenge set adds constructed
   input variation and out-of-scope sentences, but one person wrote and labelled all 305 rows, so it
   tests phenomena, not the distribution of real feedback, and has no agreement estimate.
 - **Small minority support.** 73 neutral examples on validation; 3-seed intervals are wide. The

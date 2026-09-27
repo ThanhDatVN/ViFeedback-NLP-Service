@@ -86,7 +86,7 @@ and the Hugging Face upload.
 | Q | Status |
 |---|---|
 | Q1 What limits neutral? | 🔶 Boundary and classifier-head explanations weakened (Study A; H1: logit adjustment and cRT both +0.003, not advanced). The H7 pilot splits the errors along the audit's two hypotheses (the LLM rejects the label policy; the encoder misses factual text). Deciding between them needs the audit (👤; analysis automated) |
-| Q2 What transfers beyond clean text? | 🔶 Synthetic shift measured; augmentation supported at 5 seeds (H2) and confirmed on hand-typed unaccented text (0.32 → 0.74, H6), not on hand-typed teencode (0.975 → 0.875); no natural external sample (👤 data) |
+| Q2 What transfers beyond clean text? | 🔶 Synthetic shift measured; augmentation supported at 5 seeds (H2) and confirmed on constructed unaccented text the augmentation code did not produce (0.32 → 0.74, H6); teencode not demonstrated (0.975 → 0.875, p = 0.13 at one seed); no real user typing yet; no natural external sample (👤 data) |
 | Q3 Label efficiency | ⏸ Cycle 2 option |
 | Q4 Shared learning | ✅ H4 decided at 3 seeds: no gain at λ = 0.3, sentiment cost at λ = 1 |
 | Q5 Uncertainty | ✅ Calibration, class-wise coverage, AURC for three signals. Out-of-scope input measured on 20 challenge rows: max-probability does not flag it (mean 0.86–0.90); OOD detection ⏸ |
@@ -104,7 +104,7 @@ and the Hugging Face upload.
 | Challenge set of 300–500 sentences | ✅ 305 rows in 10 categories, checked against the corpus, frozen by SHA-256 before evaluation (`data/challenge/`, ADR-026) |
 | Independent naturally sampled set (500–1,000) | 👤 needs new data |
 | Multi-aspect education set; UIT-ViSFD ABSA | ⏸ Stage C / Cycle 2 options |
-| Separate input-variation / domain-transfer / out-of-scope shift | 🔶 input variation done (synthetic and hand-typed); out-of-scope measured descriptively (20 rows); domain transfer ⏸ |
+| Separate input-variation / domain-transfer / out-of-scope shift | 🔶 input variation done (synthetic and constructed typed-style); out-of-scope measured descriptively (20 rows); domain transfer ⏸ |
 
 ## § 5–6 Model ladder and experiment catalog
 
@@ -132,7 +132,7 @@ and the Hugging Face upload.
 | Study | Status |
 |---|---|
 | A — neutral | Steps 1, 3 ✅; step 2 guide ✅, annotation 👤; step 4 ✅ decided (neither intervention advances); step 5 depends on the audit |
-| B — robustness | Synthetic layer ✅ with grouped bootstrap and CheckList-style invariance/directional split; PhoBERT control ✅, augmentation ✅ (H2, 5 seeds), alternative encoder ✅ (XLM-R raw: no-diacritic 0.35 vs PhoBERT 0.27, augmented PhoBERT 0.65); hand-typed layer ✅ (challenge set, H6); natural external layer 👤 |
+| B — robustness | Synthetic layer ✅ with grouped bootstrap and CheckList-style invariance/directional split; PhoBERT control ✅, augmentation ✅ (H2, 5 seeds), alternative encoder ✅ (XLM-R raw: no-diacritic 0.35 vs PhoBERT 0.27, augmented PhoBERT 0.65); constructed typed-style layer ✅ (challenge set, H6); real user typing 👤 (challenge v2); natural external layer 👤 |
 | C — learning efficiency | ⏸ |
 | D — multi-task | ✅ 3 seeds, both λ; joint exact match reported per run |
 | E — encoder vs LLM | 🔶 pipeline, frozen prompt and pilot done; per-class, latency and cost reported; declared Qwen3-4B and API runs 👤 |
@@ -170,7 +170,7 @@ and the Hugging Face upload.
 | Reproducibility | Recreate baseline from pinned config; regenerate tables | ✅ stage 1 of every cRT run reproduces the registry exactly; tables regenerate from the registry |
 | Scientific contribution | ≥ 3 questions answered with controls | ✅ Q1 (partly, pending audit), Q2, Q4, Q5, Q7 answered with declared controls; R8's XLM-R control decided (H3); Q8 at pilot stage |
 | Minority quality | Explain dominant neutral errors; evaluate a targeted intervention | ✅ minimum met: errors characterized, two targeted interventions evaluated (recall ↑, precision ↓, macro-F1 ≈); the +0.03 neutral-F1 stretch target is not met |
-| Robustness | Clean and challenging-slice results with support | ✅ minimum met; **stretch target met**: a predefined slice's degradation reduced 43% (≥ 20%) with no material clean loss, and confirmed on hand-typed unaccented text |
+| Robustness | Clean and challenging-slice results with support | ✅ minimum met; **stretch target met**: a predefined slice's degradation reduced 43% (≥ 20%) with no material clean loss, and confirmed on constructed unaccented text |
 | Uncertainty | Calibrated vs uncalibrated on independent data | ✅ including test, with a validation-fitted temperature |
 | Efficiency | Reproducible quality/latency/memory comparison | ✅ minimum met; stretch (≥ 1.5× with neutral loss ≤ 0.02) not met: INT8 is 1.7× faster but loses 0.088 neutral F1 |
 
