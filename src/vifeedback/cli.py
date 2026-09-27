@@ -963,6 +963,9 @@ def study_latency(
     extra_onnx: str = typer.Option(
         "", help="comma-separated extra ONNX files to time, e.g. an INT8 graph that failed its gate"
     ),
+    out_file: str = typer.Option(
+        "", "--out", help="output JSON; default results/studies/latency/reference_cpu.json"
+    ),
 ) -> None:
     """Steady-state CPU latency ladder on the reference machine (review R10, § 8.4).
 
@@ -1054,7 +1057,9 @@ def study_latency(
         "peak_rss_mb": round(proc.memory_info().rss / 1e6, 1),
         "environment": env.capture(),
     }
-    out = paths.RESULTS / "studies" / "latency" / "reference_cpu.json"
+    out = (
+        Path(out_file) if out_file else paths.RESULTS / "studies" / "latency" / "reference_cpu.json"
+    )
     out.parent.mkdir(parents=True, exist_ok=True)
     out.write_text(json.dumps(yaml_safe(report), indent=2, ensure_ascii=False), encoding="utf-8")
     for k, v in summary.items():
