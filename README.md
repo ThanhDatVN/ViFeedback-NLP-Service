@@ -24,7 +24,7 @@ configuration are not the same artifact.
 |---|---|---|---|
 | PhoBERT-base + **VnCoreNLP** (best measured) | **0.8373 ± 0.0031** | 0.9391 ± 0.0020 | 0.5955 ± 0.0070 |
 | PhoBERT-base + **pyvi** (what the service runs) | **0.8288 ± 0.0108** | 0.9369 | 0.5714 |
-| TF-IDF B3 + dev-fitted priors | 0.7450 | 0.8817 | 0.3530 |
+| TF-IDF B3 + dev-fitted priors | 0.7450 | 0.8817 | 0.4207 |
 
 | Topic, test, 5 seeds | Macro-F1 | Weighted F1 | Others F1 |
 |---|---|---|---|
@@ -68,7 +68,7 @@ results are weighted F1 or accuracy — within reach of a model that learned not
 
 | | Hypothesis | Outcome |
 |---|---|---|
-| **H1** | Macro-F1 is the binding constraint | **Supported.** PhoBERT's advantage over TF-IDF is +0.037 weighted F1 but **+0.24 neutral F1** |
+| **H1** | Macro-F1 is the binding constraint | **Supported.** On test, PhoBERT's advantage over TF-IDF is +0.057 weighted F1 but **+0.175 neutral F1** (+0.092 macro-F1) |
 | **H2** | Word segmentation is unnecessary and dominates p95 latency | **Both halves wrong, for different reasons.** *Latency*: falsified by measurement — 0.31 ms p95, 0.6% of the model's cost. *Accuracy*: segmentation is worth **+0.0234 macro-F1** (t = 8.58, p = 0.0010, 5/5 seeds), which **agrees with** the source paper. My reading of that paper was the error (ADR-018) |
 | **H3** | INT8 may be slower than FP32 without AVX512-VNNI | **Open.** Reference CPU measured: AMD Ryzen 5 6600H, `avx2=true`, **`avx512_vnni=false`** |
 
@@ -193,7 +193,7 @@ curl -s localhost:8000/v1/classify \
 │   └── cli.py         every experiment is a CLI call
 ├── notebooks/         EDA and results, both executed with outputs
 ├── configs/           one YAML per experiment · experiments/ = declared cycles + run ledger
-├── docs/              14 documents — see below
+├── docs/              15 documents — see below
 ├── tests/             unit · data · contract · integration · packaging guards
 ├── results/           registry.csv (append-only) · per-run metrics · studies/ (generated)
 └── Dockerfile · docker-compose.yml · Makefile · .github/workflows/ci.yml
@@ -209,6 +209,7 @@ curl -s localhost:8000/v1/classify \
 | [ANNOTATION_GUIDE](docs/ANNOTATION_GUIDE.md) | Neutral-label audit: taxonomy, ambiguity vs incorrect gold, agreement and adjudication |
 | [REVIEW_AND_RESEARCH_PLAN](docs/REVIEW_AND_RESEARCH_PLAN.md) | External review (R1–R12) and the research plan this cycle follows |
 | [REVIEW_COMPLIANCE](docs/REVIEW_COMPLIANCE.md) | Every review recommendation → status and evidence |
+| [RESEARCH_REPORT](docs/RESEARCH_REPORT.md) | Technical report: questions, method, findings, negative results, limitations |
 | [EXPERIMENT_MATRIX](docs/EXPERIMENT_MATRIX.md) | Run-ID scheme, pre-registration scorecard, all result tables |
 | [BENCHMARK_COMPARISON](docs/BENCHMARK_COMPARISON.md) | Against published work — and what is not yet claimable |
 | [PROPOSALS](docs/PROPOSALS.md) | 6 techniques, 7 models, 6 workflow changes, each anchored to a measurement |
@@ -279,8 +280,8 @@ External code review and the next research cycle:
 **[docs/REVIEW_AND_RESEARCH_PLAN.md](docs/REVIEW_AND_RESEARCH_PLAN.md)**.
 
 Review items still open, tracked in [STATUS § 5](docs/STATUS.md#5-external-review--item-status):
-readiness semantics (R5) and the metrics buffer (R6), deferred by the review's own scope; the
-latency re-run (R10); model and dataset revision pinning (R11).
+the latency re-run (R10) and the XLM-R raw-text control (R8, running on Kaggle). Full audit:
+[REVIEW_COMPLIANCE](docs/REVIEW_COMPLIANCE.md). Technical report: [RESEARCH_REPORT](docs/RESEARCH_REPORT.md).
 
 ---
 

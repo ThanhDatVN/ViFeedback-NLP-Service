@@ -129,13 +129,13 @@ Full traceability, including the study designs, catalog and backlog:
 | R2 FGM + AMP gradient bug | High | ✅ fixed, 6 regression tests |
 | R3 export quality contract | High | ✅ release step with staging, manifest, full-validation acceptance (ADR-020) |
 | R4 API never tested with a model | High | ✅ real-artifact API tests (run when a release exists) |
-| R5 readiness semantics | Medium | ⬜ deferred (review scope) |
-| R6 unbounded metrics buffer | Medium | ⬜ deferred (review scope) |
+| R5 readiness semantics | Medium | ✅ 503 unless required tasks + segmenter loaded; fallback cost measured (−0.052) |
+| R6 unbounded metrics buffer | Medium | ✅ bounded buffer + counter |
 | R7 over-strong statistical claims | High | ✅ interval wording corrected |
 | R8 model comparison closed too early | Medium | 🔶 narrowed (ADR-019); tokenizer profiles measured; XLM-R raw control running (Cycle 1 H3) |
 | R9 headline vs deployed config | Medium | ✅ reported separately in README |
 | R10 docs and benchmark out of sync | Medium | 🔶 docs synced; benchmark re-run pending (P6) |
-| R11 reproducibility pinning | Medium | ✅ run ids, overwrite guard, model/dataset revisions pinned, source hash in env.json; dependency lock and CI integration job open |
+| R11 reproducibility pinning | Medium | ✅ run ids, overwrite guard, revisions pinned, source hash, lock file, data content reference, CI integration job |
 | R12 benchmark claims | Medium | ✅ no SOTA claim; BamiBERT reported as context |
 
 ---
