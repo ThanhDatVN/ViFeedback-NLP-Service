@@ -73,6 +73,16 @@ def basic_clean(text: str) -> str:
     return collapse_whitespace(to_nfc(text))
 
 
+def model_text(text: str) -> str:
+    """What a model trained on UIT-VSFC must see: NFC, collapsed whitespace, lowercase.
+
+    The corpus has no uppercase letter in any split, while people capitalize. Measured on validation
+    with the first letter capitalized, the served model changed 17 of 1,583 labels; lowercasing first
+    changes none (cycle3.yaml, case_invariance). Serving and evaluation both call this.
+    """
+    return basic_clean(text).lower()
+
+
 def dedup_key(text: str) -> str:
     """Aggressive normalization used *only* for duplicate detection, never for training input.
 

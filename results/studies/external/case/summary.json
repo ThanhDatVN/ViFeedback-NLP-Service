@@ -1,0 +1,250 @@
+{
+  "corpus": "case",
+  "checkpoints": {
+    "aug-s1337": "models\\p10-sent-phobert-base-seg_pyvi-aug-diac-teen-s1337-6577cf17-ckp",
+    "aug-s2024": "models\\p10-sent-phobert-base-seg_pyvi-aug-diac-teen-s2024-6d4c703f-ckp",
+    "aug-s31337": "models\\p10-sent-phobert-base-seg_pyvi-aug-diac-teen-s31337-023d9372-ckp",
+    "aug-s7": "models\\p10-sent-phobert-base-seg_pyvi-aug-diac-teen-s7-c67ab4c7-ckp",
+    "ce-s1337": "models\\p10-sent-phobert-base-seg_pyvi-base-s1337-82199bc7-ckp",
+    "ce-s2024": "models\\p10-sent-phobert-base-seg_pyvi-base-s2024-225e8f6b-ckp",
+    "ce-s31337": "models\\p10-sent-phobert-base-seg_pyvi-base-s31337-684b7159-ckp",
+    "ce-s7": "models\\p10-sent-phobert-base-seg_pyvi-base-s7-c020562a-ckp",
+    "ce-s42": "models\\p6-sent-phobert-base-seg_pyvi-base-s42-ckp",
+    "aug-s42": "models\\p9-sent-phobert-base-seg_pyvi-aug-diac-teen-s42-599cf21f-ckp"
+  },
+  "pairs": "UIT-VSFC validation: first letter capitalized vs as in the corpus",
+  "flip_rate": {
+    "no_lowercase:aug-s1337": {
+      "n": 1583,
+      "flips": 17,
+      "rate": 0.010739102969046115,
+      "wilson_95": [
+        0.006715667791560232,
+        0.0171314509126633
+      ],
+      "macro_f1_capitalized": 0.8490939823029375,
+      "macro_f1_as_is": 0.8682912105430849
+    },
+    "no_lowercase:aug-s2024": {
+      "n": 1583,
+      "flips": 17,
+      "rate": 0.010739102969046115,
+      "wilson_95": [
+        0.006715667791560232,
+        0.0171314509126633
+      ],
+      "macro_f1_capitalized": 0.8618193339069173,
+      "macro_f1_as_is": 0.8794732781733665
+    },
+    "no_lowercase:aug-s31337": {
+      "n": 1583,
+      "flips": 16,
+      "rate": 0.01010739102969046,
+      "wilson_95": [
+        0.006230934325698008,
+        0.016355819134760807
+      ],
+      "macro_f1_capitalized": 0.8614949458730713,
+      "macro_f1_as_is": 0.8692514267256408
+    },
+    "no_lowercase:aug-s7": {
+      "n": 1583,
+      "flips": 18,
+      "rate": 0.011370814908401769,
+      "wilson_95": [
+        0.007204534704207315,
+        0.01790294924378094
+      ],
+      "macro_f1_capitalized": 0.8579913702155583,
+      "macro_f1_as_is": 0.8609427292878337
+    },
+    "no_lowercase:ce-s1337": {
+      "n": 1583,
+      "flips": 13,
+      "rate": 0.0082122552116235,
+      "wilson_95": [
+        0.004805511833328244,
+        0.014000145895836407
+      ],
+      "macro_f1_capitalized": 0.8700983585951638,
+      "macro_f1_as_is": 0.8709064985544631
+    },
+    "no_lowercase:ce-s2024": {
+      "n": 1583,
+      "flips": 14,
+      "rate": 0.008843967150979154,
+      "wilson_95": [
+        0.0052753946682567365,
+        0.014790628304672634
+      ],
+      "macro_f1_capitalized": 0.8406739942267198,
+      "macro_f1_as_is": 0.849382132841439
+    },
+    "no_lowercase:ce-s31337": {
+      "n": 1583,
+      "flips": 22,
+      "rate": 0.013897662665824383,
+      "wilson_95": [
+        0.009195503243714657,
+        0.02095344167933248
+      ],
+      "macro_f1_capitalized": 0.8522180722322346,
+      "macro_f1_as_is": 0.875027554063296
+    },
+    "no_lowercase:ce-s7": {
+      "n": 1583,
+      "flips": 10,
+      "rate": 0.006317119393556538,
+      "wilson_95": [
+        0.003434907189090255,
+        0.011589654808780232
+      ],
+      "macro_f1_capitalized": 0.8536216357888184,
+      "macro_f1_as_is": 0.8626533579213378
+    },
+    "no_lowercase:ce-s42": {
+      "n": 1583,
+      "flips": 12,
+      "rate": 0.007580543272267846,
+      "wilson_95": [
+        0.004341641561565838,
+        0.013203650923834086
+      ],
+      "macro_f1_capitalized": 0.8638290811514192,
+      "macro_f1_as_is": 0.8633957440409054
+    },
+    "no_lowercase:aug-s42": {
+      "n": 1583,
+      "flips": 17,
+      "rate": 0.010739102969046115,
+      "wilson_95": [
+        0.006715667791560232,
+        0.0171314509126633
+      ],
+      "macro_f1_capitalized": 0.8622095999073592,
+      "macro_f1_as_is": 0.8644104907582961
+    },
+    "lowercased:aug-s1337": {
+      "n": 1583,
+      "flips": 0,
+      "rate": 0.0,
+      "wilson_95": [
+        0.0,
+        0.0024209095602232764
+      ],
+      "macro_f1_capitalized": 0.8682912105430849,
+      "macro_f1_as_is": 0.8682912105430849
+    },
+    "lowercased:aug-s2024": {
+      "n": 1583,
+      "flips": 0,
+      "rate": 0.0,
+      "wilson_95": [
+        0.0,
+        0.0024209095602232764
+      ],
+      "macro_f1_capitalized": 0.8794732781733665,
+      "macro_f1_as_is": 0.8794732781733665
+    },
+    "lowercased:aug-s31337": {
+      "n": 1583,
+      "flips": 0,
+      "rate": 0.0,
+      "wilson_95": [
+        0.0,
+        0.0024209095602232764
+      ],
+      "macro_f1_capitalized": 0.8692514267256408,
+      "macro_f1_as_is": 0.8692514267256408
+    },
+    "lowercased:aug-s7": {
+      "n": 1583,
+      "flips": 0,
+      "rate": 0.0,
+      "wilson_95": [
+        0.0,
+        0.0024209095602232764
+      ],
+      "macro_f1_capitalized": 0.8609427292878337,
+      "macro_f1_as_is": 0.8609427292878337
+    },
+    "lowercased:ce-s1337": {
+      "n": 1583,
+      "flips": 0,
+      "rate": 0.0,
+      "wilson_95": [
+        0.0,
+        0.0024209095602232764
+      ],
+      "macro_f1_capitalized": 0.8709064985544631,
+      "macro_f1_as_is": 0.8709064985544631
+    },
+    "lowercased:ce-s2024": {
+      "n": 1583,
+      "flips": 0,
+      "rate": 0.0,
+      "wilson_95": [
+        0.0,
+        0.0024209095602232764
+      ],
+      "macro_f1_capitalized": 0.849382132841439,
+      "macro_f1_as_is": 0.849382132841439
+    },
+    "lowercased:ce-s31337": {
+      "n": 1583,
+      "flips": 0,
+      "rate": 0.0,
+      "wilson_95": [
+        0.0,
+        0.0024209095602232764
+      ],
+      "macro_f1_capitalized": 0.875027554063296,
+      "macro_f1_as_is": 0.875027554063296
+    },
+    "lowercased:ce-s7": {
+      "n": 1583,
+      "flips": 0,
+      "rate": 0.0,
+      "wilson_95": [
+        0.0,
+        0.0024209095602232764
+      ],
+      "macro_f1_capitalized": 0.8626533579213378,
+      "macro_f1_as_is": 0.8626533579213378
+    },
+    "lowercased:ce-s42": {
+      "n": 1583,
+      "flips": 0,
+      "rate": 0.0,
+      "wilson_95": [
+        0.0,
+        0.0024209095602232764
+      ],
+      "macro_f1_capitalized": 0.8633957440409054,
+      "macro_f1_as_is": 0.8633957440409054
+    },
+    "lowercased:aug-s42": {
+      "n": 1583,
+      "flips": 0,
+      "rate": 0.0,
+      "wilson_95": [
+        0.0,
+        0.0024209095602232764
+      ],
+      "macro_f1_capitalized": 0.8644104907582961,
+      "macro_f1_as_is": 0.8644104907582961
+    }
+  },
+  "ce_vs_aug_pooled": {
+    "seeds": [
+      "s1337",
+      "s2024",
+      "s31337",
+      "s7",
+      "s42"
+    ],
+    "only_first_flips": 43,
+    "only_second_flips": 57,
+    "exact_mcnemar_p": 0.19334790449564246
+  }
+}

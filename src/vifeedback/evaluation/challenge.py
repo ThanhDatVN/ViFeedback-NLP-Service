@@ -48,14 +48,15 @@ def load(path: Path = CHALLENGE_V1, verify: bool = True) -> pd.DataFrame:
 
 
 def pipeline(preprocessing: str = "seg_pyvi"):
-    """Raw text -> the model's input, as training and serving build it."""
-    from vifeedback.preprocess.normalize import basic_clean
+    """Raw text -> the model's input, exactly as the service builds it."""
+    from vifeedback.preprocess.normalize import model_text
     from vifeedback.preprocess.segment import get_segmenter
     from vifeedback.preprocess.variants import VARIANTS
 
-    backend, clean, _ = VARIANTS[preprocessing]
+    backend, _, _ = VARIANTS[preprocessing]
     seg = get_segmenter(backend)
-    return lambda texts: seg([basic_clean(t) for t in texts] if clean else list(texts))
+    # The service's own normalization (model_text); a no-op on the lowercase corpus and challenge text.
+    return lambda texts: seg([model_text(t) for t in texts])
 
 
 def _accuracy(cm: np.ndarray) -> float:

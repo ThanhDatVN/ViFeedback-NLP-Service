@@ -69,6 +69,9 @@ def test_classify_returns_a_valid_distribution(client) -> None:
         ("giảng viên không nhiệt tình", "negative"),
         ("thầy giảng bài dễ hiểu", "positive"),
         ("thầy giảng bài không dễ hiểu", "negative"),
+        # People capitalize; the corpus never does. The service lowercases first (cycle3.yaml).
+        ("Giảng viên nhiệt tình", "positive"),
+        ("THẦY GIẢNG BÀI KHÔNG DỄ HIỂU", "negative"),
     ],
 )
 def test_golden_predictions(client, text: str, label: str) -> None:

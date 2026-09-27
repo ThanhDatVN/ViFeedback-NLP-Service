@@ -31,6 +31,8 @@ GOLDEN = [
     ("giảng viên không nhiệt tình", "negative"),
     ("thầy giảng bài dễ hiểu", "positive"),
     ("thầy giảng bài không dễ hiểu", "negative"),
+    ("Giảng viên nhiệt tình", "positive"),  # capitalized input: lowercased by the service
+    ("THẦY GIẢNG BÀI KHÔNG DỄ HIỂU", "negative"),
 ]
 
 

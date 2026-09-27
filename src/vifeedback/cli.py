@@ -1498,10 +1498,14 @@ def study_external(
     ckps = _study_checkpoints(checkpoints)
     if not ckps:
         raise typer.BadParameter("no checkpoints found under models/")
-    seg = CH.pipeline("seg_pyvi")
+    from vifeedback.preprocess.segment import get_segmenter
+
+    segment = get_segmenter("pyvi")
     pipelines = {
-        "service": seg,  # what the service does today: segmentation only
-        "lowercased": lambda ts: seg([basic_clean(t).lower() for t in ts]),
+        # the service before cycle3.yaml's case rule: NFC + whitespace + segmentation, no lowercasing
+        "no_lowercase": lambda ts: segment([basic_clean(t) for t in ts]),
+        # the service since then (normalize.model_text)
+        "lowercased": CH.pipeline("seg_pyvi"),
     }
     predict = lambda ckp, texts: EA.predict_proba(ckp, texts).argmax(1)  # noqa: E731
     out_dir = paths.RESULTS / "studies" / "external" / corpus
@@ -1534,16 +1538,16 @@ def study_external(
                 typer.echo(
                     f"  {pname:10s} {name:10s} flips {r['flips']:4d}/{r['n']} ({r['rate']:.3f})"
                 )
-        # augmented vs CE at the same seed, service pipeline, pooled over seeds
+        # augmented vs CE at the same seed, no-lowercase pipeline (the harder case), pooled over seeds
         pairs = [
             (n, "aug-" + n[3:]) for n in ckps if n.startswith("ce-") and "aug-" + n[3:] in ckps
         ]
         if pairs:
             fa = np.concatenate(
-                [preds[f"service:{c}:a"] != preds[f"service:{c}:b"] for c, _ in pairs]
+                [preds[f"no_lowercase:{c}:a"] != preds[f"no_lowercase:{c}:b"] for c, _ in pairs]
             )
             fb = np.concatenate(
-                [preds[f"service:{a}:a"] != preds[f"service:{a}:b"] for _, a in pairs]
+                [preds[f"no_lowercase:{a}:a"] != preds[f"no_lowercase:{a}:b"] for _, a in pairs]
             )
             result["ce_vs_aug_pooled"] = {
                 "seeds": [c[3:] for c, _ in pairs],
@@ -1573,9 +1577,14 @@ def study_external(
                     }
                 s = result["scores"][f"{pname}:{name}:all"]
                 typer.echo(f"  {pname:10s} {name:10s} macro-F1 {s['macro_f1']:.4f}")
-        if "service:ce-s42" in preds and "service:aug-s42" in preds:
+        if "lowercased:ce-s42" in preds and "lowercased:aug-s42" in preds:
             result["aug_minus_ce_s42"] = B.paired_bootstrap(
-                y, preds["service:aug-s42"], preds["service:ce-s42"], 3, n_resamples=5000, seed=42
+                y,
+                preds["lowercased:aug-s42"],
+                preds["lowercased:ce-s42"],
+                3,
+                n_resamples=5000,
+                seed=42,
             )
     else:
         raise typer.BadParameter("corpus must be vilexnorm, case or neu_esc")

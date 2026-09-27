@@ -31,6 +31,7 @@ from fastapi.responses import JSONResponse, PlainTextResponse
 
 from vifeedback import __version__, paths
 from vifeedback.constants import LABELS
+from vifeedback.preprocess.normalize import model_text
 from vifeedback.serving.schemas import (
     ClassifyRequest,
     ClassifyResponse,
@@ -222,7 +223,8 @@ def classify(req: ClassifyRequest) -> ClassifyResponse:
     t0 = time.perf_counter()
     texts = list(req.texts)
     seg = _state["segmenter"]
-    model_input = seg(texts) if seg is not None else texts
+    normalized = [model_text(x) for x in texts]  # the training corpus is lowercase NFC
+    model_input = seg(normalized) if seg is not None else normalized
 
     ids, probs = clf.predict(model_input)
     names = [LABELS[req.task][i] for i in sorted(LABELS[req.task])]

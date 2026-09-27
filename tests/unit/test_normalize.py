@@ -97,3 +97,15 @@ class TestSyllableCount:
     )
     def test_counts_whitespace_delimited_syllables(self, text: str, n: int) -> None:
         assert N.syllable_count(text) == n
+
+
+class TestModelText:
+    """The service lowercases because the corpus has no uppercase letter (cycle3.yaml)."""
+
+    def test_lowercases_and_normalizes(self):
+        decomposed = unicodedata.normalize("NFD", "Thầy  DẠY hay")
+        assert N.model_text(decomposed) == "thầy dạy hay"
+
+    def test_is_a_no_op_on_corpus_style_text(self):
+        s = "giảng viên nhiệt tình ."
+        assert N.model_text(s) == s
