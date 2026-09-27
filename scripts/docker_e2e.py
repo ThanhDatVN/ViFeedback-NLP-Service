@@ -93,6 +93,10 @@ def main() -> int:
 
         _, version = http("GET", "/version")
         print("/version", version)
+        if manifest["sha256"][:12] not in str(version.get("model_version")):
+            failures.append(
+                f"/version does not name the served model: {version.get('model_version')}"
+            )
 
         # The file inside the container must be the one the manifest (and the release gate) describe.
         inside = docker(

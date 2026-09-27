@@ -84,3 +84,14 @@ def test_served_file_is_the_manifest_file(client) -> None:
 
     manifest = json.loads((SERVE / "sentiment" / "manifest.json").read_text(encoding="utf-8"))
     assert app_module._state["models"]["sentiment"].path.name == manifest["model_file"]
+
+
+def test_version_names_the_released_checkpoint_and_hash(client) -> None:
+    """/version identifies the served model from its manifest, not "unversioned" (found by docker-e2e)."""
+    import json
+    from pathlib import Path
+
+    manifest = json.loads((SERVE / "sentiment" / "manifest.json").read_text(encoding="utf-8"))
+    version = client.get("/version").json()["model_version"]
+    assert Path(manifest["checkpoint"]).name in version
+    assert manifest["sha256"][:12] in version

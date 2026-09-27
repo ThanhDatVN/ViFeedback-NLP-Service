@@ -85,8 +85,18 @@ def _load() -> None:
             except Exception as e:
                 log.error(f"failed to load {task}: {type(e).__name__}: {e}")
 
+    # An explicit VERSION file wins; otherwise the release manifests identify what is served
+    # (checkpoint name and the first 12 hex digits of the served file's SHA-256).
     vf = MODEL_DIR / "VERSION"
-    _state["version"] = vf.read_text(encoding="utf-8").strip() if vf.exists() else "unversioned"
+    if vf.exists():
+        _state["version"] = vf.read_text(encoding="utf-8").strip()
+    elif manifests:
+        _state["version"] = ", ".join(
+            f"{t}={Path(m.get('checkpoint', '?')).name}@{str(m.get('sha256', ''))[:12]}"
+            for t, m in sorted(manifests.items())
+        )
+    else:
+        _state["version"] = "unversioned"
 
     # The artifact's manifest says which preprocessing it was verified with (review R3);
     # SEGMENTER overrides it only when set explicitly.
