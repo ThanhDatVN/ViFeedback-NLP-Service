@@ -1408,6 +1408,16 @@ def data_fetch_external(
     typer.echo(f"  reference: {X.REF} (commit it if a hash was added)")
 
 
+@data_app.command("build-lexicon")
+def data_build_lexicon() -> None:
+    """Learn the S2a teencode lexicon from ViLexNorm train (cycle3.yaml v3); written to data/external/."""
+    from vifeedback.preprocess import teencode_lexicon as TL
+
+    info = TL.build_from_vilexnorm()
+    typer.echo(f"  {info['entries']} entries  sha256={info['sha256']}")
+    typer.echo(f"  -> {TL.LEXICON} (git-ignored; CC BY-NC-SA derived)")
+
+
 def _study_checkpoints(spec: str) -> dict[str, str]:
     """Named checkpoints: explicit `name=path,...`, or every saved CE / augmented sentiment checkpoint."""
     from pathlib import Path

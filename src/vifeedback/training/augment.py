@@ -15,6 +15,8 @@ sentences, because the deployed pipeline segments whatever the user typed.
 
 from __future__ import annotations
 
+from collections.abc import Callable
+
 import numpy as np
 
 from vifeedback.evaluation.robustness import SUITES
@@ -22,6 +24,22 @@ from vifeedback.evaluation.robustness import SUITES
 # recipe name -> suites drawn from with equal probability for each selected sentence
 RECIPES: dict[str, tuple[str, ...]] = {
     "diac-teen": ("nodiacritic-50", "teencode-100"),
+    # Cycle 3 S2a (cycle3.yaml v3): the teencode half learned from real typing (ViLexNorm train).
+    "diac-teen-vln": ("nodiacritic-50", "teencode-vln"),
+}
+
+
+def _teencode_vln(text: str, rng: np.random.Generator) -> str:
+    from vifeedback.preprocess import teencode_lexicon
+
+    return teencode_lexicon.perturb(text, rng)
+
+
+# Training-time transformations: the evaluation suites, plus ones that must never become an
+# evaluation suite (the ViLexNorm lexicon is evaluated by its own held-out test split instead).
+TRAIN_SUITES: dict[str, Callable[[str, np.random.Generator], str]] = {
+    **SUITES,
+    "teencode-vln": _teencode_vln,
 }
 
 
@@ -45,7 +63,7 @@ def augment(raw_texts: list[str], recipe: str, p: float, seed: int) -> tuple[lis
 
     out = list(raw_texts)
     for i in np.flatnonzero(chosen):
-        fn = SUITES[suites[which[i]]]
+        fn = TRAIN_SUITES[suites[which[i]]]
         out[i] = fn(raw_texts[i], np.random.default_rng([seed, int(i), 104729]))
     changed = np.array([a != b for a, b in zip(raw_texts, out, strict=True)])
     return out, changed

@@ -883,3 +883,36 @@ p = 0.003) is met, and the unaccented gain is significant alone. The two drops b
 checked at five seeds before anything is built to fix them (NEXT_PLAN v3, step 0). A likely cause is
 already visible: the augmentation's teencode map has 14 entries. Claims about real user typing wait for
 a human-typed challenge set (v2).
+
+---
+
+## ADR-029 · 2026-09-27 · Cycle 3: serve lowercased input; run S2a now with a real-typing lexicon · Accepted
+
+**Context.** V1 (five seeds of CE and augmented) and the external invariance tests declared in
+`cycle3.yaml` v2 gave four results:
+
+| Result | Evidence |
+|---|---|
+| The teencode drop at seed 42 was noise | 3/5 seeds, pooled exact McNemar p = 0.092 |
+| Short factual sentences: suggestive, not confirmed | 0.747 → 0.660, 3/5 seeds, p = 0.019 |
+| Contrast sentences (*nhưng*): a confirmed drop, found by the rule, not pre-specified | 0.875 → 0.800, 4/5 seeds, p = 0.004, survives Holm over 9 categories |
+| Missing diacritics: the gain holds | 0.328 → 0.656, better in 5/5 seeds |
+| Capitalized input changes labels | served model: 17 of 1,583 validation labels (1.07%) flip when the first letter is capitalized; UIT-VSFC has no uppercase letter in any split |
+| Real informal typing changes labels, and augmentation does not help | ViLexNorm: 17.3% of labels flip between a real comment and its human normalization, for CE and augmented alike (p = 0.93) |
+
+**Decisions.**
+
+1. **The service lowercases input** (NFC, whitespace, lowercase, then segmentation:
+   `normalize.model_text`), as the declared case rule required. Capitalization flips drop to 0 for all
+   ten checkpoints, and no validation or challenge prediction changes, so the released artifact is
+   unchanged.
+2. **S2a runs now**, not after challenge v2. Its lexicon comes from ViLexNorm's human normalizations
+   (train split only) instead of 14 hand-picked entries. `cycle3.yaml` v3 records the recipe, the
+   lexicon hash and a development gate, and leaves the v2 confirmation rule unchanged. This decision
+   follows the ViLexNorm result it responds to; that is why it is a new version and not an edit.
+3. **The model card changes.** Teencode is no longer listed as a regression (not confirmed). Contrast
+   sentences are listed (confirmed, exploratory). Short factual sentences stay listed as unconfirmed.
+
+**Licence.** ViLexNorm is CC BY-NC-SA 4.0. The lexicon is built locally, and a model trained with it
+inherits the non-commercial condition. If that model is ever served, the model card must say so. A
+commercial-safe lexicon would come from U3: candidates the owner checks.

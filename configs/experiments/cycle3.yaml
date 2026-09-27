@@ -5,11 +5,15 @@
 # human-typed challenge set v2 before any model is evaluated on it.
 #
 # Version 2 adds the external evaluation (docs/EVALUATION_DATA.md), declared before any model was
-# run on ViLexNorm, NEU-ESC or the case variant. The challenge v2 hash moves to version 3.
+# run on ViLexNorm, NEU-ESC or the case variant.
+#
+# Version 3 (ADR-029), after the V1 and ViLexNorm results: S2a runs now, because real typing
+# (ViLexNorm) flips 17% of labels and the Cycle 1 augmentation does not reduce it. Its confirmation
+# rule is unchanged; a development gate is added. The challenge v2 hash moves to version 4.
 
-version: 2
+version: 3
 declared: 2026-09-27
-revised: 2026-09-27  # v2: external evaluation below, declared before any evaluation on it
+revised: 2026-09-27  # v2: external evaluation; v3: S2a runs now, lexicon from ViLexNorm train (ADR-029)
 budget:
   weight_updating_runs: 30          # V1 8, Step 2 up to 10, Step 4 branch up to 12
   gpu_hours_estimate: {laptop_rtx3050: 3, kaggle_t4: 0.5}
@@ -40,6 +44,25 @@ steps:
 
   S2a_teencode_lexicon:
     runs_if: V1 confirms the teencode drop, or challenge v2 teencode accuracy is > 0.05 below clean validation accuracy
+    v3_trigger: >
+      Run now (ADR-029): the ViLexNorm invariance test, declared in v2, flips 17.3% of labels for both
+      CE and the augmented recipe (pooled McNemar p = 0.93). This decision was taken after seeing that
+      result, which is why it is a new version and an ADR.
+    v3_recipe: >
+      aug-diac-teen-vln: 30% of training sentences replaced, half by nodiacritic-50, half by the
+      ViLexNorm lexicon (train split only; alignment of original vs normalized, variants seen >= 3
+      times, spans <= 3 standard / <= 2 noisy tokens, each standard form rewritten at its empirical
+      rate). Lexicon: 288 entries, sha256 9edf2621857739b84181b2ccac886cfe1012a6e935265a0f864187bf92787059.
+      5 seeds, checkpoints saved (phase 11). Control: the served augmented recipe at the same seeds.
+    v3_development_gate: >
+      All of: ViLexNorm test flip rate (lowercased pipeline) lower than the control, pooled over the 5
+      seeds, exact McNemar p < 0.05; validation macro-F1 seed-paired mean difference >= -0.005;
+      unaccented_typed (challenge v1) not lower than the control by more than 0.02; no challenge v1
+      category lower by more than 0.05 (5-seed means). Passing the gate makes the recipe a candidate;
+      only the v2 rule below can make it the served model.
+    licence: >
+      ViLexNorm is CC BY-NC-SA 4.0 (research only); the lexicon is built locally and not committed. A
+      model trained with it carries the non-commercial condition, which the model card must state.
     method: teencode map 14 -> 150-300 entries (U3 candidates accepted by the owner; a published normalization corpus if its licence allows); same recipe, 5 seeds; control = served augmented recipe, same seeds
     supported_if: >
       teencode accuracy on v2 up with a paired CI above 0 (pooled over seeds), unaccented not lower by
