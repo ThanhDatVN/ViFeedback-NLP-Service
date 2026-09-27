@@ -1,0 +1,79 @@
+# Cycle 3 — declared 2026-09-27, before any Cycle 3 run (NEXT_PLAN v3).
+#
+# Specialization: reliability of the served model on real input. Changing a rule below after its
+# results are seen requires a new file version and an ADR. Version 2 will add the SHA-256 of the
+# human-typed challenge set v2 before any model is evaluated on it.
+
+version: 1
+declared: 2026-09-27
+budget:
+  weight_updating_runs: 30          # V1 8, Step 2 up to 10, Step 4 branch up to 12
+  gpu_hours_estimate: {laptop_rtx3050: 3, kaggle_t4: 0.5}
+  api_usd: 1.5
+
+evaluation_data:
+  challenge_v1: development only from now on (ADR-028; constructed text, one labeller)
+  challenge_v2:
+    status: to be typed by people on a phone (NEXT_PLAN v3 step 1), labelled under the guide, a
+      second labeller on >= 50 rows; frozen by SHA-256 in version 2 of this file
+    role: the confirmation set for every Cycle 3 rule below
+  official_test: historical comparison only; no Cycle 3 decision uses it
+  never_used_to_build: [lexicons, thresholds, prompts, restoration models]   # no challenge row, v1 or v2
+
+steps:
+  V1_verify_cycle2_drops:
+    question: Are the served model's drops on teencode_typed and objective_neutral (ADR-028) real?
+    method: >
+      Retrain seeds 1337, 2024, 7, 31337 of CE (base recipe) and of the augmented recipe
+      (aug-diac-teen, p = 0.3), identical configurations, saving checkpoints (phase 10). Each run must
+      reproduce its registry validation macro-F1 to 4 decimals (training is deterministic); a run that
+      does not is reported and excluded. Evaluate all ten seed checkpoints (with the two seed-42 ones)
+      on challenge v1.
+    confirmed_if: >
+      For a category, augmented < CE in >= 4 of 5 seeds AND the exact McNemar test pooled over the
+      five seeds (discordant pairs summed) gives p < 0.05.
+    otherwise: recorded as noise; removed from the model card's limitations
+
+  S2a_teencode_lexicon:
+    runs_if: V1 confirms the teencode drop, or challenge v2 teencode accuracy is > 0.05 below clean validation accuracy
+    method: teencode map 14 -> 150-300 entries (U3 candidates accepted by the owner; a published normalization corpus if its licence allows); same recipe, 5 seeds; control = served augmented recipe, same seeds
+    supported_if: >
+      teencode accuracy on v2 up with a paired CI above 0 (pooled over seeds), unaccented not lower by
+      more than 0.02, validation macro-F1 non-inferior at 0.005, and no v2 category lower by more than 0.05
+
+  S2b_diacritic_restoration:
+    method: restorer trained on UIT-VSFC train text only (syllable candidates + word bigrams + Viterbi), applied when an input's share of accented characters is below a threshold set on train
+    supported_if: >
+      unaccented accuracy on v2 up with a paired CI above 0 over the served model alone; validation
+      predictions identical (restorer skipped); added p95 latency <= 5 ms
+
+  S2c_short_factual:
+    runs_if: V1 confirms the objective_neutral drop
+    method: one variant, declared in version 2 of this file from V1's error pattern
+    supported_if: same per-category rule as S2a
+
+  S3_out_of_scope_score:
+    candidates: [max_probability (baseline), energy, mahalanobis on sentence features (train fit)]
+    development: challenge v1 out_of_scope rows plus U4 generated off-topic sentences; threshold keeps 95% of validation
+    supported_if: on v2, off-topic vs in-domain AUROC >= 0.90 and <= 5% of validation flagged
+    serving: an in_scope score next to the label; no abstention by the service itself
+
+  S4_neutral:
+    gate: the audit decision tree frozen in cycle2.yaml (owner annotation)
+    router: only if a declared H7 run shows an LLM ahead of the encoder on an identifiable slice with a paired CI above 0, confirmed on data not written in the prompt's own convention (v2 or validation)
+
+  S5_int8:
+    recipes: at most 4 (per-channel dynamic INT8; classifier head excluded; variants keep the last k layers or the FFN output projections in FP32)
+    selection: fidelity to FP32 (label agreement and logit error) on a stratified train subset; validation is never used to choose
+    supported_if: >
+      the release gate passes on validation (one-sided 95% upper bound of the macro-F1 drop <= 0.005),
+      neutral F1 loss <= 0.02, artifact <= 200 MB, p50 >= 1.5x faster than L3 on the reference CPU
+    otherwise: distillation into a 6-layer student becomes Cycle 4
+
+h7_carry_over:
+  gpt_4o_mini_challenge_v1: >
+    macro-F1 0.944, neutral F1 0.955 vs CE 0.713 (+0.241 [+0.164, +0.329]). Confound: v1's text and
+    labels were constructed in the convention the prompt states, so agreement is expected to be
+    inflated; the declared H7 outcome is recorded with this caveat and confirmed only on v2 or on
+    human-labelled validation.
+  qwen3_4b: Kaggle notebook notebooks/kaggle_h7_llm.ipynb (owner)
