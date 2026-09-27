@@ -153,11 +153,17 @@ teencode {rob["teencode-100"]["macro_f1"]:.3f}; 5% character noise {rob["charnoi
 ## Limitations
 
 - **Neutral is weak** (F1 about 0.6 to 0.66). Neutral errors are confident, so thresholds do not fix them.
-- **Short factual sentences drift to `negative`** (*môn học có ba tín chỉ* → negative, confidence
-  0.5 to 0.7). Treat low-confidence `negative` on short inputs with care.
-- **Teencode outside the training map** may be handled slightly worse than by the non-augmented model
-  (0.875 vs 0.975 on 40 constructed challenge rows; not significant at one seed), although scripted
-  teencode improved.
+- **Contrast sentences** (*A nhưng B*) are handled worse than by the same model trained without
+  augmentation: 0.800 vs 0.875 accuracy on 40 constructed sentences, lower in 4 of 5 seeds
+  (p = 0.004). Found by a declared rule but not pre-specified; awaiting confirmation on human-typed data.
+- **Short factual sentences may drift to `negative`** (*môn học có ba tín chỉ* → negative, confidence
+  0.5 to 0.7): 0.66 vs 0.75, not consistent across seeds (3 of 5). Treat low-confidence `negative`
+  on short inputs with care.
+- **Real informal typing is unstable.** On 1,045 real social-media comments (ViLexNorm), about 17% of
+  labels change between a comment and its human-normalized version; the augmentation does not reduce
+  this. Missing diacritics alone are handled much better (0.66 vs 0.33 on constructed text, 5 of 5 seeds).
+- **Input is lowercased** before scoring, as the training data is; capitalized input otherwise changed
+  about 1% of labels.
 - **No abstention.** Off-topic input receives a confident polar label.
 - **One domain.** Student feedback from one Vietnamese university; other domains are untested.
 - The suggestion convention is the corpus's: a request for change (*thầy nên…*) is `negative`.
