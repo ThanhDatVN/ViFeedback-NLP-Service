@@ -17,7 +17,7 @@ git archive --format=zip -o vifeedback.zip HEAD
 ```
 
 `git archive` exports **committed files only**, which is exactly right: the dataset is gitignored and
-will be fetched inside the notebook, so nothing large travels. Expect roughly **300 KB / 75 files**.
+will be fetched inside the notebook, so nothing large travels. Expect roughly **1.3 MB / 160 files** (it includes the committed study outputs).
 
 Sanity check before uploading:
 
@@ -93,7 +93,7 @@ run that updates weights counts against the cycle budget in `configs/experiments
 
 | Cell | What | Runs | Est. (T4) | Needed? |
 |---|---|---:|---|---|
-| **4e** | **H3: `xlmr-base` on raw text + on pyvi, same session, 5 seeds each** | 10 | **~55 min** | **yes, the only Kaggle-only hypothesis** |
+| **4e** | **H3: `xlmr-base` on raw text + on pyvi, same session, 5 seeds each, robustness in-run** | 10 | **~65 min** | **yes, the only Kaggle-only hypothesis** |
 | 4d | Release FP32 + dynamic INT8 + static INT8 through the verified release step | 1 | ~10 min | optional: INT8 needs `onnx`, blocked on the laptop |
 
 Cell 4e prints the paired result (raw − pyvi, 95% CI, wins, p) at the end, so the answer is visible
