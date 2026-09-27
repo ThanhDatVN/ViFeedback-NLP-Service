@@ -111,3 +111,18 @@ class TestRiskCoverage:
         r = C.risk_coverage(p, y, coverages=(0.8,))[0]
         assert r["class_coverage"][1] == 0.0
         assert r["class_coverage"][0] == 1.0
+
+
+class TestAURC:
+    def test_oracle_ordering_beats_random_and_bounds_hold(self) -> None:
+        logits, y = _calibrated_sample(n=3000)
+        p = softmax(logits, axis=1)
+        r = C.selective_scores(p, y)
+        assert r["oracle"] <= r["max_probability"] <= r["random"] + 1e-9
+        assert r["oracle"] < r["random"]
+
+    def test_perfect_confidence_gives_oracle_aurc(self) -> None:
+        correct = np.array([1, 1, 0, 1, 0], dtype=float)
+        assert C.aurc(correct, correct) == pytest.approx(C.aurc(correct + 0.0, correct))
+        # accepting the two errors first is the worst possible order
+        assert C.aurc(1 - correct, correct) > C.aurc(correct, correct)

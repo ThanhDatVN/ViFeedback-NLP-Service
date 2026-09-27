@@ -157,6 +157,7 @@ def run_once(
         )
         s1_logits = predict(model, dl, out["device"], cfg.fp16)[0]
         stage1 = M.evaluate(y_dv, s1_logits.argmax(1), cfg.task, y_prob=softmax(s1_logits))
+        stage1_probs = softmax(s1_logits)
         if robustness:
             # The CE model's robustness, measured before its head is replaced: the same-seed
             # control for the augmentation hypothesis (configs/experiments/cycle1.yaml, H2).
@@ -235,6 +236,23 @@ def run_once(
                 texts=x if split == "test" else None,
                 y_prob=prob,
             )
+            if stage1 is not None and split == "validation":
+                # The same-seed CE control's own predictions, for example-level paired comparisons.
+                import pandas as pd
+
+                cols = {f"p_{n}": stage1_probs[:, c] for c, n in enumerate(metrics["labels"])}
+                pd.DataFrame(
+                    {
+                        "idx": np.arange(len(y_dv)),
+                        "y_true": y_dv,
+                        "y_pred": stage1_probs.argmax(1),
+                        **cols,
+                    }
+                ).to_csv(
+                    paths.run_dir(cfg.run_id(split)) / "stage1_preds.csv",
+                    index=False,
+                    float_format="%.6g",
+                )
 
         evaluated[split] = metrics
         if verbose:

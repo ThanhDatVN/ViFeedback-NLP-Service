@@ -1,0 +1,26 @@
+# Exact versions of the reference machine's environment (review R11), captured 2026-09-27.
+# pyproject.toml keeps broad lower bounds so the package installs anywhere; this file pins the
+# environment every laptop result in results/registry.csv came from:
+#   pip install -e . -c requirements-lock.txt
+# Kaggle runs use Kaggle's own torch/CUDA build; their env.json records the versions actually used.
+# Python 3.11.9 on Windows 10
+
+torch==2.14.0+cu126
+transformers==5.17.0
+tokenizers==0.23.2
+huggingface-hub==1.32.0
+datasets==5.0.1
+numpy==2.4.6
+pandas==2.3.3
+pyarrow==25.0.1
+scipy==1.17.1
+scikit-learn==1.7.2
+onnxruntime==1.30.0
+pyvi==0.1.1
+underthesea==9.5.0
+typer==0.27.2
+fastapi==0.141.1
+pydantic==2.13.5
+uvicorn==0.52.4
+pyyaml==6.0.3
+matplotlib==3.11.2

@@ -1,0 +1,20 @@
+{
+  "dataset": "uitnlp/vietnamese_students_feedback",
+  "revision": "2d76906157232f87e9883fa37ebfc91ffdee1f83",
+  "captured": "2026-09-27",
+  "hash": "content_sha256: tab-separated sentence, sentiment, topic lines after NFC, row order kept",
+  "splits": {
+    "train": {
+      "rows": 11426,
+      "content_sha256": "fe24d2448bf24a98cd248dbbcbefed1531401c46fef3d2de0ad9adcef4751385"
+    },
+    "validation": {
+      "rows": 1583,
+      "content_sha256": "d68f13bc9092bcc67d11be412500a3ff0b97d2b5356b2b273094d2b9e13653c3"
+    },
+    "test": {
+      "rows": 3166,
+      "content_sha256": "d422dbee40d9fd1fa7efedb52a1073b984fc6765fa5aa6f8d143ce104fdf2787"
+    }
+  }
+}

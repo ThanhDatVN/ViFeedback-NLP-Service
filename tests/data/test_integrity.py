@@ -109,3 +109,13 @@ class TestSurfaceProperties:
         from vifeedback.data.profile import surface_properties
 
         assert surface_properties(dfs)["sentences_with_underscore"] <= 5
+
+
+def test_data_matches_the_committed_content_reference() -> None:
+    """Review R11: the local manifest is regenerated on refetch and cannot reveal drift; the
+    committed content reference can. Every result in the repository was produced on this data."""
+    from vifeedback.constants import SPLITS
+    from vifeedback.data.loader import load, verify_reference
+
+    for split in SPLITS:
+        verify_reference(split, load(split))

@@ -16,6 +16,9 @@ results/runs/*
 !results/runs/.gitkeep
 !results/runs/*/
 results/runs/*/preds.csv
+# Validation predictions carry no text (only test predictions do), and example-level paired
+# comparisons need them (review § 8.1). Test predictions stay local: they contain corpus text.
+!results/runs/*-val/preds.csv
 results/runs/*/confusion.png
 !results/runs/*/metrics.json
 !results/runs/*/config.yaml

@@ -1,0 +1,13 @@
+{
+  "checkpoint": "models/p6-sent-phobert-base-seg_pyvi-base-s42-ckp",
+  "split": "validation",
+  "precision": "fp32 cpu",
+  "segmented_input_macro_f1": 0.8671904175645571,
+  "raw_input_macro_f1": 0.8153814428671411,
+  "delta": -0.051808974697415966,
+  "neutral_f1": {
+    "segmented": 0.672,
+    "raw": 0.5571428571428572
+  },
+  "label_flip_rate": 0.03663929248262792
+}

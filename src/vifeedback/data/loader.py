@@ -48,6 +48,35 @@ def _sha256(path) -> str:
     return h.hexdigest()
 
 
+# Committed reference (review R11). The manifest in data/raw/ is regenerated on every refetch, so on
+# its own it can never reveal that upstream changed. This file is fixed, and it hashes *content*
+# (sentences and labels), not file bytes: a re-written parquet embeds the writer's pyarrow version,
+# so byte hashes differ across machines with identical data.
+REFERENCE = paths.CONFIGS / "data" / "uit_vsfc_reference.json"
+
+
+def content_sha256(df: pd.DataFrame) -> str:
+    """SHA-256 over tab-separated `sentence, sentiment, topic` lines in row order: the data itself."""
+    h = hashlib.sha256()
+    for s_, a, b in zip(df["sentence"], df["sentiment"], df["topic"], strict=True):
+        h.update(f"{s_}\t{int(a)}\t{int(b)}\n".encode())
+    return h.hexdigest()
+
+
+def verify_reference(split: str, df: pd.DataFrame) -> None:
+    """Fail loudly if a split differs from the committed reference."""
+    if not REFERENCE.exists():
+        return
+    ref = json.loads(REFERENCE.read_text(encoding="utf-8"))["splits"][split]
+    got = {"rows": len(df), "content_sha256": content_sha256(df)}
+    if got != {k: ref[k] for k in got}:
+        raise ValueError(
+            f"{split}: fetched data differs from the committed reference {REFERENCE.name} "
+            f"(rows {got['rows']} vs {ref['rows']}). Upstream changed, or the revision pin was edited. "
+            "Every result in this repository was produced on the reference data."
+        )
+
+
 def fetch(force: bool = False) -> dict[str, Any]:
     """Download the official splits and write `data/raw/{split}.parquet` + `manifest.json`.
 
@@ -85,12 +114,14 @@ def fetch(force: bool = False) -> dict[str, Any]:
         df["sentiment"] = df["sentiment"].astype("int8")
         df["topic"] = df["topic"].astype("int8")
 
+        verify_reference(split, df)
         out = paths.raw_file(split)
         df.to_parquet(out, index=False)
         manifest["splits"][split] = {
             "file": out.name,
             "rows": len(df),
             "sha256": _sha256(out),
+            "content_sha256": content_sha256(df),
         }
 
     MANIFEST.write_text(json.dumps(manifest, indent=2), encoding="utf-8")

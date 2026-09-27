@@ -47,9 +47,12 @@ class TestProbes:
 
     def test_readyz_is_false_without_a_model(self, client) -> None:
         """The important one. A readiness probe that greens before the model loads makes an
-        orchestrator route traffic to a process that can only fail."""
+        orchestrator route traffic to a process that can only fail.
+
+        HTTP 503, not 200 with `ready: false` (review R5): a conventional probe reads the status
+        code only."""
         r = client.get("/readyz")
-        assert r.status_code == 200
+        assert r.status_code == 503
         body = r.json()
         assert body["ready"] is False
         assert body["models_loaded"] == []
@@ -132,3 +135,32 @@ class TestOpenAPI:
             "properties"
         ]
         assert set(props) >= {"predictions", "task", "model_version", "latency_ms"}
+
+
+class TestReadinessSemantics:
+    """Review R5 and R6, exercised on the module state directly."""
+
+    def test_missing_segmenter_makes_a_loaded_model_not_ready(self, monkeypatch) -> None:
+        import vifeedback.serving.app as A
+
+        monkeypatch.setattr(A, "REQUIRED_TASKS", ("sentiment",))
+        monkeypatch.setitem(A._state, "models", {"sentiment": object()})
+        monkeypatch.setitem(A._state, "needs_segmenter", True)
+        monkeypatch.setitem(A._state, "segmenter", None)
+        monkeypatch.setitem(
+            A._state, "segmenter_error", "segmenter 'pyvi' unavailable: ImportError"
+        )
+        assert "pyvi" in A._not_ready_reason()
+
+    def test_every_required_task_must_be_loaded(self, monkeypatch) -> None:
+        import vifeedback.serving.app as A
+
+        monkeypatch.setattr(A, "REQUIRED_TASKS", ("sentiment", "topic"))
+        monkeypatch.setitem(A._state, "models", {"sentiment": object()})
+        monkeypatch.setitem(A._state, "needs_segmenter", False)
+        assert "topic" in A._not_ready_reason()
+
+    def test_latency_buffer_is_bounded(self) -> None:
+        import vifeedback.serving.app as A
+
+        assert A._latencies.maxlen == 10_000

@@ -153,6 +153,17 @@ minority class, selecting on loss or accuracy selects the checkpoint that has le
 
 ---
 
+### Decisions influenced by test results
+
+Review R7: count the *decisions* a test result influenced, not only the touches. Every test touch is
+in `results/test_evaluations.log`, 21 rows, all from Gate G4.
+
+| Test evaluation | Decision it influenced |
+|---|---|
+| G4 baselines and PhoBERT (VnCoreNLP, pyvi; sentiment, topic) | **None.** The serving pipeline (pyvi) was chosen on dev + latency before G4 (ADR-012). The dev→test drop was reported, not acted on. No configuration, threshold or model choice since G4 used a test number |
+
+The Cycle 1 closing gate adds one row per finalist here, with what, if anything, it changed.
+
 ## Latency harness
 
 `src/vifeedback/inference/benchmark.py`. These rules are what separate a benchmark from a `time.time()`

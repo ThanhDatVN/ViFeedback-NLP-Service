@@ -88,6 +88,14 @@ def paired_seed_comparison(
     sb = _select(df, b).set_index("seed")[metric].astype(float)
     seeds = sorted(set(sa.index) & set(sb.index))
     out: dict[str, Any] = {"a": a, "b": b, "metric": metric, "seeds": seeds, "n": len(seeds)}
+    # A seed fixes data order for every model, but head initialization only within one architecture
+    # (review R7). Cross-architecture pairs share less, and the label says so.
+    same_arch = a.get("model", "phobert-base") == b.get("model", "phobert-base")
+    out["pairing"] = (
+        "same architecture: data order and head initialization"
+        if same_arch
+        else "cross-architecture: data order only"
+    )
     if len(seeds) < 2:
         out["note"] = "fewer than two shared seeds; no paired test"
         return out

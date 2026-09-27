@@ -2,7 +2,8 @@
 
 Serves the ONNX artifact, not PyTorch: the runtime image needs `onnxruntime` only, which is what
 keeps it inside the 700 MB target. Preprocessing is `pyvi` (ADR-012) — segmentation is worth
-+0.023 macro-F1 and pyvi delivers it for 0.31 ms p95 with no JVM.
++0.023 macro-F1 and pyvi delivers it for 0.31 ms p95 with no JVM. The segmenter actually
+used is the one named in the artifact's manifest.
 
 Design choices worth stating:
 
@@ -20,6 +21,7 @@ import logging
 import os
 import time
 import uuid
+from collections import deque
 from contextlib import asynccontextmanager
 from pathlib import Path
 from typing import Any
@@ -47,10 +49,21 @@ log = logging.getLogger("vifeedback")
 MODEL_DIR = Path(os.getenv("MODEL_DIR", str(paths.MODELS / "serve")))
 MAX_LENGTH = int(os.getenv("MAX_LENGTH", "96"))
 THREADS = int(os.getenv("ORT_THREADS", "0")) or None
+# Tasks this deployment must serve. Readiness requires every one of them (review R5).
+REQUIRED_TASKS = tuple(t for t in os.getenv("REQUIRED_TASKS", "sentiment").split(",") if t)
 
-_state: dict[str, Any] = {"models": {}, "version": "unloaded", "segmenter": None}
+_state: dict[str, Any] = {
+    "models": {},
+    "version": "unloaded",
+    "segmenter": None,
+    "needs_segmenter": False,
+    "segmenter_error": None,
+}
 _counters: dict[str, int] = {}
-_latencies: list[float] = []
+# Bounded (review R6): percentiles only ever read the most recent window, so older entries were
+# dead memory growing with every request. The total count is kept separately.
+_latencies: deque[float] = deque(maxlen=10_000)
+_request_count = 0
 
 
 def _load() -> None:
@@ -75,18 +88,21 @@ def _load() -> None:
     vf = MODEL_DIR / "VERSION"
     _state["version"] = vf.read_text(encoding="utf-8").strip() if vf.exists() else "unversioned"
 
+    # The artifact's manifest says which preprocessing it was verified with (review R3);
+    # SEGMENTER overrides it only when set explicitly.
+    backend = os.getenv("SEGMENTER") or _backend_from_manifests(manifests) or "pyvi"
+    _state["needs_segmenter"] = backend != "none"
+    _state["segmenter_error"] = None
     try:
         from vifeedback.preprocess.segment import get_segmenter
 
-        # The artifact's manifest says which preprocessing it was verified with (review R3);
-        # SEGMENTER overrides it only when set explicitly.
-        backend = os.getenv("SEGMENTER") or _backend_from_manifests(manifests) or "pyvi"
         _state["segmenter"] = get_segmenter(backend)
     except Exception as e:
-        # Serving raw text costs ~0.023 macro-F1 (ADR-012). Degrading loudly beats failing to boot.
-        log.warning(
-            f"segmenter unavailable ({type(e).__name__}) — serving raw text, -0.023 macro-F1"
-        )
+        # Not a silent fallback (review R5). A model verified on segmented input is not verified on
+        # raw text, so the service reports itself not ready instead of serving unverified output.
+        _state["segmenter"] = None
+        _state["segmenter_error"] = f"segmenter '{backend}' unavailable: {type(e).__name__}"
+        log.error(_state["segmenter_error"] + " — /readyz will report not ready")
 
 
 def _backend_from_manifests(manifests: dict[str, dict[str, Any]]) -> str | None:
@@ -126,6 +142,8 @@ async def request_id_and_timing(request: Request, call_next):
     response.headers["x-request-id"] = rid
     response.headers["x-response-time-ms"] = f"{dt:.2f}"
     if request.url.path.startswith("/v1"):
+        global _request_count
+        _request_count += 1
         _latencies.append(dt)
         log.info(f"{rid} {request.method} {request.url.path} {response.status_code} {dt:.1f}ms")
     return response
@@ -142,14 +160,26 @@ def healthz() -> HealthResponse:
     return HealthResponse(status="ok")
 
 
+def _not_ready_reason() -> str | None:
+    missing = [t for t in REQUIRED_TASKS if t not in _state["models"]]
+    if missing:
+        return f"no ONNX artifact for required task(s) {missing} under {MODEL_DIR}"
+    if _state["needs_segmenter"] and _state["segmenter"] is None:
+        return _state["segmenter_error"] or "required segmenter is not loaded"
+    return None
+
+
 @app.get("/readyz", response_model=ReadyResponse)
-def readyz() -> ReadyResponse:
-    loaded = sorted(_state["models"])
-    return ReadyResponse(
-        ready=bool(loaded),
-        models_loaded=loaded,
-        detail=None if loaded else f"no ONNX artifact under {MODEL_DIR}",
+def readyz() -> JSONResponse:
+    """Readiness: every required task loaded AND its preprocessing available (review R5).
+
+    Not ready is HTTP 503, so a conventional probe that only reads the status code gets it right.
+    """
+    reason = _not_ready_reason()
+    body = ReadyResponse(
+        ready=reason is None, models_loaded=sorted(_state["models"]), detail=reason
     )
+    return JSONResponse(status_code=200 if reason is None else 503, content=body.model_dump())
 
 
 @app.get("/version", response_model=VersionResponse)
@@ -170,6 +200,8 @@ def classify(req: ClassifyRequest) -> ClassifyResponse:
     clf = _state["models"].get(req.task)
     if clf is None:
         raise HTTPException(503, f"model for task '{req.task}' is not loaded")
+    if _state["needs_segmenter"] and _state["segmenter"] is None:
+        raise HTTPException(503, _state["segmenter_error"] or "required segmenter is not loaded")
 
     t0 = time.perf_counter()
     texts = list(req.texts)
@@ -223,15 +255,15 @@ def metrics() -> str:
     lines += [
         "# HELP vifeedback_requests_total Requests served on /v1.",
         "# TYPE vifeedback_requests_total counter",
-        f"vifeedback_requests_total {len(_latencies)}",
+        f"vifeedback_requests_total {_request_count}",
         "# HELP vifeedback_ready Whether a model is loaded.",
         "# TYPE vifeedback_ready gauge",
-        f"vifeedback_ready {int(bool(_state['models']))}",
+        f"vifeedback_ready {int(_not_ready_reason() is None)}",
     ]
     if _latencies:
         import numpy as np
 
-        a = np.array(_latencies[-10_000:])
+        a = np.array(_latencies)
         for q in (50, 95, 99):
             lines += [
                 f"# TYPE vifeedback_latency_p{q}_ms gauge",

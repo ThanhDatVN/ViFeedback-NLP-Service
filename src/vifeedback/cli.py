@@ -675,6 +675,7 @@ def study_calibration(
         r = C.cross_fit_temperature(C.probs_to_logits(probs), y, seed=seed, n_bins=n_bins)
         r.pop("calibrated_probs")
         r["risk_coverage_uncalibrated"] = C.risk_coverage(probs, y)
+        r["aurc"] = C.selective_scores(probs, y)  # E10: which confidence signal ranks errors best
         report["views"][view] = r
         u, t = r["uncalibrated"], r["temperature_scaled"]
         typer.echo(

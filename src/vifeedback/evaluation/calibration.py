@@ -214,3 +214,34 @@ def summary(probs: np.ndarray, y: np.ndarray, n_bins: int = 15) -> dict[str, Any
         "mean_confidence": float(probs.max(1).mean()),
         "reliability_equal_width": width["bins"],
     }
+
+
+def aurc(confidence: np.ndarray, correct: np.ndarray) -> float:
+    """Area under the risk-coverage curve (lower is better; Geifman & El-Yaniv).
+
+    Examples are accepted in decreasing confidence; the risk at each coverage level is the error rate
+    of what has been accepted so far, and AURC is its mean over all coverage levels.
+    """
+    order = np.argsort(-np.asarray(confidence), kind="stable")
+    errors = 1.0 - np.asarray(correct, dtype=float)[order]
+    return float((np.cumsum(errors) / np.arange(1, len(errors) + 1)).mean())
+
+
+def selective_scores(probs: np.ndarray, y: np.ndarray) -> dict[str, Any]:
+    """AURC for three confidence signals, plus the oracle and random baselines that bound it.
+
+    The oracle accepts every correct prediction first; random acceptance gives AURC = error rate.
+    A signal is only useful to the extent it sits between the two.
+    """
+    p = np.clip(probs, 1e-12, 1.0)
+    top2 = np.sort(p, axis=1)[:, -2:]
+    correct = p.argmax(1) == np.asarray(y)
+    signals = {
+        "max_probability": top2[:, 1],
+        "margin": top2[:, 1] - top2[:, 0],
+        "negative_entropy": (p * np.log(p)).sum(axis=1),
+    }
+    out = {name: aurc(s, correct) for name, s in signals.items()}
+    out["oracle"] = aurc(correct.astype(float), correct)
+    out["random"] = float(1.0 - correct.mean())
+    return out

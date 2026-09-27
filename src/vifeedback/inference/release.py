@@ -7,7 +7,7 @@ What the earlier export did wrong, and what this module does instead:
 | INT8 calibration and parity used **raw** text; the service feeds pyvi-segmented text | Both go through the checkpoint's own preprocessing |
 | Parity on the first 64 validation sentences, label agreement only | The full validation set, in mixed-length batches *and* one at a time |
 | `logits_close` computed but never enforced | FP32 must be logit-close or the release fails |
-| No quality check of INT8 | INT8 must stay within the pre-registered budget: ≤ 0.005 macro-F1 below the PyTorch model |
+| No quality check of INT8 | INT8 must be *non-inferior*: the one-sided 95% upper bound of its paired macro-F1 drop must be ≤ 0.005 |
 | Calibration drew on validation, the acceptance set | Calibration draws on a stratified **train** subset; acceptance stays independent |
 | Files written straight into the served directory | Built in a staging directory; the served directory is replaced only after every check passes |
 | The loader picked `model.quant.onnx` if one existed, even a stale one | A manifest names the one served file and its SHA-256; the loader refuses a mismatch |
@@ -88,6 +88,7 @@ def acceptance(
     """The release decision, as a pure function of the logits so it can be tested without ONNX."""
     from vifeedback.evaluation.metrics import macro_f1
 
+    y = np.asarray(y)
     ref_pred, got_pred = ref_logits.argmax(1), got_logits.argmax(1)
     r = {
         "n": len(y),
@@ -98,6 +99,17 @@ def acceptance(
         "macro_f1_onnx": macro_f1(y, got_pred, k),
     }
     r["macro_f1_drop"] = r["macro_f1_torch"] - r["macro_f1_onnx"]
+    if quantized:
+        # Non-inferiority, not "no significant difference" (review R7, § 8.3): the one-sided 95%
+        # upper bound of the paired drop must sit inside the margin. Paired resampling of the same
+        # sentences for both models, since their errors are strongly correlated.
+        rng = np.random.default_rng(0)
+        n = len(y)
+        drops = np.empty(1000)
+        for b in range(len(drops)):
+            i = rng.integers(0, n, size=n)
+            drops[b] = macro_f1(y[i], ref_pred[i], k) - macro_f1(y[i], got_pred[i], k)
+        r["macro_f1_drop_upper95"] = float(np.quantile(drops, 0.95))
     if single_logits is not None:
         # Batch-of-one must match the padded batch: a dynamic-axis bug shows up exactly here.
         batched = got_logits[: len(single_logits)]
@@ -108,8 +120,11 @@ def acceptance(
 
     failures = []
     if quantized:
-        if r["macro_f1_drop"] > INT8_MACRO_F1_BUDGET:
-            failures.append(f"INT8 macro-F1 drop {r['macro_f1_drop']:.4f} > {INT8_MACRO_F1_BUDGET}")
+        if r["macro_f1_drop_upper95"] > INT8_MACRO_F1_BUDGET:
+            failures.append(
+                f"INT8 not shown non-inferior: macro-F1 drop {r['macro_f1_drop']:.4f}, one-sided 95% "
+                f"upper bound {r['macro_f1_drop_upper95']:.4f} > margin {INT8_MACRO_F1_BUDGET}"
+            )
         if r["label_agreement"] < MIN_LABEL_AGREEMENT_INT8:
             failures.append(
                 f"INT8 label agreement {r['label_agreement']:.4f} < {MIN_LABEL_AGREEMENT_INT8}"
