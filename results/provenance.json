@@ -1,0 +1,93 @@
+{
+  "22c62b500176935010ed60b5db541ab49a076ceb280f22cfce5f109366fed5c2": {
+    "first_commit": "503fbdaf71a0553f0e4c8a11054114c86c17ffd1",
+    "commits_with_identical_source": 8,
+    "note": null,
+    "runs": [
+      "p9-sent-phobert-base-seg_pyvi-aug-diac-teen-s1337-6577cf17-tes",
+      "p9-sent-phobert-base-seg_pyvi-aug-diac-teen-s1337-6577cf17-val",
+      "p9-sent-phobert-base-seg_pyvi-aug-diac-teen-s2024-6d4c703f-tes",
+      "p9-sent-phobert-base-seg_pyvi-aug-diac-teen-s2024-6d4c703f-val",
+      "p9-sent-phobert-base-seg_pyvi-aug-diac-teen-s31337-023d9372-tes",
+      "p9-sent-phobert-base-seg_pyvi-aug-diac-teen-s31337-023d9372-val",
+      "p9-sent-phobert-base-seg_pyvi-aug-diac-teen-s42-599cf21f-tes",
+      "p9-sent-phobert-base-seg_pyvi-aug-diac-teen-s42-599cf21f-val",
+      "p9-sent-phobert-base-seg_pyvi-aug-diac-teen-s7-c67ab4c7-tes",
+      "p9-sent-phobert-base-seg_pyvi-aug-diac-teen-s7-c67ab4c7-val"
+    ]
+  },
+  "2ed448b9564552d96cf55c2065cec2c43704b9a612649e90761b9dd9240159fd": {
+    "first_commit": null,
+    "commits_with_identical_source": 0,
+    "note": "no commit has this source: an uncommitted tree",
+    "runs": [
+      "p8-sent-phobert-base-seg_pyvi-crt-s1337-7127aa13-val"
+    ]
+  },
+  "7b06847446767ca4d275bb1a066d4c7cffb3412fde269c7a09059f83e3e4613f": {
+    "first_commit": "a9e0f50a64c772a8311340cb2ac9652f7487ea5a",
+    "commits_with_identical_source": 5,
+    "note": null,
+    "runs": [
+      "p8-sent-phobert-base-seg_pyvi-aug-diac-teen-s1337-6577cf17-val",
+      "p8-sent-phobert-base-seg_pyvi-aug-diac-teen-s2024-6d4c703f-val",
+      "p8-sent-phobert-base-seg_pyvi-aug-diac-teen-s31337-023d9372-val",
+      "p8-sent-phobert-base-seg_pyvi-aug-diac-teen-s42-599cf21f-val",
+      "p8-sent-phobert-base-seg_pyvi-aug-diac-teen-s7-c67ab4c7-val",
+      "p8-sent-phobert-base-seg_pyvi-crt-s2024-678c88bf-val",
+      "p8-sent-phobert-base-seg_pyvi-crt-s31337-3f9bafd2-val",
+      "p8-sent-phobert-base-seg_pyvi-crt-s7-f4f83e94-val",
+      "p8-sent-phobert-base-seg_pyvi-logit-adjust-s1337-9cd83ad9-val",
+      "p8-sent-phobert-base-seg_pyvi-logit-adjust-s2024-2681e9f4-val",
+      "p8-sent-phobert-base-seg_pyvi-logit-adjust-s42-652f6816-val",
+      "p8-sent-phobert-base-seg_pyvi-mtl-l0.3-s1337-54ffcf13-val",
+      "p8-sent-phobert-base-seg_pyvi-mtl-l0.3-s2024-e9c5e9aa-val",
+      "p8-sent-phobert-base-seg_pyvi-mtl-l0.3-s42-e7d99640-val",
+      "p8-sent-phobert-base-seg_pyvi-mtl-l1-s1337-893d7c2d-val",
+      "p8-sent-phobert-base-seg_pyvi-mtl-l1-s2024-efa06289-val",
+      "p8-sent-phobert-base-seg_pyvi-mtl-l1-s42-15c0e1f5-val",
+      "p8-topi-phobert-base-seg_pyvi-mtl-l0.3-s1337-dc288363-val",
+      "p8-topi-phobert-base-seg_pyvi-mtl-l0.3-s2024-30b9ba63-val",
+      "p8-topi-phobert-base-seg_pyvi-mtl-l0.3-s42-2478c2c3-val",
+      "p8-topi-phobert-base-seg_pyvi-mtl-l1-s1337-7b862872-val",
+      "p8-topi-phobert-base-seg_pyvi-mtl-l1-s2024-ae595453-val",
+      "p8-topi-phobert-base-seg_pyvi-mtl-l1-s42-a83f19ee-val"
+    ]
+  },
+  "99c69f6bad53ab8906c75e0f8ad38e11269b957449f65c8d9a8ae8d5b0786022": {
+    "first_commit": null,
+    "commits_with_identical_source": 0,
+    "note": "no commit has this source: an uncommitted tree",
+    "runs": [
+      "p8-sent-phobert-base-seg_pyvi-crt-s42-57c89521-val"
+    ]
+  },
+  "aa135c6029f384397dd60ab571734b403e73ff4882f002dc60174e1e49abb01e": {
+    "first_commit": "5b2858c7d8880c81dd094a535596b1e9c1f2e8ee",
+    "commits_with_identical_source": 3,
+    "note": null,
+    "runs": [
+      "p4-sent-phobert-large-seg_pyvi-base-s1337-cc350443-val",
+      "p4-sent-phobert-large-seg_pyvi-base-s2024-44285bce-val",
+      "p4-sent-phobert-large-seg_pyvi-base-s31337-39724373-val",
+      "p4-sent-phobert-large-seg_pyvi-base-s42-e5ebaeaf-val",
+      "p4-sent-phobert-large-seg_pyvi-base-s7-ff5bbbfe-val",
+      "p4-sent-xlmr-base-seg_pyvi-base-s1337-1ac66b8a-val",
+      "p4-sent-xlmr-base-seg_pyvi-base-s2024-028f3714-val",
+      "p4-sent-xlmr-base-seg_pyvi-base-s31337-98ea7e0b-val",
+      "p4-sent-xlmr-base-seg_pyvi-base-s42-ef493a21-val",
+      "p4-sent-xlmr-base-seg_pyvi-base-s7-3e9814f3-val",
+      "p6-sent-phobert-base-seg_pyvi-base-s42-5532bb6c-val",
+      "p8-sent-xlmr-base-raw-base-s1337-ff37f25d-val",
+      "p8-sent-xlmr-base-raw-base-s2024-21bb6f66-val",
+      "p8-sent-xlmr-base-raw-base-s31337-c8f66680-val",
+      "p8-sent-xlmr-base-raw-base-s42-c3240045-val",
+      "p8-sent-xlmr-base-raw-base-s7-269a63ad-val",
+      "p8-sent-xlmr-base-seg_pyvi-base-s1337-1ac66b8a-val",
+      "p8-sent-xlmr-base-seg_pyvi-base-s2024-028f3714-val",
+      "p8-sent-xlmr-base-seg_pyvi-base-s31337-98ea7e0b-val",
+      "p8-sent-xlmr-base-seg_pyvi-base-s42-ef493a21-val",
+      "p8-sent-xlmr-base-seg_pyvi-base-s7-3e9814f3-val"
+    ]
+  }
+}

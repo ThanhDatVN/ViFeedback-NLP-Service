@@ -428,6 +428,35 @@ def serve_export(
     typer.echo(f"  manifest: {manifest['model_file']}  sha256 {manifest['sha256'][:12]}...")
 
 
+@serve_app.command("publish")
+def serve_publish(
+    repo_id: str = typer.Option(
+        ..., help="Hugging Face repository, e.g. <user>/vifeedback-sentiment"
+    ),
+    upload: bool = typer.Option(False, help="actually upload; without it this is a dry run"),
+    private: bool = typer.Option(False, help="create the repository as private"),
+    pytorch: bool = typer.Option(
+        True, help="include the PyTorch checkpoint next to the ONNX graph"
+    ),
+) -> None:
+    """Bundle the served model with a model card and checksums; upload only with --upload (R11).
+
+    The dry run builds models/publish/<name>/ so the card and files can be reviewed first. The
+    upload uses your own Hugging Face login (`hf auth login`) or HF_TOKEN; nothing is stored here.
+    """
+    from vifeedback.inference import publish as P
+
+    b = P.build(repo_id, include_pytorch=pytorch)
+    typer.echo(f"  bundle: {b['folder']}  ({b['bytes'] / 1e6:.0f} MB, {len(b['files'])} files)")
+    for name, sha in b["files"].items():
+        typer.echo(f"    {sha[:12]}  {name}")
+    if not upload:
+        typer.echo(f"  dry run: review {b['folder'] / 'README.md'}, then re-run with --upload")
+        return
+    typer.echo(f"  uploading to {repo_id} ...")
+    typer.echo("  " + P.upload(repo_id, b["folder"], private=private))
+
+
 @serve_app.command("bench")
 def serve_bench(
     task: str = typer.Option("sentiment"),

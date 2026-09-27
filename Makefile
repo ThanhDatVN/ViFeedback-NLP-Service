@@ -1,7 +1,7 @@
 # ViFeedback — one target per reproducible step.
 # Every target is what CI runs and what the README documents; there is no second way to do anything.
 
-.PHONY: help install data report test test-all lint format typecheck baseline train export serve docker docker-run bench clean ci
+.PHONY: help install data report test test-all lint format typecheck baseline train export serve docker docker-run docker-e2e bench clean ci
 .DEFAULT_GOAL := help
 
 PY ?= python
@@ -70,6 +70,9 @@ docker:  ## Build the runtime image
 
 docker-run:  ## Run the container on :8000
 	docker run --rm -p 8000:8000 -v "$(PWD)/models:/app/models:ro" vifeedback:latest
+
+docker-e2e:  ## Build the image, mount the released model, check /readyz and golden cases
+	$(PY) scripts/docker_e2e.py
 
 notebooks:  ## Re-execute both notebooks in place
 	$(PY) -m nbconvert --to notebook --execute --inplace notebooks/01_eda.ipynb
