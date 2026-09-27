@@ -13,7 +13,7 @@ from __future__ import annotations
 import hashlib
 import json
 import shutil
-from pathlib import Path
+from pathlib import Path, PureWindowsPath
 from typing import Any
 
 from vifeedback import paths
@@ -36,16 +36,22 @@ def _json(path: Path) -> Any:
     return json.loads(path.read_text(encoding="utf-8"))
 
 
+def _basename(path: str) -> str:
+    """Last component of a path recorded on any OS: results written on Windows hold backslashes,
+    which `Path(...).name` does not split on Linux."""
+    return PureWindowsPath(path).name
+
+
 def evidence(manifest: dict[str, Any]) -> dict[str, Any]:
     """Collect the card's numbers from committed results for the manifest's checkpoint."""
-    ckp = Path(manifest["checkpoint"]).name
+    ckp = _basename(manifest["checkpoint"])
     run_id = ckp.removesuffix("-ckp")
     val = _json(paths.RUNS / f"{run_id}-val" / "metrics.json")
     config = (paths.RUNS / f"{run_id}-val" / "config.yaml").read_text(encoding="utf-8")
     gate = _json(paths.RESULTS / "studies" / "closing_gate" / "summary.json")["checkpoints"]
-    gate_row = next(v for v in gate.values() if Path(v["checkpoint"]).name == ckp)
+    gate_row = next(v for v in gate.values() if _basename(v["checkpoint"]) == ckp)
     challenge = _json(paths.RESULTS / "studies" / "challenge" / "summary.json")
-    which = next(k for k, v in challenge["checkpoints"].items() if Path(v).name == ckp)
+    which = next(k for k, v in challenge["checkpoints"].items() if _basename(v) == ckp)
     return {
         "run_id": run_id,
         "config_yaml": config,

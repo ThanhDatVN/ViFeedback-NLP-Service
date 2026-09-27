@@ -23,7 +23,7 @@ import time
 import uuid
 from collections import deque
 from contextlib import asynccontextmanager
-from pathlib import Path
+from pathlib import Path, PureWindowsPath
 from typing import Any
 
 from fastapi import FastAPI, HTTPException, Request
@@ -92,7 +92,7 @@ def _load() -> None:
         _state["version"] = vf.read_text(encoding="utf-8").strip()
     elif manifests:
         _state["version"] = ", ".join(
-            f"{t}={Path(m.get('checkpoint', '?')).name}@{str(m.get('sha256', ''))[:12]}"
+            f"{t}={PureWindowsPath(str(m.get('checkpoint', '?'))).name}@{str(m.get('sha256', ''))[:12]}"
             for t, m in sorted(manifests.items())
         )
     else:

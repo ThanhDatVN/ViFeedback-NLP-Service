@@ -28,3 +28,9 @@ def test_evidence_matches_the_checkpoint_not_the_other_finalist():
     ev = P.evidence(MANIFEST)
     assert ev["run_id"].startswith("p9-")
     assert ev["test"]["robustness_test"]["nodiacritic"]["macro_f1"] > 0.6  # CE scores 0.27
+
+
+def test_basename_splits_windows_paths_on_any_os():
+    """The closing gate recorded a Windows path; on Linux, Path().name would not split it."""
+    assert P._basename(r"D:\GitHub\repo\models\p9-x-ckp") == "p9-x-ckp"
+    assert P._basename("models/p9-x-ckp") == "p9-x-ckp"
