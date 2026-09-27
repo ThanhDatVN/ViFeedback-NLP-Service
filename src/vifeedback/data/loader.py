@@ -86,9 +86,9 @@ def fetch(force: bool = False) -> dict[str, Any]:
     paths.ensure_dirs()
 
     if MANIFEST.exists() and not force:
-        manifest = json.loads(MANIFEST.read_text(encoding="utf-8"))
+        cached: dict[str, Any] = json.loads(MANIFEST.read_text(encoding="utf-8"))
         if all(paths.raw_file(s).exists() for s in SPLITS):
-            return manifest
+            return cached
 
     from huggingface_hub import hf_hub_download
 

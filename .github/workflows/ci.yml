@@ -37,8 +37,7 @@ jobs:
           ruff format --check src tests
 
       - name: Type check
-        run: python -m mypy
-        continue-on-error: true   # advisory until the codebase is fully annotated
+        run: python -m mypy       # blocking since the 35 advisory errors were fixed (NEXT_PLAN I1)
 
       - name: Packaging guards
         # Catches the class of bug that once shipped a broken repo: a .gitignore pattern

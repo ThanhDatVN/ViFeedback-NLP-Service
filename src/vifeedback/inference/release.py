@@ -90,7 +90,7 @@ def acceptance(
 
     y = np.asarray(y)
     ref_pred, got_pred = ref_logits.argmax(1), got_logits.argmax(1)
-    r = {
+    r: dict[str, Any] = {
         "n": len(y),
         "max_abs_logit_diff": float(np.abs(ref_logits - got_logits).max()),
         "logits_close": bool(np.allclose(ref_logits, got_logits, atol=FP32_ATOL)),

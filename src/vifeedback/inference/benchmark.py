@@ -67,7 +67,7 @@ def time_callable(
     spread = float((p95s.max() - p95s.min()) / max(p95s.min(), 1e-9))
     median_run = runs[int(np.argsort(p95s)[len(p95s) // 2])]
 
-    out = _percentiles(median_run)
+    out: dict[str, Any] = dict(_percentiles(median_run))
     out.update(
         {
             "repeats": repeats,

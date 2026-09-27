@@ -85,7 +85,7 @@ def retrain_head(
         head.train()
         return macro_f1(np.asarray(y_dv), logits.argmax(1), k)
 
-    best = {"f1": -1.0, "epoch": 0, "state": None}
+    best: dict[str, Any] = {"f1": -1.0, "epoch": 0, "state": None}
     history = []
     for epoch in range(1, epochs + 1):
         idx = torch.multinomial(weights, num_samples=len(y_tr_t), replacement=True, generator=g)

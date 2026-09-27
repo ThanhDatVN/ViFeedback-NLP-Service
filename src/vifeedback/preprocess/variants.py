@@ -36,7 +36,7 @@ VARIANTS: dict[str, tuple[str, bool, str]] = {
 }
 
 
-def variant_dir(name: str) -> paths.Path:  # type: ignore[name-defined]
+def variant_dir(name: str) -> paths.Path:
     return paths.DATA_PROCESSED / name
 
 

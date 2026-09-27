@@ -39,13 +39,13 @@ class BaselineSpec:
     supports_proba: bool = True
 
 
-_WORD_SPACE = {
+_WORD_SPACE: dict[str, list[Any]] = {
     "features__ngram_range": [(1, 1), (1, 2)],
     "features__min_df": [1, 2, 3],
     "features__sublinear_tf": [True, False],
     "clf__C": [0.5, 1.0, 3.0, 10.0],
 }
-_CHAR_SPACE = {
+_CHAR_SPACE: dict[str, list[Any]] = {
     "features__ngram_range": [(2, 4), (3, 5), (2, 5)],
     "features__min_df": [2, 3],
     "features__sublinear_tf": [True, False],

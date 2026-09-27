@@ -320,10 +320,10 @@ def train(
     scaler = torch.amp.GradScaler(enabled=cfg.fp16 and device != "cpu")
     fgm = FGM(model, cfg.fgm_epsilon) if cfg.fgm_epsilon > 0 else None
 
-    best = {"macro_f1": -1.0, "epoch": -1, "state": None}
+    best: dict[str, Any] = {"macro_f1": -1.0, "epoch": -1, "state": None}
     history: list[dict[str, Any]] = []
     t0 = time.perf_counter()
-    autocast_kw = dict(
+    autocast_kw: dict[str, Any] = dict(
         device_type=device.split(":")[0], dtype=torch.float16, enabled=cfg.fp16 and device != "cpu"
     )
 

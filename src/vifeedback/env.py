@@ -78,7 +78,7 @@ def cpu_info() -> dict[str, Any]:
 
     # Preferred: py-cpuinfo gives the real CPUID flag list.
     try:
-        import cpuinfo  # type: ignore[import-not-found]
+        import cpuinfo
 
         ci = cpuinfo.get_cpu_info()
         flags = set(ci.get("flags", []))

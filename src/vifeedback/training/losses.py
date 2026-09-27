@@ -47,6 +47,8 @@ class FocalLoss(nn.Module):
     two are swept as separate axes rather than bundled.
     """
 
+    weight: torch.Tensor | None
+
     def __init__(
         self, gamma: float = 2.0, weight: torch.Tensor | None = None, label_smoothing: float = 0.0
     ):
@@ -73,6 +75,8 @@ class LogitAdjustedLoss(nn.Module):
     Principled for long-tailed data — it targets the balanced error rate directly rather than
     heuristically reweighting — and costs nothing at inference, unlike an ensemble.
     """
+
+    adjustment: torch.Tensor
 
     def __init__(self, priors: np.ndarray, tau: float = 1.0, label_smoothing: float = 0.0):
         super().__init__()

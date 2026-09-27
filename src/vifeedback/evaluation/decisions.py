@@ -118,7 +118,7 @@ def h2(runs: dict[str, dict[int, dict[str, Any]]]) -> dict[str, Any]:
     ctrl_clean = {s: crt[s]["stage1_ce"]["macro_f1"] for s in seeds}
     aug_clean = {s: aug[s]["macro_f1"] for s in seeds}
     suites = list(aug[seeds[0]]["robustness"])
-    per_suite = {}
+    per_suite: dict[str, dict[str, Any]] = {}
     for suite in suites:
         dc = np.array([deg(ctrl_clean[s], crt[s]["stage1_ce"]["robustness"], suite) for s in seeds])
         da = np.array([deg(aug_clean[s], aug[s]["robustness"], suite) for s in seeds])

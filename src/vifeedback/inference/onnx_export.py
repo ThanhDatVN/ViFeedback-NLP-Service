@@ -45,7 +45,7 @@ def export_fp32(model, tokenizer, out_dir: Path, max_length: int = 96) -> Path:
     # legacy path needs neither, so FP32 export runs there too; only INT8 quantization does not.
     import inspect
 
-    legacy = (
+    legacy: dict[str, Any] = (
         {"dynamo": False} if "dynamo" in inspect.signature(torch.onnx.export).parameters else {}
     )
     with torch.no_grad():

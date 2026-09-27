@@ -173,7 +173,7 @@ def train_multitask(
     sched = linear_warmup_schedule(opt, total, cfg.warmup_ratio)
     scaler = torch.amp.GradScaler(enabled=cfg.fp16 and device != "cpu")
     ce = nn.CrossEntropyLoss()
-    ac = dict(
+    ac: dict[str, Any] = dict(
         device_type=device.split(":")[0], dtype=torch.float16, enabled=cfg.fp16 and device != "cpu"
     )
 
@@ -204,7 +204,7 @@ def train_multitask(
 
         logits = predict(model, dv_loader, device, cfg.fp16)
         f1 = {
-            t: M.macro_f1(dev[1 + i], logits[t].argmax(1), len(label_names(t)))
+            t: M.macro_f1(np.asarray(dev[1 + i]), logits[t].argmax(1), len(label_names(t)))
             for i, t in enumerate(TASKS)
         }
         score = float(np.mean(list(f1.values())))

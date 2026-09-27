@@ -53,7 +53,7 @@ def log_odds_with_prior(
         for c in _tokenize(sub, ngram):
             counts_per_class[name].update(c)
 
-    total = Counter()
+    total: Counter[str] = Counter()
     for c in counts_per_class.values():
         total.update(c)
     vocab = [w for w, n in total.items() if n >= min_count]
