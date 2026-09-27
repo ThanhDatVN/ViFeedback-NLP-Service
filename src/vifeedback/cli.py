@@ -1097,6 +1097,52 @@ def study_audit_sheet() -> None:
     typer.echo(f"  rebuilt {len(sample)} rows -> {sheet}")
 
 
+@study_app.command("audit-report")
+def study_audit_report(
+    sheet: str = typer.Option(
+        "results/studies/study_a/local/audit_sheet.csv", help="the filled annotation sheet"
+    ),
+    second: str = typer.Option("", help="a second pass over >= 50 of the same rows, for kappa"),
+    kind: str = typer.Option(
+        "intra", help="inter (two people) | intra (one person, >= 24 h apart)"
+    ),
+) -> None:
+    """Analyse the filled neutral-audit sheet and apply the decision tree frozen in cycle2.yaml.
+
+    Refuses an incomplete sheet. Writes counts only (no text) to study_a/audit_report.json.
+    """
+    import pandas as pd
+
+    from vifeedback.evaluation import audit as AU
+    from vifeedback.evaluation.report import yaml_safe
+
+    first = pd.read_csv(sheet, encoding="utf-8-sig", keep_default_na=False)
+    other = pd.read_csv(second, encoding="utf-8-sig", keep_default_na=False) if second else None
+    try:
+        r = AU.report(first, other, kind)
+    except ValueError as e:
+        raise typer.BadParameter(str(e)) from None
+    out = paths.RESULTS / "studies" / "study_a" / "audit_report.json"
+    out.write_text(json.dumps(yaml_safe(r), indent=2), encoding="utf-8")
+    rs = r["random_stratum"]
+    typer.echo(
+        f"  random stratum (n={rs['n']}): incorrect gold {rs['incorrect']['rate']:.2f} "
+        f"{tuple(round(x, 2) for x in rs['incorrect']['wilson_95'])}, "
+        f"ambiguous {rs['ambiguous']['rate']:.2f}"
+    )
+    if "agreement" in r:
+        a = r["agreement"]
+        typer.echo(
+            f"  {a['kind']}-annotator kappa {a['kappa']:.2f} on {a['n']} rows {a['warnings']}"
+        )
+    d = r["decision"]
+    typer.echo(
+        f"  scope n={d['n']}: incorrect {d['share_incorrect']:.2f}, ambiguous "
+        f"{d['share_ambiguous']:.2f} -> {d['branch']}: {d['next']}"
+    )
+    typer.echo(f"  -> {out}")
+
+
 @study_app.command("closing-gate")
 def study_closing_gate(
     ce_checkpoint: str = typer.Option("models/p6-sent-phobert-base-seg_pyvi-base-s42-ckp"),
