@@ -20,3 +20,9 @@
 2026-09-22 10:13	p4-topi-phobert-base-seg_pyvi-base-s7-tes	P4	Gate G4: locked test evaluation, deferred from G2/G3 per ADR-011
 2026-09-22 10:18	p4-topi-phobert-base-seg_pyvi-base-s31337-tes	P4	Gate G4: locked test evaluation, deferred from G2/G3 per ADR-011
 2026-09-27 07:41	p9-sent-phobert-base-seg_pyvi-aug-diac-teen-s42-599cf21f-tes	P9	Cycle 1 closing gate: H2 finalist on test (cycle1.yaml)
+2026-09-27 07:47	p9-sent-phobert-base-seg_pyvi-aug-diac-teen-s1337-6577cf17-tes	P9	Cycle 1 closing gate: H2 finalist on test (cycle1.yaml)
+2026-09-27 07:52	p9-sent-phobert-base-seg_pyvi-aug-diac-teen-s2024-6d4c703f-tes	P9	Cycle 1 closing gate: H2 finalist on test (cycle1.yaml)
+2026-09-27 07:57	p9-sent-phobert-base-seg_pyvi-aug-diac-teen-s7-c67ab4c7-tes	P9	Cycle 1 closing gate: H2 finalist on test (cycle1.yaml)
+2026-09-27 08:02	p9-sent-phobert-base-seg_pyvi-aug-diac-teen-s31337-023d9372-tes	P9	Cycle 1 closing gate: H2 finalist on test (cycle1.yaml)
+2026-09-27 08:03	p6-sent-phobert-base-seg_pyvi-base-s42-ckp	P9	Cycle 1 closing gate (cycle1.yaml): finalists on test, once
+2026-09-27 08:03	p9-sent-phobert-base-seg_pyvi-aug-diac-teen-s42-599cf21f-ckp	P9	Cycle 1 closing gate (cycle1.yaml): finalists on test, once

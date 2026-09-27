@@ -1,0 +1,145 @@
+{
+  "reason": "Cycle 1 closing gate (cycle1.yaml): finalists on test, once",
+  "slice_version": 1,
+  "checkpoints": {
+    "ce_deployed": {
+      "checkpoint": "models\\p6-sent-phobert-base-seg_pyvi-base-s42-ckp",
+      "test": {
+        "macro_f1": 0.843657894146614,
+        "weighted_f1": 0.9411937650086979,
+        "per_class_f1": {
+          "negative": 0.958071278825996,
+          "neutral": 0.6120996441281138,
+          "positive": 0.9608027594857322
+        }
+      },
+      "test_excluding_train_overlap": {
+        "n": 3111,
+        "macro_f1": 0.8431139743029479,
+        "neutral_f1": 0.6115107913669066
+      },
+      "calibration": {
+        "temperature_fit_on_validation": 1.5581954966235378,
+        "uncalibrated": {
+          "nll": 0.2594466805458069,
+          "brier": 0.10162260206579367,
+          "ece_equal_width": 0.04194833599007439,
+          "ece_equal_mass": 0.040311379008705836
+        },
+        "calibrated": {
+          "nll": 0.2050214409828186,
+          "brier": 0.09627947341915977,
+          "ece_equal_width": 0.014742335534065603,
+          "ece_equal_mass": 0.01733672925737638
+        }
+      },
+      "robustness_test": {
+        "nodiacritic": {
+          "macro_f1": 0.2708458892179382,
+          "pred_share_neutral": 0.651610865445357
+        },
+        "nodiacritic-50": {
+          "macro_f1": 0.6489095240184247,
+          "pred_share_neutral": 0.12507896399241947
+        },
+        "teencode-100": {
+          "macro_f1": 0.8029356509247694,
+          "pred_share_neutral": 0.04706253948199621
+        },
+        "charnoise-5": {
+          "macro_f1": 0.783088895017246,
+          "pred_share_neutral": 0.04390397978521794
+        }
+      }
+    },
+    "h2_augmented": {
+      "checkpoint": "D:\\GitHub\\ViFeedback NLP Service\\models\\p9-sent-phobert-base-seg_pyvi-aug-diac-teen-s42-599cf21f-ckp",
+      "test": {
+        "macro_f1": 0.8370605090539023,
+        "weighted_f1": 0.9401533536042099,
+        "per_class_f1": {
+          "negative": 0.9599719101123596,
+          "neutral": 0.592057761732852,
+          "positive": 0.9591518553164953
+        }
+      },
+      "test_excluding_train_overlap": {
+        "n": 3111,
+        "macro_f1": 0.8364250148092619,
+        "neutral_f1": 0.5912408759124087
+      },
+      "calibration": {
+        "temperature_fit_on_validation": 1.5506323562497697,
+        "uncalibrated": {
+          "nll": 0.26181524991989136,
+          "brier": 0.10294854323286307,
+          "ece_equal_width": 0.04270625755482661,
+          "ece_equal_mass": 0.03958708573125693
+        },
+        "calibrated": {
+          "nll": 0.20710474252700806,
+          "brier": 0.09770991839351094,
+          "ece_equal_width": 0.01473879096858955,
+          "ece_equal_mass": 0.01742361814480226
+        }
+      },
+      "robustness_test": {
+        "nodiacritic": {
+          "macro_f1": 0.6349863142524094,
+          "pred_share_neutral": 0.04864181933038535
+        },
+        "nodiacritic-50": {
+          "macro_f1": 0.7313021664339988,
+          "pred_share_neutral": 0.03790271636133923
+        },
+        "teencode-100": {
+          "macro_f1": 0.8249150374503732,
+          "pred_share_neutral": 0.03663929248262792
+        },
+        "charnoise-5": {
+          "macro_f1": 0.796518110872935,
+          "pred_share_neutral": 0.03253316487681617
+        }
+      }
+    }
+  },
+  "five_seed_test": {
+    "ce": {
+      "42": 0.8437,
+      "1337": 0.8267,
+      "2024": 0.8242,
+      "7": 0.8343,
+      "31337": 0.8151
+    },
+    "augmented": {
+      "42": 0.8371,
+      "1337": 0.8298,
+      "2024": 0.8179,
+      "7": 0.8309,
+      "31337": 0.8325
+    },
+    "paired_aug_minus_ce": {
+      "seeds": [
+        7,
+        42,
+        1337,
+        2024,
+        31337
+      ],
+      "n": 5,
+      "per_seed_delta": [
+        -0.0034,
+        -0.0066,
+        0.0031,
+        -0.0063,
+        0.0174
+      ],
+      "mean_delta": 0.0008399999999999519,
+      "wins": 2,
+      "ci95": [
+        -0.011633193154233883,
+        0.013313193154233786
+      ]
+    }
+  }
+}
