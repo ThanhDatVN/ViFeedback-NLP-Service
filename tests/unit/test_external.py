@@ -72,3 +72,28 @@ def test_sentence_case_capitalizes_only_the_first_letter():
     v = X.case_variants(["thầy dạy hay", ""])
     assert v["sentence_case"] == ["Thầy dạy hay", ""]
     assert v["as_is"] == ["thầy dạy hay", ""]
+
+
+def test_neu_esc_numeric_codes_follow_the_dataset_card(tmp_path, monkeypatch):
+    ext, ref = tmp_path / "external", tmp_path / "ref.json"
+    (ext / "neu_esc").mkdir(parents=True)
+    csv = b"text,sentiment,classification\na,0.0,2.0\nb,1.0,4.0\nc,2.0,0.0\nd,3.0,3.0\n"
+    (ext / "neu_esc" / "test_set.csv").write_bytes(csv)
+    ref.write_text(
+        json.dumps(
+            {
+                "neu_esc": {
+                    "files": {
+                        "test": {"path": "test_set.csv", "sha256": hashlib.sha256(csv).hexdigest()}
+                    }
+                }
+            }
+        ),
+        encoding="utf-8",
+    )
+    monkeypatch.setattr(X, "EXT", ext)
+    monkeypatch.setattr(X, "REF", ref)
+    df = X.load_neu_esc("test")
+    assert df.source_label.tolist() == ["Neutral", "Positive", "Negative", "Toxic"]
+    assert df.topic.tolist() == ["Academic", "Service", "Spam", "Other"]
+    assert df.sentiment.tolist() == ["neutral", "positive", "negative", "negative"]

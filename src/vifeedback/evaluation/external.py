@@ -33,6 +33,21 @@ NEU_ESC_SENTIMENT = {
     "Negative": "negative",
     "Toxic": "negative",
 }
+# The released files store codes; the dataset card (revision daf543ad) gives the tables, and the code
+# counts over all splits match them (sentiment 0: 22,773 · 1: 4,148 · 2: 5,200 [card: 5,250] · 3: 845).
+NEU_ESC_SENTIMENT_CODES = {0: "Neutral", 1: "Positive", 2: "Negative", 3: "Toxic"}
+NEU_ESC_TOPIC_CODES = {
+    0: "Spam",
+    1: "News",
+    2: "Academic",
+    3: "Other",
+    4: "Service",
+    5: "Jobs & Recruitment",
+    6: "Personal Affairs",
+    7: "Social Affairs",
+    8: "Help & Share",
+    9: "Club & Events",
+}
 # The topics closest to course feedback (the second, narrower view).
 NEU_ESC_COURSE_TOPICS = ("Academic", "Service")
 
@@ -116,11 +131,17 @@ def load_neu_esc(split: str = "test") -> pd.DataFrame:
     text_col = next(c for c in df.columns if c.lower() == "text")
     sent_col = next(c for c in df.columns if c.lower() == "sentiment")
     topic_col = next(c for c in df.columns if c.lower() in ("classification", "topic"))
+
+    def named(col: pd.Series, codes: dict[int, str]) -> pd.Series:
+        if pd.api.types.is_numeric_dtype(col):
+            return col.map(lambda v: codes.get(int(v), f"unknown:{v}"))
+        return col.astype(str).str.strip()
+
     out = pd.DataFrame(
         {
             "text": df[text_col].astype(str),
-            "source_label": df[sent_col].astype(str).str.strip(),
-            "topic": df[topic_col].astype(str).str.strip(),
+            "source_label": named(df[sent_col], NEU_ESC_SENTIMENT_CODES),
+            "topic": named(df[topic_col], NEU_ESC_TOPIC_CODES),
         }
     )
     unknown = sorted(set(out.source_label) - set(NEU_ESC_SENTIMENT))
