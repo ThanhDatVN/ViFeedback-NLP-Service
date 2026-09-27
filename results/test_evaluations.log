@@ -19,3 +19,4 @@
 2026-09-22 10:08	p4-topi-phobert-base-seg_pyvi-base-s2024-tes	P4	Gate G4: locked test evaluation, deferred from G2/G3 per ADR-011
 2026-09-22 10:13	p4-topi-phobert-base-seg_pyvi-base-s7-tes	P4	Gate G4: locked test evaluation, deferred from G2/G3 per ADR-011
 2026-09-22 10:18	p4-topi-phobert-base-seg_pyvi-base-s31337-tes	P4	Gate G4: locked test evaluation, deferred from G2/G3 per ADR-011
+2026-09-27 07:41	p9-sent-phobert-base-seg_pyvi-aug-diac-teen-s42-599cf21f-tes	P9	Cycle 1 closing gate: H2 finalist on test (cycle1.yaml)
