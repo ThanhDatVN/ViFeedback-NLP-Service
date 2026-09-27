@@ -171,7 +171,7 @@ git clone https://github.com/ThanhDatVN/ViFeedback-NLP-Service.git
 cd ViFeedback-NLP-Service
 make install          # editable install with dev extras
 make data             # fetch UIT-VSFC + run the integrity suite
-make test             # 243 fast tests
+make test             # 335 fast tests
 make report           # Phase 0 profiling + EDA figures
 make baseline         # TF-IDF ladder
 make train            # fine-tune PhoBERT (needs a GPU; ~5 min/seed on an RTX 3050)
