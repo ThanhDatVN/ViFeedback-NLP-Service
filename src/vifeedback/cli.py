@@ -1518,16 +1518,24 @@ def study_int8_recipes(
     fp32 = OX.OnnxClassifier(plain_dir, model_file="model.onnx")
     pipeline = CH.pipeline("seg_pyvi")
 
+    def logits(clf, texts: list[str], batch: int = 64):
+        # one session call per batch: a single call over 1,583 sentences asked ORT for a 700 MB buffer
+        import numpy as np
+
+        return np.concatenate(
+            [clf.logits(texts[i : i + batch]) for i in range(0, len(texts), batch)]
+        )
+
     tr = load("train")
     idx = LR.prompt_dev_subset(tr.sentiment.to_numpy(), n=2000, per_class_min=400, seed=0)
     x_tr = pipeline(tr.sentence.iloc[idx].tolist())
-    ref = fp32.logits(x_tr)
+    ref = logits(fp32, x_tr)
 
     candidates = {}
     for recipe in Q.RECIPES:
         info = Q.build(plain_dir / "pre.onnx", plain_dir, w / recipe, recipe)
         clf = OX.OnnxClassifier(w / recipe, model_file="model.int8.onnx")
-        candidates[recipe] = {**info, **Q.fidelity(ref, clf.logits(x_tr))}
+        candidates[recipe] = {**info, **Q.fidelity(ref, logits(clf, x_tr))}
         c = candidates[recipe]
         typer.echo(
             f"  {recipe:15s} {c['size_mb']:6.1f} MB  agreement {c['label_agreement']:.4f}  "
@@ -1545,7 +1553,7 @@ def study_int8_recipes(
         x_dv = pipeline(dv.sentence.tolist())
         int8 = OX.OnnxClassifier(w / chosen, model_file="model.int8.onnx")
         result["validation"] = Q.acceptance(
-            dv.sentiment.to_numpy(), fp32.logits(x_dv).argmax(1), int8.logits(x_dv).argmax(1)
+            dv.sentiment.to_numpy(), logits(fp32, x_dv).argmax(1), logits(int8, x_dv).argmax(1)
         )
         v = result["validation"]
         typer.echo(
