@@ -18,8 +18,8 @@ not to intent.
 |---|---:|---:|---:|---:|---:|
 | § 2 Issues R1–R12 | 8 | 2 | 0 | 2 | 0 |
 | First five concrete tasks | 5 | 0 | 0 | 0 | 0 |
-| Recommended starting point (4 items) | 2 | 1 | 1 | 0 | 0 |
-| Implementation backlog (12 items) | 7 | 0 | 1 | 4 | 0 |
+| Recommended starting point (4 items) | 2 | 2 | 0 | 0 | 0 |
+| Implementation backlog (12 items) | 8 | 0 | 0 | 4 | 0 |
 
 **In one sentence:** every validity problem the review raised is fixed or has a named remaining step,
 Cycle 0 is complete, and Cycle 1 is running. What is *not* done falls into three groups: one item from
@@ -63,7 +63,7 @@ parallel.
 | Complete the validity fixes | ✅ | R-table above |
 | Investigate neutral errors | 🔶 | Study A diagnosis done (confident errors, boundary test, OOF ranking); **the human audit is not** (👤) |
 | Evaluate calibration / robustness | ✅ | `results/studies/calibration/`, `results/studies/robustness/` |
-| **Test one shared sentiment/topic encoder** | ⬜ | **Not done.** E07 / Study D. It was also in the review's example Cycle 1 allocation. Next: added to Cycle 1 as H4 (declared before running) |
+| **Test one shared sentiment/topic encoder** | 🔶 | Was missing from Cycle 1 v1. Now declared as H4 in `cycle1.yaml` v2 (ADR-021), before any H4 run; `training/multitask.py` built and tested |
 
 ## Implementation backlog (§ 12)
 
@@ -76,7 +76,7 @@ parallel.
 | `evaluation/robustness.py` | P1 | ✅ versioned suites, grouped bootstrap, slices, negation probe |
 | `results/studies/` | P1 | ✅ Cycle 0 outputs + README |
 | `docs/ANNOTATION_GUIDE.md` | P1 | ✅ |
-| `training/multitask.py` | P1 if Q4 | ⬜ → Cycle 1 H4 |
+| `training/multitask.py` | P1 if Q4 | ✅ built and unit-tested; runs are Cycle 1 H4 |
 | `training/low_resource.py` | P2 | ⏸ Cycle 2 (data-efficiency branch) |
 | `training/distillation.py` | P2 | ⏸ Cycle 2 (efficient-modelling branch) |
 | `evaluation/llm_reference.py` | P2 | ⏸ Cycle 2 (AI-engineering branch) |
@@ -89,7 +89,7 @@ parallel.
 | Q1 What limits neutral? | 🔶 Boundary explanation weakened (Study A); classifier-head explanation under test (H1: logit adjustment, cRT); label-ambiguity explanation needs the audit (👤) |
 | Q2 What transfers beyond clean text? | 🔶 Synthetic shift measured; augmentation under test (H2); no natural external set (👤 data) |
 | Q3 Label efficiency | ⏸ Cycle 2 option |
-| Q4 Shared learning | ⬜ → H4 |
+| Q4 Shared learning | 🔶 H4 declared; running next |
 | Q5 Uncertainty | 🔶 Calibration + class-wise coverage done; AURC and OOD not done |
 | Q6 Compute budget | 🔶 FP32 release verified; INT8 on Kaggle; latency re-run pending; distillation/LoRA ⏸ |
 
@@ -115,7 +115,7 @@ parallel.
 | E04 label noise / audit | P1 | 👤 |
 | E05 augmentation | P1 | 🔶 running (H2) |
 | E06 regularization (LLRD, R-Drop, FGM) | P2 | ⏸ |
-| E07 multi-task | P1 | ⬜ → H4 |
+| E07 multi-task | P1 | 🔶 H4 declared (v2), running next |
 | E08 sparse + dense stacking | P2 | ⏸ |
 | E09 calibration | P1 | ✅ on validation/OOF; test confirmation at the closing gate |
 | E10 selective prediction | P1 | 🔶 risk–coverage by class done; AURC, margin/entropy comparison, OOD false acceptance not |
@@ -131,7 +131,7 @@ parallel.
 | A — neutral | Steps 1, 3 ✅; step 2 guide ✅, annotation 👤; step 4 ✅ (CE vs logit adjustment vs cRT); step 5 depends on the audit |
 | B — robustness | Synthetic layer ✅ with grouped bootstrap and CheckList-style invariance/directional split; PhoBERT control ✅, augmentation 🔶 (H2), alternative encoder 🔶 (XLM-R in-run on Kaggle); natural external layer 👤 |
 | C — learning efficiency | ⏸ |
-| D — multi-task | ⬜ → H4 |
+| D — multi-task | 🔶 H4 declared (v2), running next |
 | E — encoder vs LLM | ⏸ |
 
 ## § 8 Evaluation protocol

@@ -4,16 +4,30 @@
 # "select three primary hypotheses and launch only the controls needed to answer them".
 # Changing a criterion below after results are seen requires a new file version and an ADR.
 
-version: 1
+version: 2
 declared: 2026-09-27
+revisions:
+  - version: 2
+    date: 2026-09-27
+    change: >
+      Added H4 (shared sentiment/topic encoder, E07 / Study D). The review lists it in its
+      recommended starting point and in its example Cycle 1 allocation; version 1 omitted it,
+      found by the compliance audit (docs/REVIEW_COMPLIANCE.md). Declared before any H4 run.
+    budget_change: >
+      Finalist seeds move from per-hypothesis allowances to one shared pool of 4. Known when this
+      was written: cRT does not meet its advance rule (+0.0028 mean). Not yet computed or looked
+      at: the logit-adjustment and augmentation decisions. H1-H3 criteria are unchanged.
+    adr: ADR-021
 budget:
   weight_updating_runs: 30          # review § 10: Cycle 1 <= 30 full fine-tuning runs
   allocation:
-    H1_imbalance: 10                # 6 at 3 seeds + up to 4 finalist seeds
-    H2_augmentation: 5              # 3 at 3 seeds + 2 finalist seeds
+    H1_imbalance: 6                 # 2 methods x 3 seeds (done)
+    H2_augmentation: 3              # 3 seeds
     H3_xlmr_input: 10               # Kaggle: 5 raw + 5 pyvi re-run in the same session
-    reserve: 5                      # failed runs, replication
-  gpu_minutes_estimate: {laptop_rtx3050: 75, kaggle_t4: 55}
+    H4_multitask: 6                 # lambda in {0.3, 1} x 3 seeds
+    finalist_pool: 4                # at most 2 finalists x 2 extra seeds, any hypothesis
+    reserve: 1
+  gpu_minutes_estimate: {laptop_rtx3050: 105, kaggle_t4: 65}
 
 common:
   task: sentiment
@@ -75,6 +89,30 @@ hypotheses:
     follow_up: >
       If xlmr_raw closes at least half of the gap to phobert-base + pyvi (i.e. reaches >= 0.8523),
       ADR-016's multilingual conclusion was mostly a confound and is withdrawn, not just narrowed.
+
+  H4_multitask:
+    question: Do sentiment and topic share useful structure, or interfere? (review Q4, E07, Study D)
+    evidence: >
+      Data card: Cramer's V(sentiment, topic) = 0.344; facility is 95.6% negative. Topic is the
+      weaker task (0.811 dev) and has had no intervention.
+    model: one phobert-base encoder, two heads of the single-task head architecture
+    loss: L = L_sentiment + lambda * L_topic
+    conditions:
+      mtl_0.3: {recipe: mtl-l0.3, lambda: 0.3}
+      mtl_1: {recipe: mtl-l1, lambda: 1.0}
+    selection: epoch maximizing the MEAN of dev sentiment and dev topic macro-F1
+    controls: >
+      single-task phobert-base + pyvi, base recipe, same seeds (registry P4 rows). Valid as
+      controls because Cycle 1 stage-1 runs reproduce those rows exactly under the current code.
+    primary: per task, seed-paired delta macro-F1 (multi-task minus single-task)
+    report: [both task macro-F1, neutral F1, others F1, joint exact match, parameters, training time]
+    decision:
+      helps: one task mean delta >= +0.005 with >= 2 of 3 wins AND the other task mean delta >= -0.005
+      negative_transfer: any task mean delta <= -0.005 with <= 1 of 3 wins
+      no_material_difference: >
+        both |mean delta| < 0.005. Not an equivalence claim; the engineering reading is one model
+        serving both tasks at half the inference cost with no loss detected at 3 seeds.
+    advance_to_5_seeds_if: helps (draws on finalist_pool)
 
 closing_gate:
   after: all H1-H3 decisions recorded

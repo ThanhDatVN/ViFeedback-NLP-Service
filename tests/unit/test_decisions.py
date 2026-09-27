@@ -131,3 +131,36 @@ class TestH2:
         suites = D.h2(r)["suites"]
         assert suites["charnoise-5"]["in_family"] is False
         assert suites["nodiacritic-50"]["in_family"] is True
+
+
+class TestH4:
+    def _mtl(self, tmp_path, recipe, sent_delta, topic_delta):
+        single = {
+            "sentiment": {42: 0.86, 1337: 0.87, 2024: 0.85},
+            "topic": {42: 0.81, 1337: 0.82, 2024: 0.80},
+        }
+        for task, delta in (("sentiment", sent_delta), ("topic", topic_delta)):
+            for s, v in single[task].items():
+                d = tmp_path / f"p8-{task[:4]}-phobert-base-seg_pyvi-{recipe}-s{s}-abcd1234-val"
+                d.mkdir(parents=True)
+                (d / "config.yaml").write_text(
+                    yaml.safe_dump({"recipe": recipe, "seed": s, "task": task}), encoding="utf-8"
+                )
+                (d / "metrics.json").write_text(
+                    json.dumps({"macro_f1": v + delta, "multitask": {"joint_exact_match": 0.88}}),
+                    encoding="utf-8",
+                )
+        return D.h4(D.load_multitask(8, tmp_path), single)[recipe]
+
+    def test_topic_gain_without_sentiment_harm_helps(self, tmp_path) -> None:
+        r = self._mtl(tmp_path, "mtl-l1", sent_delta=-0.002, topic_delta=0.008)
+        assert r["verdict"] == "helps" and r["advance_to_5_seeds"]
+
+    def test_sentiment_loss_is_negative_transfer(self, tmp_path) -> None:
+        r = self._mtl(tmp_path, "mtl-l1", sent_delta=-0.01, topic_delta=0.008)
+        assert r["verdict"] == "negative_transfer"
+        assert r["negative_transfer_tasks"] == ["sentiment"]
+
+    def test_small_changes_are_no_material_difference(self, tmp_path) -> None:
+        r = self._mtl(tmp_path, "mtl-l0.3", sent_delta=0.001, topic_delta=-0.002)
+        assert r["verdict"] == "no_material_difference"

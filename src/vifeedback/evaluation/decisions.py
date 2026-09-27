@@ -147,3 +147,69 @@ def h2(runs: dict[str, dict[int, dict[str, Any]]]) -> dict[str, Any]:
         "criterion": f"relative reduction >= {AUG_MIN_RELATIVE_REDUCTION} and clean loss <= {AUG_MAX_CLEAN_LOSS}",
         "supported_at_3_seeds": supported,
     }
+
+
+MTL_MIN_GAIN = 0.005
+MTL_MAX_HARM = -0.005
+
+
+def load_multitask(
+    phase: int = 8, runs_dir: Path | None = None
+) -> dict[str, dict[str, dict[int, dict]]]:
+    """{recipe: {task: {seed: metrics}}} for the shared-encoder runs (recipe mtl-l*)."""
+    import yaml
+
+    runs_dir = runs_dir or paths.RUNS
+    out: dict[str, dict[str, dict[int, dict]]] = {}
+    for d in sorted(runs_dir.glob(f"p{phase}-*-mtl-l*-val")):
+        m, c = d / "metrics.json", d / "config.yaml"
+        if not (m.exists() and c.exists()):
+            continue
+        cfg = yaml.safe_load(c.read_text(encoding="utf-8"))
+        out.setdefault(cfg["recipe"], {}).setdefault(cfg["task"], {})[int(cfg["seed"])] = (
+            json.loads(m.read_text(encoding="utf-8"))
+        )
+    return out
+
+
+def h4(
+    mtl: dict[str, dict[str, dict[int, dict]]], single: dict[str, dict[int, float]]
+) -> dict[str, Any]:
+    """Apply the H4 rules of cycle1.yaml v2. `single` = {task: {seed: single-task macro-F1}}."""
+    out: dict[str, Any] = {}
+    for recipe, by_task in sorted(mtl.items()):
+        per = {
+            t: paired(single.get(t, {}), {s: m["macro_f1"] for s, m in runs.items()})
+            for t, runs in by_task.items()
+        }
+        means = {t: p.get("mean_delta", float("nan")) for t, p in per.items()}
+        wins = {t: p.get("wins", 0) for t, p in per.items()}
+        tasks = list(per)
+        helps = any(
+            means[t] >= MTL_MIN_GAIN
+            and wins[t] >= ADVANCE_MIN_WINS
+            and all(means[o] >= MTL_MAX_HARM for o in tasks if o != t)
+            for t in tasks
+        )
+        negative = [t for t in tasks if means[t] <= MTL_MAX_HARM and wins[t] <= 1]
+        verdict = (
+            "helps"
+            if helps
+            else "negative_transfer"
+            if negative
+            else "no_material_difference"
+            if all(abs(v) < MTL_MIN_GAIN for v in means.values())
+            else "inconclusive"
+        )
+        any_task = next(iter(by_task.values()))
+        out[recipe] = {
+            "per_task": per,
+            "verdict": verdict,
+            "negative_transfer_tasks": negative,
+            "joint_exact_match": {
+                s: m.get("multitask", {}).get("joint_exact_match")
+                for s, m in sorted(any_task.items())
+            },
+            "advance_to_5_seeds": verdict == "helps",
+        }
+    return out

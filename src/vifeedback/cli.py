@@ -279,6 +279,95 @@ def train_run(
     )
 
 
+@train_app.command("multitask")
+def train_multitask_cmd(
+    lam: float = typer.Option(
+        1.0, "--lambda", help="topic loss weight: L = L_sent + lambda * L_topic"
+    ),
+    model: str = typer.Option("phobert-base"),
+    preprocessing: str = typer.Option("seg_pyvi"),
+    seeds: str = typer.Option("42,1337,2024"),
+    phase: int = typer.Option(8),
+) -> None:
+    """Cycle 1 H4: one shared encoder, sentiment + topic heads (training/multitask.py).
+
+    Writes one registry row per task, so each task is compared to its single-task control with the
+    same seed-paired tooling as every other run.
+    """
+    import dataclasses
+
+    from vifeedback.evaluation import bootstrap as B
+    from vifeedback.evaluation import report as R
+    from vifeedback.preprocess.variants import load_variant
+    from vifeedback.training.multitask import TASKS, evaluate_joint, predict, train_multitask
+    from vifeedback.training.runner import _free_cuda
+    from vifeedback.training.trainer import TrainConfig
+
+    tr, dv = load_variant(preprocessing, "train"), load_variant(preprocessing, "validation")
+    train = (tr["sentence"].tolist(), tr["sentiment"].to_numpy(), tr["topic"].to_numpy())
+    dev = (dv["sentence"].tolist(), dv["sentiment"].to_numpy(), dv["topic"].to_numpy())
+    recipe = f"mtl-l{lam:g}"
+
+    for seed in (int(s) for s in seeds.split(",")):
+        base = TrainConfig(
+            task="sentiment",
+            model_key=model,
+            preprocessing=preprocessing,
+            recipe=recipe,
+            seed=seed,
+            extra={"phase_num": phase},
+        )
+        typer.echo(f"\n[{recipe} seed {seed}]  lambda={lam}")
+        out = train_multitask(base, lam, train, dev)
+        logits = predict(out["model"], out["loader"], out["device"], base.fp16)
+        y = {"sentiment": dev[1], "topic": dev[2]}
+        joint = evaluate_joint(y, logits)
+        for task in TASKS:
+            m = joint["per_task"][task]
+            k = len(m["labels"])
+            ci = B.bootstrap_ci(y[task], logits[task].argmax(1), k, n_resamples=2000, seed=seed)
+            m["macro_f1_ci"] = [ci["ci_low"], ci["ci_high"]]
+            m["history"] = out["history"]
+            m["best_epoch"] = out["best_epoch"]
+            m["multitask"] = {
+                "lambda_topic": lam,
+                "joint_exact_match": joint["joint_exact_match"],
+                "selection": "mean of sentiment and topic dev macro-F1",
+            }
+            cfg_t = dataclasses.replace(base, task=task)
+            config = dict(out["config"]) | {
+                "task": task,
+                "phase": f"P{phase}",
+                "model": model,
+                "split": "validation",
+                "fit_seconds": out["train_seconds"],
+                "notes": f"shared encoder, lambda={lam}",
+                "reason": "cycle 1 H4",
+                "determinism": out["determinism"],
+                "device": out["device"],
+                "best_epoch": out["best_epoch"],
+            }
+            R.save_run(
+                cfg_t.run_id("validation"),
+                m,
+                config=config,
+                y_true=y[task],
+                y_pred=logits[task].argmax(1),
+                y_prob=softmax_np(logits[task]),
+            )
+            typer.echo(f"  {task:9s} macro-F1 {m['macro_f1']:.4f}")
+        typer.echo(f"  joint exact match {joint['joint_exact_match']:.4f}")
+        del out
+        _free_cuda()
+
+
+def softmax_np(z):
+    import numpy as np
+
+    e = np.exp(z - z.max(axis=1, keepdims=True))
+    return e / e.sum(axis=1, keepdims=True)
+
+
 # --- Phase 6-7 -----------------------------------------------------------------------------------
 
 
@@ -803,19 +892,25 @@ def study_cycle1() -> None:
 
     runs = D.load_runs(phase=8)
     reg = pd.read_csv(paths.REGISTRY)
-    ce = reg[
-        (reg.model == "phobert-base")
-        & (reg.preprocessing == "seg_pyvi")
-        & (reg.recipe == "base")
-        & (reg.task == "sentiment")
-        & (reg.split == "validation")
-    ].drop_duplicates("seed", keep="last")
-    registry_ce = {int(s): float(v) for s, v in zip(ce.seed, ce.macro_f1, strict=True)}
+
+    def single_task(task: str) -> dict[int, float]:
+        q = reg[
+            (reg.model == "phobert-base")
+            & (reg.preprocessing == "seg_pyvi")
+            & (reg.recipe == "base")
+            & (reg.task == task)
+            & (reg.split == "validation")
+        ].drop_duplicates("seed", keep="last")
+        return {int(s): float(v) for s, v in zip(q.seed, q.macro_f1, strict=True)}
+
+    registry_ce = single_task("sentiment")
+    single = {"sentiment": registry_ce, "topic": single_task("topic")}
 
     out = {
         "runs_found": {k: sorted(v) for k, v in runs.items()},
         "H1": D.h1(runs, registry_ce),
         "H2": D.h2(runs),
+        "H4": D.h4(D.load_multitask(8), single),
     }
     dst = paths.RESULTS / "studies" / "cycle1"
     dst.mkdir(parents=True, exist_ok=True)

@@ -665,3 +665,31 @@ difference can be and still mean anything, and it is recorded in `configs/experi
 
 **Consequences.** R3 is closed for the export path. The latency benchmark (R10) is still to be
 re-run on the released artifact.
+
+---
+
+## ADR-021 · 2026-09-27 · Add H4 (shared encoder) to Cycle 1; pool the finalist seeds · Accepted
+
+**Context.** The compliance audit ([REVIEW_COMPLIANCE.md](REVIEW_COMPLIANCE.md)) found that
+Cycle 1 v1 omitted the one item from the review's *recommended starting point* not yet covered:
+"test one shared sentiment/topic encoder" (E07, Study D). The review's example Cycle 1 allocation
+included it too.
+
+**Decision.** `configs/experiments/cycle1.yaml` becomes version 2, committed before any H4 run:
+
+* **H4:** one PhoBERT-base encoder with a sentiment head and a topic head,
+  `L = L_sentiment + λ·L_topic`, λ ∈ {0.3, 1}, 3 seeds each. The heads copy the single-task head
+  architecture and learning rate, so sharing the encoder is the only change. The epoch is selected by
+  the mean of the two dev macro-F1 scores. The decision rules (helps / negative transfer / no material
+  difference) are declared and encoded in `evaluation/decisions.py` before the runs.
+* **Budget:** still 30 runs. Finalist seeds move from per-hypothesis allowances into one pool of 4
+  (at most 2 finalists × 2 seeds).
+
+**What was known when this was written.** cRT had already missed its advance rule (+0.0028 mean
+Δ, 2/3 wins). The logit-adjustment and augmentation runs had finished or were running, but their
+decisions had not been computed or inspected. No H1–H3 criterion changes.
+
+**Consequences.** Cycle 1 now covers every item of the review's recommended starting point. The
+single-task controls are the P4 registry rows at the same seeds, valid because Cycle 1's stage-1 runs
+reproduced them exactly under the current code.
+

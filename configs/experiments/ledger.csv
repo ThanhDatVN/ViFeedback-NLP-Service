@@ -6,3 +6,4 @@ pre-review,Tier E: larger encoders,"phobert-large, xlmr-base; sentiment; seg_pyv
 1,H1 imbalance: logit adjustment tau=1,"phobert-base; seg_pyvi; seeds 42,1337,2024",3,,laptop RTX 3050,planned,configs/experiments/cycle1.yaml
 1,H2 augmentation diac-teen p=0.3,"phobert-base; seg_pyvi; seeds 42,1337,2024",3,,laptop RTX 3050,planned,configs/experiments/cycle1.yaml
 1,H3 XLM-R input: raw + pyvi re-run,"xlmr-base; raw and seg_pyvi; 5 seeds each",10,,Kaggle GPU,planned,notebooks/kaggle_train.ipynb 4e
+1,H4 shared encoder (multi-task) lambda 0.3 and 1,"phobert-base; seg_pyvi; seeds 42,1337,2024",6,,laptop RTX 3050,planned,configs/experiments/cycle1.yaml v2
