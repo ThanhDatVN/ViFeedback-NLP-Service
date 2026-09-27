@@ -166,7 +166,7 @@ curl -s localhost:8000/v1/classify \
 |---|---|
 | **[STATUS](docs/STATUS.md)** | **Progress, open problems, next experiments, compute plan** |
 | [ROADMAP](docs/ROADMAP.md) | Objectives, 8 phases, exit gates, risk register |
-| [DECISIONS](docs/DECISIONS.md) | 19 ADRs — every plan correction forced by measurement or review |
+| [DECISIONS](docs/DECISIONS.md) | 20 ADRs — every plan correction forced by measurement or review |
 | [DATA_CARD](docs/DATA_CARD.md) | Provenance, splits, distributions, 11 measured limitations |
 | [EVALUATION_PROTOCOL](docs/EVALUATION_PROTOCOL.md) | Metrics, seeds, significance, latency harness, error taxonomy, perturbation suites, calibration |
 | [ANNOTATION_GUIDE](docs/ANNOTATION_GUIDE.md) | Neutral-label audit: taxonomy, ambiguity vs incorrect gold, agreement and adjudication |

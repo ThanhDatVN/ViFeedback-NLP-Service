@@ -207,6 +207,15 @@ def train_run(
     phase: int = typer.Option(2, help="phase number, used in the run id"),
     include_test: bool = typer.Option(False, help="Also evaluate on test (logged; gates only)"),
     reason: str = typer.Option("", help="Why the test set is being touched"),
+    augment: str = typer.Option(
+        "", help="augmentation recipe (training/augment.py), e.g. diac-teen"
+    ),
+    augment_p: float = typer.Option(
+        0.0, help="share of train sentences replaced by a perturbed copy"
+    ),
+    crt_epochs: int = typer.Option(0, help=">0: balanced classifier re-training after CE (cRT)"),
+    crt_lr: float = typer.Option(1e-3, help="cRT head learning rate"),
+    robustness: bool = typer.Option(False, help="evaluate validation under the Cycle 1 suites"),
 ) -> None:
     """Fine-tune a transformer encoder across one or more seeds."""
     from vifeedback.constants import SEEDS
@@ -247,6 +256,10 @@ def train_run(
         rdrop_alpha=rdrop,
         fgm_epsilon=fgm,
         label_smoothing=label_smoothing,
+        augment=augment,
+        augment_p=augment_p,
+        crt_epochs=crt_epochs,
+        crt_lr=crt_lr,
         extra={"phase_num": phase},
     )
     typer.echo(f"  effective batch = {batch_size} x {grad_accum} = {batch_size * grad_accum}")
@@ -256,6 +269,7 @@ def train_run(
         include_test=include_test,
         reason=reason,
         save_checkpoint=save_checkpoint,
+        robustness=robustness,
     )
     typer.echo("")
     typer.echo(
@@ -272,47 +286,57 @@ def train_run(
 def serve_export(
     checkpoint: str = typer.Option(..., help="path to a saved HF checkpoint"),
     task: str = typer.Option("sentiment"),
+    preprocessing: str = typer.Option(
+        "", help="the checkpoint's training preprocessing; inferred from its name if omitted"
+    ),
     max_length: int = typer.Option(96),
     quantize: str = typer.Option("dynamic", help="none | dynamic | static"),
     out: str = typer.Option("", help="defaults to models/serve/<task>"),
+    calib_size: int = typer.Option(300, help="stratified train sentences for static INT8"),
 ) -> None:
-    """Export a checkpoint to ONNX, optimize, optionally quantize, and verify parity."""
+    """Export, verify against the quality contract, and release (review R3).
+
+    Built in a staging directory; the served directory is replaced only if FP32 logits match, or
+    INT8 stays within 0.005 macro-F1 of PyTorch on the full validation set.
+    """
     from pathlib import Path
 
-    from transformers import AutoModelForSequenceClassification, AutoTokenizer
+    from vifeedback.inference.release import release, stratified_subset
+    from vifeedback.preprocess.variants import VARIANTS
+    from vifeedback.training.runner import _raw_and_pipeline
 
-    from vifeedback import paths
-    from vifeedback.data.loader import load
-    from vifeedback.inference import onnx_export as OX
+    if not preprocessing:
+        name = Path(checkpoint).name
+        found = [v for v in sorted(VARIANTS, key=len, reverse=True) if v != "raw" and v in name]
+        preprocessing = found[0] if found else ""
+        if not preprocessing:
+            raise typer.BadParameter(
+                "cannot infer the checkpoint's preprocessing from its name; pass --preprocessing"
+            )
+    typer.echo(f"  preprocessing {preprocessing}")
 
-    dst = Path(out) if out else paths.MODELS / "serve" / task
-    model = AutoModelForSequenceClassification.from_pretrained(checkpoint)
-    tok = AutoTokenizer.from_pretrained(checkpoint)
+    from vifeedback.preprocess.variants import load_variant
 
-    fp32 = OX.export_fp32(model, tok, dst, max_length)
-    typer.echo(f"  fp32      {fp32.name}  {fp32.stat().st_size / 1e6:.1f} MB")
+    raw_tr, pipeline = _raw_and_pipeline(preprocessing, "train")
+    y_tr = load_variant(preprocessing, "train")[task].to_numpy()
+    raw_dv, _ = _raw_and_pipeline(preprocessing, "validation")
+    y_dv = load_variant(preprocessing, "validation")[task].to_numpy()
+    calib_idx = stratified_subset(y_tr, calib_size)
 
-    opt = OX.optimize_graph(fp32, dst / "model.opt.onnx")
-    typer.echo(f"  optimized {opt.name}  {opt.stat().st_size / 1e6:.1f} MB")
-
-    if quantize == "dynamic":
-        q = OX.quantize_dynamic_int8(opt, dst / "model.quant.onnx")
-        typer.echo(f"  int8-dyn  {q.name}  {q.stat().st_size / 1e6:.1f} MB")
-        typer.echo("  note: without AVX512-VNNI this may be SLOWER than fp32 (H3) - benchmark it")
-    elif quantize == "static":
-        calib = load("validation")["sentence"].head(200).tolist()
-        q = OX.quantize_static_int8(opt, dst / "model.quant.onnx", calib, tok, max_length)
-        typer.echo(f"  int8-stat {q.name}  {q.stat().st_size / 1e6:.1f} MB")
-
-    clf = OX.OnnxClassifier(dst, max_length=max_length)
-    texts = load("validation")["sentence"].head(64).tolist()
-    parity = OX.verify_parity(model, clf, texts)
-    typer.echo(
-        f"  parity    serving {clf.path.name} | max logit diff {parity['max_abs_logit_diff']:.2e}"
-        f" | label agreement {parity['label_agreement']:.1%}"
+    manifest = release(
+        checkpoint=checkpoint,
+        task=task,
+        preprocessing=preprocessing,
+        quantize=quantize,
+        out_dir=Path(out) if out else paths.MODELS / "serve" / task,
+        pipeline=pipeline,
+        calib_raw=[raw_tr[i] for i in calib_idx],
+        accept_raw=raw_dv,
+        accept_y=y_dv,
+        max_length=max_length,
+        log=typer.echo,
     )
-    if parity["label_agreement"] < 0.995:
-        raise typer.Exit(code=1)
+    typer.echo(f"  manifest: {manifest['model_file']}  sha256 {manifest['sha256'][:12]}...")
 
 
 @serve_app.command("bench")

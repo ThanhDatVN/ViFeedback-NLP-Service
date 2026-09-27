@@ -2,3 +2,7 @@ cycle,purpose,conditions,weight_updating_runs,gpu_minutes,hardware,status,eviden
 pre-review,Phases 2-4: PhoBERT reproduction; segmentation ablation; locked test (G4),"phobert-base x {raw,vncorenlp,pyvi,underthesea} x sentiment/topic; 5 seeds; includes 10 exact re-runs",40,178.5,laptop RTX 3050,done,results/registry.csv
 pre-review,Tier E: larger encoders,"phobert-large, xlmr-base; sentiment; seg_pyvi; 5 seeds",10,71.2,Kaggle T4,done,results/registry.csv (rows restored from the Kaggle output after the results/ deletion)
 0,Study A step 3: out-of-fold predictions over train,"phobert-base; seg_pyvi; base recipe; 5 stratified folds; seed 42",5,18.4,laptop RTX 3050,done,results/studies/study_a/summary.json
+1,H1 imbalance: cRT (stage 1 = CE control),"phobert-base; seg_pyvi; seeds 42,1337,2024",3,,laptop RTX 3050,planned,configs/experiments/cycle1.yaml
+1,H1 imbalance: logit adjustment tau=1,"phobert-base; seg_pyvi; seeds 42,1337,2024",3,,laptop RTX 3050,planned,configs/experiments/cycle1.yaml
+1,H2 augmentation diac-teen p=0.3,"phobert-base; seg_pyvi; seeds 42,1337,2024",3,,laptop RTX 3050,planned,configs/experiments/cycle1.yaml
+1,H3 XLM-R input: raw + pyvi re-run,"xlmr-base; raw and seg_pyvi; 5 seeds each",10,,Kaggle GPU,planned,notebooks/kaggle_train.ipynb 4e

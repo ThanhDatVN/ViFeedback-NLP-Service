@@ -80,6 +80,17 @@ def yaml_safe(obj: Any) -> Any:
     return str(obj)
 
 
+# Mirrors TrainConfig._OPTIONAL_IDENTITY_FIELDS (a test pins the two together). A field added after
+# configs were first saved is ignored at its default value, so an old config.yaml without the key and
+# a new one with the default describe the same run.
+_OPTIONAL_DEFAULTS: dict[str, Any] = {
+    "augment": "",
+    "augment_p": 0.0,
+    "crt_epochs": 0,
+    "crt_lr": 1e-3,
+}
+
+
 def _config_fingerprint(config: dict[str, Any]) -> str:
     """Digest of the result-affecting fields of a saved config."""
     import hashlib
@@ -87,7 +98,8 @@ def _config_fingerprint(config: dict[str, Any]) -> str:
     keys = sorted(
         k
         for k in config
-        if k
+        if not (k in _OPTIONAL_DEFAULTS and config[k] == _OPTIONAL_DEFAULTS[k])
+        and k
         not in {
             "notes",
             "reason",

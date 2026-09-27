@@ -55,13 +55,19 @@ _latencies: list[float] = []
 
 def _load() -> None:
     """Load every task model found under MODEL_DIR/<task>/. Missing models leave /readyz false."""
+    import json
+
     from vifeedback.inference.onnx_export import OnnxClassifier
 
+    manifests: dict[str, dict[str, Any]] = {}
     for task in ("sentiment", "topic"):
         d = MODEL_DIR / task
-        if (d / "model.onnx").exists() or (d / "model.quant.onnx").exists():
+        if (d / "manifest.json").exists() or any(d.glob("*.onnx")):
             try:
-                _state["models"][task] = OnnxClassifier(d, THREADS, MAX_LENGTH)
+                if (d / "manifest.json").exists():
+                    manifests[task] = json.loads((d / "manifest.json").read_text(encoding="utf-8"))
+                max_len = manifests.get(task, {}).get("max_length", MAX_LENGTH)
+                _state["models"][task] = OnnxClassifier(d, THREADS, max_len)
                 log.info(f"loaded {task} from {_state['models'][task].path.name}")
             except Exception as e:
                 log.error(f"failed to load {task}: {type(e).__name__}: {e}")
@@ -72,12 +78,28 @@ def _load() -> None:
     try:
         from vifeedback.preprocess.segment import get_segmenter
 
-        _state["segmenter"] = get_segmenter(os.getenv("SEGMENTER", "pyvi"))
+        # The artifact's manifest says which preprocessing it was verified with (review R3);
+        # SEGMENTER overrides it only when set explicitly.
+        backend = os.getenv("SEGMENTER") or _backend_from_manifests(manifests) or "pyvi"
+        _state["segmenter"] = get_segmenter(backend)
     except Exception as e:
         # Serving raw text costs ~0.023 macro-F1 (ADR-012). Degrading loudly beats failing to boot.
         log.warning(
             f"segmenter unavailable ({type(e).__name__}) — serving raw text, -0.023 macro-F1"
         )
+
+
+def _backend_from_manifests(manifests: dict[str, dict[str, Any]]) -> str | None:
+    from vifeedback.preprocess.variants import VARIANTS
+
+    backends = {
+        VARIANTS[m["preprocessing"]][0]
+        for m in manifests.values()
+        if m.get("preprocessing") in VARIANTS
+    }
+    if len(backends) > 1:
+        log.warning(f"task artifacts disagree on preprocessing {sorted(backends)}; using the first")
+    return sorted(backends)[0] if backends else None
 
 
 @asynccontextmanager

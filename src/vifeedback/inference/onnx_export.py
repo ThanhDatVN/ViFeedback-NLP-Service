@@ -40,11 +40,20 @@ def export_fp32(model, tokenizer, out_dir: Path, max_length: int = 96) -> Path:
     )
     inputs = tuple(dummy[k] for k in ("input_ids", "attention_mask"))
 
+    # The TorchScript exporter, pinned. From torch 2.6 the default routes through onnxscript, which
+    # imports the `onnx` package — blocked by host policy on the reference machine (ADR-017). The
+    # legacy path needs neither, so FP32 export runs there too; only INT8 quantization does not.
+    import inspect
+
+    legacy = (
+        {"dynamo": False} if "dynamo" in inspect.signature(torch.onnx.export).parameters else {}
+    )
     with torch.no_grad():
         torch.onnx.export(
             model,
             inputs,
             str(path),
+            **legacy,
             input_names=["input_ids", "attention_mask"],
             output_names=["logits"],
             dynamic_axes={
@@ -121,19 +130,25 @@ class OnnxClassifier:
     `max_length`, so padding to `max_length` does roughly 7x the arithmetic for no benefit.
     """
 
-    def __init__(self, model_dir: Path, intra_op_threads: int | None = None, max_length: int = 96):
+    def __init__(
+        self,
+        model_dir: Path,
+        intra_op_threads: int | None = None,
+        max_length: int = 96,
+        model_file: str | None = None,
+    ):
         import onnxruntime as ort
         from transformers import AutoTokenizer
+
+        from vifeedback.inference.release import resolve_model_file
 
         model_dir = Path(model_dir)
         opts = ort.SessionOptions()
         if intra_op_threads:
             opts.intra_op_num_threads = intra_op_threads
             opts.inter_op_num_threads = 1
-        candidates = ["model.quant.onnx", "model.opt.onnx", "model.onnx"]
-        self.path = next((model_dir / c for c in candidates if (model_dir / c).exists()), None)
-        if self.path is None:
-            raise FileNotFoundError(f"no .onnx found in {model_dir}")
+        # An explicit file, else the manifest's checksum-verified file, else the legacy order.
+        self.path = model_dir / model_file if model_file else resolve_model_file(model_dir)
 
         self.session = ort.InferenceSession(
             str(self.path), opts, providers=["CPUExecutionProvider"]

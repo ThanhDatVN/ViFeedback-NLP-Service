@@ -57,6 +57,12 @@ class TrainConfig:
     rdrop_alpha: float = 0.0
     fgm_epsilon: float = 0.0
 
+    # Cycle 1 interventions (configs/experiments/cycle1.yaml). All off by default.
+    augment: str = ""  # training/augment.py recipe, e.g. "diac-teen"
+    augment_p: float = 0.0  # share of training sentences replaced by a perturbed copy
+    crt_epochs: int = 0  # >0: classifier re-training with balanced sampling (training/crt.py)
+    crt_lr: float = 1e-3
+
     seed: int = 42
     fp16: bool = True
     early_stopping_patience: int = 3
@@ -100,6 +106,14 @@ class TrainConfig:
         "fp16",
         "early_stopping_patience",
     )
+    # Added after the first hashed runs. They enter the hash only when set to a non-default value,
+    # so adding a field never changes the identity of a configuration that does not use it.
+    _OPTIONAL_IDENTITY_FIELDS = (
+        ("augment", ""),
+        ("augment_p", 0.0),
+        ("crt_epochs", 0),
+        ("crt_lr", 1e-3),
+    )
 
     def config_hash(self) -> str:
         """Short digest of every field that can change the result.
@@ -112,6 +126,13 @@ class TrainConfig:
         import hashlib
 
         payload = "|".join(f"{k}={getattr(self, k)!r}" for k in self._IDENTITY_FIELDS)
+        extra = [
+            f"{k}={getattr(self, k)!r}"
+            for k, default in self._OPTIONAL_IDENTITY_FIELDS
+            if getattr(self, k) != default
+        ]
+        if extra:
+            payload += "|" + "|".join(extra)
         return hashlib.sha256(payload.encode()).hexdigest()[:8]
 
     def run_id(self, split: str = "val") -> str:

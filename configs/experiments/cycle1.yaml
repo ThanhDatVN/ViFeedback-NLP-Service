@@ -1,0 +1,82 @@
+# Cycle 1 — declared 2026-09-27, before any Cycle 1 run started.
+#
+# Hypotheses are chosen from Cycle 0 evidence (results/studies/README.md), per review task 5:
+# "select three primary hypotheses and launch only the controls needed to answer them".
+# Changing a criterion below after results are seen requires a new file version and an ADR.
+
+version: 1
+declared: 2026-09-27
+budget:
+  weight_updating_runs: 30          # review § 10: Cycle 1 <= 30 full fine-tuning runs
+  allocation:
+    H1_imbalance: 10                # 6 at 3 seeds + up to 4 finalist seeds
+    H2_augmentation: 5              # 3 at 3 seeds + 2 finalist seeds
+    H3_xlmr_input: 10               # Kaggle: 5 raw + 5 pyvi re-run in the same session
+    reserve: 5                      # failed runs, replication
+  gpu_minutes_estimate: {laptop_rtx3050: 75, kaggle_t4: 55}
+
+common:
+  task: sentiment
+  model: phobert-base
+  preprocessing: seg_pyvi           # the deployed configuration
+  epochs: 4
+  lr: 2.0e-5
+  batch_size: 32
+  max_length: 96
+  selection: dev macro-F1, per epoch (unchanged)
+  run_id_phase: 8                   # Cycle 1 runs are p8-...; earlier phases keep their ids
+  split: validation                 # test is untouched in Cycle 1 until the closing gate
+  pilot_seeds: [42, 1337, 2024]
+  finalist_seeds: [7, 31337]
+  evaluation_precision_note: >
+    Dev metrics are computed in fp16, like every registry row. fp16 vs fp32 flips one tied
+    neutral example on the seed-42 checkpoint (0.8634 vs 0.8672), so single-seed differences
+    below ~0.004 are not interpretable.
+
+hypotheses:
+  H1_imbalance:
+    question: Is the neutral gap in the classifier (fixable without the representation) or not?
+    evidence: >
+      Study A: a post-hoc neutral bias tuned on OOF moves dev macro-F1 by +0.004 (noise-sized);
+      66-72% of neutral errors are confident. Prediction: both methods change macro-F1 by
+      < 0.01; neutral recall rises while neutral precision falls.
+    control: base recipe (CE); reproduced as stage 1 of every cRT run at the same seed
+    conditions:
+      logit_adjust: {recipe: logit-adjust, logit_adjust_tau: 1.0}
+      crt: {recipe: crt, crt_epochs: 10, crt_lr: 1.0e-3}    # Kang et al. 2020, balanced sampling
+    advance_to_5_seeds_if: mean paired delta macro-F1 >= +0.005 and b wins >= 2 of 3 seeds
+    supported_if: after 5 seeds, seed-paired 95% CI of delta macro-F1 excludes 0 (BH across the family)
+    always_report: neutral precision / recall / F1 per seed; stage-1 CE reproduction vs registry
+
+  H2_augmentation:
+    question: Does diacritic/teencode augmentation buy robustness without costing clean accuracy?
+    evidence: >
+      Robustness suite v1: nodiacritic-50 costs -0.211 macro-F1; nodiacritic -0.595 with
+      predictions collapsing into neutral.
+    control: stage 1 (CE) of the H1 cRT runs, same seeds, robustness measured in-run
+    condition: {recipe: aug-diac-teen, augment: diac-teen, augment_p: 0.3}
+    primary: >
+      relative reduction of the nodiacritic-50 degradation (clean minus shifted macro-F1),
+      treatment vs control, averaged over seeds
+    supported_if: relative reduction >= 20% AND mean paired clean macro-F1 loss <= 0.005
+    secondary: [nodiacritic, teencode-100, charnoise-5]
+    caveat: >
+      Augmentation draws on the same transformation family as nodiacritic-50 and teencode-100,
+      so those are in-family. charnoise-5 is never used in training and is the out-of-family check.
+
+  H3_xlmr_input:
+    question: Was XLM-R's -0.024 against PhoBERT (ADR-016) a model effect or a preprocessing penalty?
+    evidence: ADR-019 — XLM-R was only ever given pyvi-segmented input, which it never saw in pretraining.
+    where: Kaggle (full-embedding XLM-R exceeds the 4.29 GB laptop GPU); notebooks/kaggle_train.ipynb § 4e
+    conditions:
+      xlmr_raw: {model: xlmr-base, preprocessing: raw, seeds: all}
+      xlmr_pyvi_rerun: {model: xlmr-base, preprocessing: seg_pyvi, seeds: all}   # same session, paired
+    supported_if: seed-paired delta (raw - pyvi) > 0 with 95% CI excluding 0
+    follow_up: >
+      If xlmr_raw closes at least half of the gap to phobert-base + pyvi (i.e. reaches >= 0.8523),
+      ADR-016's multilingual conclusion was mostly a confound and is withdrawn, not just narrowed.
+
+closing_gate:
+  after: all H1-H3 decisions recorded
+  test_evaluations: 1 per finalist configuration, logged, with --reason
+  calibration: temperature fitted on validation, applied once to test (E09 confirmation)

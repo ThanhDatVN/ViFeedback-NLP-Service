@@ -38,6 +38,75 @@ def _splits(task: str, preprocessing: str = "raw"):
     )
 
 
+def _raw_and_pipeline(preprocessing: str, split: str):
+    """Raw text of one split, plus the function that turns raw text into this variant's input.
+
+    Augmentation and robustness suites perturb *raw* text; this is what re-applies the variant's
+    preprocessing afterwards, so the model sees what the deployed pipeline would feed it.
+    """
+    from vifeedback.preprocess.normalize import basic_clean
+    from vifeedback.preprocess.segment import get_segmenter
+    from vifeedback.preprocess.variants import VARIANTS, load_variant
+
+    df = load_variant(preprocessing, split)
+    raw = (df["sentence_raw"] if "sentence_raw" in df.columns else df["sentence"]).tolist()
+    backend, clean, _ = VARIANTS[preprocessing]
+    seg = get_segmenter(backend)
+
+    def pipeline(texts: list[str]) -> list[str]:
+        return seg([basic_clean(t) for t in texts] if clean else texts)
+
+    return raw, pipeline
+
+
+def _augment_train(cfg: TrainConfig, x_tr: list[str]) -> tuple[list[str], dict[str, Any]]:
+    from vifeedback.training.augment import augment
+
+    raw, pipeline = _raw_and_pipeline(cfg.preprocessing, "train")
+    aug_raw, changed = augment(raw, cfg.augment, cfg.augment_p, cfg.seed)
+    idx = np.flatnonzero(changed)
+    out = list(x_tr)
+    for i, t in zip(idx, pipeline([aug_raw[i] for i in idx]), strict=True):
+        out[i] = t
+    return out, {
+        "recipe": cfg.augment,
+        "p": cfg.augment_p,
+        "changed": len(idx),
+        "changed_share": round(float(changed.mean()), 4),
+    }
+
+
+ROBUSTNESS_SUITES = ("nodiacritic", "nodiacritic-50", "teencode-100", "charnoise-5")
+
+
+def _robustness(model, tokenizer, cfg: TrainConfig, device: str, seed: int = 42) -> dict[str, Any]:
+    """Validation macro-F1 under the Cycle 1 declared suites, for the final model of a run."""
+    from torch.utils.data import DataLoader
+    from transformers import DataCollatorWithPadding
+
+    from vifeedback.evaluation.robustness import perturb
+
+    raw, pipeline = _raw_and_pipeline(cfg.preprocessing, "validation")
+    _, (_, y_dv), _ = _splits(cfg.task, cfg.preprocessing)
+    collator = DataCollatorWithPadding(tokenizer, padding="longest", return_tensors="pt")
+    k = n_classes(cfg.task)
+    out: dict[str, Any] = {}
+    for suite in ROBUSTNESS_SUITES:
+        pert, changed = perturb(raw, suite, seed=seed)
+        ds = TextDataset(pipeline(pert), y_dv, tokenizer, cfg.max_length)
+        dl = DataLoader(ds, batch_size=cfg.eval_batch_size, shuffle=False, collate_fn=collator)
+        pred = predict(model, dl, device, cfg.fp16)[0].argmax(1)
+        out[suite] = {
+            "macro_f1": M.macro_f1(y_dv, pred, k),
+            "changed_share": round(float(changed.mean()), 4),
+            "neutral_recall": float((pred[y_dv == 1] == 1).mean())
+            if cfg.task == "sentiment"
+            else None,
+            "pred_share": (np.bincount(pred, minlength=k) / len(pred)).round(4).tolist(),
+        }
+    return out
+
+
 def run_once(
     cfg: TrainConfig,
     *,
@@ -47,6 +116,7 @@ def run_once(
     verbose: bool = True,
     save: bool = True,
     save_checkpoint: bool = False,
+    robustness: bool = False,
 ) -> dict[str, Any]:
     """One seed, one configuration. Returns per-split metrics.
 
@@ -63,9 +133,54 @@ def run_once(
     if verbose:
         print(f"\n[{cfg.run_id()}]  {cfg.model_key} / {cfg.task} / {cfg.recipe} / seed {cfg.seed}")
 
+    augmentation = None
+    if cfg.augment:
+        x_tr, augmentation = _augment_train(cfg, x_tr)
+        if verbose:
+            print(f"  augmentation: {augmentation}")
+
     out = train(cfg, x_tr, y_tr, x_dv, y_dv, verbose=verbose)
     model, tokenizer = out["model"], out["tokenizer"]
     collator = DataCollatorWithPadding(tokenizer, padding="longest", return_tensors="pt")
+
+    stage1 = None
+    if cfg.crt_epochs > 0:
+        # Stage 1 is an ordinary CE run; record it before the head is replaced, so every cRT run
+        # also reproduces its CE control for the same seed.
+        from vifeedback.training.crt import encoder_features, retrain_head
+
+        dl = DataLoader(
+            TextDataset(x_dv, y_dv, tokenizer, cfg.max_length),
+            batch_size=cfg.eval_batch_size,
+            shuffle=False,
+            collate_fn=collator,
+        )
+        s1_logits = predict(model, dl, out["device"], cfg.fp16)[0]
+        stage1 = M.evaluate(y_dv, s1_logits.argmax(1), cfg.task, y_prob=softmax(s1_logits))
+        if robustness:
+            # The CE model's robustness, measured before its head is replaced: the same-seed
+            # control for the augmentation hypothesis (configs/experiments/cycle1.yaml, H2).
+            stage1["robustness"] = _robustness(model, tokenizer, cfg, out["device"])
+        f_tr = encoder_features(model, tokenizer, x_tr, cfg.max_length, out["device"])
+        f_dv = encoder_features(model, tokenizer, x_dv, cfg.max_length, out["device"])
+        crt = retrain_head(
+            model,
+            f_tr,
+            y_tr,
+            f_dv,
+            y_dv,
+            task=cfg.task,
+            epochs=cfg.crt_epochs,
+            lr=cfg.crt_lr,
+            seed=cfg.seed,
+            device=out["device"],
+        )
+        model = crt["model"]
+        if verbose:
+            print(
+                f"  stage 1 (CE) dev macro-F1 {stage1['macro_f1']:.4f} -> cRT "
+                f"{crt['best_dev_macro_f1']:.4f} (head epoch {crt['best_epoch']})"
+            )
 
     evaluated: dict[str, Any] = {}
     targets = [("validation", x_dv, y_dv)] + ([("test", x_te, y_te)] if include_test else [])
@@ -82,6 +197,19 @@ def run_once(
         metrics["macro_f1_ci"] = [ci["ci_low"], ci["ci_high"]]
         metrics["history"] = out["history"]
         metrics["best_epoch"] = out["best_epoch"]
+        if augmentation is not None:
+            metrics["augmentation"] = augmentation
+        if stage1 is not None and split == "validation":
+            metrics["stage1_ce"] = {
+                "macro_f1": stage1["macro_f1"],
+                "per_class": stage1["per_class"],
+                "robustness": stage1.get("robustness"),
+            }
+        if robustness and split == "validation":
+            metrics["robustness"] = _robustness(model, tokenizer, cfg, out["device"])
+            if verbose:
+                for suite, r in metrics["robustness"].items():
+                    print(f"  robustness {suite:15s} macro-F1 {r['macro_f1']:.4f}")
 
         if save:
             config = dict(out["config"])
@@ -140,6 +268,7 @@ def run_seeds(
     verbose: bool = True,
     keep_models: bool = False,
     save_checkpoint: bool = False,
+    robustness: bool = False,
 ) -> dict[str, Any]:
     """Run the same configuration across seeds and aggregate as mean ± std."""
     import dataclasses
@@ -153,6 +282,7 @@ def run_seeds(
             reason=reason,
             verbose=verbose,
             save_checkpoint=save_checkpoint,
+            robustness=robustness,
         )
         if not keep_models:
             r.pop("model", None)

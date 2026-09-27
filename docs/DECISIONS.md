@@ -492,6 +492,8 @@ priority; Tier E does not.
 ---
 
 ## ADR-017 · 2026-09-23 · ONNX export moves off the reference machine; the benchmark stays on it · Accepted
+> **Narrowed by ADR-020.** Only INT8 *quantization* needs the blocked `onnx` package. With the
+> TorchScript exporter pinned, FP32 export and its verification run on the reference machine.
 
 **Context.** Phase 6's ONNX ladder (L3–L6) cannot run on the reference machine. Windows Application
 Control blocks the `onnx` package's native extension:
@@ -621,3 +623,45 @@ Checked against the runs, the review is right on three counts:
 
 **Consequences.** Nothing shipped changes. The README and EXPERIMENT_MATRIX stop presenting Tier E
 as a closed negative result and describe it as a budget-limited comparison with a known confound.
+
+---
+
+## ADR-020 · 2026-09-27 · Exported artifacts are released through a verified staging step (review R3) · Accepted
+
+**Context.** Review R3 found that the export did not enforce the quality contract it documented.
+Static INT8 calibration and the parity check used **raw** text while the service feeds
+pyvi-segmented text. Parity covered 64 sentences and label agreement only. `logits_close` was
+computed and ignored. Calibration drew on validation, the same set used for acceptance. Files were
+written straight into the served directory. And the loader picked `model.quant.onnx` whenever one
+existed, so an FP32 re-export could silently keep serving a stale INT8 graph.
+
+**Decision.** `vifeedback serve export` now goes through `inference/release.py`:
+
+1. Build in `models/serve/.staging-<task>-<timestamp>/`, keeping exactly one model file.
+2. Calibrate static INT8 on a **stratified train** subset (300 sentences, every class at least 10),
+   through the checkpoint's own preprocessing, which is inferred from the checkpoint name or given
+   explicitly.
+3. Accept on the **full validation set** through the same preprocessing, in padded batches and one
+   sentence at a time. FP32 must be logit-close (atol 1e-3). INT8 must stay within **0.005
+   macro-F1** of the PyTorch model (the pre-registered budget) with ≥ 99% label agreement.
+4. Write `manifest.json`: the served file, its SHA-256, preprocessing, label map, max length,
+   acceptance results and software versions. The loader serves exactly that file and refuses a
+   checksum mismatch. The service takes its segmenter from the manifest unless `SEGMENTER` is set.
+5. Only then replace the served directory, keeping the previous one as `.previous-<task>`. A failed
+   check leaves the served artifact untouched and keeps staging for inspection.
+
+**Evidence on the reference machine.** ADR-017 moved all export to Kaggle because `onnx` is
+blocked. Pinning `torch.onnx.export(..., dynamo=False)` avoids `onnxscript` and `onnx` entirely, so
+the FP32 release ran here. Over 1,583 validation sentences: max |logit diff| **8.2e-5**, label
+agreement **100%**, batch-of-one identical to padded batches. INT8 still needs `onnx`, so it stays
+on Kaggle.
+
+**A measurement caught on the way.** The release reported macro-F1 **0.8672** for a checkpoint whose
+registry row says **0.8634**. Segmentation parity was checked first (runtime pyvi equals the
+materialized variant on all 1,583 sentences), and it was not the cause. Evaluation precision was:
+fp16, used for every registry row, flips **one** neutral sentence whose top-two margin is 0.0000.
+One neutral example is worth 0.004 macro-F1 on this dev set. That bounds how small a single-seed
+difference can be and still mean anything, and it is recorded in `configs/experiments/cycle1.yaml`.
+
+**Consequences.** R3 is closed for the export path. The latency benchmark (R10) is still to be
+re-run on the released artifact.

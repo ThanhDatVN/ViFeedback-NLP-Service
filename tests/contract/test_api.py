@@ -19,9 +19,23 @@ from vifeedback.serving.schemas import MAX_BATCH, MAX_CHARS, ClassifyRequest  # 
 
 
 @pytest.fixture(scope="module")
-def client():
-    with TestClient(app) as c:
-        yield c
+def client(tmp_path_factory):
+    """An app pointed at an EMPTY model directory.
+
+    Not the default `models/serve/`: once a real artifact is released there, "without a model"
+    stops being true and these tests would assert against the working copy's state instead of the
+    code. Found exactly that way, the first time an FP32 release ran on the reference machine.
+    """
+    import vifeedback.serving.app as app_module
+
+    empty = tmp_path_factory.mktemp("no_models")
+    original = app_module.MODEL_DIR
+    app_module.MODEL_DIR = empty
+    try:
+        with TestClient(app) as c:
+            yield c
+    finally:
+        app_module.MODEL_DIR = original
 
 
 class TestProbes:
