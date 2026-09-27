@@ -1628,7 +1628,7 @@ def results_provenance() -> None:
     for env_file in sorted((paths.RESULTS / "runs").glob("*/env.json")):
         h = json.loads(env_file.read_text(encoding="utf-8")).get("source_sha256") or "none"
         runs[h].append(env_file.parent.name)
-    out = {
+    out: dict[str, dict] = {
         h: {
             "first_commit": by_commit[h][0] if h in by_commit else None,
             "commits_with_identical_source": len(by_commit.get(h, [])),
