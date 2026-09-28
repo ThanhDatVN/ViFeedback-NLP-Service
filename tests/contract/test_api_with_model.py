@@ -100,3 +100,19 @@ def test_version_names_the_released_checkpoint_and_hash(client) -> None:
     version = client.get("/version").json()["model_version"]
     assert Path(manifest["checkpoint"]).name in version
     assert manifest["sha256"][:12] in version
+
+
+def test_out_of_scope_score_when_the_release_declares_one(client) -> None:
+    """ADR-031: every prediction carries the score, and off-topic text scores below course feedback."""
+    import json
+
+    manifest = json.loads((SERVE / "sentiment" / "manifest.json").read_text(encoding="utf-8"))
+    if not manifest.get("ood"):
+        pytest.skip("this release has no out-of-scope score (serve add-ood)")
+    feedback = ["giảng viên nhiệt tình", "thầy giảng bài dễ hiểu", "phòng học nóng"]
+    off_topic = ["giá vàng hôm nay tăng mạnh", "đội tuyển bóng đá thắng hai không"]
+    preds = client.post("/v1/classify", json={"texts": feedback + off_topic}).json()["predictions"]
+    assert all(isinstance(p["in_scope"], bool) for p in preds)
+    scores = [p["scope_score"] for p in preds]
+    assert max(scores[len(feedback) :]) < min(scores[: len(feedback)])
+    assert all(p["in_scope"] for p in preds[: len(feedback)])

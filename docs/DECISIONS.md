@@ -939,3 +939,37 @@ the service's exact input. The unaccented cell's noise is synthetic, though the 
 real. And the overall NEU-ESC scores (CE 0.463, augmented 0.434) were seen before this version was
 written; the cells were not, and they are computed only after this commit. Challenge v2, if it is ever
 written, is reported next to these results, never instead of them.
+
+---
+
+## ADR-031 · 2026-09-28 · The service restores diacritics and reports an out-of-scope score · Accepted
+
+**Context.** `cycle3.yaml` v5 confirmed two Cycle 3 changes on NEU-ESC, real student text with human
+labels (ADR-030), and rejected a third:
+
+| Rule | Evidence on NEU-ESC test | Outcome |
+|---|---|---|
+| S2b: served model + diacritic restorer | posts with diacritics stripped: macro-F1 0.270 → 0.374 (+0.104 [+0.091, +0.118]); posts as written: −0.0006 | passed |
+| S2b′: CE + restorer instead of augmented + restorer | contrast posts 0.440 vs 0.437 (p = 0.68); the challenge v1 advantage did not replicate | not passed |
+| S3: Mahalanobis out-of-scope score | off-topic posts vs validation, AUROC 0.977 (max-probability 0.920) | passed |
+
+**Decision.** The served model stays the H2-augmented checkpoint (ADR-027). Two parts are added to
+the release, each declared in its manifest with a SHA-256, and a mismatch makes `/readyz` 503:
+
+1. **A diacritic restorer** before segmentation (`serve add-restorer`), built from UIT-VSFC train only.
+   It rewrites only essentially unaccented input. On the served graph it changes 0 of 1,583
+   validation labels and lifts stripped validation from 0.685 to 0.857 macro-F1.
+2. **An out-of-scope score** (`serve export --with-features`, `serve add-ood`): the negative
+   Mahalanobis distance of the sentence feature to the nearest class mean. The API returns `in_scope`
+   (threshold: 95% of validation kept) and `scope_score` next to the label. The service never
+   refuses an input; the caller decides. Checked on the served graph itself before it was attached:
+   AUROC 0.977 on the 563 NEU-ESC off-topic posts, 85% of them flagged.
+
+The release is reproducible with `make export` (export with a `features` output, logit parity
+1.7e-05 and 100% label agreement on validation; then `serve add-restorer`; then `serve add-ood`).
+The previous artifact is kept as the rollback copy; the CE model can be re-exported from its
+checkpoint.
+
+**Not decided here.** Whether the service should switch to CE: its other NEU-ESC checks favoured it
+(overall +0.028, unaccented +0.036), but the declared rule required the contrast advantage and did not
+get it. A human-typed challenge set, if one is written, is where that question can be reopened.

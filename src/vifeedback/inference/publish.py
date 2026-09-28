@@ -61,6 +61,45 @@ def evidence(manifest: dict[str, Any]) -> dict[str, Any]:
     }
 
 
+def _optional_parts(manifest: dict[str, Any]) -> str:
+    """Model-card section for the restorer and the out-of-scope score, when the release has them."""
+    items = []
+    r = manifest.get("restorer")
+    if r:
+        a = r["acceptance"]
+        items.append(
+            f"- `{r['file']}`: a diacritic restorer (word-bigram Viterbi over UIT-VSFC train text). "
+            "The service applies it after lowercasing and before segmentation, and only to "
+            f"essentially unaccented sentences (accented share below {r['threshold']:.3f}). "
+            "Validation with the diacritics stripped: macro-F1 "
+            f"{a['stripped_validation_macro_f1_without']:.3f} → "
+            f"{a['stripped_validation_macro_f1_with']:.3f}; clean validation labels changed: "
+            f"{a['validation_labels_changed']}. "
+            "Load it with `vifeedback.preprocess.diacritics.Restorer`."
+        )
+    o = manifest.get("ood")
+    if o:
+        a = o["acceptance"]
+        items.append(
+            f"- `{o['file']}`: an out-of-scope score over the graph's `features` output (last-layer "
+            "`<s>` vector): the negative Mahalanobis distance to the nearest class mean (shared "
+            f"covariance, fitted on train). Below {o['threshold']:.1f} the input is out of scope; "
+            f"the threshold keeps {o['keeps_validation']:.0%} of validation. On "
+            f"{a['off_topic_rows']} real off-topic forum posts (NEU-ESC spam, news, jobs, club "
+            f"events) against validation: AUROC {a['auroc']:.3f}, "
+            f"{a['out_of_scope_caught']:.0%} flagged. The service reports it as `in_scope` and "
+            "`scope_score` next to the label and never refuses an input."
+        )
+    if not items:
+        return ""
+    head = (
+        "\n## Optional parts of the release\n\n"
+        "Both are declared in `manifest.json` with a SHA-256; the service refuses to start on a "
+        "mismatch.\n\n"
+    )
+    return head + "\n".join(items) + "\n"
+
+
 def model_card(repo_id: str, manifest: dict[str, Any], ev: dict[str, Any]) -> str:
     v, t, c = ev["validation"], ev["test"], ev["challenge"]
     pc = v["per_class"]
@@ -115,7 +154,7 @@ print({manifest["labels"]}[int(logits.argmax())])
 
 For calibrated probabilities, divide the logits by **T = {cal["temperature_fit_on_validation"]:.2f}**
 (fitted on validation) before the softmax.
-
+{_optional_parts(manifest)}
 ## Training
 
 UIT-VSFC train (11,426 sentences), base model `vinai/phobert-base` at
@@ -155,17 +194,24 @@ teencode {rob["teencode-100"]["macro_f1"]:.3f}; 5% character noise {rob["charnoi
 - **Neutral is weak** (F1 about 0.6 to 0.66). Neutral errors are confident, so thresholds do not fix them.
 - **Contrast sentences** (*A nhưng B*) are handled worse than by the same model trained without
   augmentation: 0.800 vs 0.875 accuracy on 40 constructed sentences, lower in 4 of 5 seeds
-  (p = 0.004). Found by a declared rule but not pre-specified; awaiting confirmation on human-typed data.
+  (p = 0.004). Found by a declared rule but not pre-specified. On 414 real forum posts containing a
+  contrast (NEU-ESC) the difference did not replicate (0.437 vs 0.440, p = 0.68).
 - **Short factual sentences may drift to `negative`** (*môn học có ba tín chỉ* → negative, confidence
   0.5 to 0.7): 0.66 vs 0.75, not consistent across seeds (3 of 5). Treat low-confidence `negative`
   on short inputs with care.
 - **Real informal typing is unstable.** On 1,045 real social-media comments (ViLexNorm), about 17% of
   labels change between a comment and its human-normalized version; the augmentation does not reduce
-  this. Missing diacritics alone are handled much better (0.66 vs 0.33 on constructed text, 5 of 5 seeds).
+  this. Missing diacritics alone are handled much better (0.66 vs 0.33 on constructed text, 5 of 5
+  seeds), and better still with the restorer (NEU-ESC posts stripped of diacritics: 0.270 → 0.374).
 - **Input is lowercased** before scoring, as the training data is; capitalized input otherwise changed
   about 1% of labels.
-- **No abstention.** Off-topic input receives a confident polar label.
-- **One domain.** Student feedback from one Vietnamese university; other domains are untested.
+- **Off-topic input still gets a label**, often a confident one; use the out-of-scope score
+  (above) to decide what to do with it.
+- **Real student text from another university is much harder.** On 6,613 forum posts from NEU-ESC
+  (human labels) this model's macro-F1 is 0.46 (0.43 averaged over five seeds): annotators called 69%
+  of posts neutral, this model 27%. Forum posts are mostly non-evaluative; the model was trained
+  on course surveys. A zero-shot gpt-4o-mini reaches 0.60 on the same posts, mostly on neutral.
+- **One training domain.** Student feedback from one Vietnamese university.
 - The suggestion convention is the corpus's: a request for change (*thầy nên…*) is `negative`.
 
 ## Files and checksums (SHA-256)
@@ -201,7 +247,8 @@ def build(repo_id: str, include_pytorch: bool = True) -> dict[str, Any]:
     if out.exists():
         shutil.rmtree(out)
     out.mkdir(parents=True)
-    for name in (manifest["model_file"], "manifest.json", *_TOKENIZER_FILES):
+    optional = [manifest[k]["file"] for k in ("restorer", "ood") if manifest.get(k)]
+    for name in (manifest["model_file"], "manifest.json", *_TOKENIZER_FILES, *optional):
         if (SERVED / name).exists():
             shutil.copy2(SERVED / name, out / name)
     if include_pytorch:

@@ -61,8 +61,10 @@ train:  ## Fine-tune MODEL on TASK across SEEDS
 	$(PY) -m vifeedback.cli train run --task $(TASK) --model $(MODEL) \
 		--preprocessing $(PREP) --seeds $(SEEDS)
 
-export:  ## Release the serving ONNX artifact (staging -> verify on full dev -> swap); CKPT=..., QUANT=none|dynamic|static
-	$(PY) -m vifeedback.cli serve export --task $(TASK) --checkpoint $(CKPT) --quantize $(QUANT)
+export:  ## Release the serving artifact: ONNX with features (staging -> verify on full dev -> swap), restorer, out-of-scope score (ADR-031)
+	$(PY) -m vifeedback.cli serve export --task $(TASK) --checkpoint $(CKPT) --quantize $(QUANT) --with-features
+	$(PY) -m vifeedback.cli serve add-restorer --task $(TASK)
+	$(PY) -m vifeedback.cli serve add-ood --task $(TASK)
 
 bench:  ## CPU latency benchmark on the reference machine
 	$(PY) -m vifeedback.cli serve bench --task $(TASK)

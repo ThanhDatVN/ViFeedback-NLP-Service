@@ -157,21 +157,23 @@ before any model saw it ([data/challenge](data/challenge/README.md)).
 |---|---|
 | H5 Stacking TF-IDF with PhoBERT helps topic | **No.** −0.010 macro-F1; TF-IDF's apparent edge on `facility` was noise |
 | H6 Serve the augmented model | **Yes, by the declared rule.** Constructed noisy text 0.61 → 0.80 accuracy, other rows unchanged. Possible costs, not significant at one seed: teencode 0.975 → 0.875 (p = 0.13), short factual sentences 0.77 → 0.63 (p = 0.22) |
-| H7 An instruction LLM does better on the hard cases | **Pilot (Qwen3-1.7B): no.** Neutral F1 0.26–0.29 against the encoder's 0.66. It rejects the corpus's label policy (requests as negative), yet gets factual sentences right where the encoder fails. Declared Qwen3-4B and gpt-4o-mini runs pending |
+| H7 An instruction LLM does better on the hard cases | **gpt-4o-mini on real posts from another university (NEU-ESC): yes**, macro-F1 0.60 vs 0.49 / 0.46, mostly on neutral (USD 0.21 for 6,613 posts; a reference, not the serving path). **Pilot (Qwen3-1.7B): no.** Neutral F1 0.26–0.29 against the encoder's 0.66. It rejects the corpus's label policy (requests as negative), yet gets factual sentences right where the encoder fails. Declared Qwen3-4B and gpt-4o-mini runs pending |
 
 **Cycle 3 — the served model on real input**
 ([configs/experiments/cycle3.yaml](configs/experiments/cycle3.yaml),
 [docs/EVALUATION_DATA.md](docs/EVALUATION_DATA.md)). The Cycle 2 challenge set was constructed, so it
-became development data; real text came from ViLexNorm (human-normalized social-media comments).
+became development data; real text came from ViLexNorm (human-normalized social-media comments) and
+NEU-ESC (forum posts by students of another university, human labels), which is the confirmation set.
 
 | Question | Result |
 |---|---|
 | Were Cycle 2's drops real? (5 seeds) | Teencode: no. Contrast sentences (*nhưng*): yes, 0.875 → 0.800 |
 | Does capitalization matter? | Yes: 1% of labels flipped (the corpus has no uppercase letter). **The service now lowercases input** |
 | Is the model stable on real typing? | No: 17% of labels change between a real comment and its human normalization |
-| Diacritic restoration before the model | Stripped validation macro-F1 **0.686 → 0.857**, clean predictions unchanged (confirmation pending) |
-| Out-of-scope detection | Mahalanobis AUROC 0.949 vs 0.862 for max-probability (confirmation pending) |
+| Diacritic restoration before the model | Stripped validation macro-F1 **0.686 → 0.857**, clean predictions unchanged; confirmed on NEU-ESC (unaccented posts 0.270 → 0.374). **Now in the service** |
+| Out-of-scope detection | Mahalanobis AUROC 0.949 (development), **0.977 on real off-topic posts** vs 0.920 for max-probability. **The API now returns `in_scope`** |
 | Real student text from another university (NEU-ESC) | Macro-F1 drops to 0.46 (CE) and 0.43 (augmented): a domain and label-policy shift; the augmentation hurts here |
+| Plain CE + restoration instead of the augmented model | Its contrast-sentence advantage (0.875 vs 0.800) did not replicate on real posts (0.440 vs 0.437): the augmented model stays |
 | Real-typing lexicon, careful INT8 | Both failed their declared rules (negative results, kept) |
 
 Details: [STATUS § 3–4](docs/STATUS.md#3-cycle-1--declared-hypotheses-and-their-outcome) ·
@@ -188,7 +190,7 @@ python scripts/setup_venv.py   # .venv with the pinned versions; CUDA torch if a
 .venv\Scripts\Activate.ps1      # Windows  (Linux/macOS: source .venv/bin/activate)
 cp .env.example .env           # optional: API keys, read by the CLI; .env is git-ignored
 make data             # fetch UIT-VSFC + run the integrity suite
-make test             # 365 fast tests
+make test             # 372 fast tests
 make report           # Phase 0 profiling + EDA figures
 make baseline         # TF-IDF ladder
 make train            # fine-tune PhoBERT (needs a GPU; ~5 min/seed on an RTX 3050)
@@ -217,13 +219,19 @@ see [KAGGLE_GUIDE](docs/KAGGLE_GUIDE.md).
 ### Serving
 
 ```bash
-make export           # checkpoint -> ONNX in staging -> verify on full dev -> release + manifest
+make export           # checkpoint -> ONNX in staging -> verify on full dev -> release + manifest,
+                      # then the diacritic restorer and the out-of-scope score (each hash-checked)
 make docker-e2e       # the image with the released model: /readyz, SHA-256, golden labels
 make docker && make docker-run
 curl -s localhost:8000/v1/classify \
   -H 'content-type: application/json' \
   -d '{"texts":["giảng viên nhiệt tình với sinh viên ."]}'
 ```
+
+Each prediction carries `label`, `confidence`, `probabilities` and, when the release has the out-of-scope score,
+`in_scope` and `scope_score`. The service lowercases input and restores diacritics on unaccented
+text before segmenting it; it never refuses an off-topic input, so the caller decides what
+`in_scope: false` means for them.
 
 ---
 
@@ -252,7 +260,7 @@ curl -s localhost:8000/v1/classify \
 |---|---|
 | **[STATUS](docs/STATUS.md)** | **Progress, open problems, next experiments, compute plan** |
 | [ROADMAP](docs/ROADMAP.md) | Objectives, 8 phases, exit gates, risk register |
-| [DECISIONS](docs/DECISIONS.md) | 29 ADRs — every plan correction forced by measurement or review |
+| [DECISIONS](docs/DECISIONS.md) | 31 ADRs — every plan correction forced by measurement or review |
 | [DATA_CARD](docs/DATA_CARD.md) | Provenance, splits, distributions, 11 measured limitations |
 | [EVALUATION_PROTOCOL](docs/EVALUATION_PROTOCOL.md) | Metrics, seeds, significance, latency harness, error taxonomy, perturbation suites, calibration |
 | [ANNOTATION_GUIDE](docs/ANNOTATION_GUIDE.md) | Neutral-label audit: taxonomy, ambiguity vs incorrect gold, agreement and adjudication |

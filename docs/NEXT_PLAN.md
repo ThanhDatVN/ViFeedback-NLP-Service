@@ -10,8 +10,10 @@ Status key: ✅ done · ⏳ next, no owner input needed · 👤 needs the owner 
 
 ## Progress, 2026-09-28
 
-Every step that needed no owner input has run. Development results are not confirmations: the rules
-that decide serving changes are confirmed on challenge v2, which needs the owner.
+Every step that needed no owner input has run. Development results are not confirmations. The
+human-typed challenge v2 needs time and people the owner does not have now, so the confirmation moved
+to **NEU-ESC test** (real forum posts from another university, human labels; ADR-030, `cycle3.yaml`
+v5), with rules committed before the cells were computed. Challenge v2 stays optional (Appendix A).
 
 | Step | Result | Status |
 |---|---|---|
@@ -21,13 +23,16 @@ that decide serving changes are confirmed on challenge v2, which needs the owner
 | ViLexNorm invariance (real typing) | 17% of labels flip between a real comment and its human normalization, for CE and augmented alike | ✅ measured |
 | U1 gpt-4o-mini on challenge v1 | neutral F1 0.955 vs 0.713 (CE); confounded by v1's construction; same pattern as EduPulse | ✅ |
 | U2 label check | 15 rows for owner review (`results/studies/challenge/label_review_v1.csv`) | 👤 review |
+| H7 gpt-4o-mini on NEU-ESC (zero-shot, frozen prompt) | macro-F1 **0.604** vs CE 0.494 (+0.109 [+0.094, +0.124]) and augmented 0.462 (+0.142) at seed 42; neutral F1 0.769 vs 0.526 / 0.474; over-calls negative (precision 0.43, recall 0.80). USD 0.21 for 6,613 posts | ✅ measured; reference only |
 | **S2a** real-typing lexicon (ViLexNorm train) | Development gate **not passed**: ViLexNorm flips 0.169 → 0.177 (p = 0.13); validation +0.003 | ✅ negative |
-| **S2b** diacritic restoration (train-only) | Stripped validation macro-F1 **0.686 → 0.857**; clean predictions unchanged; challenge unaccented 0.74 → 0.86; 0.2 ms | ✅ dev · 👤 v2 confirmation |
-| **S2b′** CE + restoration vs augmented + restoration (5 seeds, v4) | With restoration the augmentation's edge mostly disappears: unaccented 0.904 vs 0.880, contrast **0.875 vs 0.800** (p = 0.004), short factual 0.747 vs 0.660; but validation −0.004, code-switch −0.03, implicit suggestions −0.05 | ✅ dev · 👤 v2 decides |
-| **S3** out-of-scope score | Mahalanobis AUROC **0.949** (max-probability 0.862), catches 66% at 5% flagged | ✅ dev · 👤 v2 confirmation |
+| **S2b** diacritic restoration (train-only) | Stripped validation macro-F1 **0.686 → 0.857**; clean predictions unchanged; challenge unaccented 0.74 → 0.86; 0.2 ms. NEU-ESC confirmation: unaccented posts 0.270 → **0.374** (+0.104 [+0.091, +0.118]), posts as written −0.0006 | ✅ confirmed · **served** (ADR-031) |
+| **S2b′** CE + restoration vs augmented + restoration (5 seeds, v4) | Development: unaccented 0.904 vs 0.880, contrast **0.875 vs 0.800** (p = 0.004). NEU-ESC confirmation: contrast 0.440 vs 0.437 (**p = 0.68**); the other checks favoured CE (overall +0.028, unaccented +0.036) | ✅ **not passed**: the augmented model stays |
+| **S3** out-of-scope score | Development AUROC **0.949** (max-probability 0.862). NEU-ESC confirmation: 563 off-topic posts, AUROC **0.977** (max-probability 0.920), 86% flagged at 5% of validation | ✅ confirmed · **served** as `in_scope` (ADR-031) |
 | **S5** careful INT8 | 178.5 MB, neutral agreement 0.959; macro-F1 drop +0.0004 but upper bound 0.0095 > 0.005: **not passed**. Latency indicative only (no steady pass): p50 6.4 ms vs 11.1 ms for FP32 | ✅ negative → Cycle 4 |
-| NEU-ESC (6,613 real forum posts, 5 seeds per recipe) | macro-F1 CE **0.463**, augmented 0.434, S2a 0.433: all low (the model calls 30% of posts neutral, gold 69%); **augmentation hurts on real student text** (s42: −0.033 [−0.042, −0.024]; 4/5 seeds) | ✅ supports S2b′ (CE + restoration); v2 still decides |
-| Challenge v2 (human-typed) · neutral audit · Kaggle Qwen3-4B · HF upload | — | 👤 |
+| NEU-ESC (6,613 real forum posts, 5 seeds per recipe) | macro-F1 CE **0.463**, augmented 0.434, S2a 0.433: all low (the model calls 30% of posts neutral, gold 69%); augmentation lower on real student text (s42: −0.033 [−0.042, −0.024]; 4/5 seeds) | ✅ measured |
+| Serving release (ADR-031) | Re-exported with a `features` output (logit parity 1.7e-05, 100% label agreement); restorer and out-of-scope score attached, each SHA-256-checked by the service | ✅ |
+| Neutral audit · Kaggle Qwen3-4B · HF upload · U2 label review | — | 👤 |
+| Challenge v2 (human-typed) | Replaced as the confirmation set by NEU-ESC (ADR-030); still the only place to test typed teencode and the S2b′ question on this corpus's register | ⏸ optional |
 
 ---
 
@@ -49,7 +54,7 @@ that decide serving changes are confirmed on challenge v2, which needs the owner
 | Off-topic input gets a confident label (0.86–0.90) | No signal to abstain | Max-probability does not separate it | Step 3 |
 | Negation minimal pairs: both right in 10 of 15 | n = 15, too few to act on | — | Step 1 (v2 adds pairs); measured, not fixed |
 | **No real user typing, no natural sample;** challenge v1 is constructed and single-labeller | — | — | Step 1 👤 |
-| H7 declared runs (Qwen3-4B, gpt-4o-mini) | Pilot only | Need Kaggle and the key | Step 1 👤 |
+| H7 declared runs (Qwen3-4B, gpt-4o-mini) | gpt-4o-mini done (challenge v1, NEU-ESC); Qwen3-4B pending | Needs Kaggle | Step 1 👤 |
 
 ---
 

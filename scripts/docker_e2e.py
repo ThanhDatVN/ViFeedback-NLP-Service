@@ -6,8 +6,8 @@ script runs what CI cannot: the image, the real artifact under models/serve, and
     python scripts/docker_e2e.py            # build, run, check, remove the container
     python scripts/docker_e2e.py --no-build # reuse vifeedback:e2e
 
-Passes when /readyz is 200, the served file matches the manifest's SHA-256, and the golden cases
-come back with their labels.
+Passes when /readyz is 200, the served file matches the manifest's SHA-256, the golden cases come
+back with their labels, and, if the manifest declares an out-of-scope score, every prediction has one.
 """
 
 from __future__ import annotations
@@ -121,11 +121,15 @@ def main() -> int:
         else:
             for (text, want), p in zip(GOLDEN, out["predictions"], strict=True):
                 ok = p["label"] == want
+                scope = f" in_scope={p.get('in_scope')}" if manifest.get("ood") else ""
                 print(
-                    f"  {'ok ' if ok else 'BAD'} {p['label']:9s} {max(p['probabilities'].values()):.3f}  {text}"
+                    f"  {'ok ' if ok else 'BAD'} {p['label']:9s} {max(p['probabilities'].values()):.3f}{scope}  {text}"
                 )
                 if not ok:
                     failures.append(f"{text!r}: {p['label']} != {want}")
+                # A release with the out-of-scope score must report it on every prediction (ADR-031).
+                if manifest.get("ood") and not isinstance(p.get("in_scope"), bool):
+                    failures.append(f"{text!r}: no in_scope although the manifest declares one")
     finally:
         docker("rm", "-f", NAME, check=False)
 

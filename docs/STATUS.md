@@ -30,7 +30,7 @@ stands, what is wrong with it, and what runs next.**
 | **0** | Fix validity problems; what does the current model get wrong? | ✅ [results/studies/](../results/studies/README.md) |
 | **1** | Four hypotheses, declared before running ([cycle1.yaml](../configs/experiments/cycle1.yaml) v1 + v2) | ✅ all four decided; closing gate on test done (H2 and calibration confirmed) |
 | **2** | Track A: confirmation on a frozen challenge set, the serving model, topic stacking, an LLM reference ([cycle2.yaml](../configs/experiments/cycle2.yaml) v2) | 🔶 H5 not supported; H6 switched the served model; H7 pilot done, declared Qwen3-4B and API runs pending (👤) |
-| **3** | Reliability of the served model on real input ([cycle3.yaml](../configs/experiments/cycle3.yaml) v3) | 🔶 all steps without owner input run: service lowercases input; restoration and an out-of-scope score pass development; real-typing lexicon and careful INT8 fail their rules; confirmation waits for human-typed challenge v2 (👤) |
+| **3** | Reliability of the served model on real input ([cycle3.yaml](../configs/experiments/cycle3.yaml) v5) | 🔶 confirmed on NEU-ESC real student text (ADR-030): the service now lowercases, restores diacritics and reports an out-of-scope score (ADR-031); CE + restoration, the real-typing lexicon and careful INT8 fail their rules. Owner items: Kaggle Qwen3-4B, neutral audit, HF upload (👤) |
 
 **Compute to date** ([ledger](../configs/experiments/ledger.csv)): 124 weight-updating runs, about 9.9 GPU-hours, of which 19 regenerated runs after the `results/` loss (ADR-023), plus 12 GPU-minutes of LLM inference. The registry holds 153 rows.
 
@@ -146,8 +146,10 @@ uses the official test.
 
 ### Cycle 3 — reliability on real input (in progress)
 
-Declared in [cycle3.yaml](../configs/experiments/cycle3.yaml) (v1–v3, ADR-029). Evidence ranking and
-the evaluation matrix: [EVALUATION_DATA.md](EVALUATION_DATA.md). Challenge v1 is development data now.
+Declared in [cycle3.yaml](../configs/experiments/cycle3.yaml) (v1–v5, ADR-029, ADR-030). Evidence
+ranking and the evaluation matrix: [EVALUATION_DATA.md](EVALUATION_DATA.md). Challenge v1 is
+development data now; NEU-ESC test (real forum posts, human labels) replaces the human-typed challenge
+v2 as the confirmation set (ADR-030), with rules committed before the cells were computed.
 
 | Step | Result | Decision |
 |---|---|---|
@@ -155,11 +157,11 @@ the evaluation matrix: [EVALUATION_DATA.md](EVALUATION_DATA.md). Challenge v1 is
 | Case invariance | Capitalized input flipped 1.07% of labels (the corpus has no uppercase letter) | **Service lowercases input** (rule met; 0 flips; no validation change) |
 | ViLexNorm invariance | 17% of labels flip between real comments and their human normalization; augmentation no help (p = 0.93) | Measured |
 | S2a: lexicon from real typing | ViLexNorm flips 0.169 → 0.177 (p = 0.13); validation +0.003 | **Not passed**: not a candidate |
-| S2b: diacritic restoration | Stripped validation 0.686 → 0.857; clean predictions unchanged; +0.2 ms | Passes development; confirmation on v2 👤 |
-| S2b′: CE + restoration (v4) | vs augmented + restoration, 5 seeds: unaccented 0.904 vs 0.880; contrast 0.875 vs 0.800 (p = 0.004); validation −0.004 | Candidate; decided on v2 👤 |
-| S3: out-of-scope score | Mahalanobis AUROC 0.949 vs max-probability 0.862 | Development choice; confirmation on v2 👤 |
+| S2b: diacritic restoration | Development: stripped validation 0.686 → 0.857; clean predictions unchanged; +0.2 ms. **NEU-ESC**: unaccented posts 0.270 → 0.374 (+0.104 [+0.091, +0.118]); posts as written −0.0006 | **Confirmed → served** (ADR-031) |
+| S2b′: CE + restoration (v4) | Development, 5 seeds: unaccented 0.904 vs 0.880; contrast 0.875 vs 0.800 (p = 0.004). **NEU-ESC**: contrast 0.440 vs 0.437 (p = 0.68); overall +0.028, unaccented +0.036, short neutral +0.033 | **Not passed**: the contrast advantage did not replicate; the augmented model stays |
+| S3: out-of-scope score | Development: Mahalanobis AUROC 0.949 vs max-probability 0.862. **NEU-ESC** off-topic posts (563): AUROC 0.977 vs 0.920; 86% flagged at 5% of validation | **Confirmed → served** as `in_scope` (ADR-031) |
 | S5: careful INT8 | 178.5 MB, macro-F1 drop +0.0004, neutral 0.661 → 0.667, upper bound 0.0095; p50 about 6.4 ms vs 11.1 ms (indicative: no steady pass) | **Not passed** (0.005 margin not demonstrable with 73 neutral examples) |
-| H7 API arm | gpt-4o-mini neutral F1 0.955 vs 0.713 on challenge v1 (construction confound) | Recorded; confirm on NEU-ESC or v2 |
+| H7 API arm | gpt-4o-mini zero-shot. Challenge v1: neutral F1 0.955 vs 0.713 (construction confound). **NEU-ESC** (6,613 real posts): macro-F1 **0.604** vs CE 0.494 and augmented 0.462 (seed 42; 5-seed means 0.463 / 0.434); neutral F1 0.769 vs 0.526 / 0.474; over-calls negative (precision 0.43). USD 0.21, about 1.1 s per call | Recorded: the LLM transfers across the domain shift better; not in the serving path |
 | NEU-ESC (real forum posts, Tier B) | macro-F1 CE 0.463 · augmented 0.434 · S2a 0.433 (5 seeds each); predicted neutral 30% vs gold 69%; augmented − CE at s42 −0.033 [−0.042, −0.024] | Domain and label-policy shift is large; augmentation hurts on real text: evidence for CE + restoration |
 
 ---
@@ -268,8 +270,8 @@ Full traceability, including the study designs, catalog and backlog:
 Every unmet target and gap, with where it is handled: **[NEXT_PLAN.md](NEXT_PLAN.md) v3 § 1**; the
 Cycle 3 steps are in § 3. Needs the owner:
 
-1. **The declared H7 runs**: Kaggle cell 4f (Qwen3-4B); gpt-4o-mini once `OPENAI_API_KEY` is set
-   (challenge set only until the UIT-VSFC licence question is answered).
+1. **The declared H7 Qwen3-4B run**: Kaggle `notebooks/kaggle_h7_llm.ipynb`. The gpt-4o-mini arm is
+   done (challenge v1 and NEU-ESC); UIT-VSFC text is still not sent to the API.
 2. **The human audit** (P2/P3), which gates E04. `study audit-report` analyses the filled sheet.
 3. **Publishing the model**: `vifeedback serve publish --repo-id <you>/<name>` builds the bundle and
    card; add `--upload` after reviewing it.

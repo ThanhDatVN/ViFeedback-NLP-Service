@@ -520,7 +520,8 @@ by SHA-256 before any evaluation). No Cycle 2 decision uses the official test.
 | **H7 pilot** Qwen3-1.7B, label likelihood, frozen prompt | validation | macro-F1 0.680 (0-shot), 0.655 / 0.653 (6-shot); neutral F1 0.29 / 0.26 / 0.26 vs encoder 0.66 | Pilot, not declared. Neutral precision 0.16–0.18: the LLM over-calls neutral |
 | **H7 pilot** | challenge set | macro-F1 0.62 / 0.62 / 0.60 vs 0.77 (CE), 0.83 (augmented) | `objective_neutral` 0.97–1.00 (encoder 0.63–0.77); `mixed_aspect` 0.15–0.20 and `suggestion_cue` 0.40–0.60 (encoder 0.88–1.00) |
 | **H7 declared** Qwen3-4B | both | Kaggle cell 4f | 👤 pending |
-| **H7 API arm** gpt-4o-mini | challenge set | — | 👤 pending the owner's key |
+| **H7 API arm** gpt-4o-mini, zero-shot | challenge set (285 scored) | macro-F1 0.944 vs 0.774 (CE), 0.827 (augmented); neutral F1 0.955 | construction confound (v1 written in the prompt's convention) |
+| **H7 API arm** gpt-4o-mini, zero-shot | NEU-ESC test (6,613) | macro-F1 0.604 vs 0.494 (CE s42), 0.462 (augmented s42); neutral F1 0.769 vs 0.526 / 0.474; USD 0.21 | LLM ahead on real off-domain posts, mostly neutral |
 
 Challenge set accuracy per category (seed-42 encoders; Qwen3-1.7B zero-shot):
 
@@ -541,7 +542,7 @@ Outputs: `results/studies/{topic_stacking,challenge,llm_reference}/`.
 ### 5.9 Research Cycle 3 — the served model on real input
 
 Declared in `configs/experiments/cycle3.yaml` (v1 before the first run; v2 external evaluation; v3 S2a,
-ADR-029). Challenge v1 is development data; confirmations wait for the human-typed challenge v2.
+ADR-029; v4 S2b′; v5 confirmation on NEU-ESC, ADR-030). Challenge v1 is development data.
 
 | Step | Data | Result | Decision |
 |---|---|---|---|
@@ -551,6 +552,9 @@ ADR-029). Challenge v1 is development data; confirmations wait for the human-typ
 | S2a lexicon from ViLexNorm train, 5 seeds | ViLexNorm test, validation, v1 | flips 0.169 → 0.177 (p = 0.13); validation +0.003 | gate not passed |
 | S2b diacritic restoration | validation stripped, v1 | 0.686 → 0.857; v1 unaccented 0.74 → 0.86; no clean change | development passed |
 | S3 out-of-scope score | validation vs 551 off-topic | Mahalanobis AUROC 0.949; energy 0.889; max-prob 0.862 | development choice: Mahalanobis |
+| v5 S2b confirmation | NEU-ESC test, diacritics stripped (6,613) | served model 0.270 → 0.374 (+0.104 [+0.091, +0.118]); as written −0.0006 | **passed → served** (ADR-031) |
+| v5 S2b′ confirmation | NEU-ESC contrast posts (414), 5 seeds | CE + R 0.440 vs augmented + R 0.437 (p = 0.68); overall +0.028 | **not passed** |
+| v5 S3 confirmation | NEU-ESC off-topic posts (563) vs validation | Mahalanobis AUROC 0.977; energy 0.936; max-prob 0.920 | **passed → served** (ADR-031) |
 | S5 careful INT8 | train fidelity; validation | 178.5 MB; drop +0.0004, upper 0.0095 | not passed |
 
 ---
