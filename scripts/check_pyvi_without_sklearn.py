@@ -44,7 +44,9 @@ def main() -> int:
     texts = [t for s in ("train", "validation", "test") for t in load(s).sentence.tolist()]
     n_uit = len(texts)
     try:
-        texts += [model_text(t) for s in ("train", "validation", "test") for t in X.load_neu_esc(s).text]
+        texts += [
+            model_text(t) for s in ("train", "validation", "test") for t in X.load_neu_esc(s).text
+        ]
     except FileNotFoundError:
         print("NEU-ESC is not fetched; checking UIT-VSFC only")
     normal = [ViTokenizer.tokenize(t) for t in texts]

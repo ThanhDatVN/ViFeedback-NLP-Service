@@ -44,7 +44,7 @@ p 0.0004 each). On real text:
 | S2 topic test ≥ 0.83 | 0.804 | Not chased (§ 5) |
 | S4 neutral F1 ≥ 0.65 | 0.576 (UIT-VSFC test), 0.474 (NEU-ESC) | D1–D2 👤 |
 | S7 artifact ≤ 200 MB | 540 MB | E1, E2 |
-| S8 image ≤ 700 MB | 1.02 GB | F1 |
+| S8 image ≤ 700 MB | ✅ 519 MB (was 1.02 GB) | F1 done |
 | S9 ≥ 30 coded errors | 0 | D1 👤 |
 | S10 clean-clone evaluation < 15 min | not timed | F2 |
 
@@ -118,7 +118,7 @@ source, and the rule fixed before the run. Items marked **declare** get their ru
 
 | ID | Task | Method | Rule | Status |
 |---|---|---|---|---|
-| **F1** | Image ≤ 700 MB (S8) | Measured in the local environment: pyvi pulls scikit-learn (45 MB) and SciPy (118 MB) only through `sklearn-crfsuite`; the CRF itself needs `python-crfsuite` (1.5 MB). `transformers` (107 MB) is there only for PhoBERT's BPE tokenizer. Load pyvi's CRF with `python-crfsuite` directly, and read `bpe.codes`/`vocab.txt` with a small tokenizer | Byte-identical segmentation and token ids on all UIT-VSFC and NEU-ESC text; release parity; `docker-e2e` passes; image ≤ 700 MB | ⏳ |
+| **F1** | Image ≤ 700 MB (S8) | Measured in the local environment: pyvi pulls scikit-learn (45 MB) and SciPy (118 MB) only through `sklearn-crfsuite`; the CRF itself needs `python-crfsuite` (1.5 MB). `transformers` (107 MB) is there only for PhoBERT's BPE tokenizer. Load pyvi's CRF with `python-crfsuite` directly, and read `bpe.codes`/`vocab.txt` with a small tokenizer | Byte-identical segmentation and token ids on all UIT-VSFC and NEU-ESC text; release parity; `docker-e2e` passes; image ≤ 700 MB | ✅ **519 MB** (1,023 → 750 without scikit-learn/SciPy → 519 without transformers). Segmentation and token ids identical on all 49,141 texts; `docker-e2e` passes with the same confidences |
 | **F2** | S10 timing | A CI job times the clean-clone evaluation path on CPU | Recorded; < 15 min | ⏳ |
 | **F3** | Model card after every serving change | `serve publish` dry run | — | ongoing |
 

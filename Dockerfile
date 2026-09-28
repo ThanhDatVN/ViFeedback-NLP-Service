@@ -17,10 +17,13 @@ ENV PATH="/opt/venv/bin:$PATH"
 # SciPy (about 160 MB), but segmentation only needs python-crfsuite; sklearn_crfsuite.compat falls
 # back to a plain base class. Checked byte-identical on every UIT-VSFC and NEU-ESC text
 # (scripts/check_pyvi_without_sklearn.py; NEXT_PLAN v5 F1).
+# No transformers: the service tokenizes PhoBERT input with inference/phobert_tokenizer.py, verified
+# id for id against PhobertTokenizer on every UIT-VSFC and NEU-ESC text
+# (scripts/check_phobert_tokenizer.py).
 RUN pip install --no-cache-dir --upgrade pip \
  && pip install --no-cache-dir \
       "onnxruntime>=1.19" "fastapi>=0.115" "uvicorn[standard]>=0.30" \
-      "transformers>=4.44" "numpy>=2.0" "pyyaml" \
+      "numpy>=2.0" "pyyaml" \
       "python-crfsuite>=0.9" "tabulate" "tqdm" \
  && pip install --no-cache-dir --no-deps "pyvi" "sklearn-crfsuite" \
  && pip install --no-cache-dir --no-deps .

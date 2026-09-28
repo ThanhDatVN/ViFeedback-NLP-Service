@@ -179,8 +179,8 @@ class OnnxClassifier:
         model_file: str | None = None,
     ):
         import onnxruntime as ort
-        from transformers import AutoTokenizer
 
+        from vifeedback.inference.phobert_tokenizer import PhobertBPE
         from vifeedback.inference.release import resolve_model_file
 
         model_dir = Path(model_dir)
@@ -194,7 +194,14 @@ class OnnxClassifier:
         self.session = ort.InferenceSession(
             str(self.path), opts, providers=["CPUExecutionProvider"]
         )
-        self.tokenizer = AutoTokenizer.from_pretrained(model_dir)
+        # PhoBERT artifacts use the transformers-free tokenizer, verified id for id against
+        # PhobertTokenizer (NEXT_PLAN v5 F1); anything else still goes through transformers.
+        if PhobertBPE.is_phobert_dir(model_dir):
+            self.tokenizer: Any = PhobertBPE(model_dir)
+        else:
+            from transformers import AutoTokenizer
+
+            self.tokenizer = AutoTokenizer.from_pretrained(model_dir)
         self.max_length = max_length
 
     def logits(self, texts: list[str]) -> np.ndarray:

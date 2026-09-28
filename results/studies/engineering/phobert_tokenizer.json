@@ -1,0 +1,20 @@
+{
+  "question": "does PhobertBPE reproduce PhobertTokenizer exactly? (NEXT_PLAN v5 F1)",
+  "model_dir": "sentiment",
+  "uit_vsfc_seg_pyvi": {
+    "texts": 16175,
+    "batches": 253,
+    "batches_differing": 0
+  },
+  "edge_cases": {
+    "texts": 13,
+    "batches": 1,
+    "batches_differing": 0
+  },
+  "neu_esc_served": {
+    "texts": 32966,
+    "batches": 516,
+    "batches_differing": 0
+  },
+  "identical": true
+}
