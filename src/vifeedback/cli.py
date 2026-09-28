@@ -631,6 +631,35 @@ def serve_publish(
     typer.echo("  " + P.upload(repo_id, b["folder"], private=private))
 
 
+@serve_app.command("reproduce")
+def serve_reproduce(
+    repo_id: str = typer.Option("Datk4/vifeedback-sentiment-phobert", help="the published release"),
+    revision: str = typer.Option("", help="a Hub commit; default: main"),
+    out: str = typer.Option("", help="also write the result as JSON here"),
+) -> None:
+    """Reproduce the published model's validation macro-F1 from a clean clone (S10, NEXT_PLAN v5 F2).
+
+    Downloads the serving files from the Hub, verifies them against SHA256SUMS and the manifest,
+    fetches UIT-VSFC at its pinned revision if needed, and scores validation through the service's
+    own pipeline on CPU. Exit code 1 unless the manifest's release-gate macro-F1 is reproduced.
+    """
+    from pathlib import Path
+
+    from vifeedback.inference.reproduce import reproduce
+
+    r = reproduce(repo_id, revision or None)
+    typer.echo(
+        f"  {repo_id}@{r['revision']}: {r['files_checked']} files verified; validation macro-F1 "
+        f"{r['macro_f1']:.4f} (manifest {r['manifest_macro_f1']:.4f}) -> "
+        f"{'REPRODUCED' if r['reproduced'] else 'NOT reproduced'}"
+    )
+    typer.echo(f"  seconds: {r['seconds']}")
+    if out:
+        Path(out).write_text(json.dumps(r, indent=2), encoding="utf-8")
+    if not r["reproduced"]:
+        raise typer.Exit(1)
+
+
 @serve_app.command("bench")
 def serve_bench(
     task: str = typer.Option("sentiment"),

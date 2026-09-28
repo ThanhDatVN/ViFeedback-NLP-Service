@@ -1,0 +1,67 @@
+name: Reproduce from the Hub
+
+# ROADMAP S10 (NEXT_PLAN v5 F2): from a clean clone, with only the README's steps and a CPU, fetch the
+# published model and reproduce its validation macro-F1 in under 15 minutes. It downloads about
+# 0.55 GB, so it runs weekly, by hand, and when the serving code changes, not on every push.
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: "17 3 * * 1"
+  push:
+    branches: [main]
+    paths:
+      - ".github/workflows/reproduce.yml"
+      - "src/vifeedback/inference/**"
+      - "src/vifeedback/serving/**"
+      - "src/vifeedback/preprocess/**"
+
+env:
+  PYTHONIOENCODING: utf-8
+  HF_HUB_DISABLE_SYMLINKS_WARNING: "1"
+  HF_HUB_DISABLE_PROGRESS_BARS: "1"
+
+jobs:
+  reproduce:
+    name: clean clone → published model → validation macro-F1 (CPU)
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - name: Start the clock
+        run: echo "T0=$(date +%s)" >> "$GITHUB_ENV"
+
+      - uses: actions/checkout@v4
+
+      # No pip cache: the point is a clean machine.
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install (the README's serving extras)
+        run: |
+          python -m pip install --upgrade pip
+          pip install -e ".[serve]"
+
+      - name: Fetch UIT-VSFC at its pinned revision
+        run: vifeedback data fetch
+
+      - name: Reproduce the published model
+        run: vifeedback serve reproduce --repo-id Datk4/vifeedback-sentiment-phobert --out reproduce.json
+
+      - name: Total time (S10 target < 15 min)
+        run: |
+          python - <<'EOF'
+          import json, os, time
+          total = time.time() - int(os.environ["T0"])
+          r = json.load(open("reproduce.json"))
+          lines = [
+              "## Clean-clone reproduction (S10)",
+              f"- model: `{r['repo_id']}@{r['revision']}`, sha256 `{r['model_sha256'][:12]}`, {r['files_checked']} files verified",
+              f"- validation macro-F1 {r['macro_f1']:.4f} (manifest {r['manifest_macro_f1']:.4f}): {'reproduced' if r['reproduced'] else 'NOT reproduced'}",
+              f"- steps (s): {r['seconds']}",
+              f"- **total from a clean clone: {total / 60:.1f} min** (target < 15)",
+          ]
+          open(os.environ["GITHUB_STEP_SUMMARY"], "a").write("\n".join(lines) + "\n")
+          print("\n".join(lines))
+          raise SystemExit(0 if r["reproduced"] and total < 15 * 60 else 1)
+          EOF

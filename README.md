@@ -226,6 +226,19 @@ vifeedback study audit-report        # analyse the filled neutral-audit sheet
 `make help` lists every target. Models too large for a 4.29 GB GPU go to Kaggle —
 see [KAGGLE_GUIDE](docs/KAGGLE_GUIDE.md).
 
+### Reproduce the published model (CPU, no GPU, no checkpoint)
+
+```bash
+pip install -e ".[serve]"
+vifeedback data fetch                  # UIT-VSFC at its pinned revision
+vifeedback serve reproduce             # Hub download, SHA-256 checks, validation macro-F1 0.8644
+```
+
+It fetches [Datk4/vifeedback-sentiment-phobert](https://huggingface.co/Datk4/vifeedback-sentiment-phobert),
+verifies every file against the release's `SHA256SUMS`, and scores validation through the service's
+own pipeline. About 1.6 min on the reference laptop; CI times it from a clean clone weekly
+([reproduce.yml](.github/workflows/reproduce.yml), S10).
+
 ### Serving
 
 ```bash
