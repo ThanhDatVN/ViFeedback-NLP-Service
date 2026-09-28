@@ -1150,3 +1150,36 @@ version follows it.
 **Decision.** Declare S5′ in `cycle4.yaml` v4 before INT8 is run on NEU-ESC validation, with the
 pooled set and per-source guards. UIT-VSFC validation's INT8 result is already known from Cycle 3
 and is disclosed as such. If S5′ fails, S7 goes to distillation (track B).
+
+---
+
+## ADR-036 · 2026-09-28 · INT8 is not released: S5′ passed, but the release gate's fidelity rule holds it back · Accepted
+
+**Context.** S5′ (ADR-035, `cycle4.yaml` v4) passed on UIT-VSFC + NEU-ESC validation:
+- pooled upper bound of the macro-F1 drop 0.0006;
+- NEU-ESC drop −0.0044;
+- neutral F1 loss −0.0052;
+- 178.5 MB.
+
+The declared consequence was a release candidate through the release gate. Two practical notes on
+the attempt:
+- The Cycle 3 graph was released as it is (`serve export --prebuilt`), because Windows Application
+  Control now blocks the `onnx` package's DLL on this machine and export cannot run.
+- Releasing exactly the file S5′ tested is also closer to the declaration.
+
+**Result** (`results/studies/int8_power/release_gate_attempt.json`). The gate blocked the release.
+Its standing rule that an INT8 graph must agree with PyTorch on at least 99% of labels failed:
+**91.4%** on the pooled set. On UIT-VSFC alone agreement is 99.2%, but there the non-inferiority
+bound fails (0.0095), so the graph cannot pass the gate either way.
+
+The gate also recorded that the INT8 graph's output depends on the batch. Scored alone and inside a
+batch of 32, logits differ by up to 0.93 and one label in 32 changes. Dynamic quantization scales
+activations per batch, so the label of a sentence would depend on what else arrived in the same
+request.
+
+**Decision.**
+- The service stays on FP32 (unchanged: the release gate swaps nothing on failure).
+- The 99% agreement rule stands. Lowering it after seeing the result would move the goalposts, and
+  the batch dependence shows why fidelity matters beyond macro-F1.
+- S7 (≤ 200 MB) goes to distillation (track B, E2): a 6-layer student has no per-batch activation
+  scales and is judged on both corpora.

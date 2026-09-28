@@ -1,0 +1,25 @@
+{
+  "note": "Release gate verdict for the INT8 graph S5' accepted (cycle4.yaml v4), on the pooled acceptance set. The release was blocked and the served FP32 artifact left unchanged (ADR-036). Copied from the staging manifest of the attempt.",
+  "model_file": "model.int8.onnx",
+  "sha256": "46f7a8bf3f77ea887889c5ae35ecbdb682f41e1e85d5ffb87123e7db5be3c359",
+  "quantization": "careful",
+  "acceptance_set": "pooled",
+  "prebuilt_from": "models/int8_candidates/pc-head-last2/model.int8.onnx",
+  "checkpoint": "models/p9-sent-phobert-base-seg_pyvi-aug-diac-teen-s42-599cf21f-ckp",
+  "created": "20260928-192919",
+  "acceptance": {
+    "n": 4888,
+    "max_abs_logit_diff": 4.448487758636475,
+    "logits_close": false,
+    "label_agreement": 0.9136661211129297,
+    "macro_f1_torch": 0.6292104098266138,
+    "macro_f1_onnx": 0.6332091105376058,
+    "macro_f1_drop": -0.003998700710991954,
+    "macro_f1_drop_upper95": 0.002735109655774958,
+    "batch_vs_single_max_diff": 0.9336895942687988,
+    "batch_vs_single_label_agreement": 0.96875,
+    "failures": ["INT8 label agreement 0.9137 < 0.99"],
+    "passed": false
+  },
+  "software": {"onnxruntime": "1.30.0", "transformers": "5.17.0"}
+}

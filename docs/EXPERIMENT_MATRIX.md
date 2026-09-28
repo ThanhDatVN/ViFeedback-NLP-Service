@@ -559,6 +559,8 @@ ADR-029; v4 S2b′; v5 confirmation on NEU-ESC, ADR-030). Challenge v1 is develo
 | v5 S2b′ confirmation | NEU-ESC contrast posts (414), 5 seeds | CE + R 0.440 vs augmented + R 0.437 (p = 0.68); overall +0.028 | **not passed** |
 | v5 S3 confirmation | NEU-ESC off-topic posts (563) vs validation | Mahalanobis AUROC 0.977; energy 0.936; max-prob 0.920 | passed → served (ADR-031); confounded by institution (ADR-032) |
 | A2 `in_scope` within NEU-ESC | validation, in-scope (3,026) vs off-topic (279) | flagged 77.1% vs 84.2%; AUROC 0.573 | measures resemblance to UIT-VSFC, not topic (ADR-032) |
+| **E1** INT8 power check | held-out estimation; simulated acceptance | pooled power 92% (median bound −0.0008), UIT-VSFC alone 75%; calibrated (observed bound at the 82nd percentile) | S5′ declared (ADR-035) |
+| **S5′** careful INT8 | UIT-VSFC + NEU-ESC validation (4,888) | pooled bound 0.0006; NEU-ESC drop −0.0044; neutral −0.0052; 178.5 MB; agreement 99.2% / 88.4% | **passed**; release gate: agreement 91.4% < 99%, batch-dependent → **not released** (ADR-036) |
 | **B4′** scope detector | NEU-ESC validation (selection), test (rule) | TF-IDF logistic 0.921 vs feature logistic 0.869 (validation); test AUROC 0.922, in-scope flagged 7.3%, off-topic caught 72.3%, UIT-VSFC 0.2%; U4 0.918 | **passed → served** (ADR-034) |
 | S5 careful INT8 | train fidelity; validation | 178.5 MB; drop +0.0004, upper 0.0095 | not passed |
 | **H8** selection (seed 42) | UIT-VSFC / NEU-ESC validation | control 0.864 / 0.459; mixed 0.832 / 0.750; sequential 0.596 / 0.741; two heads 0.872 / 0.533 (NEU-ESC head 0.761) | two heads chosen (cycle4.yaml) |

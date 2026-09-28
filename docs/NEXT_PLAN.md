@@ -27,10 +27,12 @@ Status key: ✅ done · ⏳ next, no owner input needed · 👤 needs the owner 
 - **B1–B2:** H8 not passed (ADR-033); the sentiment model is unchanged.
 - **B4′ passed and is served (ADR-034).** A TF-IDF topic detector drives `in_scope`: within
   NEU-ESC test AUROC 0.922, 7.3% of in-scope posts flagged, UIT-VSFC 0.2%.
-- **E1 (ADR-035):** a pooled acceptance set (UIT-VSFC + NEU-ESC validation) would show INT8
-  non-inferiority with a simulated power of 92%; the simulation is calibrated. S5′ is declared in
-  `cycle4.yaml` v4. INT8 changes 12.3% of labels on NEU-ESC, so the NEU-ESC part is checked on its
-  own.
+- **E1 and S5′ (ADR-035, ADR-036).**
+  - A pooled acceptance set (UIT-VSFC + NEU-ESC validation) gave INT8 a simulated power of 92%
+    (calibrated). S5′ passed: bound 0.0006, NEU-ESC drop −0.0044, 178.5 MB.
+  - The release gate blocked it anyway. INT8 agrees with PyTorch on 91.4% of labels (< 99%),
+    changing 11.6% on NEU-ESC, and its output depends on the batch.
+  - The service stays FP32, and S7 goes to distillation.
 - **F1–F2:** S8 met (image 519 MB), S10 met (2.3 min from a clean clone in CI).
 
 **Targets still not met:**
@@ -54,8 +56,8 @@ Status key: ✅ done · ⏳ next, no owner input needed · 👤 needs the owner 
 |---|---|---|---|
 | 1 | Update the Hub release: new manifest, `scope.npz` in place of `ood.npz`, new card | 👤 approval | files verified against `SHA256SUMS` after upload |
 | 2 | Latency, three sessions on an idle machine | idle laptop | p95 ≤ 30 ms (C4 protocol) |
-| 3 | **S5′**: INT8 on the pooled acceptance set (declared, `cycle4.yaml` v4); if it holds, an INT8 release candidate for S7 | — | ADR-035 |
-| 4 | Choose Cycle 5: **(a) distillation** to a 6-layer student (S7 if S5′ fails, and speed); **(b) real typing**, consistency training on ViLexNorm pairs (G8); **(c) a multi-institution sentiment head**, which needs decision 2 and new labelled data | 👤 choice | declared in `cycle5.yaml` |
+| 3 | ✅ **S5′** passed, but the release gate blocked INT8 (91.4% label agreement < 99%; batch-dependent output): not released | done | ADR-036 |
+| 4 | Choose Cycle 5: **(a) distillation** to a 6-layer student (S7 and speed; the remaining route after ADR-036); **(b) real typing**, consistency training on ViLexNorm pairs (G8); **(c) a multi-institution sentiment head**, which needs decision 2 and new labelled data | 👤 choice | declared in `cycle5.yaml` |
 | 5 | Neutral audit → D2 (S4, S9) | 👤 6–8 h | the frozen tree |
 
 ---
