@@ -47,5 +47,21 @@
       "stripped_validation_macro_f1_with": 0.8569418279855149,
       "passed": true
     }
+  },
+  "ood": {
+    "file": "ood.npz",
+    "sha256": "a5ce260bb13489a2657194245c7ae15e51887b66936a4b7e456b1b7e8b33ec07",
+    "method": "negative Mahalanobis distance to the nearest class mean, shared covariance (train)",
+    "threshold": -3624.2627439206794,
+    "keeps_validation": 0.95,
+    "decided_by": "cycle3.yaml v5 S3 (NEU-ESC confirmation), ADR-031",
+    "acceptance": {
+      "auroc": 0.9767568155883618,
+      "threshold": -3624.262743920679,
+      "in_domain_flagged": 0.05053695514845231,
+      "out_of_scope_caught": 0.8543516873889876,
+      "off_topic_rows": 563,
+      "passed": true
+    }
   }
 }
