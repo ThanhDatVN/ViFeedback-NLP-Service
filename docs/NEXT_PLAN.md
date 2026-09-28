@@ -34,6 +34,7 @@ Status key: ✅ done · ⏳ next, no owner input needed · 👤 needs the owner 
     changing 11.6% on NEU-ESC, and its output depends on the batch.
   - The service stays FP32, and S7 goes to distillation.
 - **F1–F2:** S8 met (image 519 MB), S10 met (2.3 min from a clean clone in CI).
+- **Hub release updated to ADR-034** (2026-09-29): the published bundle now matches the service.
 
 **Targets still not met:**
 - S1 0.830 (target 0.84)
@@ -43,7 +44,6 @@ Status key: ✅ done · ⏳ next, no owner input needed · 👤 needs the owner 
 - S9 0 coded errors (target 30)
 
 **Open problems:**
-- The Hub release predates ADR-034: it still ships the Mahalanobis score and its caveat.
 - Latency with the detector was measured only on a busy machine. It adds +0.5–0.8 ms, less than
   Mahalanobis did; the absolute p95 needs three sessions on an idle machine.
 - NEU-ESC test has served H8 and B4′ (logged), so new claims about other institutions need new
@@ -54,7 +54,7 @@ Status key: ✅ done · ⏳ next, no owner input needed · 👤 needs the owner 
 
 | # | Step | Needs | Rule |
 |---|---|---|---|
-| 1 | Update the Hub release: new manifest, `scope.npz` in place of `ood.npz`, new card | 👤 approval | files verified against `SHA256SUMS` after upload |
+| 1 | ✅ **Hub release updated** (2026-09-29, Hub commit `ba58267`): new manifest, `scope.npz` in place of `ood.npz` (deleted from the Hub), new card | done | `serve reproduce` from the Hub: 8 files verified, validation 0.8644 = manifest |
 | 2 | Latency, three sessions on an idle machine | idle laptop | p95 ≤ 30 ms (C4 protocol) |
 | 3 | ✅ **S5′** passed, but the release gate blocked INT8 (91.4% label agreement < 99%; batch-dependent output): not released | done | ADR-036 |
 | 4 | Choose Cycle 5: **(a) distillation** to a 6-layer student (S7 and speed; the remaining route after ADR-036); **(b) real typing**, consistency training on ViLexNorm pairs (G8); **(c) a multi-institution sentiment head**, which needs decision 2 and new labelled data | 👤 choice | declared in `cycle5.yaml` |

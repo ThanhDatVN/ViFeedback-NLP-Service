@@ -1,0 +1,20 @@
+{
+  "note": "serve reproduce against the Hub right after the ADR-034 update (scope.npz in, ood.npz deleted).",
+  "date": "2026-09-29",
+  "hub_commit": "ba58267392495d88f285acbb5f2efb80a95867af",
+  "repo_id": "Datk4/vifeedback-sentiment-phobert",
+  "revision": "main",
+  "files_checked": 8,
+  "model_sha256": "c93262abe34ea0990818508508349e372618fa2f9d491ab340d153da1f86f4b0",
+  "validation_rows": 1583,
+  "macro_f1": 0.8644104907582961,
+  "manifest_macro_f1": 0.8644104907582961,
+  "abs_diff": 0.0,
+  "reproduced": true,
+  "seconds": {
+    "download_and_verify": 12.0,
+    "data": 0.0,
+    "evaluate": 45.4,
+    "total": 57.4
+  }
+}
