@@ -1,0 +1,109 @@
+{
+  "model": "gpt-4o-mini-2024-07-18",
+  "revision": "gpt-4o-mini-2024-07-18",
+  "backend": "openai",
+  "data": "neu_esc",
+  "variant": "v4_policy_informal_contrast",
+  "shots": 0,
+  "demo_seed": null,
+  "demos": [],
+  "n_scored": 6613,
+  "macro_f1": 0.6037633476987398,
+  "per_class": {
+    "negative": {
+      "precision": 0.4321920853712761,
+      "recall": 0.7960687960687961,
+      "f1": 0.5602305475504323,
+      "support": 1221,
+      "predicted": 2249,
+      "average_precision": 0.5985101427662092
+    },
+    "neutral": {
+      "precision": 0.84140625,
+      "recall": 0.7088635366388767,
+      "f1": 0.7694689211717075,
+      "support": 4558,
+      "predicted": 3840,
+      "average_precision": 0.8844852443885798
+    },
+    "positive": {
+      "precision": 0.6240458015267175,
+      "recall": 0.3920863309352518,
+      "f1": 0.4815905743740796,
+      "support": 834,
+      "predicted": 524,
+      "average_precision": 0.5399622140443227
+    }
+  },
+  "seconds": 1810.6968096000019,
+  "seconds_per_1k": 273.80868132466384,
+  "vs_encoder": {
+    "ce": {
+      "neutral_f1": {
+        "score_a": 0.7694689211717075,
+        "score_b": 0.5261716372489349,
+        "observed_diff": 0.2432972839227726,
+        "mean_diff": 0.24332754433950085,
+        "ci_low": 0.22887897853896433,
+        "ci_high": 0.257756294742146,
+        "p_value": 0.00019998000199980003,
+        "significant": true,
+        "n_resamples": 10000,
+        "alpha": 0.05
+      },
+      "macro_f1": {
+        "score_a": 0.6037633476987398,
+        "score_b": 0.4943266557920503,
+        "observed_diff": 0.10943669190668953,
+        "mean_diff": 0.10938707737308533,
+        "ci_low": 0.0943750113509322,
+        "ci_high": 0.12421250464311359,
+        "p_value": 0.00019998000199980003,
+        "significant": true,
+        "n_resamples": 10000,
+        "alpha": 0.05
+      }
+    },
+    "augmented": {
+      "neutral_f1": {
+        "score_a": 0.7694689211717075,
+        "score_b": 0.4744697564807541,
+        "observed_diff": 0.2949991646909534,
+        "mean_diff": 0.29502077204152266,
+        "ci_low": 0.27936509782425745,
+        "ci_high": 0.3105850855281523,
+        "p_value": 0.00019998000199980003,
+        "significant": true,
+        "n_resamples": 10000,
+        "alpha": 0.05
+      },
+      "macro_f1": {
+        "score_a": 0.6037633476987398,
+        "score_b": 0.4616322375664083,
+        "observed_diff": 0.14213111013233154,
+        "mean_diff": 0.14209675340469524,
+        "ci_low": 0.1268217697613325,
+        "ci_high": 0.15722243233209046,
+        "p_value": 0.00019998000199980003,
+        "significant": true,
+        "n_resamples": 10000,
+        "alpha": 0.05
+      }
+    }
+  },
+  "api": {
+    "prompt_tokens": 1343216,
+    "completion_tokens": 6613,
+    "calls": 6613,
+    "served_models": [
+      "gpt-4o-mini-2024-07-18"
+    ],
+    "price_per_m_tokens_usd": [
+      0.15,
+      0.6
+    ],
+    "cost_usd": 0.20545019999999997,
+    "usd_per_1k": 0.031067624376228637,
+    "note": "latency includes the network round trip"
+  }
+}
