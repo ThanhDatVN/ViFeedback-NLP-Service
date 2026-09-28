@@ -88,6 +88,28 @@ def _load() -> None:
 
     # An explicit VERSION file wins; otherwise the release manifests identify what is served
     # (checkpoint name and the first 12 hex digits of the served file's SHA-256).
+    # Pre-model steps a release declares in its manifest (Cycle 3, ADR-031): a diacritic restorer
+    # that must match its recorded SHA-256, or the service reports itself not ready.
+    _state["restorers"] = {}
+    _state["preprocessing_error"] = None
+    for task, m in manifests.items():
+        spec = m.get("restorer")
+        if not spec:
+            continue
+        path = MODEL_DIR / task / spec["file"]
+        try:
+            import hashlib
+
+            from vifeedback.preprocess.diacritics import Restorer
+
+            if hashlib.sha256(path.read_bytes()).hexdigest() != spec["sha256"]:
+                raise ValueError("sha256 does not match the manifest")
+            _state["restorers"][task] = Restorer.load(path)
+            log.info(f"loaded {task} diacritic restorer ({spec['sha256'][:12]})")
+        except Exception as e:
+            _state["preprocessing_error"] = f"restorer for {task} unusable: {type(e).__name__}: {e}"
+            log.error(_state["preprocessing_error"] + " — /readyz will report not ready")
+
     vf = MODEL_DIR / "VERSION"
     if vf.exists():
         _state["version"] = vf.read_text(encoding="utf-8").strip()
@@ -183,6 +205,8 @@ def _not_ready_reason() -> str | None:
         return f"no ONNX artifact for required task(s) {missing} under {MODEL_DIR}"
     if _state["needs_segmenter"] and _state["segmenter"] is None:
         return _state["segmenter_error"] or "required segmenter is not loaded"
+    if _state.get("preprocessing_error"):
+        return str(_state["preprocessing_error"])
     return None
 
 
@@ -224,6 +248,9 @@ def classify(req: ClassifyRequest) -> ClassifyResponse:
     texts = list(req.texts)
     seg = _state["segmenter"]
     normalized = [model_text(x) for x in texts]  # the training corpus is lowercase NFC
+    restorer = _state.get("restorers", {}).get(req.task)
+    if restorer is not None:  # rewrites only essentially unaccented input (ADR-031)
+        normalized = [restorer(x) for x in normalized]
     model_input = seg(normalized) if seg is not None else normalized
 
     ids, probs = clf.predict(model_input)

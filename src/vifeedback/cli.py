@@ -451,6 +451,72 @@ def serve_export(
     typer.echo(f"  manifest: {manifest['model_file']}  sha256 {manifest['sha256'][:12]}...")
 
 
+@serve_app.command("add-restorer")
+def serve_add_restorer(task: str = typer.Option("sentiment")) -> None:
+    """Attach the diacritic restorer to the released artifact (cycle3.yaml v5 S2b passed, ADR-031).
+
+    Built from UIT-VSFC train only. Accepted only if every validation label of the served ONNX graph
+    is unchanged with the restorer in front of it; the file's SHA-256 goes into the manifest, and the
+    service refuses a restorer that does not match.
+    """
+    import hashlib
+    import shutil
+
+    import numpy as np
+
+    from vifeedback.data.loader import load
+    from vifeedback.evaluation import metrics as M
+    from vifeedback.inference.onnx_export import OnnxClassifier
+    from vifeedback.preprocess.diacritics import Restorer
+    from vifeedback.preprocess.normalize import model_text, strip_diacritics
+    from vifeedback.preprocess.segment import get_segmenter
+
+    d = paths.MODELS / "serve" / task
+    mpath = d / "manifest.json"
+    manifest = json.loads(mpath.read_text(encoding="utf-8"))
+    clf = OnnxClassifier(d, max_length=manifest.get("max_length", 96))
+    segment = get_segmenter("pyvi")
+    restorer = Restorer.fit(load("train").sentence.tolist())
+
+    def labels(texts: list[str], with_restorer: bool) -> np.ndarray:
+        prep = [restorer(model_text(t)) if with_restorer else model_text(t) for t in texts]
+        x = segment(prep)
+        return np.concatenate([clf.logits(x[i : i + 64]) for i in range(0, len(x), 64)]).argmax(1)
+
+    dv = load("validation")
+    y = dv.sentiment.to_numpy()
+    clean = dv.sentence.tolist()
+    stripped = [strip_diacritics(t) for t in clean]
+    base, with_r = labels(clean, False), labels(clean, True)
+    changed = int((base != with_r).sum())
+    acceptance = {
+        "validation_labels_changed": changed,
+        "validation_macro_f1": M.macro_f1(y, with_r, 3),
+        "stripped_validation_macro_f1_without": M.macro_f1(y, labels(stripped, False), 3),
+        "stripped_validation_macro_f1_with": M.macro_f1(y, labels(stripped, True), 3),
+        "passed": changed == 0,
+    }
+    typer.echo(f"  acceptance: {acceptance}")
+    if not acceptance["passed"]:
+        raise typer.Exit(1)
+
+    out = d / "restorer.json"
+    restorer.save(out)
+    shutil.copy2(mpath, d / "manifest.before-restorer.json")
+    manifest["restorer"] = {
+        "file": out.name,
+        "sha256": hashlib.sha256(out.read_bytes()).hexdigest(),
+        "threshold": restorer.threshold,
+        "fitted_on": "UIT-VSFC train (syllable forms and word bigrams)",
+        "decided_by": "cycle3.yaml v5 S2b (NEU-ESC confirmation), ADR-031",
+        "acceptance": acceptance,
+    }
+    mpath.write_text(json.dumps(manifest, indent=2, ensure_ascii=False), encoding="utf-8")
+    record = paths.RESULTS / "studies" / "export" / "laptop_fp32_augmented_restorer_manifest.json"
+    record.write_text(json.dumps(manifest, indent=2, ensure_ascii=False), encoding="utf-8")
+    typer.echo(f"  restorer attached: {out.name} sha256={manifest['restorer']['sha256'][:12]}")
+
+
 @serve_app.command("publish")
 def serve_publish(
     repo_id: str = typer.Option(
