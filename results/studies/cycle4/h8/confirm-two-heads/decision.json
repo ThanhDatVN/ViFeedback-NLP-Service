@@ -1,0 +1,101 @@
+{
+  "declared_in": "configs/experiments/cycle4.yaml H8 rule",
+  "recipe": "two-heads",
+  "seeds": [
+    42,
+    1337,
+    2024,
+    7,
+    31337
+  ],
+  "rules": {
+    "1_neu_test_in_scope_macro_f1_up": {
+      "observed_diff": 0.11047066330543116,
+      "ci_low": 0.10203954568469567,
+      "ci_high": 0.11866176089420659,
+      "p_one_sided": 0.0001999600079984003,
+      "n_resamples": 5000,
+      "seeds": 5,
+      "passed": true
+    },
+    "2_uit_validation_macro_f1": {
+      "mean_diff": -0.004540809931542045,
+      "passed": true
+    },
+    "3_uit_validation_neutral_f1": {
+      "mean_diff": -0.010176499239449544,
+      "passed": true
+    },
+    "4_uit_validation_stripped_macro_f1": {
+      "mean_diff": -0.010721790010956678,
+      "passed": false
+    },
+    "5_out_of_scope_seed42": {
+      "auroc": 0.8855961823504397,
+      "threshold": -1180.086668118551,
+      "in_domain_flagged": 0.05053695514845231,
+      "out_of_scope_caught": 0.325044404973357,
+      "neu_validation_in_scope_flagged": 0.3122934567085261,
+      "off_topic_posts": 563,
+      "within_neu_test_auroc_reported": 0.5403678640106866,
+      "passed": false
+    }
+  },
+  "passed": false,
+  "per_seed": {
+    "42": {
+      "neu_test_in_scope": {
+        "candidate": 0.5308975043189498,
+        "control": 0.470150394395594
+      },
+      "neu_test_all": {
+        "candidate": 0.5169446843967944,
+        "control": 0.4610714223926006
+      }
+    },
+    "1337": {
+      "neu_test_in_scope": {
+        "candidate": 0.5745824669498601,
+        "control": 0.3949194282583879
+      },
+      "neu_test_all": {
+        "candidate": 0.564883474433801,
+        "control": 0.3841906315250496
+      }
+    },
+    "2024": {
+      "neu_test_in_scope": {
+        "candidate": 0.5771232320892735,
+        "control": 0.4440638841182651
+      },
+      "neu_test_all": {
+        "candidate": 0.5651146328942391,
+        "control": 0.43470333953318807
+      }
+    },
+    "7": {
+      "neu_test_in_scope": {
+        "candidate": 0.5255354848629484,
+        "control": 0.43399172020371607
+      },
+      "neu_test_all": {
+        "candidate": 0.5120883203538767,
+        "control": 0.4257427812909049
+      }
+    },
+    "31337": {
+      "neu_test_in_scope": {
+        "candidate": 0.5616250015208147,
+        "control": 0.4742849462387278
+      },
+      "neu_test_all": {
+        "candidate": 0.5501199375188612,
+        "control": 0.46610819467029935
+      }
+    }
+  },
+  "neu_test_posts": {
+    "in_scope": 6050,
+    "all": 6613
+  }
+}

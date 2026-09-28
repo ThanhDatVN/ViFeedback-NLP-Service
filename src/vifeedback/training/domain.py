@@ -754,9 +754,9 @@ def confirm(recipe: str) -> dict[str, Any]:
     ck = str(cand[42])
     f_fit, _ = OOD.encode(ck, list(x_tr) + neu_tr["x"])
     maha = OOD.fit_mahalanobis(f_fit, np.concatenate([np.asarray(y_tr), neu_tr["y"]]))
-    l_dv, f_dv = OOD.encode(ck, list(x_dv))
-    l_off, f_off = OOD.encode(ck, off)
-    l_in, f_in = OOD.encode(ck, neu_dv["x"])
+    f_dv, l_dv = OOD.encode(ck, list(x_dv))  # encode returns (features, logits)
+    f_off, l_off = OOD.encode(ck, off)
+    f_in, l_in = OOD.encode(ck, neu_dv["x"])
     s_dv = OOD.scores(l_dv, f_dv, maha)["neg_mahalanobis"]
     check = OOD.evaluate(s_dv, OOD.scores(l_off, f_off, maha)["neg_mahalanobis"])
     in_scope_flagged = float(
@@ -765,7 +765,7 @@ def confirm(recipe: str) -> dict[str, Any]:
     # Reported (v2, ADR-032): the refitted score within NEU-ESC test, in-scope against off-topic.
     from sklearn.metrics import roc_auc_score
 
-    l_te, f_te = OOD.encode(ck, te["x"])
+    f_te, l_te = OOD.encode(ck, te["x"])
     s_te_in = OOD.scores(l_te, f_te, maha)["neg_mahalanobis"]
     s_te_off = OOD.scores(l_off, f_off, maha)["neg_mahalanobis"]
     within = float(

@@ -1,0 +1,126 @@
+{
+  "n": 1583,
+  "macro_f1": 0.8670511877928511,
+  "weighted_f1": 0.951233468616853,
+  "micro_f1": 0.952621604548326,
+  "accuracy": 0.952621604548326,
+  "balanced_accuracy": 0.8472401292240862,
+  "mcc": 0.9118857884214271,
+  "g_mean": 0.8274444592757372,
+  "cohen_kappa": 0.9117437166878528,
+  "per_class": {
+    "negative": {
+      "precision": 0.9592696629213483,
+      "recall": 0.9687943262411347,
+      "f1": 0.9640084685956246,
+      "support": 705,
+      "predicted": 712,
+      "average_precision": 0.9772320393357333
+    },
+    "neutral": {
+      "precision": 0.7586206896551724,
+      "recall": 0.6027397260273972,
+      "f1": 0.6717557251908397,
+      "support": 73,
+      "predicted": 58,
+      "average_precision": 0.7126147569274712
+    },
+    "positive": {
+      "precision": 0.9606396063960639,
+      "recall": 0.9701863354037267,
+      "f1": 0.9653893695920889,
+      "support": 805,
+      "predicted": 813,
+      "average_precision": 0.9912604261768041
+    }
+  },
+  "confusion": [
+    [
+      683,
+      7,
+      15
+    ],
+    [
+      12,
+      44,
+      17
+    ],
+    [
+      17,
+      7,
+      781
+    ]
+  ],
+  "confusion_normalized": [
+    [
+      0.9688,
+      0.0099,
+      0.0213
+    ],
+    [
+      0.1644,
+      0.6027,
+      0.2329
+    ],
+    [
+      0.0211,
+      0.0087,
+      0.9702
+    ]
+  ],
+  "labels": [
+    "negative",
+    "neutral",
+    "positive"
+  ],
+  "ordinal_mae": 0.06759317751105495,
+  "qwk": 0.9434194395934121,
+  "adjacent_accuracy": 0.9797852179406191,
+  "log_loss": 0.19711801225697725,
+  "ece_10bin": 0.03110610018014438,
+  "history": [
+    {
+      "epoch": 1,
+      "train_loss": 0.5264961021781085,
+      "dev_uit_head_uit": 0.8381786993001836,
+      "dev_neu_head_uit": 0.4951079705276939,
+      "dev_neu_head_neu": 0.7237181853503533,
+      "selection_score": 0.6666433349139388,
+      "seconds": 250.7
+    },
+    {
+      "epoch": 2,
+      "train_loss": 0.34633895159939865,
+      "dev_uit_head_uit": 0.8617135891541939,
+      "dev_neu_head_uit": 0.48984431427756475,
+      "dev_neu_head_neu": 0.7566456759905787,
+      "selection_score": 0.6757789517158793,
+      "seconds": 502.2
+    },
+    {
+      "epoch": 3,
+      "train_loss": 0.2631498479239474,
+      "dev_uit_head_uit": 0.8592056909416795,
+      "dev_neu_head_uit": 0.5469203782652782,
+      "dev_neu_head_neu": 0.7658098517149471,
+      "selection_score": 0.7030630346034789,
+      "seconds": 752.6
+    },
+    {
+      "epoch": 4,
+      "train_loss": 0.20507191668100647,
+      "dev_uit_head_uit": 0.8670511877928511,
+      "dev_neu_head_uit": 0.5672807453132732,
+      "dev_neu_head_neu": 0.7635704613694608,
+      "selection_score": 0.7171659665530621,
+      "seconds": 1001.8
+    }
+  ],
+  "best_epoch": 4,
+  "augmentation": {
+    "recipe": "diac-teen",
+    "p": 0.3,
+    "changed": 2555,
+    "changed_share": 0.2236
+  }
+}
