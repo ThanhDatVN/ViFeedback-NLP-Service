@@ -8,9 +8,14 @@
 # Seen before this was written: the served model's NEU-ESC test scores (external evaluation, v5
 # confirmation, H7) and the NEU-ESC paper. Not seen: any model trained on NEU-ESC, any number on
 # NEU-ESC validation. Changing a rule below after its results are seen needs a new version and an ADR.
+#
+# Version 2, before any H8 run, after NEXT_PLAN v5 A2 (ADR-032): the served out-of-scope score tracks
+# the institution, not the topic (within NEU-ESC AUROC 0.573). No rule changes; H8 also reports the
+# refitted score's within-NEU-ESC AUROC, and a topic-aware detector is a separate question (B4').
 
-version: 1
+version: 2
 declared: 2026-09-28
+revised: 2026-09-28  # v2 reporting only (ADR-032)
 
 data:
   neu_esc_train: >
@@ -71,7 +76,8 @@ H8_in_domain_data:
         NEU-ESC validation posts.
   reported_not_tested: >
     NEU-ESC test on all 6,613 posts (continuity with cycle3.yaml v5); per-topic scores; the NEU-ESC
-    head of two_heads; per-class F1.
+    head of two_heads; per-class F1; (v2) the refitted out-of-scope score's AUROC within NEU-ESC
+    test, in-scope topics against off-topic ones (ADR-032).
   serving: >
     If the rule holds, the chosen recipe's seed-42 model is released through the gate with the
     refitted out-of-scope score and an ADR. mixed and sequential teach NEU-ESC's label policy for

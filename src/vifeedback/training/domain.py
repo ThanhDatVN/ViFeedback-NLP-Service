@@ -762,6 +762,17 @@ def confirm(recipe: str) -> dict[str, Any]:
     in_scope_flagged = float(
         (OOD.scores(l_in, f_in, maha)["neg_mahalanobis"] < check["threshold"]).mean()
     )
+    # Reported (v2, ADR-032): the refitted score within NEU-ESC test, in-scope against off-topic.
+    from sklearn.metrics import roc_auc_score
+
+    l_te, f_te = OOD.encode(ck, te["x"])
+    s_te_in = OOD.scores(l_te, f_te, maha)["neg_mahalanobis"]
+    s_te_off = OOD.scores(l_off, f_off, maha)["neg_mahalanobis"]
+    within = float(
+        roc_auc_score(
+            np.r_[np.ones(len(s_te_in)), np.zeros(len(s_te_off))], np.r_[s_te_in, s_te_off]
+        )
+    )
 
     rules = {
         "1_neu_test_in_scope_macro_f1_up": {**rule1, "passed": rule1["ci_low"] > 0},
@@ -772,6 +783,7 @@ def confirm(recipe: str) -> dict[str, Any]:
             **check,
             "neu_validation_in_scope_flagged": in_scope_flagged,
             "off_topic_posts": len(off),
+            "within_neu_test_auroc_reported": within,
             "passed": check["auroc"] >= 0.90 and in_scope_flagged <= 0.10,
         },
     }

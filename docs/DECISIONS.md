@@ -973,3 +973,39 @@ checkpoint.
 **Not decided here.** Whether the service should switch to CE: its other NEU-ESC checks favoured it
 (overall +0.028, unaccented +0.036), but the declared rule required the contrast advantage and did not
 get it. A human-typed challenge set, if one is written, is where that question can be reopened.
+
+---
+
+## ADR-032 · 2026-09-28 · The out-of-scope score measures resemblance to UIT-VSFC, not topic · Accepted
+
+**Context.** NEXT_PLAN v5 A2 measured the served `in_scope` flag on NEU-ESC validation, topic by
+topic (`study served-neu-esc`, rule fixed in v5 before the run). Another university's posts about
+academics and services are in scope; spam, news, jobs and club events are not.
+
+| NEU-ESC validation | Posts | Flagged out of scope |
+|---|---:|---:|
+| Academic | 1,053 | 75.5% |
+| Service | 237 | 64.6% |
+| All in-scope topics | 3,026 | 77.1% |
+| Off-topic topics | 279 | 84.2% |
+
+Within NEU-ESC, the score separates in-scope from off-topic posts with **AUROC 0.573**: barely above
+chance. S3's confirmation (AUROC 0.977, `cycle3.yaml` v5, ADR-031) compared NEU-ESC off-topic posts
+with UIT-VSFC validation, so it mixed a change of institution with a change of topic, and the score
+tracked the institution. This is the background-versus-semantic-shift distinction [Arora et al.,
+2021]. The v5 design did not control for it; the confirmation holds only for what it measured.
+
+**Decision.**
+1. `in_scope` stays in the API, described as what it is: **resemblance to the training text** (course
+   surveys from one university). `in_scope: false` on another institution's feedback is expected and
+   is not evidence of an off-topic input. The model card and the README say so.
+2. The A2 rule triggered: B4 refits the score with in-scope NEU-ESC training features
+   (`cycle4.yaml` H8 rule 5). A topic-aware detector is a separate question (NEXT_PLAN v5 B4′). Any
+   future out-of-scope claim must be measured *within* one source, in-scope against off-topic.
+
+**Also measured (A1, A3).**
+- The served pipeline, raw text in, has p95 26.9 ms (median of three sessions, range 23.4–39.5, the
+  39.5 from an unsteady session). ADR-031's additions cost +2.2 ms on accented text and save time on
+  unaccented text (S3 − S2 = −4.2 ms): the target of ≤ 30 ms and ≤ 5 ms is met.
+- On in-scope NEU-ESC validation posts, the served model calls 67% of gold-neutral posts polar,
+  mostly negative (1,172 of 2,054). Its "a request is negative" policy meets forum questions.

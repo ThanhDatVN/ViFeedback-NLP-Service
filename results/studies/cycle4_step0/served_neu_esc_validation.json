@@ -1,0 +1,508 @@
+{
+  "declared_in": "NEXT_PLAN v5 A2 (rule) and A3 (descriptive), before this ran",
+  "split": "validation",
+  "manifest_sha256": "c93262abe34ea0990818508508349e372618fa2f9d491ab340d153da1f86f4b0",
+  "threshold": -3624.2626953125,
+  "in_scope_topics": {
+    "n": 3026,
+    "flagged": 0.7713152676801057,
+    "flagged_ci95": [
+      0.7560125035591411,
+      0.7859300191126711
+    ],
+    "accuracy": 0.44976867151354927,
+    "gold": {
+      "negative": 592,
+      "neutral": 2054,
+      "positive": 380
+    },
+    "predicted": {
+      "negative": 1766,
+      "neutral": 838,
+      "positive": 422
+    },
+    "confusion_gold_by_predicted": [
+      [
+        482,
+        91,
+        19
+      ],
+      [
+        1172,
+        679,
+        203
+      ],
+      [
+        112,
+        68,
+        200
+      ]
+    ],
+    "gold_neutral_predicted_polar": 0.6694255111976631
+  },
+  "off_topic_topics": {
+    "n": 279,
+    "flagged": 0.8422939068100358,
+    "flagged_ci95": [
+      0.7949154500212514,
+      0.8803741820555009
+    ],
+    "accuracy": 0.4444444444444444,
+    "gold": {
+      "negative": 17,
+      "neutral": 225,
+      "positive": 37
+    },
+    "predicted": {
+      "negative": 138,
+      "neutral": 97,
+      "positive": 44
+    },
+    "confusion_gold_by_predicted": [
+      [
+        17,
+        0,
+        0
+      ],
+      [
+        110,
+        89,
+        26
+      ],
+      [
+        11,
+        8,
+        18
+      ]
+    ],
+    "gold_neutral_predicted_polar": 0.6044444444444445
+  },
+  "all": {
+    "n": 3305,
+    "flagged": 0.7773071104387292,
+    "flagged_ci95": [
+      0.7628050456447432,
+      0.7911652622720818
+    ],
+    "accuracy": 0.4493192133131619,
+    "gold": {
+      "negative": 609,
+      "neutral": 2279,
+      "positive": 417
+    },
+    "predicted": {
+      "negative": 1904,
+      "neutral": 935,
+      "positive": 466
+    },
+    "confusion_gold_by_predicted": [
+      [
+        499,
+        91,
+        19
+      ],
+      [
+        1282,
+        768,
+        229
+      ],
+      [
+        123,
+        76,
+        218
+      ]
+    ],
+    "gold_neutral_predicted_polar": 0.663010092145678
+  },
+  "within_source_auroc_in_scope_vs_off_topic": 0.5730976696586573,
+  "by_topic": {
+    "Academic": {
+      "off_topic": false,
+      "n": 1053,
+      "flagged": 0.7549857549857549,
+      "flagged_ci95": [
+        0.728111511693134,
+        0.7800062611121754
+      ],
+      "accuracy": 0.4567901234567901,
+      "gold": {
+        "negative": 152,
+        "neutral": 783,
+        "positive": 118
+      },
+      "predicted": {
+        "negative": 589,
+        "neutral": 342,
+        "positive": 122
+      },
+      "confusion_gold_by_predicted": [
+        [
+          127,
+          20,
+          5
+        ],
+        [
+          426,
+          297,
+          60
+        ],
+        [
+          36,
+          25,
+          57
+        ]
+      ],
+      "gold_neutral_predicted_polar": 0.6206896551724138
+    },
+    "Club & Events": {
+      "off_topic": true,
+      "n": 67,
+      "flagged": 0.9552238805970149,
+      "flagged_ci95": [
+        0.8764196748946068,
+        0.9846563030618481
+      ],
+      "accuracy": 0.43283582089552236,
+      "gold": {
+        "negative": 2,
+        "neutral": 45,
+        "positive": 20
+      },
+      "predicted": {
+        "negative": 25,
+        "neutral": 21,
+        "positive": 21
+      },
+      "confusion_gold_by_predicted": [
+        [
+          2,
+          0,
+          0
+        ],
+        [
+          19,
+          16,
+          10
+        ],
+        [
+          4,
+          5,
+          11
+        ]
+      ],
+      "gold_neutral_predicted_polar": 0.6444444444444445
+    },
+    "Help & Share": {
+      "off_topic": false,
+      "n": 68,
+      "flagged": 0.8529411764705882,
+      "flagged_ci95": [
+        0.7500238655053635,
+        0.9181127016089545
+      ],
+      "accuracy": 0.4264705882352941,
+      "gold": {
+        "negative": 4,
+        "neutral": 58,
+        "positive": 6
+      },
+      "predicted": {
+        "negative": 35,
+        "neutral": 26,
+        "positive": 7
+      },
+      "confusion_gold_by_predicted": [
+        [
+          3,
+          1,
+          0
+        ],
+        [
+          29,
+          24,
+          5
+        ],
+        [
+          3,
+          1,
+          2
+        ]
+      ],
+      "gold_neutral_predicted_polar": 0.5862068965517241
+    },
+    "Jobs & Recruitment": {
+      "off_topic": true,
+      "n": 81,
+      "flagged": 0.7901234567901234,
+      "flagged_ci95": [
+        0.6893441473231284,
+        0.8646293750998338
+      ],
+      "accuracy": 0.4444444444444444,
+      "gold": {
+        "negative": 10,
+        "neutral": 62,
+        "positive": 9
+      },
+      "predicted": {
+        "negative": 47,
+        "neutral": 22,
+        "positive": 12
+      },
+      "confusion_gold_by_predicted": [
+        [
+          10,
+          0,
+          0
+        ],
+        [
+          32,
+          22,
+          8
+        ],
+        [
+          5,
+          0,
+          4
+        ]
+      ],
+      "gold_neutral_predicted_polar": 0.6451612903225806
+    },
+    "News": {
+      "off_topic": true,
+      "n": 91,
+      "flagged": 0.8021978021978022,
+      "flagged_ci95": [
+        0.7088578689746323,
+        0.8710564302358408
+      ],
+      "accuracy": 0.4725274725274725,
+      "gold": {
+        "negative": 5,
+        "neutral": 81,
+        "positive": 5
+      },
+      "predicted": {
+        "negative": 48,
+        "neutral": 40,
+        "positive": 3
+      },
+      "confusion_gold_by_predicted": [
+        [
+          5,
+          0,
+          0
+        ],
+        [
+          42,
+          37,
+          2
+        ],
+        [
+          1,
+          3,
+          1
+        ]
+      ],
+      "gold_neutral_predicted_polar": 0.5432098765432098
+    },
+    "Other": {
+      "off_topic": false,
+      "n": 1442,
+      "flagged": 0.7968099861303745,
+      "flagged_ci95": [
+        0.7752656333103085,
+        0.816777091148581
+      ],
+      "accuracy": 0.4251040221914008,
+      "gold": {
+        "negative": 272,
+        "neutral": 1000,
+        "positive": 170
+      },
+      "predicted": {
+        "negative": 850,
+        "neutral": 365,
+        "positive": 227
+      },
+      "confusion_gold_by_predicted": [
+        [
+          216,
+          46,
+          10
+        ],
+        [
+          594,
+          293,
+          113
+        ],
+        [
+          40,
+          26,
+          104
+        ]
+      ],
+      "gold_neutral_predicted_polar": 0.707
+    },
+    "Personal Affairs": {
+      "off_topic": false,
+      "n": 148,
+      "flagged": 0.8108108108108109,
+      "flagged_ci95": [
+        0.7401557404920971,
+        0.8657388233165035
+      ],
+      "accuracy": 0.5675675675675675,
+      "gold": {
+        "negative": 57,
+        "neutral": 46,
+        "positive": 45
+      },
+      "predicted": {
+        "negative": 71,
+        "neutral": 42,
+        "positive": 35
+      },
+      "confusion_gold_by_predicted": [
+        [
+          41,
+          15,
+          1
+        ],
+        [
+          21,
+          17,
+          8
+        ],
+        [
+          9,
+          10,
+          26
+        ]
+      ],
+      "gold_neutral_predicted_polar": 0.6304347826086957
+    },
+    "Service": {
+      "off_topic": false,
+      "n": 237,
+      "flagged": 0.6455696202531646,
+      "flagged_ci95": [
+        0.5827905001170629,
+        0.7037048561669014
+      ],
+      "accuracy": 0.47257383966244726,
+      "gold": {
+        "negative": 68,
+        "neutral": 141,
+        "positive": 28
+      },
+      "predicted": {
+        "negative": 168,
+        "neutral": 51,
+        "positive": 18
+      },
+      "confusion_gold_by_predicted": [
+        [
+          63,
+          3,
+          2
+        ],
+        [
+          88,
+          43,
+          10
+        ],
+        [
+          17,
+          5,
+          6
+        ]
+      ],
+      "gold_neutral_predicted_polar": 0.6950354609929078
+    },
+    "Social Affairs": {
+      "off_topic": false,
+      "n": 78,
+      "flagged": 0.7564102564102564,
+      "flagged_ci95": [
+        0.6506001354577253,
+        0.8381488626068285
+      ],
+      "accuracy": 0.5384615384615384,
+      "gold": {
+        "negative": 39,
+        "neutral": 26,
+        "positive": 13
+      },
+      "predicted": {
+        "negative": 53,
+        "neutral": 12,
+        "positive": 13
+      },
+      "confusion_gold_by_predicted": [
+        [
+          32,
+          6,
+          1
+        ],
+        [
+          14,
+          5,
+          7
+        ],
+        [
+          7,
+          1,
+          5
+        ]
+      ],
+      "gold_neutral_predicted_polar": 0.8076923076923077
+    },
+    "Spam": {
+      "off_topic": true,
+      "n": 40,
+      "flagged": 0.85,
+      "flagged_ci95": [
+        0.7092737396097997,
+        0.9293890829149256
+      ],
+      "accuracy": 0.4,
+      "gold": {
+        "negative": 0,
+        "neutral": 37,
+        "positive": 3
+      },
+      "predicted": {
+        "negative": 18,
+        "neutral": 14,
+        "positive": 8
+      },
+      "confusion_gold_by_predicted": [
+        [
+          0,
+          0,
+          0
+        ],
+        [
+          17,
+          14,
+          6
+        ],
+        [
+          1,
+          0,
+          2
+        ]
+      ],
+      "gold_neutral_predicted_polar": 0.6216216216216216
+    }
+  },
+  "A2_rule": {
+    "flagged_academic_service": {
+      "Academic": 0.7549857549857549,
+      "Service": 0.6455696202531646
+    },
+    "limit_for_the_card": true,
+    "refit_B4": true
+  }
+}

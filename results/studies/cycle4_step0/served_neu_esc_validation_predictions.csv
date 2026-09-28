@@ -1,0 +1,3306 @@
+row,topic,gold,pred,scope_score,in_scope
+0,Academic,negative,negative,-1668.4,True
+1,Other,neutral,neutral,-6547.75,False
+2,Other,neutral,positive,-7983.66,False
+3,Academic,positive,positive,-4377.9,False
+4,Other,negative,negative,-5434.34,False
+5,Personal Affairs,neutral,neutral,-5245.54,False
+6,Club & Events,positive,positive,-2922.66,True
+7,Other,neutral,negative,-7236.5,False
+8,Personal Affairs,negative,negative,-4623.59,False
+9,Club & Events,neutral,positive,-8251.59,False
+10,Help & Share,neutral,negative,-2896.18,True
+11,Academic,neutral,negative,-5797.28,False
+12,Service,neutral,neutral,-8724.35,False
+13,Other,negative,negative,-6205.52,False
+14,Other,positive,negative,-7079.56,False
+15,News,neutral,negative,-2898.52,True
+16,Other,neutral,negative,-6808.32,False
+17,Service,neutral,neutral,-8419.56,False
+18,Academic,positive,positive,-3784.91,False
+19,Other,neutral,neutral,-6223.31,False
+20,Academic,positive,negative,-3811.09,False
+21,Other,neutral,negative,-4973.25,False
+22,Other,neutral,negative,-5063.14,False
+23,Social Affairs,neutral,negative,-3026.92,True
+24,Academic,negative,negative,-7816.48,False
+25,Other,positive,negative,-7903.3,False
+26,Academic,neutral,positive,-4927.28,False
+27,Academic,neutral,neutral,-4235.44,False
+28,Help & Share,neutral,neutral,-7606.07,False
+29,Other,neutral,negative,-2645.23,True
+30,Other,neutral,negative,-5302.13,False
+31,Other,neutral,negative,-2431.07,True
+32,Other,neutral,neutral,-5237.26,False
+33,Service,neutral,positive,-8766.88,False
+34,Personal Affairs,positive,positive,-3432.33,True
+35,Other,neutral,negative,-6384.31,False
+36,Personal Affairs,neutral,neutral,-7465.96,False
+37,Academic,neutral,neutral,-4926.21,False
+38,Other,negative,positive,-8499.63,False
+39,Academic,positive,negative,-6274.43,False
+40,Other,neutral,negative,-5244.84,False
+41,Academic,neutral,neutral,-5927.51,False
+42,Academic,positive,neutral,-8363.53,False
+43,Other,neutral,negative,-3372.15,True
+44,News,neutral,neutral,-6895.36,False
+45,Jobs & Recruitment,neutral,neutral,-8264.04,False
+46,Personal Affairs,neutral,neutral,-5515.03,False
+47,News,neutral,neutral,-9319.9,False
+48,Other,negative,negative,-2367.64,True
+49,Other,neutral,neutral,-11502.46,False
+50,Jobs & Recruitment,neutral,negative,-2920.88,True
+51,Other,neutral,negative,-2993.5,True
+52,Other,neutral,neutral,-7140.07,False
+53,Academic,negative,negative,-3055.26,True
+54,Service,neutral,positive,-4264.78,False
+55,Academic,neutral,positive,-4208.12,False
+56,Other,neutral,negative,-5069.46,False
+57,Other,neutral,negative,-2799.51,True
+58,Other,neutral,negative,-5630.02,False
+59,Academic,neutral,neutral,-5669.7,False
+60,Help & Share,neutral,positive,-7848.68,False
+61,Personal Affairs,positive,negative,-6867.43,False
+62,Help & Share,neutral,negative,-4524.7,False
+63,Other,neutral,negative,-7237.38,False
+64,Service,negative,negative,-5463.88,False
+65,Other,neutral,negative,-2051.64,True
+66,Academic,neutral,negative,-5097.41,False
+67,Other,positive,neutral,-6803.0,False
+68,Other,neutral,negative,-5952.55,False
+69,Other,neutral,negative,-5716.11,False
+70,Other,neutral,neutral,-8165.77,False
+71,Other,neutral,negative,-5259.89,False
+72,Service,positive,neutral,-5100.78,False
+73,Academic,neutral,negative,-2776.04,True
+74,Social Affairs,negative,negative,-3993.33,False
+75,Other,negative,negative,-4951.72,False
+76,Other,neutral,negative,-1904.39,True
+77,Academic,positive,positive,-2685.66,True
+78,Personal Affairs,neutral,negative,-12166.59,False
+79,Other,neutral,neutral,-9137.86,False
+80,Other,neutral,neutral,-6595.64,False
+81,Academic,neutral,neutral,-6653.68,False
+82,Academic,negative,negative,-3538.87,True
+83,News,neutral,negative,-4548.66,False
+84,Academic,neutral,negative,-5124.66,False
+85,Academic,negative,negative,-5513.96,False
+86,Other,neutral,neutral,-7581.69,False
+87,Academic,positive,negative,-2623.98,True
+88,Service,neutral,negative,-5280.03,False
+89,Other,neutral,negative,-5599.15,False
+90,Academic,neutral,negative,-3101.46,True
+91,Other,neutral,neutral,-8625.19,False
+92,Other,neutral,negative,-8131.85,False
+93,Academic,neutral,negative,-4330.69,False
+94,Service,neutral,neutral,-10096.96,False
+95,Academic,neutral,neutral,-5124.79,False
+96,Help & Share,neutral,neutral,-6000.72,False
+97,Spam,neutral,negative,-2291.0,True
+98,Academic,neutral,negative,-9273.74,False
+99,Academic,neutral,neutral,-4035.44,False
+100,Service,neutral,negative,-2936.57,True
+101,Social Affairs,neutral,positive,-7386.63,False
+102,Jobs & Recruitment,neutral,neutral,-6491.04,False
+103,Academic,neutral,neutral,-6942.24,False
+104,Service,negative,negative,-2776.88,True
+105,Academic,negative,neutral,-6001.76,False
+106,Other,neutral,negative,-3320.23,True
+107,Service,neutral,negative,-2770.14,True
+108,Other,neutral,neutral,-8348.62,False
+109,Academic,neutral,negative,-4686.81,False
+110,Other,negative,negative,-3899.6,False
+111,Help & Share,neutral,neutral,-5986.85,False
+112,Other,neutral,neutral,-4174.44,False
+113,Academic,positive,positive,-1456.73,True
+114,Academic,positive,neutral,-5425.73,False
+115,Academic,neutral,neutral,-8186.51,False
+116,Service,negative,negative,-2430.78,True
+117,Service,positive,negative,-1586.15,True
+118,Jobs & Recruitment,positive,positive,-8678.36,False
+119,Other,neutral,negative,-6427.47,False
+120,Other,neutral,positive,-8548.58,False
+121,Other,positive,neutral,-7522.82,False
+122,Academic,neutral,negative,-2637.2,True
+123,Academic,neutral,negative,-3908.01,False
+124,Other,neutral,negative,-5668.3,False
+125,Service,negative,negative,-3200.07,True
+126,Other,neutral,negative,-4467.06,False
+127,Academic,neutral,neutral,-6083.45,False
+128,Academic,neutral,neutral,-4070.7,False
+129,Other,neutral,neutral,-6689.57,False
+130,Academic,neutral,negative,-4466.95,False
+131,Other,neutral,negative,-3823.11,False
+132,Service,positive,negative,-6375.78,False
+133,Other,positive,positive,-4596.54,False
+134,Social Affairs,positive,negative,-1509.01,True
+135,News,neutral,negative,-2716.4,True
+136,Academic,neutral,positive,-2884.3,True
+137,Academic,neutral,negative,-2785.85,True
+138,Help & Share,negative,negative,-5408.18,False
+139,Personal Affairs,positive,positive,-5881.72,False
+140,Help & Share,neutral,negative,-3353.43,True
+141,Personal Affairs,positive,positive,-5133.25,False
+142,Other,neutral,neutral,-10453.05,False
+143,Academic,neutral,negative,-3364.41,True
+144,Personal Affairs,negative,negative,-9542.92,False
+145,Other,negative,negative,-7075.26,False
+146,Other,positive,positive,-7654.64,False
+147,Academic,neutral,neutral,-5166.79,False
+148,Help & Share,neutral,negative,-7153.59,False
+149,Spam,neutral,negative,-3410.79,True
+150,Other,negative,negative,-4414.85,False
+151,Service,positive,neutral,-7426.48,False
+152,Service,negative,negative,-2898.12,True
+153,News,neutral,negative,-3022.42,True
+154,Social Affairs,positive,positive,-7351.92,False
+155,Other,neutral,neutral,-6436.42,False
+156,Other,neutral,negative,-3621.4,True
+157,Service,negative,negative,-1341.28,True
+158,Social Affairs,negative,negative,-3302.25,True
+159,Club & Events,positive,neutral,-8724.32,False
+160,Other,negative,neutral,-7872.37,False
+161,Other,neutral,neutral,-5834.64,False
+162,Other,neutral,negative,-2191.11,True
+163,Academic,neutral,positive,-4085.59,False
+164,Other,negative,neutral,-11168.37,False
+165,Club & Events,neutral,neutral,-9808.16,False
+166,Service,neutral,negative,-3281.6,True
+167,Academic,neutral,negative,-4866.67,False
+168,Academic,negative,negative,-2834.77,True
+169,Service,negative,neutral,-9579.48,False
+170,Other,neutral,negative,-5066.34,False
+171,Other,neutral,negative,-3458.74,True
+172,Personal Affairs,negative,neutral,-7814.31,False
+173,Academic,neutral,neutral,-3644.97,False
+174,Other,neutral,positive,-8216.75,False
+175,Other,neutral,negative,-4905.19,False
+176,Other,neutral,negative,-7643.05,False
+177,Other,negative,neutral,-7524.64,False
+178,Other,positive,positive,-3482.55,True
+179,Academic,neutral,negative,-6063.37,False
+180,Academic,neutral,negative,-6431.84,False
+181,Academic,neutral,negative,-5275.55,False
+182,Academic,neutral,neutral,-6016.98,False
+183,Academic,neutral,negative,-4694.7,False
+184,Academic,negative,negative,-6954.18,False
+185,Other,positive,positive,-5803.67,False
+186,Academic,neutral,negative,-5637.81,False
+187,Other,neutral,negative,-1952.04,True
+188,Other,positive,neutral,-7431.05,False
+189,Club & Events,neutral,neutral,-6338.63,False
+190,Academic,neutral,positive,-7501.85,False
+191,Other,negative,negative,-4121.06,False
+192,Other,neutral,negative,-3221.57,True
+193,Other,neutral,negative,-1974.62,True
+194,Other,neutral,negative,-5048.5,False
+195,Other,negative,positive,-11494.77,False
+196,Other,negative,negative,-2854.01,True
+197,Other,neutral,negative,-7014.21,False
+198,Social Affairs,neutral,neutral,-8913.01,False
+199,Other,neutral,negative,-5586.2,False
+200,Other,neutral,positive,-4966.47,False
+201,Other,neutral,negative,-7383.37,False
+202,Other,positive,positive,-8422.32,False
+203,Academic,neutral,negative,-3641.92,False
+204,Personal Affairs,positive,neutral,-10408.25,False
+205,Social Affairs,positive,negative,-5204.56,False
+206,Academic,positive,positive,-5012.16,False
+207,Other,neutral,negative,-3111.69,True
+208,Other,neutral,positive,-5459.11,False
+209,Other,neutral,neutral,-9414.15,False
+210,Other,neutral,negative,-4987.01,False
+211,Personal Affairs,neutral,negative,-3554.77,True
+212,Other,neutral,neutral,-6100.85,False
+213,Social Affairs,negative,negative,-1955.54,True
+214,Personal Affairs,negative,neutral,-5095.3,False
+215,Other,negative,negative,-3409.76,True
+216,Academic,positive,negative,-4226.85,False
+217,Other,neutral,negative,-5847.46,False
+218,Service,neutral,negative,-3582.58,True
+219,Academic,neutral,negative,-4673.36,False
+220,Academic,neutral,negative,-5653.08,False
+221,Help & Share,neutral,positive,-4968.51,False
+222,Other,neutral,negative,-6938.82,False
+223,Jobs & Recruitment,negative,negative,-3465.17,True
+224,Academic,neutral,positive,-7234.22,False
+225,Personal Affairs,negative,negative,-3895.64,False
+226,Service,neutral,negative,-3457.65,True
+227,Academic,neutral,negative,-6200.05,False
+228,Service,negative,negative,-3019.11,True
+229,Academic,neutral,neutral,-7636.69,False
+230,Academic,neutral,negative,-5440.57,False
+231,Academic,positive,positive,-5895.85,False
+232,Academic,neutral,neutral,-8811.61,False
+233,Other,neutral,negative,-5775.29,False
+234,Academic,neutral,negative,-5606.59,False
+235,Academic,neutral,negative,-1831.02,True
+236,Other,positive,neutral,-3065.39,True
+237,Other,positive,positive,-5833.94,False
+238,Academic,neutral,negative,-5586.33,False
+239,Help & Share,neutral,neutral,-7671.11,False
+240,Other,positive,positive,-3305.59,True
+241,Academic,neutral,neutral,-6132.87,False
+242,Other,negative,negative,-6642.01,False
+243,Academic,neutral,neutral,-7670.78,False
+244,Jobs & Recruitment,neutral,negative,-1547.92,True
+245,Other,neutral,negative,-4542.65,False
+246,Other,neutral,neutral,-6564.32,False
+247,Academic,negative,negative,-4966.43,False
+248,Other,neutral,negative,-2589.56,True
+249,Academic,negative,negative,-2202.46,True
+250,Other,neutral,negative,-6753.83,False
+251,Academic,neutral,negative,-4680.59,False
+252,Club & Events,neutral,neutral,-7281.61,False
+253,Other,negative,negative,-4171.89,False
+254,Academic,neutral,neutral,-5736.25,False
+255,Spam,neutral,negative,-4154.77,False
+256,Other,neutral,neutral,-4823.15,False
+257,Academic,neutral,positive,-7876.3,False
+258,Academic,negative,negative,-3921.9,False
+259,Jobs & Recruitment,neutral,neutral,-8388.99,False
+260,Other,neutral,positive,-4748.58,False
+261,Other,neutral,positive,-6179.46,False
+262,Social Affairs,neutral,neutral,-7176.25,False
+263,Academic,negative,negative,-1955.25,True
+264,News,positive,neutral,-10064.49,False
+265,Personal Affairs,negative,negative,-3084.61,True
+266,Academic,neutral,positive,-6498.52,False
+267,Other,negative,negative,-6837.21,False
+268,Academic,neutral,negative,-3579.17,True
+269,Academic,neutral,negative,-4525.01,False
+270,Academic,neutral,negative,-6289.39,False
+271,Academic,positive,neutral,-6605.69,False
+272,Other,neutral,neutral,-9178.07,False
+273,Academic,neutral,neutral,-7343.5,False
+274,Personal Affairs,neutral,negative,-4666.11,False
+275,Academic,neutral,negative,-3985.39,False
+276,Academic,positive,neutral,-5213.47,False
+277,Other,neutral,negative,-6960.11,False
+278,Other,neutral,negative,-5652.61,False
+279,Academic,negative,negative,-2319.93,True
+280,Social Affairs,neutral,negative,-1788.24,True
+281,Academic,neutral,negative,-1928.64,True
+282,Personal Affairs,neutral,neutral,-6712.07,False
+283,Other,neutral,negative,-7241.21,False
+284,Other,positive,negative,-5186.14,False
+285,Other,negative,negative,-5371.94,False
+286,Personal Affairs,negative,negative,-3928.54,False
+287,Academic,neutral,negative,-4725.79,False
+288,News,neutral,negative,-4551.0,False
+289,News,neutral,negative,-2899.83,True
+290,Academic,neutral,neutral,-6273.54,False
+291,Other,negative,negative,-2119.65,True
+292,Jobs & Recruitment,positive,negative,-7508.82,False
+293,Other,neutral,negative,-6544.72,False
+294,Academic,neutral,neutral,-5948.23,False
+295,Academic,neutral,neutral,-5113.63,False
+296,Other,negative,negative,-4869.73,False
+297,Other,neutral,neutral,-4493.89,False
+298,Other,positive,negative,-4804.02,False
+299,Academic,negative,negative,-2744.95,True
+300,Academic,neutral,negative,-5114.91,False
+301,Other,neutral,negative,-5525.41,False
+302,Service,neutral,neutral,-6436.98,False
+303,Other,positive,positive,-2550.03,True
+304,Academic,positive,positive,-1129.95,True
+305,Academic,neutral,neutral,-5581.98,False
+306,Academic,neutral,negative,-1869.46,True
+307,Other,negative,negative,-5696.42,False
+308,Academic,neutral,negative,-3213.37,True
+309,Other,positive,positive,-2540.09,True
+310,Academic,neutral,negative,-4612.24,False
+311,News,neutral,negative,-3148.39,True
+312,Other,negative,negative,-3715.26,False
+313,Academic,positive,positive,-5477.93,False
+314,Other,neutral,positive,-4485.89,False
+315,Other,neutral,negative,-3180.84,True
+316,Other,positive,positive,-2453.93,True
+317,Other,neutral,neutral,-9974.45,False
+318,Other,neutral,positive,-5669.52,False
+319,Service,negative,negative,-2592.96,True
+320,Other,negative,negative,-4538.86,False
+321,Other,negative,negative,-2680.98,True
+322,Academic,neutral,neutral,-3976.24,False
+323,Personal Affairs,neutral,negative,-6671.42,False
+324,Other,neutral,negative,-3739.56,False
+325,Personal Affairs,neutral,positive,-10620.9,False
+326,Jobs & Recruitment,neutral,negative,-5892.05,False
+327,Other,neutral,negative,-2330.61,True
+328,Other,neutral,neutral,-8391.32,False
+329,Other,neutral,negative,-3990.35,False
+330,Other,positive,positive,-3696.09,False
+331,Academic,neutral,neutral,-5006.52,False
+332,Academic,negative,negative,-5956.57,False
+333,Other,negative,negative,-4314.73,False
+334,Other,neutral,neutral,-6277.48,False
+335,News,neutral,negative,-4384.64,False
+336,Jobs & Recruitment,neutral,positive,-7222.79,False
+337,Personal Affairs,neutral,negative,-5913.94,False
+338,Other,neutral,negative,-5146.62,False
+339,Other,neutral,negative,-6558.72,False
+340,Academic,negative,negative,-7598.21,False
+341,Other,neutral,negative,-2782.09,True
+342,Other,neutral,neutral,-6480.29,False
+343,Academic,neutral,negative,-9019.68,False
+344,Academic,neutral,neutral,-8294.6,False
+345,Academic,neutral,positive,-6561.15,False
+346,Academic,positive,positive,-2248.75,True
+347,Academic,neutral,negative,-2949.46,True
+348,Academic,neutral,negative,-5425.79,False
+349,Other,neutral,negative,-2284.43,True
+350,Other,negative,neutral,-9342.05,False
+351,Club & Events,neutral,negative,-5343.04,False
+352,Academic,neutral,neutral,-5865.19,False
+353,Other,neutral,neutral,-8233.88,False
+354,Academic,neutral,neutral,-7831.25,False
+355,Academic,neutral,neutral,-4414.41,False
+356,Academic,neutral,negative,-6150.23,False
+357,Academic,neutral,negative,-4258.42,False
+358,Academic,neutral,negative,-5734.93,False
+359,Other,neutral,positive,-8956.44,False
+360,Other,neutral,negative,-6192.67,False
+361,Personal Affairs,positive,positive,-1212.84,True
+362,Other,neutral,neutral,-6998.0,False
+363,Academic,neutral,negative,-3792.65,False
+364,Academic,neutral,negative,-3118.52,True
+365,Club & Events,neutral,positive,-9274.98,False
+366,Academic,neutral,neutral,-10024.57,False
+367,Other,neutral,negative,-4925.48,False
+368,Other,neutral,negative,-6765.2,False
+369,Club & Events,neutral,neutral,-8840.89,False
+370,Personal Affairs,negative,negative,-1164.87,True
+371,Other,positive,negative,-4251.94,False
+372,Other,negative,negative,-2003.54,True
+373,Academic,neutral,negative,-1997.57,True
+374,Jobs & Recruitment,neutral,positive,-5658.49,False
+375,Personal Affairs,neutral,neutral,-7273.94,False
+376,Other,neutral,negative,-5372.11,False
+377,Social Affairs,negative,negative,-3544.28,True
+378,Academic,neutral,negative,-2832.14,True
+379,Personal Affairs,negative,neutral,-5327.94,False
+380,Other,neutral,neutral,-9319.13,False
+381,Service,neutral,neutral,-4074.75,False
+382,Academic,neutral,negative,-3437.62,True
+383,Academic,neutral,neutral,-6545.02,False
+384,Academic,neutral,negative,-3260.44,True
+385,Service,neutral,negative,-2345.64,True
+386,Other,neutral,neutral,-7493.21,False
+387,Academic,neutral,negative,-6530.97,False
+388,Academic,neutral,negative,-3477.74,True
+389,Other,neutral,neutral,-9314.53,False
+390,Academic,positive,positive,-2263.3,True
+391,Academic,neutral,negative,-3509.13,True
+392,News,neutral,neutral,-6849.27,False
+393,Other,negative,negative,-3870.72,False
+394,Other,positive,positive,-7421.73,False
+395,Personal Affairs,neutral,negative,-2947.13,True
+396,Other,neutral,negative,-3721.18,False
+397,Academic,neutral,neutral,-12463.18,False
+398,Service,neutral,neutral,-7042.24,False
+399,Academic,neutral,negative,-7572.21,False
+400,Academic,positive,positive,-2641.99,True
+401,Academic,neutral,negative,-6254.24,False
+402,Academic,neutral,neutral,-7498.29,False
+403,Other,positive,positive,-5267.35,False
+404,Club & Events,positive,negative,-7078.36,False
+405,Other,negative,negative,-5400.75,False
+406,Other,neutral,neutral,-7552.56,False
+407,Personal Affairs,negative,negative,-5130.45,False
+408,Other,neutral,neutral,-7178.5,False
+409,Other,negative,neutral,-5916.73,False
+410,Service,negative,negative,-6508.91,False
+411,Other,negative,negative,-4381.95,False
+412,Other,neutral,neutral,-12441.09,False
+413,Academic,neutral,negative,-2170.87,True
+414,Academic,positive,negative,-4470.62,False
+415,Academic,neutral,negative,-3828.07,False
+416,Academic,neutral,positive,-6077.07,False
+417,Personal Affairs,neutral,negative,-5475.4,False
+418,Service,neutral,neutral,-7766.19,False
+419,Academic,positive,neutral,-9854.49,False
+420,Other,positive,negative,-5175.59,False
+421,Academic,negative,negative,-3017.08,True
+422,Academic,neutral,negative,-3586.73,True
+423,Academic,neutral,neutral,-6532.12,False
+424,Other,neutral,negative,-3979.16,False
+425,Other,neutral,negative,-1191.34,True
+426,Other,neutral,negative,-2039.63,True
+427,Academic,negative,neutral,-8569.8,False
+428,Other,neutral,negative,-3718.07,False
+429,Academic,neutral,neutral,-6659.0,False
+430,Other,neutral,negative,-5091.51,False
+431,Service,neutral,negative,-1019.13,True
+432,Service,negative,negative,-3480.08,True
+433,Other,neutral,negative,-7680.88,False
+434,Academic,neutral,neutral,-4501.38,False
+435,Academic,neutral,negative,-7056.67,False
+436,Academic,neutral,neutral,-7412.86,False
+437,Academic,negative,negative,-2706.79,True
+438,Other,neutral,positive,-3422.22,True
+439,Academic,positive,negative,-5091.61,False
+440,Other,neutral,neutral,-4892.46,False
+441,Social Affairs,neutral,negative,-3564.27,True
+442,Academic,neutral,negative,-5040.36,False
+443,Academic,positive,positive,-1720.97,True
+444,Other,positive,neutral,-8336.98,False
+445,Academic,negative,negative,-6076.72,False
+446,Academic,neutral,negative,-7074.0,False
+447,News,neutral,negative,-5616.04,False
+448,Other,negative,negative,-4437.87,False
+449,Personal Affairs,positive,positive,-5790.13,False
+450,Academic,neutral,negative,-2352.31,True
+451,Academic,neutral,neutral,-4565.94,False
+452,Social Affairs,neutral,neutral,-7481.61,False
+453,Other,negative,negative,-8364.46,False
+454,Other,negative,neutral,-8409.78,False
+455,News,neutral,neutral,-10571.24,False
+456,Other,neutral,positive,-5969.9,False
+457,Academic,negative,negative,-4393.85,False
+458,Service,positive,negative,-6352.17,False
+459,Jobs & Recruitment,neutral,negative,-5729.09,False
+460,Service,neutral,positive,-6498.3,False
+461,Other,negative,negative,-6690.14,False
+462,Other,neutral,negative,-5299.0,False
+463,Other,positive,positive,-1549.45,True
+464,Service,neutral,negative,-3968.54,False
+465,Personal Affairs,negative,negative,-4071.23,False
+466,Academic,positive,positive,-4273.1,False
+467,Academic,negative,neutral,-7971.43,False
+468,Other,neutral,negative,-8739.91,False
+469,Other,neutral,neutral,-7888.66,False
+470,Other,neutral,positive,-8847.3,False
+471,Jobs & Recruitment,neutral,neutral,-10405.52,False
+472,Academic,positive,positive,-448.9,True
+473,Other,neutral,negative,-8188.1,False
+474,Other,negative,negative,-4563.31,False
+475,Academic,neutral,neutral,-7323.52,False
+476,Personal Affairs,negative,negative,-5499.07,False
+477,Academic,neutral,neutral,-4094.06,False
+478,Academic,neutral,negative,-4299.22,False
+479,Academic,neutral,negative,-5552.79,False
+480,Service,neutral,negative,-1313.3,True
+481,Other,neutral,neutral,-5455.69,False
+482,News,neutral,negative,-6109.57,False
+483,Club & Events,neutral,positive,-6640.56,False
+484,Service,neutral,positive,-7624.64,False
+485,Personal Affairs,neutral,neutral,-10984.63,False
+486,Academic,neutral,negative,-2520.57,True
+487,Service,neutral,negative,-4448.96,False
+488,Other,neutral,negative,-7487.07,False
+489,Other,positive,positive,-6316.11,False
+490,Academic,neutral,neutral,-4638.27,False
+491,Help & Share,neutral,negative,-6298.34,False
+492,Help & Share,positive,negative,-4238.78,False
+493,Other,positive,positive,-1672.3,True
+494,Other,negative,negative,-2906.78,True
+495,Academic,neutral,neutral,-8320.49,False
+496,Academic,neutral,neutral,-4853.94,False
+497,Other,neutral,negative,-1450.09,True
+498,Academic,neutral,negative,-3425.92,True
+499,Other,neutral,negative,-2928.37,True
+500,Academic,neutral,negative,-3931.55,False
+501,Other,neutral,neutral,-7848.9,False
+502,Service,negative,positive,-6177.47,False
+503,Club & Events,neutral,negative,-9127.81,False
+504,Academic,neutral,negative,-2667.44,True
+505,Other,neutral,negative,-3470.75,True
+506,Other,neutral,negative,-4022.73,False
+507,Other,neutral,negative,-5951.09,False
+508,Academic,neutral,positive,-5357.33,False
+509,Academic,neutral,negative,-3122.56,True
+510,Academic,neutral,neutral,-5701.15,False
+511,Club & Events,neutral,neutral,-7986.95,False
+512,Academic,negative,negative,-2655.2,True
+513,Help & Share,neutral,negative,-4660.46,False
+514,Social Affairs,neutral,negative,-1941.07,True
+515,Personal Affairs,neutral,positive,-16225.58,False
+516,Academic,neutral,neutral,-9522.56,False
+517,Personal Affairs,negative,negative,-3195.84,True
+518,Academic,neutral,negative,-4409.13,False
+519,Other,neutral,neutral,-10120.58,False
+520,Other,negative,negative,-5749.63,False
+521,Academic,neutral,positive,-4322.51,False
+522,Personal Affairs,negative,negative,-4603.47,False
+523,Academic,neutral,negative,-1873.09,True
+524,Other,neutral,positive,-5639.48,False
+525,Other,neutral,negative,-5529.33,False
+526,Academic,neutral,neutral,-8682.43,False
+527,Academic,positive,positive,-4641.77,False
+528,Other,negative,negative,-8009.27,False
+529,Other,neutral,negative,-5260.06,False
+530,Other,positive,negative,-6656.23,False
+531,Service,negative,negative,-5623.96,False
+532,Other,neutral,neutral,-8058.84,False
+533,Service,negative,negative,-1897.3,True
+534,Academic,negative,negative,-3022.7,True
+535,Other,neutral,negative,-5280.62,False
+536,Service,neutral,neutral,-10449.23,False
+537,News,neutral,neutral,-5612.51,False
+538,Other,neutral,negative,-4182.79,False
+539,Service,neutral,neutral,-6219.43,False
+540,Academic,neutral,neutral,-5556.15,False
+541,Academic,positive,positive,-8192.97,False
+542,Other,neutral,neutral,-3692.58,False
+543,Other,neutral,neutral,-7329.12,False
+544,Academic,neutral,neutral,-5850.77,False
+545,Other,neutral,neutral,-8960.12,False
+546,Academic,neutral,negative,-5988.51,False
+547,Other,negative,negative,-3858.26,False
+548,Club & Events,neutral,negative,-4089.95,False
+549,Academic,negative,negative,-2995.04,True
+550,Academic,neutral,negative,-4187.73,False
+551,Academic,neutral,neutral,-7407.14,False
+552,Other,neutral,negative,-5594.49,False
+553,Other,neutral,negative,-8933.79,False
+554,Other,neutral,negative,-4589.96,False
+555,Help & Share,neutral,positive,-9257.13,False
+556,Club & Events,neutral,negative,-5792.7,False
+557,Service,neutral,negative,-3350.43,True
+558,Other,negative,negative,-6979.47,False
+559,Academic,neutral,negative,-9428.04,False
+560,Academic,positive,negative,-9510.01,False
+561,Club & Events,neutral,negative,-5506.75,False
+562,Personal Affairs,negative,neutral,-7950.15,False
+563,Other,negative,neutral,-10091.47,False
+564,Academic,neutral,neutral,-6218.05,False
+565,Help & Share,neutral,neutral,-6429.44,False
+566,Other,negative,neutral,-7867.58,False
+567,Academic,negative,negative,-7296.13,False
+568,Academic,negative,negative,-4554.71,False
+569,Other,neutral,negative,-8352.12,False
+570,Academic,neutral,negative,-6924.91,False
+571,Other,neutral,neutral,-6276.06,False
+572,Academic,neutral,negative,-2292.95,True
+573,Other,neutral,negative,-2086.5,True
+574,Personal Affairs,neutral,positive,-8755.93,False
+575,Other,neutral,neutral,-5617.33,False
+576,Other,neutral,neutral,-6130.74,False
+577,Social Affairs,negative,negative,-2300.09,True
+578,Academic,neutral,neutral,-4405.18,False
+579,Academic,neutral,negative,-4101.63,False
+580,Other,neutral,negative,-4138.52,False
+581,Academic,neutral,negative,-2403.94,True
+582,Help & Share,negative,negative,-1268.92,True
+583,Academic,neutral,neutral,-5745.13,False
+584,Other,neutral,negative,-5948.96,False
+585,Academic,negative,negative,-6567.43,False
+586,Other,neutral,negative,-8023.08,False
+587,Academic,neutral,negative,-5741.33,False
+588,Other,negative,neutral,-5716.78,False
+589,Academic,positive,positive,-2312.77,True
+590,News,neutral,neutral,-7164.7,False
+591,Other,neutral,negative,-6108.58,False
+592,Service,negative,negative,-2345.22,True
+593,Other,neutral,positive,-6863.97,False
+594,Other,neutral,neutral,-10398.51,False
+595,Academic,neutral,negative,-5537.13,False
+596,Personal Affairs,positive,positive,-2440.03,True
+597,Other,negative,negative,-3167.46,True
+598,Service,neutral,neutral,-10086.0,False
+599,Social Affairs,neutral,negative,-5503.83,False
+600,Other,neutral,neutral,-9446.97,False
+601,Other,neutral,negative,-5500.22,False
+602,Academic,neutral,neutral,-6172.75,False
+603,Academic,neutral,negative,-5334.16,False
+604,Academic,neutral,neutral,-9877.79,False
+605,Other,neutral,negative,-5439.29,False
+606,Academic,neutral,negative,-4435.09,False
+607,Other,neutral,neutral,-6204.56,False
+608,Other,neutral,neutral,-8387.41,False
+609,Academic,neutral,neutral,-6221.01,False
+610,Academic,neutral,neutral,-6307.37,False
+611,Other,neutral,negative,-3478.2,True
+612,Other,neutral,negative,-10106.94,False
+613,Academic,negative,negative,-4197.54,False
+614,Other,neutral,negative,-5400.07,False
+615,Service,neutral,positive,-5184.76,False
+616,Service,neutral,negative,-4606.64,False
+617,Academic,neutral,neutral,-5603.77,False
+618,Jobs & Recruitment,neutral,neutral,-4595.68,False
+619,Academic,neutral,neutral,-4810.16,False
+620,Other,positive,positive,-9377.38,False
+621,Other,neutral,negative,-7916.97,False
+622,Academic,neutral,neutral,-8141.96,False
+623,Other,neutral,negative,-3436.56,True
+624,Academic,neutral,neutral,-8222.13,False
+625,Other,neutral,negative,-2916.87,True
+626,Club & Events,neutral,neutral,-7102.46,False
+627,Academic,neutral,positive,-10880.33,False
+628,Other,positive,positive,-3192.49,True
+629,Other,neutral,negative,-7787.29,False
+630,Other,negative,negative,-4113.57,False
+631,Other,neutral,negative,-2310.26,True
+632,Academic,neutral,positive,-4093.1,False
+633,Other,neutral,neutral,-9034.55,False
+634,Other,neutral,negative,-3687.73,False
+635,Academic,neutral,neutral,-8643.44,False
+636,Other,neutral,negative,-5096.66,False
+637,Academic,neutral,negative,-4609.23,False
+638,Personal Affairs,positive,neutral,-8147.75,False
+639,Help & Share,neutral,neutral,-4036.58,False
+640,Academic,positive,negative,-7564.1,False
+641,Other,negative,negative,-2137.74,True
+642,Other,negative,positive,-7862.72,False
+643,Other,neutral,negative,-8766.47,False
+644,Other,neutral,neutral,-11807.77,False
+645,Other,neutral,negative,-7134.06,False
+646,Service,neutral,negative,-3186.26,True
+647,Club & Events,neutral,negative,-10064.0,False
+648,Other,neutral,negative,-5690.8,False
+649,Jobs & Recruitment,neutral,neutral,-7220.71,False
+650,Other,neutral,negative,-4273.26,False
+651,Academic,neutral,neutral,-4490.63,False
+652,Other,neutral,negative,-9296.65,False
+653,News,neutral,negative,-6685.78,False
+654,Service,negative,negative,-2732.31,True
+655,Academic,neutral,neutral,-5357.87,False
+656,News,negative,negative,-4513.4,False
+657,Academic,negative,negative,-3987.24,False
+658,Other,positive,positive,-7138.37,False
+659,Other,neutral,neutral,-7373.51,False
+660,Academic,neutral,negative,-2840.36,True
+661,Other,neutral,negative,-5258.15,False
+662,Academic,positive,neutral,-6841.13,False
+663,Academic,neutral,negative,-2270.79,True
+664,Other,negative,negative,-4304.4,False
+665,Academic,neutral,neutral,-4824.09,False
+666,Other,neutral,positive,-7607.8,False
+667,Service,negative,negative,-7090.77,False
+668,Social Affairs,neutral,negative,-4618.1,False
+669,Other,neutral,negative,-5508.9,False
+670,Academic,neutral,negative,-6348.77,False
+671,Academic,neutral,negative,-5469.22,False
+672,Other,neutral,negative,-6081.84,False
+673,Other,neutral,positive,-8079.33,False
+674,Academic,neutral,neutral,-5490.67,False
+675,Other,neutral,neutral,-9194.37,False
+676,Academic,neutral,negative,-4209.58,False
+677,News,neutral,neutral,-7259.98,False
+678,Other,neutral,neutral,-6427.04,False
+679,Other,neutral,negative,-3521.0,True
+680,Academic,neutral,negative,-4467.69,False
+681,Other,neutral,negative,-5536.62,False
+682,Other,neutral,neutral,-7523.28,False
+683,Jobs & Recruitment,neutral,neutral,-11082.42,False
+684,Other,positive,positive,-864.13,True
+685,Other,neutral,neutral,-8465.63,False
+686,Other,neutral,neutral,-7688.33,False
+687,Jobs & Recruitment,neutral,neutral,-6559.7,False
+688,Academic,neutral,negative,-4825.24,False
+689,Other,negative,negative,-2764.06,True
+690,Academic,neutral,negative,-1976.96,True
+691,Academic,neutral,negative,-3386.52,True
+692,Other,neutral,positive,-7574.53,False
+693,Other,positive,positive,-6828.46,False
+694,Other,neutral,neutral,-9081.95,False
+695,Other,neutral,neutral,-5849.78,False
+696,Other,neutral,negative,-8524.75,False
+697,Spam,neutral,neutral,-7578.77,False
+698,Other,neutral,neutral,-6701.17,False
+699,Help & Share,neutral,negative,-9147.16,False
+700,Other,negative,positive,-11253.28,False
+701,Other,neutral,negative,-4042.13,False
+702,Spam,neutral,positive,-5871.22,False
+703,Other,positive,negative,-2729.07,True
+704,Jobs & Recruitment,negative,negative,-3609.18,True
+705,Other,neutral,negative,-1566.95,True
+706,Other,neutral,positive,-6301.69,False
+707,Other,neutral,neutral,-8272.42,False
+708,Other,neutral,negative,-5447.08,False
+709,Other,neutral,negative,-6665.46,False
+710,Academic,neutral,negative,-1267.3,True
+711,Academic,positive,positive,-9666.6,False
+712,Other,neutral,neutral,-8538.36,False
+713,Academic,neutral,negative,-3879.77,False
+714,Academic,neutral,neutral,-6321.17,False
+715,Academic,negative,neutral,-5662.95,False
+716,Academic,positive,positive,-7941.88,False
+717,Other,negative,negative,-5298.95,False
+718,Other,neutral,negative,-5417.19,False
+719,Academic,neutral,negative,-1448.66,True
+720,Other,positive,positive,-3566.97,True
+721,Other,positive,positive,-3920.18,False
+722,Other,negative,negative,-3874.47,False
+723,Academic,neutral,negative,-6747.8,False
+724,Academic,neutral,neutral,-5758.79,False
+725,Academic,neutral,neutral,-5563.48,False
+726,News,neutral,negative,-4879.95,False
+727,Academic,neutral,neutral,-7148.6,False
+728,Other,neutral,negative,-6135.04,False
+729,Academic,neutral,neutral,-6227.75,False
+730,Other,positive,positive,-4145.64,False
+731,Jobs & Recruitment,negative,negative,-3698.75,False
+732,Academic,positive,negative,-4305.99,False
+733,Other,neutral,neutral,-10065.04,False
+734,Other,neutral,negative,-7300.39,False
+735,Other,neutral,negative,-8624.05,False
+736,Other,negative,negative,-5231.13,False
+737,Other,positive,neutral,-7824.61,False
+738,Other,neutral,neutral,-5691.5,False
+739,Academic,negative,negative,-4272.46,False
+740,Service,negative,negative,-1642.0,True
+741,Academic,neutral,negative,-5183.79,False
+742,Spam,neutral,positive,-9463.48,False
+743,Other,neutral,negative,-6205.61,False
+744,Other,neutral,negative,-6786.66,False
+745,Academic,neutral,negative,-3548.88,True
+746,Academic,neutral,negative,-2917.36,True
+747,Help & Share,neutral,negative,-5039.33,False
+748,Academic,neutral,neutral,-5347.39,False
+749,Academic,neutral,negative,-4184.43,False
+750,Other,neutral,positive,-5124.88,False
+751,Jobs & Recruitment,neutral,negative,-3253.92,True
+752,Other,neutral,negative,-4388.23,False
+753,Academic,negative,negative,-12220.15,False
+754,Other,neutral,positive,-10180.52,False
+755,Other,neutral,negative,-2114.53,True
+756,Academic,neutral,negative,-2174.7,True
+757,Other,neutral,neutral,-5244.39,False
+758,Other,neutral,neutral,-8207.03,False
+759,Other,neutral,negative,-5338.55,False
+760,Other,neutral,negative,-5380.69,False
+761,Other,neutral,negative,-2033.48,True
+762,Other,positive,neutral,-6234.03,False
+763,Service,neutral,negative,-4216.61,False
+764,Club & Events,neutral,negative,-8785.46,False
+765,Club & Events,neutral,negative,-4267.6,False
+766,Other,neutral,neutral,-7166.5,False
+767,Other,neutral,negative,-1587.2,True
+768,Academic,neutral,negative,-4896.41,False
+769,Academic,neutral,negative,-3502.74,True
+770,Other,neutral,neutral,-6022.3,False
+771,Academic,neutral,negative,-4223.97,False
+772,Other,negative,positive,-2582.64,True
+773,Jobs & Recruitment,neutral,negative,-10879.24,False
+774,Personal Affairs,neutral,neutral,-7592.24,False
+775,Other,positive,positive,-7210.57,False
+776,Academic,neutral,negative,-3207.14,True
+777,Jobs & Recruitment,neutral,negative,-7204.64,False
+778,Other,neutral,negative,-9432.01,False
+779,Other,positive,positive,-8479.65,False
+780,News,neutral,neutral,-6410.77,False
+781,Social Affairs,positive,negative,-8091.97,False
+782,Academic,neutral,negative,-8431.31,False
+783,Other,negative,negative,-2048.25,True
+784,Jobs & Recruitment,neutral,neutral,-6907.77,False
+785,Service,negative,negative,-3711.86,False
+786,Other,neutral,negative,-5118.53,False
+787,Other,neutral,negative,-5173.35,False
+788,Other,neutral,negative,-6963.1,False
+789,Other,neutral,negative,-1878.83,True
+790,Other,neutral,negative,-7939.45,False
+791,Other,neutral,negative,-2820.62,True
+792,Other,negative,positive,-5993.09,False
+793,Academic,negative,negative,-1949.02,True
+794,Other,neutral,negative,-4085.88,False
+795,Academic,negative,negative,-3333.4,True
+796,Service,neutral,negative,-4788.11,False
+797,Academic,negative,negative,-3506.88,True
+798,Academic,positive,negative,-6683.7,False
+799,Academic,neutral,neutral,-4456.26,False
+800,Social Affairs,negative,negative,-4171.57,False
+801,Academic,neutral,negative,-3864.2,False
+802,Academic,positive,positive,-6778.91,False
+803,Academic,neutral,neutral,-6054.55,False
+804,Spam,positive,positive,-10334.67,False
+805,Academic,negative,negative,-6067.5,False
+806,Other,neutral,negative,-6151.94,False
+807,Academic,neutral,neutral,-6834.06,False
+808,Other,positive,negative,-2991.39,True
+809,Club & Events,positive,positive,-7305.41,False
+810,Academic,negative,negative,-2530.56,True
+811,Other,neutral,neutral,-5741.26,False
+812,Academic,neutral,neutral,-4479.14,False
+813,Other,positive,positive,-6121.6,False
+814,Personal Affairs,positive,neutral,-8203.65,False
+815,Academic,negative,negative,-2966.62,True
+816,Service,negative,negative,-1902.31,True
+817,Other,neutral,negative,-1973.27,True
+818,Service,neutral,negative,-5099.05,False
+819,Other,neutral,neutral,-5671.9,False
+820,Academic,neutral,neutral,-7167.89,False
+821,Other,neutral,negative,-3767.38,False
+822,Academic,neutral,neutral,-5890.0,False
+823,Other,neutral,neutral,-6588.11,False
+824,Academic,neutral,neutral,-4551.11,False
+825,Academic,neutral,neutral,-6370.92,False
+826,Other,neutral,negative,-7092.55,False
+827,News,neutral,neutral,-7898.07,False
+828,Other,neutral,negative,-7024.06,False
+829,Academic,neutral,positive,-4768.05,False
+830,Other,neutral,neutral,-9183.72,False
+831,Other,negative,negative,-2951.33,True
+832,Academic,neutral,negative,-2396.16,True
+833,Academic,neutral,neutral,-5325.31,False
+834,Other,neutral,negative,-3826.03,False
+835,Academic,negative,negative,-3380.24,True
+836,Other,negative,neutral,-5105.59,False
+837,Other,neutral,negative,-5130.93,False
+838,Other,neutral,negative,-5520.39,False
+839,News,neutral,negative,-4009.53,False
+840,Other,neutral,negative,-6871.69,False
+841,Academic,neutral,neutral,-7301.99,False
+842,Other,positive,neutral,-12242.63,False
+843,Other,positive,neutral,-9763.77,False
+844,Service,neutral,negative,-3187.79,True
+845,Help & Share,negative,negative,-3403.36,True
+846,Other,neutral,negative,-1396.29,True
+847,Other,negative,negative,-4060.06,False
+848,Social Affairs,positive,negative,-5823.08,False
+849,Other,neutral,negative,-4404.73,False
+850,Service,negative,negative,-6054.5,False
+851,Jobs & Recruitment,neutral,negative,-7140.61,False
+852,Other,neutral,negative,-2946.91,True
+853,Academic,negative,negative,-2210.09,True
+854,Other,negative,negative,-5268.42,False
+855,Service,neutral,negative,-8044.39,False
+856,Academic,neutral,positive,-8287.84,False
+857,Other,neutral,negative,-2528.19,True
+858,Academic,neutral,neutral,-4176.88,False
+859,Academic,neutral,neutral,-4886.12,False
+860,Other,neutral,negative,-3404.7,True
+861,Other,neutral,negative,-5186.66,False
+862,Academic,neutral,neutral,-6262.0,False
+863,Academic,neutral,negative,-5758.24,False
+864,Service,neutral,neutral,-6278.7,False
+865,Other,neutral,negative,-5745.97,False
+866,Other,neutral,positive,-4939.6,False
+867,Other,neutral,neutral,-10415.48,False
+868,Personal Affairs,positive,neutral,-5251.69,False
+869,Other,neutral,positive,-6770.88,False
+870,Other,neutral,neutral,-6798.93,False
+871,Other,negative,negative,-3008.7,True
+872,Other,positive,negative,-4294.14,False
+873,News,neutral,neutral,-4754.6,False
+874,Academic,neutral,negative,-2600.79,True
+875,Academic,neutral,neutral,-6989.19,False
+876,Other,neutral,negative,-5904.22,False
+877,Other,negative,negative,-2595.1,True
+878,Academic,neutral,negative,-1819.19,True
+879,Other,neutral,neutral,-9854.67,False
+880,Other,negative,negative,-5669.04,False
+881,Other,neutral,negative,-11457.7,False
+882,Jobs & Recruitment,neutral,negative,-7669.58,False
+883,Other,neutral,positive,-8799.53,False
+884,Academic,neutral,neutral,-5119.68,False
+885,Jobs & Recruitment,neutral,neutral,-9346.66,False
+886,Academic,neutral,neutral,-7578.93,False
+887,Other,positive,negative,-6650.66,False
+888,Other,negative,negative,-4098.1,False
+889,Other,neutral,positive,-5074.47,False
+890,Other,neutral,negative,-3372.7,True
+891,Other,neutral,negative,-5178.86,False
+892,Help & Share,neutral,neutral,-5996.3,False
+893,Other,neutral,positive,-2862.19,True
+894,Academic,negative,neutral,-7122.67,False
+895,Service,neutral,neutral,-9654.51,False
+896,Other,neutral,negative,-6978.31,False
+897,Other,positive,negative,-5519.83,False
+898,Academic,neutral,neutral,-4803.64,False
+899,Academic,neutral,negative,-6315.62,False
+900,Other,positive,positive,-3786.79,False
+901,Other,neutral,positive,-8787.82,False
+902,Help & Share,positive,negative,-3028.82,True
+903,Service,neutral,negative,-3280.69,True
+904,Other,negative,negative,-2627.51,True
+905,Other,negative,negative,-6796.54,False
+906,Academic,neutral,neutral,-6544.83,False
+907,Jobs & Recruitment,neutral,negative,-3569.06,True
+908,Academic,neutral,negative,-5853.7,False
+909,Other,neutral,negative,-5390.1,False
+910,Academic,neutral,negative,-4617.01,False
+911,Other,neutral,negative,-2160.5,True
+912,Other,neutral,neutral,-8408.19,False
+913,Help & Share,neutral,neutral,-6956.85,False
+914,Academic,neutral,negative,-3214.47,True
+915,Academic,positive,negative,-4891.27,False
+916,Other,negative,negative,-1571.55,True
+917,Academic,neutral,negative,-1409.05,True
+918,Other,neutral,neutral,-9016.43,False
+919,Other,neutral,negative,-2166.15,True
+920,Academic,neutral,neutral,-7414.35,False
+921,Academic,neutral,negative,-4035.71,False
+922,Academic,neutral,negative,-4320.51,False
+923,Club & Events,neutral,neutral,-9358.08,False
+924,Social Affairs,negative,neutral,-7429.04,False
+925,Academic,negative,negative,-2425.4,True
+926,Social Affairs,negative,negative,-4662.19,False
+927,Help & Share,neutral,negative,-4185.78,False
+928,Academic,neutral,neutral,-3754.32,False
+929,Academic,neutral,positive,-5833.59,False
+930,Other,negative,neutral,-7929.71,False
+931,Service,positive,negative,-5290.51,False
+932,Other,neutral,positive,-9366.67,False
+933,Other,neutral,neutral,-5860.92,False
+934,Academic,positive,positive,-2593.96,True
+935,Personal Affairs,negative,neutral,-5801.67,False
+936,Other,neutral,positive,-7723.5,False
+937,Academic,positive,neutral,-5894.08,False
+938,Other,negative,negative,-2537.48,True
+939,Other,neutral,negative,-4600.44,False
+940,Other,neutral,negative,-2544.42,True
+941,Academic,neutral,negative,-4359.28,False
+942,Other,neutral,neutral,-6410.85,False
+943,Jobs & Recruitment,neutral,neutral,-8484.88,False
+944,Academic,neutral,neutral,-8532.16,False
+945,Help & Share,neutral,neutral,-7437.41,False
+946,Academic,neutral,neutral,-6567.84,False
+947,Personal Affairs,positive,neutral,-7892.63,False
+948,Social Affairs,positive,negative,-3802.13,False
+949,Other,negative,negative,-5166.61,False
+950,Other,negative,negative,-4763.25,False
+951,Other,positive,negative,-8793.5,False
+952,Other,positive,neutral,-6771.64,False
+953,Other,neutral,negative,-2281.36,True
+954,Academic,neutral,neutral,-7896.42,False
+955,Service,negative,negative,-5783.8,False
+956,Other,positive,positive,-6792.33,False
+957,Other,neutral,neutral,-6841.6,False
+958,Other,neutral,negative,-6404.71,False
+959,Other,neutral,neutral,-4688.16,False
+960,Jobs & Recruitment,neutral,negative,-3852.72,False
+961,Jobs & Recruitment,neutral,negative,-6297.59,False
+962,Other,neutral,negative,-2046.08,True
+963,Other,negative,negative,-4044.78,False
+964,Academic,positive,neutral,-8423.79,False
+965,Academic,positive,positive,-2596.02,True
+966,Academic,positive,positive,-9113.05,False
+967,Service,positive,negative,-980.31,True
+968,Personal Affairs,neutral,neutral,-9162.59,False
+969,Other,neutral,neutral,-7351.75,False
+970,Service,positive,negative,-6409.43,False
+971,Personal Affairs,neutral,neutral,-5608.64,False
+972,Other,positive,positive,-5198.64,False
+973,Academic,neutral,neutral,-10438.8,False
+974,Personal Affairs,negative,neutral,-6017.34,False
+975,Academic,negative,negative,-1520.28,True
+976,Academic,neutral,neutral,-6927.59,False
+977,Academic,neutral,negative,-3240.18,True
+978,Other,neutral,negative,-4770.54,False
+979,Other,neutral,negative,-5737.62,False
+980,Other,neutral,negative,-3978.09,False
+981,Other,neutral,neutral,-8110.91,False
+982,Other,neutral,neutral,-6722.95,False
+983,Academic,neutral,negative,-6395.17,False
+984,News,neutral,negative,-5501.06,False
+985,Academic,neutral,negative,-2195.31,True
+986,Academic,neutral,negative,-3093.61,True
+987,Personal Affairs,positive,positive,-3566.35,True
+988,Academic,neutral,negative,-4977.0,False
+989,Service,positive,neutral,-7518.55,False
+990,Jobs & Recruitment,neutral,negative,-6214.12,False
+991,Other,negative,neutral,-5259.58,False
+992,Other,neutral,negative,-4191.9,False
+993,News,neutral,negative,-3016.78,True
+994,Other,neutral,positive,-9657.73,False
+995,Other,neutral,negative,-5488.27,False
+996,Social Affairs,negative,neutral,-4233.71,False
+997,Other,neutral,negative,-5654.77,False
+998,Academic,neutral,neutral,-4464.09,False
+999,Personal Affairs,positive,positive,-1744.01,True
+1000,Academic,negative,negative,-2308.24,True
+1001,Other,neutral,negative,-4326.77,False
+1002,Academic,neutral,negative,-1472.18,True
+1003,Jobs & Recruitment,neutral,positive,-5276.32,False
+1004,Other,neutral,negative,-4736.44,False
+1005,Other,neutral,positive,-10750.26,False
+1006,Academic,neutral,negative,-2250.48,True
+1007,Other,neutral,negative,-6715.19,False
+1008,Other,negative,negative,-6549.93,False
+1009,Academic,negative,negative,-4396.74,False
+1010,Other,neutral,neutral,-8742.7,False
+1011,Club & Events,neutral,positive,-6968.7,False
+1012,Other,neutral,negative,-7184.28,False
+1013,Academic,neutral,negative,-4960.78,False
+1014,Academic,neutral,negative,-7666.22,False
+1015,Other,neutral,negative,-2552.48,True
+1016,Service,neutral,negative,-2955.6,True
+1017,Academic,neutral,neutral,-3827.2,False
+1018,Other,neutral,negative,-6098.03,False
+1019,Personal Affairs,negative,negative,-6151.93,False
+1020,Academic,neutral,neutral,-7547.76,False
+1021,Academic,neutral,positive,-6203.38,False
+1022,Club & Events,neutral,neutral,-4869.35,False
+1023,Other,positive,neutral,-6462.69,False
+1024,Other,neutral,negative,-3178.31,True
+1025,Academic,neutral,neutral,-9928.62,False
+1026,Other,neutral,negative,-3091.77,True
+1027,Other,neutral,negative,-2339.75,True
+1028,Other,negative,negative,-4047.15,False
+1029,Academic,neutral,negative,-4001.36,False
+1030,Service,neutral,negative,-5351.96,False
+1031,Other,neutral,negative,-3043.35,True
+1032,Academic,neutral,positive,-441.9,True
+1033,Other,negative,negative,-3614.58,True
+1034,Academic,neutral,negative,-1681.36,True
+1035,Other,neutral,negative,-5816.28,False
+1036,Other,negative,positive,-5649.48,False
+1037,Academic,neutral,negative,-4918.95,False
+1038,Other,positive,negative,-6027.8,False
+1039,Academic,negative,negative,-3652.48,False
+1040,Other,neutral,positive,-1728.21,True
+1041,Academic,neutral,negative,-3442.43,True
+1042,Personal Affairs,neutral,negative,-4392.69,False
+1043,Other,negative,negative,-2973.93,True
+1044,Service,neutral,neutral,-7551.57,False
+1045,Academic,positive,negative,-5860.95,False
+1046,Club & Events,negative,negative,-6217.73,False
+1047,Other,positive,positive,-1424.86,True
+1048,Academic,neutral,negative,-4302.63,False
+1049,Academic,neutral,neutral,-7422.12,False
+1050,Other,neutral,neutral,-8636.19,False
+1051,Help & Share,neutral,neutral,-6230.8,False
+1052,Other,neutral,negative,-5103.58,False
+1053,Other,neutral,negative,-4925.36,False
+1054,News,neutral,neutral,-5197.15,False
+1055,Social Affairs,negative,neutral,-8156.71,False
+1056,Other,neutral,negative,-4502.22,False
+1057,Other,neutral,negative,-2966.12,True
+1058,Academic,neutral,neutral,-10662.45,False
+1059,News,neutral,neutral,-6422.1,False
+1060,Other,neutral,negative,-5522.24,False
+1061,Academic,negative,negative,-6095.33,False
+1062,Other,neutral,negative,-10059.61,False
+1063,Service,negative,negative,-1101.29,True
+1064,Other,neutral,negative,-7304.91,False
+1065,Other,neutral,negative,-3276.06,True
+1066,Personal Affairs,positive,neutral,-6753.79,False
+1067,Other,neutral,positive,-5304.47,False
+1068,Other,negative,negative,-4516.37,False
+1069,Spam,neutral,negative,-4879.84,False
+1070,Other,neutral,negative,-8918.41,False
+1071,News,positive,negative,-4294.83,False
+1072,Social Affairs,positive,positive,-4871.11,False
+1073,Other,neutral,neutral,-9103.64,False
+1074,Other,neutral,negative,-1838.3,True
+1075,Other,neutral,neutral,-7522.34,False
+1076,Other,positive,positive,-7443.17,False
+1077,Other,neutral,negative,-8313.53,False
+1078,Academic,neutral,negative,-5016.65,False
+1079,Service,negative,negative,-4664.5,False
+1080,Other,neutral,negative,-2596.83,True
+1081,Academic,negative,negative,-4227.37,False
+1082,Personal Affairs,positive,positive,-1062.76,True
+1083,Academic,neutral,neutral,-8240.29,False
+1084,Other,positive,positive,-4697.95,False
+1085,Other,neutral,negative,-1577.71,True
+1086,Other,neutral,negative,-2329.77,True
+1087,Other,neutral,positive,-7161.67,False
+1088,Academic,neutral,negative,-3996.03,False
+1089,Other,neutral,negative,-5068.75,False
+1090,Other,neutral,positive,-6088.34,False
+1091,Other,neutral,negative,-5879.09,False
+1092,News,neutral,neutral,-6646.53,False
+1093,Academic,neutral,neutral,-6929.67,False
+1094,Other,negative,negative,-3835.47,False
+1095,Other,positive,positive,-4450.54,False
+1096,Other,neutral,negative,-4629.18,False
+1097,Other,neutral,negative,-8346.69,False
+1098,Academic,neutral,negative,-5811.08,False
+1099,Social Affairs,positive,negative,-2515.86,True
+1100,Other,neutral,negative,-8450.92,False
+1101,Other,neutral,negative,-4424.58,False
+1102,Academic,neutral,negative,-3132.94,True
+1103,Other,neutral,negative,-1982.44,True
+1104,Club & Events,positive,negative,-6722.31,False
+1105,Other,neutral,negative,-7111.2,False
+1106,Other,neutral,neutral,-4963.68,False
+1107,Other,neutral,negative,-6209.4,False
+1108,Other,neutral,neutral,-8112.86,False
+1109,Other,neutral,neutral,-6139.37,False
+1110,Other,neutral,negative,-6044.92,False
+1111,Personal Affairs,negative,negative,-4087.94,False
+1112,Other,neutral,positive,-5574.08,False
+1113,Other,positive,negative,-3303.73,True
+1114,Other,negative,neutral,-8746.21,False
+1115,Academic,neutral,negative,-5786.37,False
+1116,Academic,neutral,neutral,-10205.28,False
+1117,Club & Events,positive,neutral,-6288.78,False
+1118,Academic,neutral,negative,-5277.19,False
+1119,Other,neutral,positive,-6564.72,False
+1120,Academic,neutral,negative,-4368.09,False
+1121,Academic,neutral,negative,-4280.43,False
+1122,Other,neutral,neutral,-6394.27,False
+1123,Other,negative,negative,-6631.74,False
+1124,Academic,neutral,neutral,-5723.38,False
+1125,Other,neutral,positive,-7570.86,False
+1126,Academic,neutral,negative,-4040.26,False
+1127,Help & Share,neutral,positive,-4990.5,False
+1128,Academic,neutral,negative,-3510.69,True
+1129,Other,neutral,negative,-6474.26,False
+1130,Other,neutral,negative,-6004.12,False
+1131,Service,negative,negative,-4930.56,False
+1132,News,neutral,negative,-4661.42,False
+1133,Academic,negative,negative,-5450.06,False
+1134,Jobs & Recruitment,neutral,negative,-5343.12,False
+1135,Other,negative,positive,-5331.93,False
+1136,Other,positive,positive,-2333.27,True
+1137,Other,neutral,negative,-6506.86,False
+1138,Other,neutral,neutral,-8290.53,False
+1139,Other,positive,positive,-4352.51,False
+1140,Social Affairs,neutral,neutral,-5611.88,False
+1141,Other,neutral,negative,-8308.96,False
+1142,Other,positive,positive,-6406.53,False
+1143,Other,negative,neutral,-11310.34,False
+1144,Spam,neutral,negative,-2628.86,True
+1145,News,neutral,negative,-5947.12,False
+1146,Academic,neutral,negative,-6648.73,False
+1147,Other,neutral,negative,-7400.88,False
+1148,Other,positive,positive,-7763.07,False
+1149,Help & Share,neutral,neutral,-4895.26,False
+1150,Academic,negative,negative,-2230.59,True
+1151,Other,negative,negative,-5534.48,False
+1152,Other,neutral,negative,-7464.28,False
+1153,Personal Affairs,positive,positive,-3266.06,True
+1154,Other,positive,positive,-7135.82,False
+1155,Other,neutral,negative,-4044.76,False
+1156,Other,positive,positive,-6493.78,False
+1157,Other,neutral,negative,-4702.64,False
+1158,Club & Events,neutral,negative,-6873.55,False
+1159,Other,neutral,negative,-4946.27,False
+1160,Other,negative,negative,-6629.76,False
+1161,Jobs & Recruitment,positive,negative,-4514.23,False
+1162,Service,neutral,positive,-5968.6,False
+1163,Academic,neutral,negative,-2765.92,True
+1164,Jobs & Recruitment,neutral,neutral,-4362.75,False
+1165,Academic,neutral,negative,-2841.2,True
+1166,Other,negative,negative,-1589.2,True
+1167,Service,negative,negative,-3619.9,True
+1168,Personal Affairs,negative,negative,-4975.22,False
+1169,Other,neutral,negative,-4839.78,False
+1170,Personal Affairs,positive,positive,-2671.17,True
+1171,Service,positive,positive,-8243.12,False
+1172,Other,negative,negative,-9220.95,False
+1173,Club & Events,neutral,positive,-6990.97,False
+1174,Academic,neutral,negative,-2182.59,True
+1175,Other,positive,positive,-2547.73,True
+1176,Academic,neutral,positive,-8439.19,False
+1177,Academic,neutral,neutral,-5526.76,False
+1178,Other,negative,negative,-3400.88,True
+1179,Social Affairs,negative,negative,-2532.54,True
+1180,Other,neutral,negative,-6728.49,False
+1181,Personal Affairs,neutral,positive,-3160.42,True
+1182,Social Affairs,neutral,positive,-9858.31,False
+1183,Jobs & Recruitment,positive,negative,-2279.13,True
+1184,Academic,neutral,neutral,-8964.6,False
+1185,Academic,neutral,neutral,-5320.01,False
+1186,Academic,neutral,negative,-5282.95,False
+1187,Club & Events,positive,negative,-5779.66,False
+1188,Personal Affairs,positive,neutral,-4447.6,False
+1189,Help & Share,neutral,neutral,-6003.72,False
+1190,Jobs & Recruitment,neutral,neutral,-5906.97,False
+1191,Service,neutral,neutral,-4408.72,False
+1192,Other,positive,positive,-4870.34,False
+1193,Other,neutral,negative,-2544.07,True
+1194,Other,neutral,negative,-5824.93,False
+1195,Academic,neutral,negative,-4059.49,False
+1196,Other,neutral,neutral,-7587.22,False
+1197,Other,neutral,negative,-7834.0,False
+1198,Other,neutral,negative,-5826.33,False
+1199,Other,neutral,negative,-2594.15,True
+1200,Service,neutral,neutral,-7062.96,False
+1201,Academic,neutral,neutral,-8555.62,False
+1202,Academic,negative,neutral,-7569.82,False
+1203,Service,positive,negative,-7325.85,False
+1204,Academic,neutral,negative,-4618.05,False
+1205,Other,neutral,negative,-6057.28,False
+1206,Academic,neutral,neutral,-6256.47,False
+1207,Social Affairs,negative,negative,-5671.49,False
+1208,Other,neutral,neutral,-7451.36,False
+1209,Other,negative,negative,-7200.76,False
+1210,Academic,neutral,neutral,-5532.99,False
+1211,Academic,negative,negative,-4587.4,False
+1212,Club & Events,positive,positive,-2202.07,True
+1213,Academic,negative,negative,-909.3,True
+1214,News,neutral,neutral,-5329.94,False
+1215,Other,neutral,negative,-6355.54,False
+1216,Club & Events,neutral,positive,-6536.4,False
+1217,Other,positive,negative,-2195.63,True
+1218,Other,neutral,neutral,-6344.8,False
+1219,Jobs & Recruitment,neutral,negative,-4732.72,False
+1220,Spam,neutral,negative,-7113.85,False
+1221,Academic,negative,negative,-2807.37,True
+1222,Academic,neutral,neutral,-6366.36,False
+1223,Academic,neutral,neutral,-5977.74,False
+1224,Other,neutral,positive,-6801.32,False
+1225,Other,neutral,negative,-7179.62,False
+1226,Other,neutral,neutral,-6737.36,False
+1227,Service,negative,negative,-3398.6,True
+1228,Other,neutral,negative,-6427.02,False
+1229,Academic,neutral,neutral,-5319.12,False
+1230,Other,neutral,positive,-6086.26,False
+1231,Other,positive,positive,-6036.26,False
+1232,Other,neutral,negative,-6429.46,False
+1233,Other,neutral,positive,-3011.08,True
+1234,Academic,neutral,neutral,-4696.36,False
+1235,Service,neutral,neutral,-5149.59,False
+1236,Other,neutral,negative,-4530.29,False
+1237,Academic,negative,negative,-2038.6,True
+1238,Club & Events,negative,negative,-5539.96,False
+1239,Academic,neutral,neutral,-5934.73,False
+1240,Personal Affairs,neutral,negative,-5892.9,False
+1241,Jobs & Recruitment,neutral,negative,-2784.03,True
+1242,Other,neutral,negative,-3777.56,False
+1243,Service,neutral,negative,-4202.61,False
+1244,Service,positive,positive,-6053.96,False
+1245,Other,positive,positive,-5319.97,False
+1246,Academic,neutral,negative,-3420.25,True
+1247,Other,negative,negative,-3265.88,True
+1248,Social Affairs,negative,negative,-3576.0,True
+1249,Jobs & Recruitment,neutral,negative,-4310.82,False
+1250,Other,negative,negative,-3737.8,False
+1251,Academic,neutral,neutral,-6882.44,False
+1252,Other,positive,neutral,-4914.53,False
+1253,Academic,neutral,neutral,-8107.25,False
+1254,Other,neutral,neutral,-8980.86,False
+1255,Academic,neutral,negative,-4349.47,False
+1256,Other,neutral,negative,-7125.0,False
+1257,Personal Affairs,negative,negative,-3815.54,False
+1258,Club & Events,positive,neutral,-11279.47,False
+1259,Other,negative,negative,-2600.03,True
+1260,Academic,neutral,negative,-5922.58,False
+1261,Academic,neutral,neutral,-5776.52,False
+1262,Other,neutral,negative,-7074.87,False
+1263,Service,positive,neutral,-6575.67,False
+1264,Academic,neutral,negative,-2764.08,True
+1265,Club & Events,neutral,negative,-5184.99,False
+1266,Other,neutral,neutral,-7076.25,False
+1267,Other,positive,positive,-4253.91,False
+1268,Other,positive,positive,-3981.13,False
+1269,Other,neutral,negative,-8800.27,False
+1270,Help & Share,neutral,neutral,-7822.16,False
+1271,Other,neutral,positive,-1747.64,True
+1272,Other,negative,negative,-3670.14,False
+1273,Academic,neutral,negative,-3677.99,False
+1274,Personal Affairs,neutral,negative,-5886.69,False
+1275,Other,negative,negative,-2509.99,True
+1276,Jobs & Recruitment,negative,negative,-6058.92,False
+1277,Other,neutral,neutral,-5749.97,False
+1278,Social Affairs,negative,negative,-5612.09,False
+1279,Academic,positive,negative,-1903.76,True
+1280,Academic,positive,neutral,-9505.56,False
+1281,Help & Share,neutral,negative,-4189.4,False
+1282,Other,neutral,negative,-6909.01,False
+1283,Academic,neutral,neutral,-5252.27,False
+1284,Service,positive,negative,-7668.42,False
+1285,Academic,negative,negative,-4313.45,False
+1286,Other,neutral,negative,-2811.12,True
+1287,Other,negative,negative,-2427.31,True
+1288,Academic,negative,negative,-1660.85,True
+1289,Other,neutral,negative,-4771.77,False
+1290,Other,neutral,positive,-6837.75,False
+1291,Other,positive,negative,-2651.72,True
+1292,News,neutral,negative,-4918.1,False
+1293,Other,neutral,negative,-8731.57,False
+1294,Service,negative,negative,-5234.07,False
+1295,Other,neutral,neutral,-4014.81,False
+1296,Other,neutral,negative,-4970.24,False
+1297,Personal Affairs,neutral,negative,-2523.54,True
+1298,Other,neutral,neutral,-7677.74,False
+1299,Service,neutral,negative,-6830.78,False
+1300,Academic,negative,positive,-4991.17,False
+1301,Other,neutral,negative,-3421.46,True
+1302,Jobs & Recruitment,positive,positive,-9924.59,False
+1303,Academic,positive,negative,-5590.0,False
+1304,Other,neutral,negative,-2742.34,True
+1305,Academic,positive,positive,-7516.52,False
+1306,Other,neutral,negative,-2856.19,True
+1307,Academic,positive,positive,-8551.82,False
+1308,Academic,neutral,neutral,-6184.93,False
+1309,Academic,neutral,negative,-3398.08,True
+1310,Service,negative,negative,-1945.83,True
+1311,Other,neutral,negative,-6770.89,False
+1312,Service,neutral,neutral,-8548.18,False
+1313,Academic,negative,negative,-5825.96,False
+1314,News,neutral,negative,-5948.19,False
+1315,Other,negative,negative,-2674.97,True
+1316,Other,neutral,neutral,-6669.44,False
+1317,Other,neutral,positive,-6032.61,False
+1318,Social Affairs,neutral,negative,-1791.7,True
+1319,Other,neutral,negative,-6246.89,False
+1320,Service,negative,neutral,-8939.27,False
+1321,Other,neutral,negative,-3946.77,False
+1322,Personal Affairs,positive,positive,-4511.33,False
+1323,Other,neutral,neutral,-5132.56,False
+1324,Other,neutral,negative,-6476.83,False
+1325,Academic,neutral,negative,-1432.17,True
+1326,Academic,neutral,negative,-6646.69,False
+1327,Other,negative,negative,-2355.09,True
+1328,Personal Affairs,positive,negative,-9966.09,False
+1329,Academic,negative,negative,-6769.26,False
+1330,Other,neutral,neutral,-7063.22,False
+1331,Personal Affairs,negative,negative,-4218.27,False
+1332,Other,neutral,neutral,-10491.1,False
+1333,Other,negative,negative,-1918.17,True
+1334,Academic,neutral,neutral,-4953.76,False
+1335,Academic,neutral,negative,-5695.42,False
+1336,News,neutral,neutral,-11131.02,False
+1337,Other,positive,positive,-4134.43,False
+1338,Other,neutral,negative,-6192.64,False
+1339,Academic,neutral,negative,-4877.07,False
+1340,Other,neutral,positive,-8388.08,False
+1341,Academic,neutral,neutral,-7226.25,False
+1342,Other,neutral,neutral,-8504.45,False
+1343,News,neutral,neutral,-10352.88,False
+1344,Other,neutral,neutral,-4951.71,False
+1345,Spam,neutral,negative,-4827.44,False
+1346,Other,neutral,negative,-7139.56,False
+1347,Other,neutral,negative,-8684.07,False
+1348,Other,neutral,neutral,-8549.88,False
+1349,Other,neutral,negative,-5044.75,False
+1350,Other,neutral,neutral,-5745.0,False
+1351,Social Affairs,negative,negative,-4707.09,False
+1352,Academic,neutral,neutral,-4841.98,False
+1353,Other,neutral,negative,-4004.53,False
+1354,Academic,neutral,neutral,-7860.55,False
+1355,Other,neutral,negative,-4700.34,False
+1356,Service,neutral,negative,-2119.89,True
+1357,Academic,neutral,neutral,-6778.21,False
+1358,Academic,neutral,negative,-3723.45,False
+1359,Academic,neutral,neutral,-5630.19,False
+1360,Spam,neutral,positive,-11452.01,False
+1361,Academic,positive,positive,-7317.29,False
+1362,Service,negative,negative,-1629.88,True
+1363,Academic,neutral,positive,-1753.34,True
+1364,Other,positive,positive,-5450.88,False
+1365,Other,neutral,negative,-6660.87,False
+1366,Service,neutral,negative,-3327.27,True
+1367,Other,neutral,negative,-6727.82,False
+1368,Other,neutral,neutral,-8879.67,False
+1369,Other,neutral,neutral,-10480.5,False
+1370,Other,neutral,negative,-1058.26,True
+1371,Service,neutral,neutral,-4781.63,False
+1372,Other,neutral,negative,-7207.48,False
+1373,Other,neutral,positive,-8561.08,False
+1374,Help & Share,neutral,negative,-5367.3,False
+1375,Other,neutral,positive,-10582.57,False
+1376,Other,neutral,negative,-3202.38,True
+1377,Academic,neutral,neutral,-6202.08,False
+1378,Club & Events,positive,positive,-6511.62,False
+1379,Academic,neutral,positive,-4946.77,False
+1380,Other,positive,positive,-9869.48,False
+1381,Service,neutral,negative,-2278.54,True
+1382,Other,neutral,negative,-1896.27,True
+1383,Academic,neutral,positive,-3171.77,True
+1384,Other,neutral,neutral,-5802.42,False
+1385,Academic,neutral,negative,-5504.4,False
+1386,Other,neutral,neutral,-4309.75,False
+1387,Help & Share,neutral,negative,-5404.15,False
+1388,Other,negative,negative,-3135.94,True
+1389,Personal Affairs,positive,negative,-9374.52,False
+1390,Academic,neutral,negative,-5344.0,False
+1391,Academic,neutral,negative,-5999.55,False
+1392,Academic,neutral,negative,-4972.68,False
+1393,Academic,positive,neutral,-7069.07,False
+1394,Service,negative,positive,-6711.6,False
+1395,Other,neutral,positive,-3046.54,True
+1396,Other,neutral,negative,-8634.0,False
+1397,Academic,neutral,neutral,-4516.51,False
+1398,Other,neutral,negative,-1216.1,True
+1399,Other,negative,negative,-3458.49,True
+1400,Other,neutral,negative,-4507.0,False
+1401,Other,neutral,negative,-5558.26,False
+1402,Service,neutral,negative,-3835.68,False
+1403,Academic,neutral,neutral,-8491.51,False
+1404,Academic,neutral,negative,-1902.06,True
+1405,Service,neutral,neutral,-8230.19,False
+1406,Academic,neutral,negative,-6177.58,False
+1407,Other,neutral,positive,-6703.65,False
+1408,Other,neutral,negative,-6150.65,False
+1409,Other,negative,negative,-3743.32,False
+1410,Academic,neutral,negative,-3246.38,True
+1411,Other,neutral,negative,-3623.63,True
+1412,Other,neutral,neutral,-9510.02,False
+1413,Other,neutral,neutral,-8430.9,False
+1414,Other,positive,negative,-5995.81,False
+1415,Academic,neutral,neutral,-9164.99,False
+1416,Personal Affairs,positive,negative,-4398.33,False
+1417,Academic,neutral,negative,-2869.48,True
+1418,Other,neutral,neutral,-7218.22,False
+1419,Other,neutral,positive,-7918.4,False
+1420,Academic,neutral,negative,-7417.93,False
+1421,Academic,negative,negative,-3521.79,True
+1422,Other,neutral,negative,-2365.64,True
+1423,Other,negative,negative,-1633.1,True
+1424,Other,neutral,negative,-3255.4,True
+1425,Other,neutral,negative,-11594.71,False
+1426,Academic,neutral,negative,-7118.19,False
+1427,Other,negative,negative,-3233.08,True
+1428,Service,neutral,negative,-7044.29,False
+1429,Other,neutral,neutral,-7707.04,False
+1430,Other,neutral,neutral,-9766.02,False
+1431,Other,neutral,negative,-667.24,True
+1432,Academic,neutral,negative,-3671.78,False
+1433,Personal Affairs,positive,neutral,-9504.71,False
+1434,Social Affairs,negative,negative,-4874.15,False
+1435,Other,negative,negative,-2038.15,True
+1436,Other,negative,negative,-2584.11,True
+1437,Academic,neutral,negative,-4879.73,False
+1438,Other,neutral,negative,-6587.16,False
+1439,Academic,neutral,neutral,-5161.35,False
+1440,Academic,neutral,negative,-11396.03,False
+1441,Other,neutral,positive,-10828.39,False
+1442,Other,negative,negative,-2959.08,True
+1443,Academic,neutral,negative,-5826.0,False
+1444,Spam,neutral,negative,-8333.78,False
+1445,Other,negative,negative,-5306.63,False
+1446,Other,neutral,negative,-5368.98,False
+1447,Other,negative,negative,-6361.9,False
+1448,Service,neutral,neutral,-5876.27,False
+1449,Other,neutral,negative,-5543.07,False
+1450,Other,negative,negative,-7099.06,False
+1451,News,neutral,negative,-4394.89,False
+1452,Academic,neutral,neutral,-5905.69,False
+1453,Other,positive,neutral,-8049.98,False
+1454,News,neutral,negative,-5972.98,False
+1455,Other,neutral,neutral,-7890.44,False
+1456,Other,neutral,negative,-3866.33,False
+1457,Service,neutral,negative,-6179.95,False
+1458,Service,negative,negative,-5245.57,False
+1459,Academic,neutral,neutral,-5260.16,False
+1460,Academic,neutral,negative,-2174.1,True
+1461,Club & Events,neutral,neutral,-5208.33,False
+1462,Other,neutral,neutral,-6136.65,False
+1463,Other,neutral,neutral,-5979.49,False
+1464,Other,neutral,positive,-7916.92,False
+1465,Other,neutral,negative,-5019.0,False
+1466,Other,neutral,negative,-5706.36,False
+1467,Academic,neutral,neutral,-3879.03,False
+1468,Academic,neutral,negative,-7060.5,False
+1469,News,neutral,neutral,-5881.06,False
+1470,Other,neutral,negative,-6853.77,False
+1471,Other,neutral,negative,-4640.72,False
+1472,Spam,neutral,neutral,-6998.67,False
+1473,Academic,neutral,neutral,-5347.33,False
+1474,Academic,neutral,neutral,-6192.6,False
+1475,Other,neutral,neutral,-8922.73,False
+1476,Other,neutral,positive,-5264.1,False
+1477,Other,neutral,neutral,-7779.06,False
+1478,News,neutral,negative,-5810.94,False
+1479,Other,neutral,neutral,-6234.54,False
+1480,Academic,positive,negative,-5417.82,False
+1481,Academic,neutral,positive,-8650.75,False
+1482,Service,neutral,negative,-9057.28,False
+1483,Other,positive,positive,-7856.64,False
+1484,Academic,neutral,negative,-3762.49,False
+1485,Other,neutral,negative,-3452.16,True
+1486,Academic,positive,negative,-2191.71,True
+1487,Other,neutral,negative,-5387.76,False
+1488,Spam,neutral,neutral,-7297.28,False
+1489,Other,neutral,negative,-6515.98,False
+1490,Other,neutral,positive,-4417.34,False
+1491,Service,neutral,negative,-3793.07,False
+1492,Other,negative,negative,-1789.34,True
+1493,Personal Affairs,negative,negative,-4091.17,False
+1494,Service,neutral,negative,-2017.66,True
+1495,Other,negative,negative,-4705.55,False
+1496,Other,neutral,negative,-7396.35,False
+1497,Other,negative,negative,-2333.33,True
+1498,Other,neutral,neutral,-4989.14,False
+1499,Help & Share,negative,neutral,-6255.87,False
+1500,Academic,neutral,negative,-5275.27,False
+1501,Other,neutral,negative,-2689.35,True
+1502,Other,neutral,neutral,-10036.1,False
+1503,Academic,positive,neutral,-5687.38,False
+1504,Other,positive,positive,-4906.79,False
+1505,Other,negative,negative,-2777.11,True
+1506,Jobs & Recruitment,neutral,negative,-3660.58,False
+1507,Other,neutral,neutral,-6159.78,False
+1508,Service,negative,negative,-2075.87,True
+1509,Other,neutral,negative,-2626.08,True
+1510,Academic,neutral,neutral,-4815.7,False
+1511,Social Affairs,negative,negative,-4427.01,False
+1512,Other,neutral,neutral,-9389.12,False
+1513,Academic,neutral,negative,-4426.74,False
+1514,Other,negative,negative,-7026.98,False
+1515,Club & Events,positive,positive,-3284.63,True
+1516,Service,neutral,negative,-2003.86,True
+1517,Club & Events,positive,positive,-3819.57,False
+1518,Other,neutral,negative,-5227.96,False
+1519,Other,negative,negative,-6476.4,False
+1520,Other,neutral,neutral,-4704.98,False
+1521,Academic,neutral,negative,-2938.38,True
+1522,Jobs & Recruitment,neutral,negative,-4430.72,False
+1523,Academic,neutral,positive,-3496.86,True
+1524,Academic,neutral,neutral,-5683.93,False
+1525,Personal Affairs,negative,neutral,-11401.54,False
+1526,Other,negative,negative,-4319.94,False
+1527,Other,positive,positive,-3960.94,False
+1528,Academic,neutral,negative,-7159.67,False
+1529,Service,neutral,negative,-4346.86,False
+1530,Academic,neutral,neutral,-5354.74,False
+1531,News,neutral,neutral,-10837.78,False
+1532,Other,neutral,negative,-7617.3,False
+1533,Other,neutral,neutral,-9524.76,False
+1534,Other,negative,negative,-5434.09,False
+1535,Other,neutral,negative,-5766.99,False
+1536,Other,negative,negative,-1780.88,True
+1537,Other,negative,negative,-3999.13,False
+1538,News,neutral,neutral,-6110.5,False
+1539,Other,neutral,positive,-7661.2,False
+1540,Club & Events,neutral,positive,-5463.2,False
+1541,Academic,neutral,neutral,-8380.02,False
+1542,Other,negative,negative,-6181.48,False
+1543,Academic,neutral,neutral,-8080.18,False
+1544,Other,neutral,neutral,-7453.35,False
+1545,Other,neutral,negative,-5506.39,False
+1546,Other,neutral,positive,-11477.3,False
+1547,Other,negative,negative,-2624.99,True
+1548,Jobs & Recruitment,neutral,negative,-4467.73,False
+1549,Help & Share,positive,positive,-1221.51,True
+1550,Spam,neutral,neutral,-6695.64,False
+1551,Jobs & Recruitment,neutral,positive,-11580.02,False
+1552,Other,neutral,neutral,-8065.98,False
+1553,Other,neutral,positive,-10674.46,False
+1554,Service,negative,negative,-1384.2,True
+1555,Other,neutral,neutral,-7309.06,False
+1556,Other,neutral,negative,-2001.74,True
+1557,Academic,neutral,positive,-4475.23,False
+1558,Other,neutral,negative,-5669.34,False
+1559,Service,neutral,neutral,-5179.85,False
+1560,Personal Affairs,negative,neutral,-10164.98,False
+1561,Other,neutral,negative,-9268.65,False
+1562,Help & Share,neutral,negative,-3890.05,False
+1563,News,neutral,negative,-1698.14,True
+1564,Jobs & Recruitment,neutral,negative,-3652.34,False
+1565,News,neutral,negative,-2914.56,True
+1566,Academic,positive,positive,-6165.36,False
+1567,Academic,neutral,negative,-2727.27,True
+1568,Academic,neutral,neutral,-5299.69,False
+1569,Other,positive,positive,-4336.26,False
+1570,Other,neutral,neutral,-7603.49,False
+1571,Other,neutral,positive,-4959.44,False
+1572,Academic,neutral,neutral,-6416.98,False
+1573,Other,neutral,positive,-8453.39,False
+1574,Other,neutral,neutral,-4517.72,False
+1575,Academic,neutral,neutral,-7097.81,False
+1576,Academic,negative,negative,-3428.71,True
+1577,Other,neutral,negative,-4337.98,False
+1578,Other,negative,negative,-2894.57,True
+1579,Other,negative,negative,-2291.26,True
+1580,Other,neutral,negative,-3701.63,False
+1581,Academic,negative,negative,-3142.7,True
+1582,Academic,negative,negative,-1712.16,True
+1583,Academic,neutral,neutral,-5878.23,False
+1584,Academic,positive,neutral,-6301.57,False
+1585,Academic,neutral,negative,-4498.85,False
+1586,Academic,negative,negative,-4712.49,False
+1587,Academic,negative,neutral,-9973.15,False
+1588,Help & Share,neutral,neutral,-8585.34,False
+1589,Other,neutral,neutral,-7184.7,False
+1590,Academic,neutral,negative,-3644.33,False
+1591,Jobs & Recruitment,positive,positive,-3461.95,True
+1592,Other,negative,negative,-6842.02,False
+1593,Service,negative,negative,-2939.16,True
+1594,Academic,positive,neutral,-8806.32,False
+1595,Other,negative,negative,-6722.15,False
+1596,Academic,neutral,neutral,-4523.69,False
+1597,Other,neutral,neutral,-7792.51,False
+1598,News,positive,positive,-2676.85,True
+1599,Academic,neutral,negative,-8480.3,False
+1600,Other,positive,negative,-5919.9,False
+1601,Service,neutral,negative,-5688.46,False
+1602,Other,neutral,neutral,-8942.06,False
+1603,Academic,neutral,negative,-3433.29,True
+1604,Academic,neutral,negative,-3840.42,False
+1605,Other,negative,negative,-805.06,True
+1606,Academic,negative,negative,-2654.0,True
+1607,Other,positive,positive,-4663.52,False
+1608,Other,neutral,neutral,-9714.4,False
+1609,Academic,neutral,positive,-5883.31,False
+1610,Service,neutral,negative,-4721.46,False
+1611,Personal Affairs,neutral,negative,-7068.22,False
+1612,Academic,positive,negative,-1204.5,True
+1613,Other,neutral,negative,-2356.38,True
+1614,Other,positive,positive,-2508.83,True
+1615,Academic,neutral,neutral,-6734.89,False
+1616,Academic,neutral,neutral,-5992.58,False
+1617,Academic,neutral,negative,-3809.69,False
+1618,Service,neutral,neutral,-5919.62,False
+1619,Social Affairs,neutral,negative,-5972.3,False
+1620,Other,neutral,negative,-3015.74,True
+1621,Other,neutral,negative,-5061.32,False
+1622,Academic,neutral,negative,-4297.45,False
+1623,Academic,positive,positive,-3328.2,True
+1624,Other,neutral,negative,-4266.33,False
+1625,Academic,negative,negative,-4259.74,False
+1626,Other,neutral,positive,-5817.26,False
+1627,Academic,negative,negative,-5662.84,False
+1628,Other,neutral,positive,-3564.15,True
+1629,Other,neutral,negative,-5484.07,False
+1630,Academic,neutral,positive,-9437.02,False
+1631,Service,negative,negative,-4510.72,False
+1632,Other,neutral,neutral,-7750.94,False
+1633,Academic,neutral,negative,-2361.62,True
+1634,Academic,neutral,negative,-6505.24,False
+1635,Other,negative,negative,-4791.27,False
+1636,Other,neutral,negative,-3120.82,True
+1637,Other,neutral,positive,-8327.61,False
+1638,Academic,neutral,positive,-10554.76,False
+1639,Academic,neutral,negative,-1476.09,True
+1640,Other,neutral,neutral,-8019.81,False
+1641,Academic,neutral,negative,-4527.56,False
+1642,Other,neutral,neutral,-7016.32,False
+1643,Other,neutral,negative,-5589.11,False
+1644,Other,neutral,negative,-2117.59,True
+1645,Personal Affairs,negative,negative,-7596.52,False
+1646,Other,neutral,neutral,-7561.98,False
+1647,Academic,positive,positive,-7405.29,False
+1648,Other,neutral,neutral,-5606.75,False
+1649,Other,negative,negative,-1560.66,True
+1650,Other,neutral,negative,-5591.29,False
+1651,Other,negative,negative,-5470.24,False
+1652,Service,neutral,negative,-7396.78,False
+1653,Academic,positive,positive,-8781.61,False
+1654,Other,negative,negative,-4664.23,False
+1655,Other,neutral,negative,-5439.18,False
+1656,Academic,neutral,neutral,-5045.09,False
+1657,Academic,neutral,negative,-4872.18,False
+1658,Other,neutral,neutral,-9470.7,False
+1659,News,neutral,negative,-4101.78,False
+1660,Other,neutral,neutral,-8683.05,False
+1661,Other,neutral,neutral,-9488.53,False
+1662,News,neutral,negative,-5334.46,False
+1663,Academic,negative,negative,-6116.36,False
+1664,Other,neutral,negative,-4595.57,False
+1665,Other,positive,positive,-3553.77,True
+1666,Academic,neutral,negative,-3904.59,False
+1667,Other,neutral,negative,-1705.16,True
+1668,Other,negative,negative,-6013.22,False
+1669,Personal Affairs,neutral,negative,-2286.86,True
+1670,Academic,neutral,neutral,-5024.95,False
+1671,Other,neutral,negative,-6771.08,False
+1672,Academic,neutral,positive,-3610.08,True
+1673,Academic,neutral,negative,-4465.77,False
+1674,Service,negative,negative,-3098.89,True
+1675,Academic,neutral,positive,-2119.62,True
+1676,Other,negative,negative,-4548.83,False
+1677,Academic,neutral,neutral,-5964.89,False
+1678,Other,neutral,neutral,-6866.18,False
+1679,Other,neutral,negative,-4228.41,False
+1680,Other,neutral,negative,-5118.09,False
+1681,Academic,neutral,neutral,-10634.98,False
+1682,Academic,neutral,negative,-4271.64,False
+1683,Personal Affairs,neutral,positive,-7836.6,False
+1684,Academic,neutral,negative,-9121.62,False
+1685,Help & Share,positive,neutral,-4791.22,False
+1686,Other,negative,neutral,-5047.39,False
+1687,Academic,neutral,negative,-2225.25,True
+1688,Academic,neutral,positive,-6680.52,False
+1689,News,neutral,negative,-2942.69,True
+1690,News,neutral,neutral,-7616.52,False
+1691,Academic,negative,negative,-3369.94,True
+1692,Other,neutral,neutral,-7872.01,False
+1693,Service,neutral,neutral,-9229.55,False
+1694,Other,neutral,negative,-2823.47,True
+1695,Other,neutral,negative,-7842.72,False
+1696,Service,neutral,negative,-6189.37,False
+1697,Academic,negative,negative,-3798.66,False
+1698,Academic,neutral,negative,-6458.98,False
+1699,Other,neutral,negative,-6027.29,False
+1700,Other,neutral,neutral,-7419.17,False
+1701,Academic,neutral,negative,-2407.49,True
+1702,Help & Share,neutral,negative,-4048.54,False
+1703,Other,neutral,negative,-5693.67,False
+1704,Service,neutral,neutral,-6577.37,False
+1705,Service,neutral,negative,-2665.69,True
+1706,Academic,negative,neutral,-6050.76,False
+1707,Other,neutral,negative,-7813.75,False
+1708,Academic,negative,negative,-3670.27,False
+1709,Academic,neutral,negative,-3977.1,False
+1710,Academic,positive,positive,-6096.35,False
+1711,Personal Affairs,positive,positive,-6315.18,False
+1712,Academic,neutral,negative,-5221.66,False
+1713,Other,neutral,positive,-6262.23,False
+1714,Service,neutral,negative,-2373.08,True
+1715,Academic,neutral,negative,-5841.32,False
+1716,Social Affairs,positive,negative,-3761.54,False
+1717,Other,neutral,negative,-2701.19,True
+1718,Other,negative,positive,-6178.68,False
+1719,Other,neutral,neutral,-8549.62,False
+1720,Other,positive,negative,-4456.47,False
+1721,Academic,neutral,neutral,-4815.81,False
+1722,Other,negative,negative,-13137.06,False
+1723,Other,neutral,negative,-2705.56,True
+1724,Other,positive,positive,-2945.64,True
+1725,Academic,neutral,neutral,-5811.39,False
+1726,Other,neutral,negative,-4410.67,False
+1727,Other,neutral,neutral,-9415.31,False
+1728,Academic,neutral,neutral,-4082.09,False
+1729,Other,neutral,negative,-4266.53,False
+1730,Other,neutral,negative,-6901.01,False
+1731,Academic,neutral,negative,-4945.2,False
+1732,Other,neutral,negative,-5776.92,False
+1733,Academic,neutral,positive,-9167.77,False
+1734,Academic,neutral,negative,-1119.43,True
+1735,Other,negative,negative,-3904.88,False
+1736,Other,negative,negative,-5602.72,False
+1737,Other,negative,neutral,-11925.35,False
+1738,Other,neutral,neutral,-6079.41,False
+1739,Academic,neutral,negative,-3200.62,True
+1740,Service,neutral,positive,-5930.8,False
+1741,Other,neutral,neutral,-8038.43,False
+1742,Other,neutral,negative,-4233.63,False
+1743,Academic,neutral,negative,-3293.37,True
+1744,Other,neutral,negative,-7154.98,False
+1745,Other,negative,negative,-6339.16,False
+1746,Other,neutral,negative,-3956.21,False
+1747,Other,negative,negative,-3480.63,True
+1748,Help & Share,neutral,neutral,-5315.12,False
+1749,Academic,neutral,negative,-5255.03,False
+1750,Academic,negative,negative,-5587.83,False
+1751,Personal Affairs,neutral,neutral,-7825.62,False
+1752,Personal Affairs,negative,negative,-3821.43,False
+1753,Academic,neutral,positive,-7939.22,False
+1754,Academic,neutral,positive,-5906.84,False
+1755,Service,neutral,neutral,-8453.95,False
+1756,Academic,neutral,neutral,-7681.21,False
+1757,Academic,negative,negative,-3825.89,False
+1758,Academic,neutral,neutral,-7644.78,False
+1759,Other,neutral,negative,-5009.45,False
+1760,Academic,neutral,negative,-8613.99,False
+1761,News,neutral,negative,-1558.37,True
+1762,Other,positive,positive,-6031.28,False
+1763,Academic,neutral,negative,-1792.22,True
+1764,Service,neutral,negative,-2886.23,True
+1765,Other,negative,neutral,-9292.99,False
+1766,Service,neutral,negative,-5061.94,False
+1767,Academic,neutral,neutral,-4023.08,False
+1768,Academic,negative,negative,-3506.41,True
+1769,Other,positive,positive,-9515.25,False
+1770,Academic,neutral,neutral,-8423.51,False
+1771,Jobs & Recruitment,neutral,negative,-7816.88,False
+1772,Other,neutral,neutral,-7541.17,False
+1773,Service,positive,negative,-2454.27,True
+1774,Personal Affairs,positive,positive,-6849.77,False
+1775,Social Affairs,negative,neutral,-11673.0,False
+1776,Academic,neutral,neutral,-7932.02,False
+1777,Service,neutral,negative,-5132.52,False
+1778,Academic,neutral,negative,-1631.8,True
+1779,Academic,neutral,negative,-8610.28,False
+1780,Other,negative,negative,-4050.02,False
+1781,Other,neutral,negative,-2693.1,True
+1782,Service,neutral,neutral,-5837.45,False
+1783,Academic,neutral,negative,-4031.36,False
+1784,Other,neutral,negative,-3623.08,True
+1785,Other,neutral,negative,-6535.27,False
+1786,Other,positive,negative,-5122.55,False
+1787,Academic,neutral,neutral,-7238.45,False
+1788,Academic,neutral,neutral,-4702.52,False
+1789,Academic,neutral,negative,-5184.72,False
+1790,Other,neutral,neutral,-3989.62,False
+1791,Club & Events,neutral,negative,-5781.08,False
+1792,Academic,neutral,neutral,-5083.74,False
+1793,Other,neutral,neutral,-8077.1,False
+1794,Other,negative,negative,-6117.28,False
+1795,Academic,neutral,positive,-10074.28,False
+1796,Academic,neutral,neutral,-9228.44,False
+1797,Academic,neutral,negative,-5100.47,False
+1798,Personal Affairs,positive,positive,-7311.59,False
+1799,Service,positive,positive,-5201.38,False
+1800,Other,neutral,negative,-2920.1,True
+1801,Help & Share,neutral,neutral,-7098.25,False
+1802,Other,neutral,negative,-4707.11,False
+1803,Service,negative,negative,-4266.09,False
+1804,Academic,neutral,negative,-7781.5,False
+1805,Other,neutral,positive,-10634.24,False
+1806,Other,neutral,neutral,-5347.88,False
+1807,Academic,neutral,neutral,-6350.44,False
+1808,Other,negative,negative,-4504.82,False
+1809,Academic,neutral,neutral,-7873.45,False
+1810,Help & Share,neutral,neutral,-4599.9,False
+1811,Academic,neutral,negative,-5584.68,False
+1812,Other,neutral,negative,-5214.82,False
+1813,Other,neutral,positive,-9224.89,False
+1814,Other,neutral,positive,-7713.87,False
+1815,Other,positive,positive,-5143.12,False
+1816,Other,neutral,negative,-4427.9,False
+1817,Service,neutral,neutral,-4605.06,False
+1818,Other,neutral,neutral,-8715.32,False
+1819,Other,neutral,neutral,-8170.15,False
+1820,Academic,positive,neutral,-6597.82,False
+1821,Other,neutral,negative,-1216.13,True
+1822,Other,negative,negative,-6285.59,False
+1823,Other,positive,positive,-7062.19,False
+1824,Other,neutral,negative,-1709.82,True
+1825,Academic,neutral,negative,-6845.09,False
+1826,Other,neutral,negative,-4664.77,False
+1827,Academic,neutral,negative,-4191.88,False
+1828,Academic,neutral,negative,-2379.99,True
+1829,Other,neutral,neutral,-8157.09,False
+1830,Other,neutral,negative,-8871.32,False
+1831,Other,neutral,negative,-3401.48,True
+1832,Academic,neutral,neutral,-8326.35,False
+1833,Academic,neutral,neutral,-8151.26,False
+1834,Academic,neutral,neutral,-5150.21,False
+1835,Other,neutral,negative,-5549.08,False
+1836,Academic,negative,negative,-2847.31,True
+1837,News,positive,neutral,-9087.51,False
+1838,Other,neutral,negative,-7163.45,False
+1839,Academic,neutral,neutral,-7844.04,False
+1840,Other,neutral,neutral,-5797.0,False
+1841,Other,neutral,negative,-1734.24,True
+1842,Academic,negative,negative,-1426.94,True
+1843,Academic,positive,positive,-6378.16,False
+1844,Other,neutral,negative,-4531.33,False
+1845,Other,neutral,neutral,-7077.72,False
+1846,Academic,neutral,negative,-3089.05,True
+1847,Jobs & Recruitment,neutral,negative,-5183.31,False
+1848,Other,negative,negative,-4073.13,False
+1849,Other,neutral,positive,-6228.96,False
+1850,Other,negative,negative,-3344.35,True
+1851,Service,positive,negative,-7556.53,False
+1852,Academic,neutral,neutral,-10658.58,False
+1853,Other,neutral,negative,-6453.0,False
+1854,News,neutral,negative,-5063.03,False
+1855,Academic,neutral,negative,-4368.16,False
+1856,Academic,neutral,positive,-9231.12,False
+1857,Other,neutral,neutral,-6364.35,False
+1858,Other,neutral,neutral,-6656.67,False
+1859,Academic,negative,negative,-1519.19,True
+1860,Jobs & Recruitment,neutral,negative,-6533.99,False
+1861,Social Affairs,negative,negative,-4410.62,False
+1862,Academic,neutral,negative,-6088.67,False
+1863,Academic,negative,negative,-2561.37,True
+1864,Service,negative,negative,-6543.95,False
+1865,Academic,neutral,neutral,-7903.68,False
+1866,Other,neutral,negative,-5263.77,False
+1867,Other,negative,neutral,-7452.2,False
+1868,Academic,positive,negative,-1497.53,True
+1869,Other,negative,negative,-7637.65,False
+1870,Academic,neutral,neutral,-10300.97,False
+1871,Other,negative,negative,-9372.25,False
+1872,Other,neutral,neutral,-7196.75,False
+1873,News,neutral,negative,-2474.39,True
+1874,Academic,neutral,neutral,-4128.42,False
+1875,Service,negative,negative,-2787.43,True
+1876,Other,neutral,negative,-1666.38,True
+1877,Club & Events,neutral,neutral,-6417.88,False
+1878,Other,neutral,neutral,-4985.09,False
+1879,Help & Share,neutral,neutral,-6831.57,False
+1880,Other,positive,negative,-4549.14,False
+1881,Other,neutral,negative,-3890.06,False
+1882,Other,negative,negative,-3985.33,False
+1883,Academic,positive,negative,-6218.75,False
+1884,Academic,negative,negative,-2417.03,True
+1885,Other,neutral,negative,-1597.17,True
+1886,Other,neutral,negative,-5379.41,False
+1887,Other,neutral,negative,-9191.71,False
+1888,Academic,neutral,negative,-5070.77,False
+1889,Other,neutral,neutral,-10048.3,False
+1890,Academic,positive,positive,-3196.21,True
+1891,Spam,neutral,negative,-8138.64,False
+1892,Other,negative,negative,-6812.19,False
+1893,Other,neutral,negative,-2664.89,True
+1894,Other,negative,negative,-2824.95,True
+1895,Other,neutral,neutral,-10589.95,False
+1896,Other,neutral,negative,-5899.8,False
+1897,Academic,neutral,neutral,-4538.66,False
+1898,Academic,neutral,negative,-3241.85,True
+1899,Other,neutral,negative,-9036.68,False
+1900,Other,neutral,negative,-5052.61,False
+1901,Other,neutral,neutral,-5170.92,False
+1902,Other,neutral,negative,-6717.3,False
+1903,Other,neutral,neutral,-6749.53,False
+1904,Other,neutral,neutral,-6208.8,False
+1905,Other,neutral,negative,-3538.07,True
+1906,Other,neutral,negative,-8201.94,False
+1907,Other,neutral,negative,-2899.93,True
+1908,Academic,positive,negative,-6421.59,False
+1909,Other,neutral,negative,-3634.16,False
+1910,Academic,positive,positive,-4931.46,False
+1911,Personal Affairs,neutral,positive,-3857.36,False
+1912,Other,negative,negative,-3399.35,True
+1913,Service,neutral,negative,-4781.56,False
+1914,Service,neutral,negative,-2792.11,True
+1915,Jobs & Recruitment,neutral,positive,-6814.22,False
+1916,Other,neutral,positive,-7842.93,False
+1917,Other,neutral,negative,-6332.51,False
+1918,Other,neutral,negative,-7306.35,False
+1919,Academic,neutral,neutral,-4216.73,False
+1920,Help & Share,neutral,negative,-5773.52,False
+1921,Help & Share,neutral,negative,-3033.28,True
+1922,Other,neutral,neutral,-6171.9,False
+1923,Other,neutral,neutral,-6050.73,False
+1924,Service,neutral,negative,-3145.28,True
+1925,Service,positive,negative,-3915.53,False
+1926,Other,negative,negative,-6217.56,False
+1927,Club & Events,neutral,neutral,-5008.46,False
+1928,Other,negative,negative,-3474.85,True
+1929,Academic,negative,negative,-3644.15,False
+1930,Other,neutral,neutral,-5517.46,False
+1931,Club & Events,neutral,negative,-7283.92,False
+1932,Other,neutral,neutral,-6436.88,False
+1933,Other,neutral,negative,-8051.36,False
+1934,Academic,neutral,positive,-2237.72,True
+1935,Help & Share,neutral,negative,-7309.18,False
+1936,Other,neutral,neutral,-9794.36,False
+1937,Personal Affairs,negative,negative,-3704.14,False
+1938,News,neutral,neutral,-8874.83,False
+1939,Academic,neutral,negative,-5227.88,False
+1940,Other,neutral,negative,-2532.89,True
+1941,Academic,negative,negative,-2818.43,True
+1942,Personal Affairs,neutral,neutral,-4942.39,False
+1943,Other,neutral,negative,-1561.3,True
+1944,Other,neutral,negative,-3975.15,False
+1945,Other,negative,negative,-5106.64,False
+1946,Academic,positive,negative,-958.92,True
+1947,Social Affairs,neutral,neutral,-9730.82,False
+1948,Social Affairs,neutral,negative,-2088.03,True
+1949,Academic,neutral,negative,-5294.42,False
+1950,Personal Affairs,neutral,negative,-1843.41,True
+1951,Academic,positive,negative,-7128.44,False
+1952,Academic,neutral,negative,-3422.79,True
+1953,Social Affairs,negative,negative,-3981.43,False
+1954,Academic,neutral,negative,-1973.03,True
+1955,Service,positive,neutral,-7050.84,False
+1956,Academic,neutral,negative,-4011.53,False
+1957,Other,neutral,negative,-9209.95,False
+1958,Other,neutral,negative,-9005.11,False
+1959,Help & Share,neutral,negative,-2556.02,True
+1960,Academic,neutral,negative,-7914.63,False
+1961,Other,positive,positive,-8911.87,False
+1962,Service,neutral,negative,-5643.44,False
+1963,News,neutral,neutral,-11680.87,False
+1964,Other,positive,negative,-5005.71,False
+1965,News,neutral,neutral,-5863.76,False
+1966,Other,neutral,negative,-6815.73,False
+1967,Academic,neutral,negative,-8830.49,False
+1968,Other,neutral,negative,-4865.27,False
+1969,Other,neutral,negative,-8271.03,False
+1970,Academic,negative,neutral,-6227.16,False
+1971,Academic,negative,neutral,-5945.04,False
+1972,Academic,neutral,negative,-2963.79,True
+1973,Academic,neutral,neutral,-5795.0,False
+1974,Jobs & Recruitment,neutral,neutral,-7130.91,False
+1975,Other,negative,negative,-3883.68,False
+1976,Academic,neutral,negative,-2916.76,True
+1977,News,neutral,negative,-6667.9,False
+1978,Other,neutral,positive,-3733.07,False
+1979,Academic,neutral,negative,-6246.06,False
+1980,Other,negative,neutral,-6923.58,False
+1981,Personal Affairs,negative,negative,-3832.21,False
+1982,Other,neutral,negative,-3311.17,True
+1983,Other,neutral,negative,-2616.14,True
+1984,Other,neutral,negative,-3117.01,True
+1985,Other,neutral,neutral,-6852.86,False
+1986,Academic,neutral,negative,-7002.19,False
+1987,Social Affairs,negative,negative,-7441.35,False
+1988,Academic,neutral,positive,-4088.48,False
+1989,Academic,neutral,negative,-3478.28,True
+1990,Jobs & Recruitment,neutral,neutral,-9922.54,False
+1991,Club & Events,neutral,negative,-3838.54,False
+1992,Personal Affairs,negative,negative,-6312.27,False
+1993,Academic,neutral,negative,-4894.07,False
+1994,Other,neutral,negative,-1694.54,True
+1995,Other,negative,negative,-5380.16,False
+1996,Other,neutral,neutral,-5636.39,False
+1997,Other,neutral,negative,-7255.84,False
+1998,Service,neutral,negative,-2396.74,True
+1999,Other,negative,negative,-3750.22,False
+2000,Other,neutral,negative,-3873.76,False
+2001,Personal Affairs,negative,neutral,-5424.78,False
+2002,Social Affairs,neutral,negative,-7083.89,False
+2003,Academic,neutral,neutral,-6525.59,False
+2004,Academic,positive,neutral,-6306.52,False
+2005,Other,positive,positive,-4628.17,False
+2006,Other,negative,negative,-6406.84,False
+2007,Help & Share,neutral,neutral,-8818.48,False
+2008,Other,neutral,negative,-5837.1,False
+2009,Other,negative,negative,-6379.76,False
+2010,Other,neutral,negative,-4752.55,False
+2011,Academic,neutral,neutral,-9254.8,False
+2012,Other,neutral,negative,-3286.17,True
+2013,Other,neutral,negative,-6557.92,False
+2014,Academic,negative,negative,-1701.84,True
+2015,Spam,neutral,neutral,-8194.5,False
+2016,Other,negative,negative,-2245.43,True
+2017,Service,neutral,negative,-2985.99,True
+2018,Academic,neutral,neutral,-4982.8,False
+2019,Other,neutral,negative,-5150.33,False
+2020,Academic,positive,neutral,-7594.2,False
+2021,Personal Affairs,negative,neutral,-10798.1,False
+2022,News,neutral,neutral,-7412.74,False
+2023,Other,neutral,neutral,-14149.96,False
+2024,Help & Share,neutral,neutral,-7522.82,False
+2025,Academic,neutral,negative,-8910.0,False
+2026,Other,neutral,negative,-6236.62,False
+2027,Other,neutral,neutral,-7806.6,False
+2028,Academic,neutral,positive,-5891.32,False
+2029,Other,neutral,neutral,-8342.19,False
+2030,Academic,neutral,negative,-5542.57,False
+2031,Service,negative,negative,-2732.19,True
+2032,Service,neutral,negative,-3788.87,False
+2033,Academic,neutral,neutral,-6440.2,False
+2034,Academic,negative,negative,-2945.65,True
+2035,Other,negative,negative,-3575.77,True
+2036,Other,neutral,negative,-8456.4,False
+2037,Academic,negative,negative,-4207.21,False
+2038,Other,neutral,positive,-6557.96,False
+2039,Club & Events,neutral,negative,-6329.23,False
+2040,Other,neutral,negative,-5050.21,False
+2041,Other,neutral,neutral,-6385.03,False
+2042,Academic,neutral,negative,-3500.98,True
+2043,Other,neutral,positive,-6105.03,False
+2044,Academic,neutral,neutral,-5744.06,False
+2045,Personal Affairs,neutral,negative,-9947.9,False
+2046,Academic,positive,neutral,-5464.42,False
+2047,Spam,neutral,negative,-3931.7,False
+2048,Other,neutral,positive,-3828.9,False
+2049,Academic,neutral,negative,-2101.32,True
+2050,Club & Events,positive,neutral,-10010.05,False
+2051,Other,neutral,negative,-6903.32,False
+2052,Academic,negative,negative,-2513.59,True
+2053,Other,neutral,negative,-3565.42,True
+2054,Other,neutral,negative,-5006.84,False
+2055,Other,neutral,neutral,-6177.46,False
+2056,Academic,neutral,negative,-4930.81,False
+2057,Spam,neutral,neutral,-7981.68,False
+2058,Academic,positive,positive,-3522.93,True
+2059,Other,neutral,negative,-1809.88,True
+2060,Academic,neutral,neutral,-6245.04,False
+2061,Other,neutral,negative,-3566.16,True
+2062,Spam,neutral,positive,-8757.1,False
+2063,Other,positive,positive,-5480.12,False
+2064,Other,neutral,neutral,-8365.23,False
+2065,Club & Events,neutral,negative,-7247.71,False
+2066,Academic,neutral,negative,-3388.46,True
+2067,Other,neutral,negative,-6824.24,False
+2068,Academic,positive,positive,-6375.95,False
+2069,Other,positive,positive,-4346.78,False
+2070,Other,neutral,negative,-2783.93,True
+2071,Social Affairs,neutral,negative,-4283.7,False
+2072,Other,neutral,neutral,-7693.96,False
+2073,Other,negative,neutral,-7897.32,False
+2074,Academic,neutral,negative,-7589.77,False
+2075,Academic,neutral,negative,-4069.43,False
+2076,Social Affairs,negative,negative,-5524.27,False
+2077,Club & Events,neutral,negative,-8544.17,False
+2078,Other,neutral,positive,-2671.34,True
+2079,Academic,neutral,positive,-6498.44,False
+2080,Academic,neutral,neutral,-4530.85,False
+2081,Academic,neutral,negative,-10800.42,False
+2082,Academic,neutral,negative,-4559.55,False
+2083,Other,neutral,neutral,-6192.13,False
+2084,Academic,neutral,negative,-4536.31,False
+2085,Other,positive,positive,-5275.67,False
+2086,Academic,neutral,negative,-5256.14,False
+2087,Service,neutral,negative,-5075.98,False
+2088,Other,neutral,negative,-7733.73,False
+2089,Other,positive,positive,-5229.95,False
+2090,Personal Affairs,neutral,neutral,-9454.28,False
+2091,Other,positive,positive,-2761.36,True
+2092,Other,negative,negative,-7685.54,False
+2093,Service,neutral,negative,-2721.57,True
+2094,Other,positive,positive,-5608.16,False
+2095,Other,neutral,neutral,-5393.86,False
+2096,Other,neutral,positive,-5331.92,False
+2097,News,neutral,negative,-5347.77,False
+2098,Jobs & Recruitment,neutral,negative,-2067.38,True
+2099,Academic,neutral,negative,-6619.41,False
+2100,Other,positive,positive,-4626.95,False
+2101,Academic,neutral,negative,-3352.24,True
+2102,Other,neutral,negative,-1526.79,True
+2103,Academic,negative,negative,-2222.64,True
+2104,Other,neutral,negative,-5802.49,False
+2105,Academic,negative,negative,-5128.93,False
+2106,Academic,positive,positive,-2744.86,True
+2107,Other,neutral,neutral,-9899.58,False
+2108,Other,negative,negative,-4421.84,False
+2109,Academic,negative,negative,-3701.9,False
+2110,Other,positive,negative,-8888.99,False
+2111,Other,positive,positive,-3427.22,True
+2112,Other,neutral,negative,-8008.76,False
+2113,Other,neutral,negative,-6983.27,False
+2114,Academic,neutral,neutral,-7161.59,False
+2115,Other,neutral,neutral,-6086.18,False
+2116,Academic,positive,neutral,-7156.6,False
+2117,Other,positive,positive,-3323.69,True
+2118,Other,neutral,negative,-2960.66,True
+2119,Other,neutral,negative,-6043.19,False
+2120,Other,negative,negative,-2732.44,True
+2121,Academic,neutral,neutral,-8758.08,False
+2122,Other,neutral,neutral,-4219.01,False
+2123,Academic,neutral,positive,-7726.58,False
+2124,Academic,neutral,negative,-6326.21,False
+2125,Other,neutral,negative,-6417.14,False
+2126,Other,negative,negative,-2899.25,True
+2127,Club & Events,positive,negative,-8680.25,False
+2128,News,neutral,negative,-4646.56,False
+2129,Academic,neutral,negative,-3220.08,True
+2130,Academic,neutral,neutral,-5521.65,False
+2131,Academic,neutral,negative,-6770.91,False
+2132,Other,neutral,positive,-6164.81,False
+2133,Other,neutral,negative,-3280.24,True
+2134,Other,neutral,negative,-3303.66,True
+2135,Other,neutral,negative,-8033.75,False
+2136,Academic,neutral,negative,-4524.26,False
+2137,Academic,neutral,negative,-3979.43,False
+2138,Other,neutral,negative,-6301.1,False
+2139,Other,neutral,negative,-2621.12,True
+2140,Other,neutral,negative,-4371.25,False
+2141,Club & Events,neutral,negative,-5226.8,False
+2142,Academic,positive,negative,-5376.53,False
+2143,Academic,neutral,negative,-9295.87,False
+2144,Other,negative,neutral,-7331.8,False
+2145,Other,negative,negative,-8090.29,False
+2146,Personal Affairs,neutral,neutral,-6737.45,False
+2147,Academic,neutral,negative,-2814.64,True
+2148,Academic,neutral,neutral,-6216.99,False
+2149,Other,neutral,negative,-3625.06,False
+2150,Other,neutral,negative,-3367.92,True
+2151,Other,neutral,negative,-7065.01,False
+2152,Academic,neutral,neutral,-6039.32,False
+2153,Academic,positive,negative,-7851.38,False
+2154,Academic,neutral,neutral,-4705.14,False
+2155,Other,neutral,neutral,-5243.52,False
+2156,Academic,neutral,positive,-1327.06,True
+2157,Academic,negative,negative,-4443.05,False
+2158,News,neutral,negative,-5773.98,False
+2159,Other,neutral,negative,-3430.93,True
+2160,Academic,positive,positive,-1866.84,True
+2161,News,neutral,neutral,-4958.99,False
+2162,Other,negative,negative,-5903.85,False
+2163,Service,neutral,negative,-5486.75,False
+2164,Service,neutral,negative,-4548.47,False
+2165,Other,neutral,positive,-6602.42,False
+2166,Other,neutral,neutral,-6945.49,False
+2167,Academic,negative,negative,-2406.39,True
+2168,Other,neutral,negative,-3029.99,True
+2169,Other,neutral,negative,-6335.61,False
+2170,Other,neutral,neutral,-9554.6,False
+2171,Academic,neutral,neutral,-4921.88,False
+2172,Other,negative,negative,-3568.25,True
+2173,Service,neutral,neutral,-7251.43,False
+2174,Academic,neutral,neutral,-7069.22,False
+2175,Personal Affairs,positive,positive,-6324.38,False
+2176,Service,neutral,negative,-6861.94,False
+2177,Academic,neutral,negative,-2899.26,True
+2178,Other,positive,positive,-10279.61,False
+2179,Academic,neutral,negative,-8380.04,False
+2180,Academic,neutral,neutral,-5474.51,False
+2181,Service,neutral,negative,-3994.63,False
+2182,Academic,neutral,negative,-3778.4,False
+2183,Club & Events,neutral,positive,-6522.89,False
+2184,News,neutral,neutral,-6105.12,False
+2185,Academic,neutral,neutral,-5061.91,False
+2186,Service,neutral,negative,-5436.09,False
+2187,Academic,neutral,negative,-5373.81,False
+2188,Academic,neutral,neutral,-8261.84,False
+2189,Personal Affairs,positive,negative,-4943.29,False
+2190,Other,positive,positive,-3636.51,False
+2191,Academic,neutral,negative,-1401.08,True
+2192,Other,negative,negative,-4137.95,False
+2193,Other,positive,positive,-6216.34,False
+2194,Academic,neutral,negative,-1515.76,True
+2195,Other,neutral,negative,-8505.87,False
+2196,Academic,neutral,negative,-7874.19,False
+2197,Service,neutral,negative,-4883.12,False
+2198,News,neutral,negative,-4752.96,False
+2199,Academic,positive,negative,-4257.18,False
+2200,Personal Affairs,neutral,neutral,-8299.62,False
+2201,Service,neutral,negative,-2017.86,True
+2202,Other,neutral,negative,-2931.76,True
+2203,Service,neutral,neutral,-3802.1,False
+2204,Academic,positive,positive,-6031.14,False
+2205,Other,neutral,negative,-4282.83,False
+2206,Help & Share,neutral,negative,-4090.49,False
+2207,Service,neutral,negative,-3143.06,True
+2208,Other,neutral,neutral,-8315.09,False
+2209,Other,neutral,negative,-3010.0,True
+2210,News,neutral,neutral,-4797.1,False
+2211,Personal Affairs,positive,positive,-4337.97,False
+2212,Service,negative,negative,-4722.06,False
+2213,Other,neutral,negative,-3867.62,False
+2214,Service,negative,negative,-6110.34,False
+2215,Service,positive,negative,-3703.57,False
+2216,Other,neutral,neutral,-11225.38,False
+2217,Other,neutral,negative,-3741.69,False
+2218,Other,negative,negative,-2190.16,True
+2219,Academic,neutral,negative,-3680.22,False
+2220,Academic,neutral,negative,-6326.22,False
+2221,Personal Affairs,neutral,neutral,-5829.9,False
+2222,Other,neutral,negative,-6399.05,False
+2223,Service,neutral,neutral,-2234.62,True
+2224,Other,neutral,negative,-5993.89,False
+2225,Other,neutral,positive,-9289.78,False
+2226,Other,neutral,negative,-4453.9,False
+2227,Academic,neutral,negative,-4425.43,False
+2228,Other,neutral,neutral,-6890.51,False
+2229,Other,negative,negative,-4344.17,False
+2230,Other,neutral,negative,-6176.76,False
+2231,Academic,neutral,negative,-6141.08,False
+2232,Other,negative,negative,-5153.7,False
+2233,Other,neutral,neutral,-7707.58,False
+2234,Other,neutral,neutral,-8271.6,False
+2235,Academic,positive,negative,-4331.38,False
+2236,Academic,negative,negative,-3877.82,False
+2237,Other,neutral,neutral,-5200.65,False
+2238,Academic,neutral,neutral,-6312.31,False
+2239,Jobs & Recruitment,positive,positive,-5613.34,False
+2240,Help & Share,neutral,neutral,-9296.36,False
+2241,Academic,neutral,negative,-4450.91,False
+2242,Spam,neutral,neutral,-4408.2,False
+2243,Academic,neutral,positive,-4054.36,False
+2244,Other,neutral,negative,-1628.0,True
+2245,Academic,neutral,negative,-4423.85,False
+2246,Spam,neutral,negative,-5522.43,False
+2247,Academic,neutral,neutral,-3446.66,True
+2248,Academic,neutral,neutral,-10480.53,False
+2249,Academic,neutral,neutral,-7379.55,False
+2250,Personal Affairs,negative,negative,-6300.95,False
+2251,Other,neutral,negative,-6059.1,False
+2252,Service,neutral,positive,-6076.61,False
+2253,Spam,neutral,neutral,-9016.15,False
+2254,Social Affairs,negative,positive,-10225.9,False
+2255,Academic,neutral,negative,-3860.23,False
+2256,Other,neutral,neutral,-10670.38,False
+2257,Academic,neutral,negative,-5372.88,False
+2258,Other,negative,negative,-9671.69,False
+2259,Other,neutral,negative,-3582.17,True
+2260,Academic,neutral,negative,-3920.05,False
+2261,Other,positive,positive,-4093.5,False
+2262,Spam,neutral,neutral,-9504.21,False
+2263,Other,neutral,neutral,-7245.57,False
+2264,Academic,neutral,negative,-5416.04,False
+2265,Personal Affairs,neutral,positive,-3554.98,True
+2266,News,neutral,positive,-5755.21,False
+2267,Other,neutral,negative,-5171.08,False
+2268,Academic,positive,positive,-2651.32,True
+2269,Other,neutral,negative,-2880.2,True
+2270,Other,positive,positive,-8764.43,False
+2271,Service,neutral,neutral,-7612.69,False
+2272,Academic,neutral,negative,-3000.11,True
+2273,Other,neutral,positive,-5789.41,False
+2274,Academic,neutral,negative,-3228.92,True
+2275,Help & Share,positive,negative,-6856.8,False
+2276,Other,positive,positive,-12374.3,False
+2277,Other,neutral,positive,-5589.6,False
+2278,Other,negative,negative,-6202.93,False
+2279,Personal Affairs,negative,negative,-6379.94,False
+2280,Other,neutral,negative,-6516.89,False
+2281,Academic,negative,negative,-5487.8,False
+2282,Help & Share,neutral,negative,-3770.69,False
+2283,Other,neutral,positive,-6661.1,False
+2284,Academic,neutral,negative,-2831.0,True
+2285,Other,negative,negative,-7492.4,False
+2286,Jobs & Recruitment,neutral,negative,-2669.84,True
+2287,Other,positive,positive,-4776.82,False
+2288,Other,neutral,negative,-1175.78,True
+2289,Academic,neutral,neutral,-5661.36,False
+2290,Other,negative,neutral,-8740.2,False
+2291,Other,negative,negative,-2883.48,True
+2292,Academic,positive,negative,-5654.28,False
+2293,Other,neutral,negative,-2874.37,True
+2294,Academic,negative,negative,-5075.76,False
+2295,Other,neutral,neutral,-7578.85,False
+2296,Other,negative,negative,-3262.42,True
+2297,Jobs & Recruitment,negative,negative,-6143.41,False
+2298,Academic,positive,positive,-7974.88,False
+2299,Academic,neutral,negative,-3446.39,True
+2300,Other,neutral,negative,-4127.2,False
+2301,Other,neutral,negative,-3351.21,True
+2302,Other,negative,neutral,-9743.46,False
+2303,Other,neutral,positive,-9956.17,False
+2304,Other,neutral,negative,-5650.59,False
+2305,Other,neutral,neutral,-8697.68,False
+2306,Academic,neutral,neutral,-5950.29,False
+2307,Personal Affairs,positive,positive,-3214.46,True
+2308,Service,negative,negative,-3833.7,False
+2309,Academic,positive,positive,-2187.12,True
+2310,Academic,neutral,neutral,-5621.51,False
+2311,Academic,neutral,positive,-8966.65,False
+2312,Other,neutral,negative,-3464.06,True
+2313,Service,negative,negative,-1856.74,True
+2314,Other,positive,negative,-9142.15,False
+2315,Other,positive,positive,-2475.33,True
+2316,Club & Events,neutral,neutral,-7452.56,False
+2317,Other,neutral,neutral,-5706.24,False
+2318,Academic,neutral,negative,-2352.79,True
+2319,Other,neutral,negative,-5267.61,False
+2320,Academic,positive,negative,-8019.16,False
+2321,Other,neutral,negative,-7903.84,False
+2322,Other,neutral,neutral,-6402.5,False
+2323,Other,positive,negative,-4856.22,False
+2324,Other,negative,neutral,-8687.44,False
+2325,Personal Affairs,neutral,negative,-1891.17,True
+2326,Social Affairs,positive,positive,-5383.8,False
+2327,Jobs & Recruitment,neutral,positive,-10580.58,False
+2328,News,neutral,neutral,-5612.48,False
+2329,Other,positive,neutral,-10207.32,False
+2330,Other,neutral,negative,-3134.34,True
+2331,News,neutral,neutral,-4838.13,False
+2332,Social Affairs,positive,positive,-9713.85,False
+2333,News,neutral,neutral,-6942.75,False
+2334,Personal Affairs,negative,negative,-3823.95,False
+2335,Jobs & Recruitment,neutral,negative,-4517.77,False
+2336,Other,neutral,negative,-6561.6,False
+2337,Academic,positive,neutral,-6292.91,False
+2338,Academic,neutral,negative,-3328.25,True
+2339,Academic,neutral,negative,-4028.66,False
+2340,Other,neutral,negative,-4880.9,False
+2341,Other,negative,negative,-8329.41,False
+2342,Other,neutral,negative,-4818.65,False
+2343,Other,neutral,positive,-5303.39,False
+2344,Academic,neutral,negative,-3904.85,False
+2345,Other,neutral,neutral,-7221.18,False
+2346,Personal Affairs,negative,positive,-9349.44,False
+2347,Other,neutral,negative,-6822.95,False
+2348,Other,negative,negative,-7111.46,False
+2349,Other,neutral,negative,-6335.47,False
+2350,Other,positive,negative,-7953.14,False
+2351,Other,neutral,negative,-2604.25,True
+2352,Other,negative,neutral,-9061.27,False
+2353,Academic,positive,positive,-4422.12,False
+2354,Social Affairs,negative,negative,-2428.89,True
+2355,Personal Affairs,neutral,positive,-5996.85,False
+2356,Social Affairs,neutral,positive,-7305.2,False
+2357,Other,neutral,positive,-8631.98,False
+2358,Other,negative,negative,-6111.67,False
+2359,Spam,neutral,neutral,-7047.63,False
+2360,Other,neutral,neutral,-9062.68,False
+2361,Other,neutral,negative,-6676.8,False
+2362,Other,positive,negative,-6550.69,False
+2363,Other,negative,neutral,-6001.54,False
+2364,Other,neutral,negative,-6362.8,False
+2365,Academic,neutral,negative,-4250.73,False
+2366,Academic,positive,neutral,-7050.67,False
+2367,Academic,negative,neutral,-6280.09,False
+2368,Other,neutral,neutral,-6681.58,False
+2369,Spam,neutral,positive,-10075.21,False
+2370,Academic,neutral,neutral,-5574.28,False
+2371,Service,neutral,neutral,-8853.71,False
+2372,Other,positive,positive,-3137.24,True
+2373,Other,negative,neutral,-8760.58,False
+2374,Academic,negative,negative,-4039.17,False
+2375,Academic,neutral,negative,-1826.24,True
+2376,Other,positive,positive,-8197.22,False
+2377,Other,neutral,negative,-4405.02,False
+2378,Academic,neutral,negative,-8935.53,False
+2379,Academic,negative,negative,-3974.99,False
+2380,Academic,positive,negative,-3796.17,False
+2381,Social Affairs,negative,neutral,-8149.1,False
+2382,Other,negative,negative,-4510.09,False
+2383,Other,neutral,negative,-5001.39,False
+2384,Service,negative,negative,-3120.56,True
+2385,Other,neutral,negative,-6649.5,False
+2386,Academic,neutral,neutral,-8313.5,False
+2387,Other,negative,negative,-2689.01,True
+2388,Other,neutral,negative,-6329.64,False
+2389,Social Affairs,neutral,positive,-11525.54,False
+2390,Other,neutral,positive,-7455.69,False
+2391,Social Affairs,negative,negative,-6108.9,False
+2392,Other,neutral,negative,-6947.94,False
+2393,Service,neutral,negative,-4314.68,False
+2394,Academic,neutral,negative,-3674.36,False
+2395,Academic,neutral,neutral,-7764.86,False
+2396,Academic,neutral,negative,-5176.37,False
+2397,Academic,negative,negative,-4520.32,False
+2398,Other,neutral,negative,-7557.83,False
+2399,Academic,negative,positive,-3300.44,True
+2400,Academic,neutral,negative,-2499.77,True
+2401,Other,neutral,negative,-6125.72,False
+2402,Academic,neutral,negative,-3690.26,False
+2403,Other,neutral,negative,-5982.42,False
+2404,Academic,neutral,neutral,-6876.36,False
+2405,Academic,negative,positive,-4620.42,False
+2406,Personal Affairs,negative,negative,-5405.19,False
+2407,Club & Events,positive,positive,-7822.77,False
+2408,Academic,neutral,neutral,-7274.23,False
+2409,Service,neutral,negative,-8291.74,False
+2410,Other,neutral,negative,-4034.17,False
+2411,Other,neutral,positive,-11041.18,False
+2412,Personal Affairs,positive,positive,-3123.05,True
+2413,Academic,neutral,negative,-4506.41,False
+2414,Other,neutral,negative,-5461.36,False
+2415,Personal Affairs,positive,positive,-6303.74,False
+2416,Jobs & Recruitment,positive,negative,-4802.86,False
+2417,Social Affairs,positive,neutral,-6545.59,False
+2418,Personal Affairs,negative,negative,-5453.78,False
+2419,Service,neutral,positive,-5945.58,False
+2420,Service,neutral,neutral,-6663.97,False
+2421,Other,neutral,negative,-4403.74,False
+2422,Academic,neutral,negative,-1843.11,True
+2423,Academic,neutral,negative,-5434.16,False
+2424,Academic,neutral,negative,-4109.22,False
+2425,Other,neutral,negative,-4982.47,False
+2426,Other,neutral,negative,-4878.6,False
+2427,Other,positive,negative,-9605.06,False
+2428,Academic,neutral,negative,-2256.65,True
+2429,Other,neutral,negative,-4233.99,False
+2430,Academic,neutral,negative,-7138.95,False
+2431,News,neutral,neutral,-5776.18,False
+2432,Personal Affairs,neutral,neutral,-6092.65,False
+2433,Academic,negative,negative,-1564.19,True
+2434,Academic,neutral,neutral,-6278.31,False
+2435,Academic,neutral,neutral,-3797.54,False
+2436,Academic,neutral,negative,-6007.38,False
+2437,Other,neutral,negative,-2329.72,True
+2438,Jobs & Recruitment,neutral,neutral,-9421.99,False
+2439,Help & Share,neutral,negative,-2386.69,True
+2440,Service,neutral,neutral,-5067.71,False
+2441,Service,neutral,neutral,-5930.61,False
+2442,Personal Affairs,negative,negative,-890.55,True
+2443,Academic,neutral,negative,-2933.86,True
+2444,Other,neutral,positive,-2089.07,True
+2445,Academic,neutral,negative,-5609.56,False
+2446,Other,neutral,negative,-4565.61,False
+2447,Other,neutral,neutral,-6034.62,False
+2448,Academic,negative,neutral,-6541.84,False
+2449,Academic,neutral,negative,-6575.61,False
+2450,Other,neutral,neutral,-8146.7,False
+2451,Academic,neutral,negative,-4588.55,False
+2452,Other,neutral,neutral,-9763.2,False
+2453,Academic,neutral,negative,-4279.38,False
+2454,News,neutral,neutral,-11145.92,False
+2455,Other,neutral,negative,-4927.02,False
+2456,News,neutral,negative,-3502.91,True
+2457,Other,neutral,neutral,-8099.07,False
+2458,News,negative,negative,-1402.97,True
+2459,Other,neutral,negative,-3531.58,True
+2460,Academic,positive,positive,-2733.69,True
+2461,Other,neutral,negative,-2831.28,True
+2462,Spam,neutral,negative,-3476.31,True
+2463,Other,neutral,negative,-2805.78,True
+2464,Other,neutral,negative,-2655.71,True
+2465,Other,neutral,neutral,-7646.89,False
+2466,Academic,negative,negative,-1855.3,True
+2467,Other,neutral,negative,-4626.95,False
+2468,Other,positive,neutral,-7413.01,False
+2469,Other,neutral,positive,-7040.14,False
+2470,Academic,neutral,negative,-6226.1,False
+2471,Other,neutral,positive,-6812.31,False
+2472,Academic,negative,negative,-3761.32,False
+2473,Other,neutral,negative,-6204.79,False
+2474,Spam,neutral,negative,-4749.61,False
+2475,Academic,neutral,negative,-3786.06,False
+2476,Academic,neutral,neutral,-8178.72,False
+2477,Academic,neutral,neutral,-6712.41,False
+2478,Other,negative,neutral,-10030.42,False
+2479,Service,neutral,neutral,-10308.66,False
+2480,Other,neutral,neutral,-6773.69,False
+2481,Other,neutral,neutral,-7552.19,False
+2482,Other,neutral,negative,-8672.61,False
+2483,Other,positive,negative,-5586.48,False
+2484,News,neutral,negative,-5486.15,False
+2485,Other,neutral,negative,-5995.21,False
+2486,Other,neutral,negative,-5717.8,False
+2487,Other,neutral,negative,-3528.23,True
+2488,Other,neutral,negative,-5573.92,False
+2489,Academic,neutral,neutral,-7516.51,False
+2490,Academic,neutral,neutral,-7133.07,False
+2491,Academic,neutral,negative,-4657.77,False
+2492,Academic,neutral,negative,-7887.75,False
+2493,Academic,neutral,neutral,-7640.05,False
+2494,Other,neutral,negative,-3897.4,False
+2495,Other,neutral,negative,-6599.44,False
+2496,Other,neutral,negative,-4665.67,False
+2497,Other,neutral,negative,-6558.8,False
+2498,Other,neutral,negative,-6333.67,False
+2499,Service,negative,negative,-5565.67,False
+2500,Academic,neutral,negative,-5188.6,False
+2501,Academic,negative,negative,-3613.52,True
+2502,Other,neutral,neutral,-10751.01,False
+2503,Academic,neutral,positive,-6027.26,False
+2504,Personal Affairs,neutral,negative,-10524.05,False
+2505,Academic,neutral,neutral,-5291.22,False
+2506,Academic,neutral,neutral,-6051.05,False
+2507,Academic,neutral,neutral,-10753.26,False
+2508,Other,negative,negative,-2777.33,True
+2509,Club & Events,neutral,neutral,-6116.25,False
+2510,Academic,neutral,negative,-5691.22,False
+2511,Personal Affairs,negative,negative,-2790.6,True
+2512,Academic,neutral,negative,-5043.82,False
+2513,Other,neutral,neutral,-6876.58,False
+2514,Academic,negative,neutral,-7871.17,False
+2515,Other,neutral,neutral,-6121.89,False
+2516,Academic,neutral,positive,-6137.82,False
+2517,Other,negative,negative,-5793.9,False
+2518,Service,negative,negative,-3235.31,True
+2519,Other,neutral,negative,-8066.98,False
+2520,Other,neutral,negative,-5542.9,False
+2521,Other,neutral,negative,-7101.2,False
+2522,Other,negative,neutral,-6629.13,False
+2523,Other,negative,negative,-5760.28,False
+2524,Personal Affairs,positive,negative,-4344.17,False
+2525,Other,positive,neutral,-6493.23,False
+2526,Other,negative,negative,-2742.89,True
+2527,Academic,neutral,neutral,-6116.81,False
+2528,Service,neutral,negative,-6262.46,False
+2529,Other,positive,negative,-5617.53,False
+2530,Academic,positive,neutral,-11255.47,False
+2531,Other,neutral,negative,-2126.94,True
+2532,Other,neutral,neutral,-7912.4,False
+2533,Academic,neutral,negative,-1984.75,True
+2534,Other,neutral,neutral,-6080.96,False
+2535,Other,neutral,neutral,-8470.53,False
+2536,Spam,neutral,neutral,-6498.91,False
+2537,Other,neutral,neutral,-6213.13,False
+2538,Other,neutral,negative,-4612.44,False
+2539,Other,positive,positive,-2512.21,True
+2540,Other,negative,negative,-5973.07,False
+2541,Other,positive,neutral,-9606.76,False
+2542,Personal Affairs,positive,neutral,-7709.55,False
+2543,Academic,neutral,neutral,-7742.5,False
+2544,Other,neutral,negative,-5000.5,False
+2545,Academic,neutral,negative,-6839.07,False
+2546,Academic,neutral,neutral,-7234.93,False
+2547,Other,neutral,negative,-6652.67,False
+2548,Personal Affairs,positive,positive,-3734.78,False
+2549,Other,positive,neutral,-7466.47,False
+2550,Help & Share,neutral,negative,-3815.36,False
+2551,Service,negative,negative,-2787.45,True
+2552,Academic,neutral,negative,-4364.19,False
+2553,Other,neutral,negative,-3390.08,True
+2554,Academic,neutral,negative,-5377.11,False
+2555,Other,negative,negative,-4932.11,False
+2556,Club & Events,neutral,positive,-4005.71,False
+2557,Other,neutral,neutral,-4250.93,False
+2558,Other,neutral,neutral,-7231.26,False
+2559,Academic,neutral,neutral,-5974.63,False
+2560,News,neutral,positive,-3459.49,True
+2561,Other,neutral,neutral,-4297.53,False
+2562,Other,neutral,negative,-1721.07,True
+2563,Academic,neutral,negative,-2640.99,True
+2564,Other,neutral,positive,-7275.41,False
+2565,Academic,negative,negative,-3187.32,True
+2566,Spam,neutral,negative,-1270.87,True
+2567,Other,negative,negative,-2467.39,True
+2568,Academic,neutral,negative,-4730.83,False
+2569,Service,neutral,neutral,-8766.74,False
+2570,Academic,neutral,neutral,-6162.21,False
+2571,Other,neutral,positive,-5969.84,False
+2572,Other,neutral,positive,-3455.78,True
+2573,Other,negative,negative,-6660.22,False
+2574,Service,positive,negative,-8547.15,False
+2575,Other,neutral,neutral,-5877.11,False
+2576,Other,negative,negative,-5578.28,False
+2577,Personal Affairs,negative,neutral,-7368.28,False
+2578,Academic,neutral,neutral,-5533.03,False
+2579,Help & Share,positive,positive,-8859.09,False
+2580,Other,neutral,negative,-8793.74,False
+2581,Other,neutral,negative,-1753.22,True
+2582,Other,neutral,neutral,-4956.54,False
+2583,Academic,negative,negative,-4237.98,False
+2584,Help & Share,neutral,neutral,-5253.79,False
+2585,Other,positive,negative,-9542.03,False
+2586,Academic,neutral,neutral,-5875.22,False
+2587,Other,negative,negative,-6026.29,False
+2588,Other,neutral,neutral,-7450.33,False
+2589,Academic,neutral,positive,-8721.99,False
+2590,Other,neutral,negative,-5903.12,False
+2591,Academic,negative,neutral,-8745.71,False
+2592,Other,neutral,negative,-4638.73,False
+2593,Help & Share,neutral,negative,-7867.24,False
+2594,Other,neutral,negative,-5465.44,False
+2595,Personal Affairs,positive,positive,-7032.87,False
+2596,Other,negative,negative,-5646.51,False
+2597,Other,positive,neutral,-7276.57,False
+2598,Academic,neutral,negative,-7239.62,False
+2599,Academic,neutral,negative,-3427.37,True
+2600,Academic,neutral,negative,-4498.67,False
+2601,Other,negative,negative,-2823.35,True
+2602,Other,neutral,negative,-2865.09,True
+2603,Academic,neutral,negative,-2746.12,True
+2604,Other,neutral,neutral,-7355.96,False
+2605,Service,neutral,negative,-7150.05,False
+2606,Other,positive,negative,-7728.41,False
+2607,Academic,neutral,neutral,-4302.13,False
+2608,Academic,neutral,neutral,-7929.17,False
+2609,Personal Affairs,positive,negative,-5996.05,False
+2610,Other,neutral,neutral,-7831.56,False
+2611,Club & Events,neutral,negative,-6169.29,False
+2612,Jobs & Recruitment,neutral,neutral,-5985.71,False
+2613,Other,positive,positive,-5675.73,False
+2614,Help & Share,neutral,negative,-5548.6,False
+2615,Academic,negative,positive,-4278.86,False
+2616,Other,neutral,negative,-3420.47,True
+2617,Other,negative,negative,-1479.97,True
+2618,Other,neutral,neutral,-9693.03,False
+2619,Academic,neutral,neutral,-7161.73,False
+2620,Social Affairs,neutral,negative,-5869.34,False
+2621,Other,positive,negative,-5545.07,False
+2622,Academic,neutral,positive,-4489.61,False
+2623,Other,positive,positive,-5233.98,False
+2624,Other,negative,neutral,-8544.85,False
+2625,Academic,positive,negative,-6394.73,False
+2626,Academic,neutral,negative,-5008.41,False
+2627,Other,neutral,negative,-3547.59,True
+2628,Other,neutral,negative,-5132.94,False
+2629,Other,neutral,negative,-4145.83,False
+2630,Social Affairs,neutral,positive,-7496.92,False
+2631,Other,neutral,neutral,-7418.93,False
+2632,Academic,neutral,positive,-5991.68,False
+2633,Academic,negative,negative,-4956.51,False
+2634,Other,neutral,negative,-5688.67,False
+2635,Other,neutral,negative,-5791.45,False
+2636,Personal Affairs,negative,neutral,-9117.38,False
+2637,Other,neutral,positive,-8379.45,False
+2638,Academic,neutral,negative,-6992.85,False
+2639,Academic,negative,neutral,-9403.25,False
+2640,Other,neutral,positive,-9090.34,False
+2641,Academic,neutral,negative,-4414.49,False
+2642,Other,neutral,positive,-2705.3,True
+2643,Other,positive,positive,-6386.0,False
+2644,Other,neutral,neutral,-7730.81,False
+2645,Academic,neutral,negative,-6043.03,False
+2646,Academic,positive,negative,-6076.69,False
+2647,Other,neutral,negative,-6363.93,False
+2648,Other,neutral,positive,-3814.13,False
+2649,Service,neutral,negative,-4989.85,False
+2650,News,neutral,negative,-2412.77,True
+2651,News,neutral,neutral,-7108.84,False
+2652,Academic,negative,negative,-3693.76,False
+2653,Personal Affairs,neutral,negative,-3818.46,False
+2654,Academic,neutral,neutral,-11319.54,False
+2655,Academic,negative,negative,-1839.84,True
+2656,Other,positive,positive,-5402.47,False
+2657,Academic,neutral,negative,-2418.27,True
+2658,Academic,neutral,negative,-5051.95,False
+2659,Academic,neutral,negative,-2128.45,True
+2660,Academic,neutral,negative,-2435.28,True
+2661,Other,neutral,negative,-2330.94,True
+2662,Club & Events,positive,positive,-6614.93,False
+2663,News,neutral,neutral,-6573.9,False
+2664,Other,neutral,negative,-3864.23,False
+2665,Academic,neutral,negative,-4942.17,False
+2666,Academic,neutral,neutral,-7261.05,False
+2667,Other,positive,positive,-6461.1,False
+2668,Other,negative,negative,-3019.4,True
+2669,Academic,negative,positive,-5332.61,False
+2670,Academic,neutral,neutral,-5111.94,False
+2671,Academic,neutral,negative,-5378.71,False
+2672,Academic,positive,negative,-6373.52,False
+2673,Academic,neutral,neutral,-5595.07,False
+2674,Club & Events,positive,positive,-6964.08,False
+2675,Social Affairs,negative,negative,-3385.69,True
+2676,Academic,negative,negative,-1986.72,True
+2677,Other,negative,negative,-2279.74,True
+2678,Academic,neutral,neutral,-6386.4,False
+2679,Other,neutral,negative,-2523.31,True
+2680,Service,negative,negative,-1987.51,True
+2681,Other,neutral,negative,-8115.35,False
+2682,Other,neutral,negative,-4516.38,False
+2683,Other,neutral,neutral,-6682.01,False
+2684,Other,negative,neutral,-6558.42,False
+2685,Service,neutral,neutral,-7619.29,False
+2686,Service,neutral,negative,-7320.01,False
+2687,Academic,neutral,negative,-2994.02,True
+2688,Academic,neutral,positive,-2485.33,True
+2689,Other,negative,negative,-5733.68,False
+2690,Academic,neutral,negative,-4992.88,False
+2691,Other,neutral,negative,-6839.02,False
+2692,Academic,neutral,negative,-6792.03,False
+2693,Personal Affairs,positive,negative,-4944.25,False
+2694,Club & Events,neutral,positive,-8798.33,False
+2695,Other,neutral,neutral,-5711.2,False
+2696,Academic,negative,negative,-2157.11,True
+2697,Other,positive,positive,-2624.29,True
+2698,Other,negative,neutral,-10713.01,False
+2699,Service,positive,positive,-8740.76,False
+2700,Spam,neutral,neutral,-7087.28,False
+2701,Service,negative,negative,-2104.87,True
+2702,Academic,neutral,neutral,-7058.56,False
+2703,Academic,negative,negative,-9276.13,False
+2704,Other,neutral,neutral,-6733.75,False
+2705,Other,neutral,neutral,-10086.89,False
+2706,Personal Affairs,positive,positive,-3690.4,False
+2707,Personal Affairs,negative,neutral,-9827.47,False
+2708,Academic,neutral,negative,-4647.7,False
+2709,Academic,neutral,negative,-6525.39,False
+2710,Academic,neutral,negative,-4802.63,False
+2711,Other,negative,neutral,-5288.77,False
+2712,Academic,neutral,neutral,-5004.76,False
+2713,Other,positive,negative,-6827.53,False
+2714,Other,positive,negative,-5100.09,False
+2715,Academic,neutral,negative,-2139.03,True
+2716,Other,neutral,negative,-7478.09,False
+2717,Other,neutral,negative,-5941.32,False
+2718,Other,negative,negative,-4498.43,False
+2719,Other,neutral,neutral,-6415.4,False
+2720,Social Affairs,neutral,positive,-7478.09,False
+2721,Academic,neutral,negative,-3497.43,True
+2722,Academic,neutral,negative,-7497.37,False
+2723,Academic,neutral,negative,-961.82,True
+2724,Other,negative,negative,-4894.24,False
+2725,Other,neutral,negative,-4133.34,False
+2726,Academic,positive,negative,-3318.49,True
+2727,Other,neutral,positive,-5339.09,False
+2728,Academic,negative,negative,-2647.86,True
+2729,Other,negative,negative,-4227.41,False
+2730,Club & Events,neutral,neutral,-7992.39,False
+2731,Academic,positive,positive,-8724.39,False
+2732,Other,neutral,neutral,-8185.88,False
+2733,Academic,neutral,neutral,-5292.12,False
+2734,Other,neutral,neutral,-8013.96,False
+2735,Academic,negative,negative,-3563.41,True
+2736,Other,neutral,negative,-3795.55,False
+2737,Other,neutral,negative,-9930.71,False
+2738,Other,neutral,positive,-12929.65,False
+2739,Academic,negative,negative,-1996.81,True
+2740,Other,neutral,positive,-9366.57,False
+2741,Service,negative,negative,-1112.47,True
+2742,Academic,neutral,negative,-4433.92,False
+2743,Other,neutral,negative,-4613.49,False
+2744,Other,negative,negative,-2250.91,True
+2745,Other,positive,negative,-1907.11,True
+2746,Academic,neutral,neutral,-8603.09,False
+2747,Other,neutral,neutral,-7921.3,False
+2748,Other,neutral,negative,-1550.11,True
+2749,Other,negative,negative,-8824.98,False
+2750,Other,neutral,negative,-4719.27,False
+2751,Spam,positive,positive,-6409.52,False
+2752,Service,negative,negative,-3312.44,True
+2753,Other,neutral,negative,-4838.48,False
+2754,Social Affairs,negative,negative,-5055.0,False
+2755,Other,neutral,negative,-6546.26,False
+2756,Other,neutral,positive,-6756.36,False
+2757,Club & Events,neutral,negative,-5250.03,False
+2758,Academic,neutral,negative,-2309.29,True
+2759,Other,negative,negative,-9433.16,False
+2760,Academic,neutral,negative,-3838.4,False
+2761,Other,positive,negative,-3385.96,True
+2762,Other,neutral,neutral,-7967.54,False
+2763,Other,neutral,negative,-4895.94,False
+2764,Other,neutral,neutral,-6863.05,False
+2765,Other,neutral,negative,-10810.01,False
+2766,Academic,neutral,negative,-2631.24,True
+2767,Other,neutral,negative,-4422.95,False
+2768,Other,neutral,negative,-6402.36,False
+2769,Other,negative,negative,-2820.46,True
+2770,Academic,negative,negative,-4085.5,False
+2771,Other,neutral,neutral,-6640.55,False
+2772,Other,neutral,negative,-7837.21,False
+2773,Academic,neutral,negative,-2759.62,True
+2774,Help & Share,neutral,neutral,-8723.73,False
+2775,Other,neutral,positive,-4108.91,False
+2776,Other,negative,negative,-2954.97,True
+2777,Service,neutral,negative,-4891.73,False
+2778,Spam,neutral,positive,-4057.94,False
+2779,Personal Affairs,neutral,negative,-9514.2,False
+2780,Other,neutral,negative,-7333.59,False
+2781,Other,positive,positive,-6296.87,False
+2782,Academic,positive,neutral,-7638.41,False
+2783,Academic,neutral,negative,-5870.39,False
+2784,Help & Share,neutral,negative,-4732.39,False
+2785,Academic,neutral,negative,-6850.52,False
+2786,Other,neutral,negative,-7963.85,False
+2787,Academic,neutral,negative,-3412.83,True
+2788,Other,positive,negative,-5727.12,False
+2789,Personal Affairs,positive,positive,-4480.08,False
+2790,Academic,neutral,neutral,-4892.32,False
+2791,Other,neutral,neutral,-8937.98,False
+2792,Other,neutral,neutral,-9153.96,False
+2793,Academic,neutral,neutral,-6447.54,False
+2794,Academic,neutral,negative,-4400.96,False
+2795,Other,negative,neutral,-9378.11,False
+2796,Academic,neutral,negative,-4145.08,False
+2797,Academic,neutral,negative,-4359.04,False
+2798,Other,negative,negative,-4337.21,False
+2799,Other,negative,negative,-2819.45,True
+2800,Academic,neutral,negative,-7102.86,False
+2801,Other,neutral,negative,-4376.61,False
+2802,Other,neutral,neutral,-7180.74,False
+2803,Social Affairs,negative,negative,-8213.88,False
+2804,Academic,positive,positive,-3310.68,True
+2805,Service,neutral,negative,-7471.83,False
+2806,Academic,neutral,negative,-2892.62,True
+2807,Academic,negative,negative,-2538.67,True
+2808,Help & Share,neutral,positive,-6796.82,False
+2809,Other,neutral,neutral,-5551.13,False
+2810,Personal Affairs,negative,negative,-3848.95,False
+2811,Other,neutral,neutral,-7616.16,False
+2812,Academic,neutral,positive,-7557.34,False
+2813,Academic,neutral,negative,-3014.45,True
+2814,Social Affairs,negative,negative,-8832.25,False
+2815,Jobs & Recruitment,neutral,negative,-2666.7,True
+2816,Academic,positive,positive,-6490.4,False
+2817,Other,negative,negative,-1521.56,True
+2818,Other,positive,neutral,-11400.65,False
+2819,News,neutral,negative,-6484.49,False
+2820,Other,neutral,neutral,-7719.78,False
+2821,Academic,neutral,negative,-1816.27,True
+2822,Other,neutral,neutral,-8640.45,False
+2823,Other,neutral,negative,-5312.37,False
+2824,Service,negative,negative,-1987.57,True
+2825,Help & Share,neutral,negative,-7004.48,False
+2826,Other,neutral,negative,-4126.13,False
+2827,Academic,neutral,negative,-3487.05,True
+2828,Other,neutral,neutral,-8077.62,False
+2829,Personal Affairs,negative,negative,-6626.81,False
+2830,Other,positive,positive,-4910.7,False
+2831,Other,neutral,negative,-4175.93,False
+2832,Academic,neutral,negative,-6104.97,False
+2833,Academic,neutral,neutral,-10180.17,False
+2834,Service,negative,negative,-4682.55,False
+2835,Other,neutral,neutral,-9191.52,False
+2836,Other,neutral,negative,-4262.38,False
+2837,Other,negative,negative,-3123.53,True
+2838,Academic,neutral,negative,-3736.93,False
+2839,Service,neutral,negative,-8009.06,False
+2840,Academic,neutral,neutral,-6699.55,False
+2841,Jobs & Recruitment,neutral,positive,-7750.07,False
+2842,Other,neutral,positive,-5561.65,False
+2843,Academic,negative,negative,-4617.33,False
+2844,Personal Affairs,negative,neutral,-7203.14,False
+2845,Spam,neutral,negative,-1644.59,True
+2846,Club & Events,positive,neutral,-6904.14,False
+2847,Academic,neutral,positive,-3504.71,True
+2848,Service,neutral,negative,-11172.14,False
+2849,Academic,neutral,neutral,-5285.28,False
+2850,Other,neutral,negative,-4686.47,False
+2851,Club & Events,positive,positive,-5396.11,False
+2852,Other,neutral,negative,-5359.22,False
+2853,Academic,neutral,neutral,-4464.63,False
+2854,Other,neutral,negative,-10866.63,False
+2855,Other,negative,neutral,-8254.15,False
+2856,Club & Events,neutral,neutral,-5314.53,False
+2857,Jobs & Recruitment,neutral,negative,-7004.87,False
+2858,Academic,neutral,negative,-4845.16,False
+2859,Other,positive,positive,-2334.31,True
+2860,Service,neutral,negative,-4104.46,False
+2861,Service,neutral,negative,-2656.6,True
+2862,Service,negative,negative,-5223.74,False
+2863,Personal Affairs,positive,neutral,-7949.29,False
+2864,Other,positive,neutral,-7558.48,False
+2865,Service,negative,negative,-2631.33,True
+2866,Other,negative,neutral,-7331.69,False
+2867,Other,neutral,negative,-2991.17,True
+2868,Other,neutral,positive,-3644.99,False
+2869,Other,neutral,neutral,-7176.48,False
+2870,Academic,neutral,negative,-5495.29,False
+2871,Personal Affairs,negative,negative,-1725.2,True
+2872,Other,neutral,positive,-8782.57,False
+2873,Service,neutral,negative,-5055.03,False
+2874,Jobs & Recruitment,positive,negative,-5681.26,False
+2875,Other,neutral,neutral,-10291.03,False
+2876,Other,neutral,negative,-7189.55,False
+2877,Other,neutral,neutral,-8690.95,False
+2878,Academic,neutral,neutral,-7129.87,False
+2879,Academic,negative,negative,-3097.13,True
+2880,Other,negative,negative,-5179.39,False
+2881,Other,positive,neutral,-8396.8,False
+2882,Academic,neutral,positive,-7062.59,False
+2883,Academic,neutral,negative,-4423.51,False
+2884,News,neutral,neutral,-9575.66,False
+2885,Service,neutral,negative,-1941.54,True
+2886,Academic,negative,negative,-1924.06,True
+2887,Personal Affairs,neutral,negative,-3898.65,False
+2888,Other,positive,neutral,-8587.51,False
+2889,Other,negative,negative,-5188.84,False
+2890,Other,positive,positive,-3447.16,True
+2891,Service,neutral,negative,-2171.28,True
+2892,Other,neutral,negative,-2301.71,True
+2893,Academic,neutral,positive,-5906.82,False
+2894,Other,neutral,neutral,-8637.23,False
+2895,Other,negative,negative,-7869.08,False
+2896,Service,positive,positive,-5260.44,False
+2897,Other,negative,negative,-4288.07,False
+2898,Personal Affairs,negative,negative,-4793.18,False
+2899,Academic,neutral,neutral,-6951.08,False
+2900,Academic,neutral,negative,-6241.1,False
+2901,Other,neutral,positive,-6593.77,False
+2902,Other,neutral,negative,-5589.16,False
+2903,Social Affairs,positive,positive,-8162.51,False
+2904,Other,neutral,negative,-2585.78,True
+2905,Academic,negative,negative,-5970.5,False
+2906,Academic,neutral,negative,-5309.46,False
+2907,Academic,neutral,neutral,-6239.84,False
+2908,Other,negative,negative,-1986.36,True
+2909,Other,neutral,neutral,-6158.93,False
+2910,Academic,neutral,neutral,-5781.81,False
+2911,Other,neutral,negative,-2421.49,True
+2912,Other,negative,negative,-7577.17,False
+2913,Other,neutral,neutral,-5849.16,False
+2914,Personal Affairs,negative,negative,-8020.64,False
+2915,Service,negative,negative,-3172.17,True
+2916,Academic,neutral,neutral,-5877.6,False
+2917,Personal Affairs,negative,negative,-5022.74,False
+2918,Academic,neutral,negative,-3591.26,True
+2919,Other,neutral,negative,-6852.16,False
+2920,Academic,neutral,negative,-4876.03,False
+2921,Academic,negative,negative,-4701.18,False
+2922,Academic,negative,negative,-4196.54,False
+2923,Academic,neutral,negative,-5737.2,False
+2924,Academic,neutral,neutral,-4553.61,False
+2925,News,neutral,neutral,-5840.89,False
+2926,Personal Affairs,negative,negative,-11221.17,False
+2927,Social Affairs,negative,negative,-5170.19,False
+2928,Other,negative,neutral,-6787.01,False
+2929,Other,negative,negative,-2949.95,True
+2930,Club & Events,positive,positive,-7063.83,False
+2931,Other,negative,negative,-12938.26,False
+2932,Other,negative,negative,-4277.69,False
+2933,Other,neutral,negative,-6448.92,False
+2934,Academic,neutral,negative,-5693.43,False
+2935,Other,negative,negative,-1233.95,True
+2936,Other,neutral,negative,-4027.77,False
+2937,Academic,neutral,neutral,-5419.92,False
+2938,Help & Share,neutral,negative,-2478.58,True
+2939,Academic,neutral,neutral,-4825.23,False
+2940,Other,neutral,positive,-6887.1,False
+2941,Other,negative,neutral,-10447.35,False
+2942,Other,neutral,neutral,-7787.12,False
+2943,Other,positive,positive,-4423.44,False
+2944,Academic,negative,negative,-4342.63,False
+2945,Social Affairs,neutral,negative,-3705.58,False
+2946,Other,negative,neutral,-7288.69,False
+2947,Jobs & Recruitment,negative,negative,-3564.51,True
+2948,Jobs & Recruitment,neutral,neutral,-9143.07,False
+2949,Academic,neutral,neutral,-5647.54,False
+2950,Academic,neutral,neutral,-5667.97,False
+2951,Other,neutral,negative,-8605.76,False
+2952,Help & Share,neutral,negative,-4617.24,False
+2953,Academic,neutral,negative,-5808.59,False
+2954,Other,neutral,positive,-2891.37,True
+2955,Other,neutral,neutral,-8002.24,False
+2956,Spam,neutral,neutral,-6139.45,False
+2957,Academic,neutral,neutral,-6793.05,False
+2958,Academic,negative,neutral,-6481.09,False
+2959,Other,neutral,neutral,-4846.75,False
+2960,Academic,neutral,negative,-6655.77,False
+2961,Academic,neutral,neutral,-6371.68,False
+2962,Other,neutral,neutral,-7150.0,False
+2963,Other,negative,neutral,-7451.22,False
+2964,Academic,neutral,negative,-7137.56,False
+2965,Other,neutral,negative,-4521.65,False
+2966,Service,negative,negative,-3506.87,True
+2967,Academic,neutral,negative,-4212.21,False
+2968,Academic,neutral,neutral,-3923.36,False
+2969,Other,negative,negative,-2405.87,True
+2970,Personal Affairs,negative,negative,-8099.08,False
+2971,Other,positive,positive,-7323.85,False
+2972,News,negative,negative,-7237.76,False
+2973,Service,negative,negative,-3200.75,True
+2974,Other,negative,negative,-10087.94,False
+2975,Other,negative,neutral,-8456.64,False
+2976,Academic,negative,negative,-1503.46,True
+2977,Social Affairs,negative,negative,-4208.15,False
+2978,Jobs & Recruitment,neutral,positive,-6260.42,False
+2979,Other,neutral,negative,-4204.8,False
+2980,Other,negative,negative,-5589.55,False
+2981,Academic,neutral,neutral,-4738.82,False
+2982,Service,neutral,negative,-5744.45,False
+2983,Other,neutral,negative,-6998.61,False
+2984,Other,neutral,negative,-2088.02,True
+2985,Academic,negative,neutral,-7391.0,False
+2986,Other,neutral,negative,-6002.75,False
+2987,Other,positive,positive,-4286.2,False
+2988,Academic,neutral,negative,-5276.9,False
+2989,Academic,neutral,negative,-2307.08,True
+2990,Other,neutral,neutral,-5570.13,False
+2991,Other,neutral,negative,-2980.3,True
+2992,Academic,neutral,neutral,-8988.4,False
+2993,Personal Affairs,negative,negative,-8840.2,False
+2994,Jobs & Recruitment,neutral,neutral,-6295.15,False
+2995,Other,neutral,negative,-11993.88,False
+2996,Other,neutral,negative,-2928.08,True
+2997,Jobs & Recruitment,neutral,negative,-5069.43,False
+2998,Academic,neutral,neutral,-6348.99,False
+2999,Academic,neutral,neutral,-5967.25,False
+3000,Service,negative,negative,-3064.94,True
+3001,Academic,neutral,negative,-3743.33,False
+3002,Other,negative,negative,-4802.1,False
+3003,Jobs & Recruitment,neutral,neutral,-8450.78,False
+3004,Spam,positive,negative,-12023.86,False
+3005,Social Affairs,negative,negative,-1620.1,True
+3006,Other,neutral,positive,-4280.22,False
+3007,Academic,neutral,neutral,-5546.76,False
+3008,Academic,positive,positive,-5632.25,False
+3009,Academic,negative,negative,-2977.11,True
+3010,Academic,negative,negative,-5799.91,False
+3011,Academic,neutral,positive,-7929.13,False
+3012,Other,neutral,negative,-3321.4,True
+3013,Other,neutral,negative,-6155.69,False
+3014,Service,neutral,negative,-4560.6,False
+3015,Other,negative,negative,-4531.48,False
+3016,Service,negative,negative,-3254.63,True
+3017,Other,positive,neutral,-7105.98,False
+3018,Academic,neutral,neutral,-6483.68,False
+3019,Personal Affairs,positive,positive,-6856.31,False
+3020,Academic,neutral,negative,-6149.02,False
+3021,Academic,neutral,neutral,-7295.83,False
+3022,Other,neutral,neutral,-7666.83,False
+3023,Other,negative,neutral,-9237.57,False
+3024,Jobs & Recruitment,negative,negative,-4613.79,False
+3025,Other,neutral,positive,-7586.41,False
+3026,Service,neutral,negative,-5398.29,False
+3027,Other,neutral,negative,-9610.51,False
+3028,Academic,positive,negative,-2899.96,True
+3029,Other,neutral,neutral,-5935.99,False
+3030,Academic,negative,negative,-3114.81,True
+3031,Service,neutral,neutral,-10669.32,False
+3032,Social Affairs,neutral,negative,-3741.44,False
+3033,Academic,neutral,neutral,-7612.99,False
+3034,Personal Affairs,negative,negative,-7566.32,False
+3035,News,neutral,negative,-3513.05,True
+3036,Academic,neutral,neutral,-6677.39,False
+3037,Personal Affairs,negative,neutral,-7032.4,False
+3038,Service,neutral,neutral,-5358.62,False
+3039,Spam,neutral,negative,-5729.79,False
+3040,Other,neutral,neutral,-8828.2,False
+3041,Academic,neutral,neutral,-6286.75,False
+3042,Service,neutral,negative,-3036.09,True
+3043,Academic,neutral,neutral,-4652.32,False
+3044,Academic,neutral,negative,-7243.95,False
+3045,Academic,neutral,neutral,-6881.53,False
+3046,Other,positive,negative,-6219.08,False
+3047,Other,negative,neutral,-6124.83,False
+3048,Other,neutral,negative,-2064.02,True
+3049,Other,negative,neutral,-8846.64,False
+3050,Academic,negative,negative,-2153.88,True
+3051,Academic,neutral,negative,-7913.34,False
+3052,Academic,neutral,negative,-3764.45,False
+3053,Other,negative,negative,-1964.28,True
+3054,Other,positive,positive,-4867.51,False
+3055,Spam,neutral,neutral,-7074.34,False
+3056,Other,neutral,negative,-9681.31,False
+3057,Academic,neutral,negative,-4332.76,False
+3058,Other,neutral,neutral,-6206.45,False
+3059,Academic,neutral,negative,-3246.59,True
+3060,Academic,neutral,negative,-5142.75,False
+3061,Other,neutral,negative,-3357.44,True
+3062,Academic,neutral,negative,-4273.64,False
+3063,Academic,positive,positive,-3138.02,True
+3064,Other,neutral,negative,-2937.49,True
+3065,Service,neutral,negative,-2066.07,True
+3066,Academic,neutral,positive,-7886.19,False
+3067,Other,negative,negative,-5765.33,False
+3068,Other,neutral,negative,-5851.12,False
+3069,Other,neutral,negative,-5353.27,False
+3070,Other,positive,positive,-3635.85,False
+3071,Other,neutral,neutral,-7371.74,False
+3072,Other,neutral,negative,-5454.76,False
+3073,Other,neutral,negative,-6657.16,False
+3074,Other,negative,negative,-5594.01,False
+3075,Service,negative,negative,-2706.07,True
+3076,Academic,positive,neutral,-6597.27,False
+3077,Academic,neutral,negative,-2656.12,True
+3078,Personal Affairs,negative,negative,-2784.6,True
+3079,Academic,neutral,neutral,-4730.67,False
+3080,Other,negative,negative,-6263.52,False
+3081,Other,neutral,negative,-5418.24,False
+3082,Other,neutral,neutral,-8611.06,False
+3083,Other,negative,negative,-4032.24,False
+3084,Service,neutral,negative,-9008.65,False
+3085,Other,positive,positive,-6448.47,False
+3086,Other,neutral,negative,-1341.01,True
+3087,Service,neutral,positive,-7443.38,False
+3088,Academic,negative,negative,-4149.46,False
+3089,Academic,neutral,neutral,-8478.84,False
+3090,Academic,negative,negative,-2670.22,True
+3091,Other,neutral,neutral,-6807.27,False
+3092,Academic,neutral,negative,-7780.58,False
+3093,Other,neutral,negative,-3516.04,True
+3094,Academic,neutral,negative,-3023.62,True
+3095,Academic,neutral,neutral,-6935.27,False
+3096,Other,neutral,neutral,-5197.65,False
+3097,Academic,positive,positive,-878.09,True
+3098,Academic,neutral,neutral,-4750.82,False
+3099,Other,positive,positive,-5209.08,False
+3100,Other,positive,positive,-1774.29,True
+3101,Academic,neutral,negative,-5467.88,False
+3102,Help & Share,neutral,negative,-5240.32,False
+3103,Academic,neutral,neutral,-10140.11,False
+3104,Social Affairs,negative,negative,-9969.96,False
+3105,Other,neutral,positive,-9515.57,False
+3106,Academic,neutral,neutral,-6722.68,False
+3107,Academic,neutral,neutral,-7872.96,False
+3108,Other,neutral,negative,-9750.25,False
+3109,Academic,neutral,negative,-7809.4,False
+3110,Jobs & Recruitment,neutral,negative,-6860.14,False
+3111,Academic,neutral,neutral,-7327.8,False
+3112,Jobs & Recruitment,neutral,negative,-2566.45,True
+3113,Other,neutral,negative,-3625.76,False
+3114,News,negative,negative,-5244.0,False
+3115,Other,neutral,neutral,-6589.11,False
+3116,Academic,neutral,neutral,-4779.94,False
+3117,Service,neutral,negative,-3491.3,True
+3118,Other,neutral,positive,-7131.11,False
+3119,News,neutral,neutral,-9135.66,False
+3120,Other,neutral,negative,-2139.58,True
+3121,Academic,neutral,negative,-6862.45,False
+3122,Other,neutral,neutral,-3522.9,True
+3123,Academic,negative,neutral,-4481.72,False
+3124,Academic,neutral,neutral,-4823.02,False
+3125,Other,neutral,neutral,-5507.05,False
+3126,Other,neutral,negative,-5621.88,False
+3127,Other,neutral,positive,-6724.93,False
+3128,Academic,positive,positive,-2015.18,True
+3129,Other,neutral,neutral,-7034.57,False
+3130,Other,negative,neutral,-10075.92,False
+3131,Academic,neutral,negative,-6861.3,False
+3132,Academic,neutral,negative,-1153.79,True
+3133,Academic,neutral,negative,-4294.14,False
+3134,Service,neutral,negative,-2519.67,True
+3135,Academic,neutral,neutral,-8178.86,False
+3136,Other,neutral,negative,-8033.44,False
+3137,Other,neutral,negative,-6633.91,False
+3138,Other,neutral,negative,-6271.19,False
+3139,Other,neutral,negative,-3720.02,False
+3140,Academic,neutral,negative,-2725.33,True
+3141,Other,neutral,negative,-9067.53,False
+3142,Academic,positive,neutral,-6369.54,False
+3143,Academic,neutral,negative,-3189.92,True
+3144,Other,neutral,neutral,-6821.0,False
+3145,Other,neutral,negative,-2062.85,True
+3146,Social Affairs,negative,neutral,-6178.89,False
+3147,Academic,neutral,negative,-3069.34,True
+3148,Social Affairs,negative,negative,-5177.75,False
+3149,Academic,neutral,negative,-4542.99,False
+3150,Other,neutral,positive,-2853.82,True
+3151,Other,neutral,neutral,-9780.29,False
+3152,Other,neutral,negative,-1588.94,True
+3153,Other,neutral,neutral,-6102.29,False
+3154,Academic,neutral,negative,-3720.3,False
+3155,Academic,neutral,negative,-3553.64,True
+3156,Other,neutral,negative,-9152.27,False
+3157,Service,negative,negative,-1839.45,True
+3158,News,neutral,negative,-3968.96,False
+3159,Academic,neutral,negative,-2978.38,True
+3160,Academic,positive,positive,-3108.29,True
+3161,Academic,neutral,negative,-4479.9,False
+3162,Service,negative,neutral,-6853.78,False
+3163,Other,neutral,negative,-3498.26,True
+3164,Other,neutral,neutral,-5924.88,False
+3165,Other,negative,negative,-3878.16,False
+3166,Academic,positive,positive,-7690.96,False
+3167,Academic,neutral,negative,-9965.2,False
+3168,Personal Affairs,positive,negative,-3121.94,True
+3169,Academic,neutral,positive,-6943.17,False
+3170,Academic,neutral,negative,-5094.37,False
+3171,Academic,neutral,neutral,-7560.37,False
+3172,Academic,neutral,neutral,-8175.64,False
+3173,Academic,neutral,negative,-2696.05,True
+3174,Other,neutral,positive,-9043.04,False
+3175,Academic,neutral,negative,-2945.45,True
+3176,Spam,neutral,negative,-4686.8,False
+3177,Academic,neutral,neutral,-8295.52,False
+3178,Academic,positive,positive,-2456.72,True
+3179,Academic,positive,negative,-5185.71,False
+3180,Academic,negative,negative,-3757.89,False
+3181,Other,neutral,negative,-4650.89,False
+3182,Other,neutral,neutral,-9337.92,False
+3183,Social Affairs,negative,negative,-2696.35,True
+3184,Social Affairs,negative,negative,-2634.96,True
+3185,Service,positive,negative,-4421.39,False
+3186,Service,negative,negative,-5777.74,False
+3187,Other,neutral,negative,-3794.72,False
+3188,Academic,neutral,negative,-5471.34,False
+3189,Academic,neutral,neutral,-6754.14,False
+3190,Other,negative,negative,-3855.19,False
+3191,Other,neutral,neutral,-4872.91,False
+3192,Academic,negative,negative,-4509.18,False
+3193,News,neutral,negative,-3629.75,False
+3194,Academic,neutral,negative,-1136.14,True
+3195,Service,negative,negative,-5723.69,False
+3196,Other,neutral,negative,-8720.85,False
+3197,Service,positive,negative,-4698.33,False
+3198,Jobs & Recruitment,negative,negative,-2329.65,True
+3199,Academic,neutral,negative,-7153.67,False
+3200,Other,neutral,negative,-2065.14,True
+3201,Other,negative,negative,-7081.76,False
+3202,Academic,neutral,negative,-6873.6,False
+3203,Jobs & Recruitment,neutral,neutral,-6716.91,False
+3204,Academic,neutral,neutral,-5529.01,False
+3205,Academic,negative,negative,-2733.21,True
+3206,Personal Affairs,neutral,negative,-3088.41,True
+3207,Other,neutral,negative,-4512.8,False
+3208,Service,neutral,neutral,-5256.18,False
+3209,Service,neutral,negative,-2909.98,True
+3210,Other,neutral,negative,-7817.48,False
+3211,Other,neutral,neutral,-4245.82,False
+3212,Personal Affairs,neutral,neutral,-6648.08,False
+3213,Academic,neutral,positive,-1647.61,True
+3214,Academic,neutral,neutral,-6763.44,False
+3215,Club & Events,neutral,neutral,-7195.45,False
+3216,Other,neutral,negative,-3216.16,True
+3217,Other,negative,negative,-2718.2,True
+3218,Other,neutral,negative,-3962.17,False
+3219,Academic,neutral,neutral,-8038.23,False
+3220,Academic,negative,neutral,-4499.36,False
+3221,Academic,neutral,negative,-6515.15,False
+3222,News,negative,negative,-2695.52,True
+3223,Other,neutral,neutral,-6165.53,False
+3224,Service,neutral,negative,-4686.62,False
+3225,Other,neutral,negative,-7364.3,False
+3226,Academic,neutral,neutral,-6071.64,False
+3227,Academic,neutral,negative,-2426.27,True
+3228,Academic,negative,negative,-3318.86,True
+3229,Academic,neutral,negative,-4734.05,False
+3230,Other,neutral,negative,-6206.66,False
+3231,Academic,neutral,neutral,-8585.97,False
+3232,Jobs & Recruitment,negative,negative,-1384.66,True
+3233,Academic,positive,positive,-3814.24,False
+3234,Academic,neutral,neutral,-5924.17,False
+3235,Other,neutral,negative,-7029.14,False
+3236,Academic,neutral,positive,-3114.26,True
+3237,Academic,positive,positive,-3410.88,True
+3238,Other,neutral,neutral,-5683.66,False
+3239,Other,negative,positive,-9542.38,False
+3240,Social Affairs,negative,negative,-3794.38,False
+3241,Academic,neutral,negative,-3930.73,False
+3242,Academic,negative,negative,-5361.76,False
+3243,Academic,neutral,neutral,-9034.77,False
+3244,Other,negative,neutral,-8772.26,False
+3245,Other,neutral,negative,-2294.66,True
+3246,News,positive,neutral,-9185.67,False
+3247,Academic,neutral,negative,-5851.97,False
+3248,Other,neutral,neutral,-7034.25,False
+3249,Other,negative,negative,-3784.57,False
+3250,Other,neutral,neutral,-6016.97,False
+3251,Service,neutral,neutral,-3520.05,True
+3252,Academic,neutral,negative,-6412.14,False
+3253,Academic,positive,positive,-5423.22,False
+3254,Service,positive,negative,-7877.16,False
+3255,Other,neutral,neutral,-8410.38,False
+3256,Academic,neutral,negative,-7390.63,False
+3257,Other,positive,neutral,-9481.36,False
+3258,Academic,neutral,negative,-2882.19,True
+3259,Other,positive,positive,-9094.44,False
+3260,Academic,neutral,negative,-1798.67,True
+3261,Academic,neutral,negative,-6873.46,False
+3262,Other,neutral,neutral,-7085.97,False
+3263,Other,neutral,negative,-3892.48,False
+3264,Help & Share,neutral,neutral,-5314.66,False
+3265,Other,neutral,negative,-3493.7,True
+3266,Other,neutral,negative,-6402.88,False
+3267,Academic,neutral,neutral,-6917.36,False
+3268,Other,positive,positive,-1400.37,True
+3269,Other,neutral,neutral,-5599.5,False
+3270,Academic,neutral,neutral,-6490.92,False
+3271,Service,neutral,negative,-5319.54,False
+3272,Other,neutral,negative,-9871.49,False
+3273,Academic,neutral,negative,-4349.77,False
+3274,Academic,neutral,neutral,-3921.95,False
+3275,Other,positive,positive,-5418.87,False
+3276,Academic,neutral,negative,-4091.94,False
+3277,Service,positive,positive,-3758.14,False
+3278,Academic,positive,neutral,-9623.41,False
+3279,Academic,neutral,negative,-4271.16,False
+3280,Other,neutral,negative,-4641.32,False
+3281,Other,positive,neutral,-5761.18,False
+3282,Academic,neutral,neutral,-7373.71,False
+3283,Jobs & Recruitment,negative,negative,-3059.42,True
+3284,Service,neutral,negative,-3335.84,True
+3285,Other,negative,negative,-3466.34,True
+3286,Other,neutral,negative,-4201.41,False
+3287,Other,neutral,negative,-6625.17,False
+3288,Academic,neutral,negative,-3868.52,False
+3289,Academic,neutral,negative,-5230.42,False
+3290,Other,neutral,negative,-4861.31,False
+3291,Academic,neutral,negative,-2421.25,True
+3292,Personal Affairs,negative,negative,-8847.83,False
+3293,Service,positive,negative,-3187.05,True
+3294,Social Affairs,neutral,positive,-7113.12,False
+3295,Other,neutral,negative,-3954.36,False
+3296,Academic,neutral,negative,-2719.98,True
+3297,Academic,neutral,neutral,-8658.07,False
+3298,Personal Affairs,positive,positive,-3154.91,True
+3299,Service,neutral,neutral,-6589.74,False
+3300,Other,negative,negative,-9511.75,False
+3301,Jobs & Recruitment,neutral,neutral,-10471.27,False
+3302,Academic,negative,neutral,-5999.15,False
+3303,Academic,positive,negative,-3025.75,True
+3304,Other,neutral,negative,-5404.59,False

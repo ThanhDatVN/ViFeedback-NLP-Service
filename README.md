@@ -171,7 +171,7 @@ NEU-ESC (forum posts by students of another university, human labels), which is 
 | Does capitalization matter? | Yes: 1% of labels flipped (the corpus has no uppercase letter). **The service now lowercases input** |
 | Is the model stable on real typing? | No: 17% of labels change between a real comment and its human normalization |
 | Diacritic restoration before the model | Stripped validation macro-F1 **0.686 → 0.857**, clean predictions unchanged; confirmed on NEU-ESC (unaccented posts 0.270 → 0.374). **Now in the service** |
-| Out-of-scope detection | Mahalanobis AUROC 0.949 (development), **0.977 on real off-topic posts** vs 0.920 for max-probability. **The API now returns `in_scope`** |
+| Out-of-scope detection | The API returns `in_scope`: Mahalanobis on the sentence feature, AUROC 0.949 in development. It measures **resemblance to the training surveys, not topic**: it flags 77% of another university's in-scope posts, and within that corpus it separates in-scope from off-topic posts only at AUROC 0.573 (ADR-032) |
 | Real student text from another university (NEU-ESC) | Macro-F1 drops to 0.46 (CE) and 0.43 (augmented): a domain and label-policy shift; the augmentation hurts here |
 | Plain CE + restoration instead of the augmented model | Its contrast-sentence advantage (0.875 vs 0.800) did not replicate on real posts (0.440 vs 0.437): the augmented model stays |
 | Real-typing lexicon, careful INT8 | Both failed their declared rules (negative results, kept) |

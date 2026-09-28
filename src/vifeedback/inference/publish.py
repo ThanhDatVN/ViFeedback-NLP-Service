@@ -52,16 +52,19 @@ def evidence(manifest: dict[str, Any]) -> dict[str, Any]:
     gate_row = next(v for v in gate.values() if _basename(v["checkpoint"]) == ckp)
     challenge = _json(paths.RESULTS / "studies" / "challenge" / "summary.json")
     which = next(k for k, v in challenge["checkpoints"].items() if _basename(v) == ckp)
+    scope = paths.RESULTS / "studies" / "cycle4_step0" / "served_neu_esc_validation.json"
     return {
         "run_id": run_id,
         "config_yaml": config,
         "validation": val,
         "test": gate_row,
         "challenge": challenge[which],
+        # ADR-032: what `in_scope` does on another institution's text (NEXT_PLAN v5 A2).
+        "scope_check": _json(scope) if scope.exists() else None,
     }
 
 
-def _optional_parts(manifest: dict[str, Any]) -> str:
+def _optional_parts(manifest: dict[str, Any], scope_check: dict[str, Any] | None = None) -> str:
     """Model-card section for the restorer and the out-of-scope score, when the release has them."""
     items = []
     r = manifest.get("restorer")
@@ -90,6 +93,15 @@ def _optional_parts(manifest: dict[str, Any]) -> str:
             f"{a['out_of_scope_caught']:.0%} flagged. The service reports it as `in_scope` and "
             "`scope_score` next to the label and never refuses an input."
         )
+        if scope_check:
+            items[-1] += (
+                " **It measures resemblance to the training surveys, not topic** (ADR-032): on "
+                "another university's forum posts it flags "
+                f"{scope_check['in_scope_topics']['flagged']:.0%} of the posts that are in scope, and "
+                "separates in-scope from off-topic posts there only at AUROC "
+                f"{scope_check['within_source_auroc_in_scope_vs_off_topic']:.3f}. Do not use it to "
+                "filter another institution's feedback."
+            )
     if not items:
         return ""
     head = (
@@ -154,7 +166,7 @@ print({manifest["labels"]}[int(logits.argmax())])
 
 For calibrated probabilities, divide the logits by **T = {cal["temperature_fit_on_validation"]:.2f}**
 (fitted on validation) before the softmax.
-{_optional_parts(manifest)}
+{_optional_parts(manifest, ev.get("scope_check"))}
 ## Training
 
 UIT-VSFC train (11,426 sentences), base model `vinai/phobert-base` at
@@ -205,8 +217,8 @@ teencode {rob["teencode-100"]["macro_f1"]:.3f}; 5% character noise {rob["charnoi
   seeds), and better still with the restorer (NEU-ESC posts stripped of diacritics: 0.270 → 0.374).
 - **Input is lowercased** before scoring, as the training data is; capitalized input otherwise changed
   about 1% of labels.
-- **Off-topic input still gets a label**, often a confident one; use the out-of-scope score
-  (above) to decide what to do with it.
+- **Off-topic input still gets a label**, often a confident one. The out-of-scope score (above)
+  flags text unlike the training surveys, which includes most feedback from other institutions.
 - **Real student text from another university is much harder.** On 6,613 forum posts from NEU-ESC
   (human labels) this model's macro-F1 is 0.46 (0.43 averaged over five seeds): annotators called 69%
   of posts neutral, this model 27%. Forum posts are mostly non-evaluative; the model was trained

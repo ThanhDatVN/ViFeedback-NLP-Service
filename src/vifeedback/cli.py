@@ -2852,6 +2852,10 @@ def study_served_neu_esc(split: str = typer.Option("validation", help="NEU-ESC s
 
     by_topic = {t: {"off_topic": t in off, **describe(topic == t)} for t in sorted(set(topic))}
     in_scope_mask = ~np.isin(topic, off)
+    from sklearn.metrics import roc_auc_score
+
+    # Within one source: in-scope topics against off-topic ones (ADR-032). Higher = more in scope.
+    within_auroc = float(roc_auc_score(in_scope_mask.astype(int), scope))
     watched = {t: by_topic[t]["flagged"] for t in ("Academic", "Service") if t in by_topic}
     limit = {t: v for t, v in watched.items() if v > 0.10}
     out = {
@@ -2862,6 +2866,7 @@ def study_served_neu_esc(split: str = typer.Option("validation", help="NEU-ESC s
         "in_scope_topics": describe(in_scope_mask),
         "off_topic_topics": describe(~in_scope_mask),
         "all": describe(np.ones(len(y), dtype=bool)),
+        "within_source_auroc_in_scope_vs_off_topic": within_auroc,
         "by_topic": by_topic,
         "A2_rule": {
             "flagged_academic_service": watched,
@@ -2886,7 +2891,10 @@ def study_served_neu_esc(split: str = typer.Option("validation", help="NEU-ESC s
         }
     ).to_csv(dst / f"served_neu_esc_{split}_predictions.csv", index_label="row")
 
-    typer.echo(f"  NEU-ESC {split}: {len(y)} posts; threshold {ood['threshold']:.1f}")
+    typer.echo(
+        f"  NEU-ESC {split}: {len(y)} posts; threshold {ood['threshold']:.1f}; "
+        f"in-scope vs off-topic AUROC {within_auroc:.3f}"
+    )
     for t, r in by_topic.items():
         typer.echo(
             f"  {'off ' if r['off_topic'] else '    '}{t:20s} n {r['n']:5d}  flagged {r['flagged']:6.1%} "
