@@ -12,10 +12,12 @@
 # Version 2, before any H8 run, after NEXT_PLAN v5 A2 (ADR-032): the served out-of-scope score tracks
 # the institution, not the topic (within NEU-ESC AUROC 0.573). No rule changes; H8 also reports the
 # refitted score's within-NEU-ESC AUROC, and a topic-aware detector is a separate question (B4').
+#
+# Version 3, after H8 (ADR-033) and before any B4' fit: the topic-aware scope detector, declared.
 
-version: 2
+version: 3
 declared: 2026-09-28
-revised: 2026-09-28  # v2 reporting only (ADR-032)
+revised: 2026-09-28  # v2 reporting only (ADR-032); v3 B4' scope detector
 
 data:
   neu_esc_train: >
@@ -85,7 +87,41 @@ H8_in_domain_data:
     decision 2; default: keep UIT-VSFC's). two_heads serves the UIT-VSFC head and needs no such
     decision.
 
+B4prime_scope_detector:   # v3, before any fit
+  question: >
+    Can a detector tell course-related student text from off-topic posts within one source, where
+    the served Mahalanobis score cannot (within NEU-ESC AUROC 0.573, ADR-032)?
+  labels: >
+    In scope: UIT-VSFC (every sentence) and NEU-ESC posts of the in-scope topics. Off topic:
+    NEU-ESC Spam, News, Jobs & Recruitment, Club & Events. NEU-ESC text through the serving transform.
+  candidates:
+    feature_logistic: >
+      L2 logistic regression on the served model's sentence feature (the ONNX `features` output),
+      standardized, class weights balanced; C from {0.01, 0.1, 1, 10}.
+    tfidf_logistic: >
+      L2 logistic regression on TF-IDF of word unigrams and bigrams of the transformed text
+      (sublinear tf, min_df 2), class weights balanced; C from {0.1, 1, 10}. Served, if chosen,
+      by a numpy re-implementation verified equal on every evaluation text.
+  training: UIT-VSFC train + NEU-ESC train (every topic, labelled in or off scope)
+  selection: >
+    The candidate and C with the highest within-source AUROC on NEU-ESC validation (in-scope
+    against off-topic posts). The threshold keeps 95% of the in-scope validation posts, UIT-VSFC
+    validation and in-scope NEU-ESC validation pooled.
+  rule: >
+    On NEU-ESC test (logged in neu_esc_test_uses.log), all must hold:
+    (1) within-source AUROC, in-scope against off-topic posts, >= 0.85;
+    (2) in-scope posts flagged <= 10%;
+    (3) off-topic posts caught >= 50%;
+    and (4) UIT-VSFC validation flagged <= 5%.
+  reported: >
+    The served Mahalanobis score on the same sets; AUROC on the U4 generated off-topic sentences
+    against UIT-VSFC validation; per-topic flag rates.
+  serving: >
+    If the rule holds, the detector replaces the Mahalanobis parameters behind `in_scope` through
+    a release step (manifest entry, SHA-256, acceptance recorded), with an ADR and a new card;
+    uploading the new files to the Hub needs the owner's approval.
+
 budget:
-  weight_updating_runs: 7        # 3 selection + 4 confirmation
+  weight_updating_runs: 7        # 3 selection + 4 confirmation (B4' fits no encoder weights)
   gpu_hours_estimate: {laptop_rtx3050: 3}
   api_usd: 0
