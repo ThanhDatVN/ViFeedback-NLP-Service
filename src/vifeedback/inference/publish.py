@@ -128,6 +128,36 @@ def _optional_parts(manifest: dict[str, Any], scope_check: dict[str, Any] | None
     return head + "\n".join(items) + "\n"
 
 
+def _graph_kind(manifest: dict[str, Any]) -> str:
+    if manifest.get("quantization") == "careful":
+        return (
+            "INT8 ONNX graph (per-channel dynamic quantization, classifier head and last two "
+            "encoder layers kept in FP32; S5-prime, ADR-035)"
+        )
+    if manifest.get("quantization") in ("dynamic", "static"):
+        return f"{manifest['quantization']} INT8 ONNX graph"
+    return "ONNX FP32 graph"
+
+
+def _agreement(manifest: dict[str, Any]) -> str:
+    a = manifest["acceptance"]
+    if manifest.get("quantization") in (None, "none"):
+        return (
+            "ONNX and PyTorch agree on every validation label (max logit difference "
+            f"{a['max_abs_logit_diff']:.1e})."
+        )
+    where = (
+        "UIT-VSFC + NEU-ESC validation"
+        if manifest.get("acceptance_set") == "pooled"
+        else "UIT-VSFC validation"
+    )
+    return (
+        f"The INT8 graph agrees with PyTorch on {a['label_agreement']:.1%} of {a['n']:,} {where} "
+        f"texts; its macro-F1 drop is {a['macro_f1_drop']:+.4f}, with a one-sided 95% upper bound "
+        f"of {a['macro_f1_drop_upper95']:.4f} (non-inferiority margin 0.005)."
+    )
+
+
 def model_card(repo_id: str, manifest: dict[str, Any], ev: dict[str, Any]) -> str:
     v, t, c = ev["validation"], ev["test"], ev["challenge"]
     pc = v["per_class"]
@@ -157,7 +187,7 @@ tags:
 
 Sentiment (negative / neutral / positive) for Vietnamese student feedback about university courses.
 PhoBERT-base fine-tuned on UIT-VSFC with diacritic and teencode augmentation, so it keeps working
-when text is typed without accents. Shipped as the ONNX FP32 graph the ViFeedback service runs, plus
+when text is typed without accents. Shipped as the {_graph_kind(manifest)} the ViFeedback service runs, plus
 the PyTorch checkpoint it was exported from.
 
 Code, evaluation protocol and every number below: https://github.com/ThanhDatVN/ViFeedback-NLP-Service
@@ -200,8 +230,7 @@ Macro-F1 is the headline because `neutral` is 4% of the data and carries a third
 | Validation (1,583) | {v["macro_f1"]:.4f} | {pc["negative"]["f1"]:.3f} | {pc["neutral"]["f1"]:.3f} | {pc["positive"]["f1"]:.3f} |
 | Test (3,166), evaluated once | {t["test"]["macro_f1"]:.4f} | {t["test"]["per_class_f1"]["negative"]:.3f} | {t["test"]["per_class_f1"]["neutral"]:.3f} | {t["test"]["per_class_f1"]["positive"]:.3f} |
 
-ONNX and PyTorch agree on every validation label (max logit difference
-{manifest["acceptance"]["max_abs_logit_diff"]:.1e}).
+{_agreement(manifest)}
 
 **Robustness** (test, macro-F1): no diacritics {rob["nodiacritic"]["macro_f1"]:.3f} (the same
 model without augmentation: 0.271); half the diacritics {rob["nodiacritic-50"]["macro_f1"]:.3f};

@@ -54,9 +54,10 @@ def build(pre: Path, tokenizer_dir: Path, out_dir: Path, recipe: str) -> dict[st
     from onnxruntime.quantization import QuantType, quantize_dynamic
 
     out_dir.mkdir(parents=True, exist_ok=True)
-    for f in tokenizer_dir.iterdir():
-        if f.is_file() and f.suffix in (".txt", ".json", ".codes") and f.name != "config.json":
-            shutil.copy2(f, out_dir / f.name)
+    if tokenizer_dir.resolve() != out_dir.resolve():
+        for f in tokenizer_dir.iterdir():
+            if f.is_file() and f.suffix in (".txt", ".json", ".codes") and f.name != "config.json":
+                shutil.copy2(f, out_dir / f.name)
     exclude = RECIPES[recipe](matmul_nodes(pre))
     dst = out_dir / "model.int8.onnx"
     quantize_dynamic(

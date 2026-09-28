@@ -182,6 +182,8 @@ def release(
     max_length: int = 96,
     log: Callable[[str], None] = print,
     with_features: bool = False,
+    accept_pipeline: Callable[[list[str]], list[str]] | str | None = "same",
+    acceptance_set: str = "validation",
 ) -> dict[str, Any]:
     """Build in staging, verify, and only then replace `out_dir`. Returns the manifest.
 
@@ -192,8 +194,8 @@ def release(
     from vifeedback.constants import label_names
     from vifeedback.inference import onnx_export as OX
 
-    if quantize not in ("none", "dynamic", "static"):
-        raise ValueError(f"quantize must be none | dynamic | static, got {quantize!r}")
+    if quantize not in ("none", "dynamic", "static", "careful"):
+        raise ValueError(f"quantize must be none | dynamic | static | careful, got {quantize!r}")
 
     stamp = time.strftime("%Y%m%d-%H%M%S")
     staging = out_dir.parent / f".staging-{out_dir.name}-{stamp}"
@@ -208,6 +210,12 @@ def release(
             pre = OX.preprocess_for_quantization(fp32, staging / "model.pre.onnx")
             if quantize == "dynamic":
                 served = OX.quantize_dynamic_int8(pre, staging / "model.quant.onnx")
+            elif quantize == "careful":
+                # S5' (cycle4.yaml v4, ADR-035): per-channel dynamic INT8, classifier head and the
+                # last two encoder layers kept in FP32 (Cycle 3's pc-head-last2).
+                from vifeedback.inference import int8_recipes as Q
+
+                served = Path(Q.build(pre, staging, staging, "pc-head-last2")["path"])
             else:
                 calib = pipeline(calib_raw)
                 served = OX.quantize_static_int8(
@@ -234,7 +242,14 @@ def release(
             f.unlink()  # one model file per release: nothing stale left to be picked up
     log(f"  staged {served.name}  {served.stat().st_size / 1e6:.1f} MB  in {staging}")
 
-    accept = pipeline(accept_raw)
+    # `accept_pipeline`: "same" = `pipeline`; None = the texts are already model input (S5' pooled).
+    if accept_pipeline == "same":
+        accept = pipeline(accept_raw)
+    elif accept_pipeline is None:
+        accept = list(accept_raw)
+    else:
+        assert callable(accept_pipeline)
+        accept = accept_pipeline(accept_raw)
     clf = OX.OnnxClassifier(staging, max_length=max_length, model_file=served.name)
     got = np.concatenate([clf.logits(accept[i : i + 32]) for i in range(0, len(accept), 32)])
     single = np.concatenate([clf.logits([t]) for t in accept[:32]])
@@ -264,6 +279,7 @@ def release(
         if quantize == "static"
         else None,
         "acceptance": verdict,
+        "acceptance_set": acceptance_set,
         "created": stamp,
         "software": {
             "onnxruntime": onnxruntime.__version__,

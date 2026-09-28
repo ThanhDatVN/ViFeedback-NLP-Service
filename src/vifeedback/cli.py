@@ -402,7 +402,11 @@ def serve_export(
         "", help="the checkpoint's training preprocessing; inferred from its name if omitted"
     ),
     max_length: int = typer.Option(96),
-    quantize: str = typer.Option("dynamic", help="none | dynamic | static"),
+    quantize: str = typer.Option("dynamic", help="none | dynamic | static | careful (S5')"),
+    acceptance_set: str = typer.Option(
+        "validation",
+        help="validation (UIT-VSFC) | pooled: UIT-VSFC + NEU-ESC validation (S5', cycle4.yaml v4)",
+    ),
     out: str = typer.Option("", help="defaults to models/serve/<task>"),
     calib_size: int = typer.Option(300, help="stratified train sentences for static INT8"),
     with_features: bool = typer.Option(
@@ -415,6 +419,8 @@ def serve_export(
     INT8 stays within 0.005 macro-F1 of PyTorch on the full validation set.
     """
     from pathlib import Path
+
+    import numpy as np
 
     from vifeedback.inference.release import release, stratified_subset
     from vifeedback.preprocess.variants import VARIANTS
@@ -437,6 +443,19 @@ def serve_export(
     raw_dv, _ = _raw_and_pipeline(preprocessing, "validation")
     y_dv = load_variant(preprocessing, "validation")[task].to_numpy()
     calib_idx = stratified_subset(y_tr, calib_size)
+    if acceptance_set == "pooled":
+        # S5': UIT-VSFC validation as segmented, plus NEU-ESC validation through the serving
+        # transform (lowercase, restorer, pyvi); both are already model input.
+        from vifeedback.training.domain import neu_esc, serving_transform
+
+        neu = neu_esc("validation", serving_transform(), in_scope=False)
+        accept_x = load_variant(preprocessing, "validation").sentence.tolist() + neu["x"]
+        accept_y = np.concatenate([y_dv, neu["y"]])
+        accept_pipeline = None
+    elif acceptance_set == "validation":
+        accept_x, accept_y, accept_pipeline = raw_dv, y_dv, pipeline
+    else:
+        raise typer.BadParameter("acceptance-set must be validation or pooled")
 
     manifest = release(
         checkpoint=checkpoint,
@@ -446,11 +465,13 @@ def serve_export(
         out_dir=Path(out) if out else paths.MODELS / "serve" / task,
         pipeline=pipeline,
         calib_raw=[raw_tr[i] for i in calib_idx],
-        accept_raw=raw_dv,
-        accept_y=y_dv,
+        accept_raw=accept_x,
+        accept_y=accept_y,
         max_length=max_length,
         log=typer.echo,
         with_features=with_features,
+        accept_pipeline=accept_pipeline,
+        acceptance_set=acceptance_set,
     )
     typer.echo(f"  manifest: {manifest['model_file']}  sha256 {manifest['sha256'][:12]}...")
 
