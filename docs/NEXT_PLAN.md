@@ -45,7 +45,7 @@ Status key: ✅ done · ⏳ next, no owner input needed · 👤 needs the owner 
 
 | # | Step | Needs | Rule |
 |---|---|---|---|
-| 1 | **A4 upload** of the served model (bundle built, card with the ADR-032 caveat) | 👤 one command | — |
+| 1 | ✅ **A4 upload**: public at [Datk4/vifeedback-sentiment-phobert](https://huggingface.co/Datk4/vifeedback-sentiment-phobert) (commit f0d98e8); all 15 files match SHA256SUMS | done | — |
 | 2 | **F2** S10: a CI job fetches the published model and reproduces validation macro-F1 on CPU | step 1 | < 15 min; same numbers as the manifest |
 | 3 | **B4′** topic-aware scope detector: a small head on the encoder feature, trained on NEU-ESC train topics (in-scope vs off-topic) with UIT-VSFC as in scope | declare first | within-source AUROC ≥ 0.85; UIT-VSFC validation flagged ≤ 5% |
 | 4 | **E1** INT8 power check on UIT-VSFC + NEU-ESC validation; then S5′ or distillation (E2) | — | as in Track E |
@@ -117,7 +117,7 @@ source, and the rule fixed before the run. Items marked **declare** get their ru
 | **A1** | Latency of the pipeline that is served | G1, C4 | `serve bench` times lowercase → restorer → pyvi → ONNX logits + features → Mahalanobis, on clean test and stripped test, in three sessions | p95 ≤ 30 ms (unchanged); ADR-031's additions ≤ 5 ms at p95 | ✅ met: served p95 26.9 ms (median of 3 sessions, range 23.4–39.5); additions +2.2 ms; unaccented input 4 ms faster (ADR-032) |
 | **A2** | `in_scope` on other institutions' in-scope text | G2 | Flag rate by NEU-ESC topic on validation. Fine-tuned Mahalanobis separates *semantic* shift (off-topic) well and *background* shift (another institution's in-scope text) poorly [S3, S4, S5], which is what the service wants | Descriptive. If Academic or Service posts are flagged at > 10% (twice validation's 5%), the limit goes into the card and the API docs, and B4 refits the score | ✅ **triggered**: Academic 75.5%, Service 64.6% flagged; within NEU-ESC AUROC 0.573: the score tracks the institution, not the topic (ADR-032). Card and README corrected |
 | **A3** | Label-policy description | G6 | The served model's confusion on NEU-ESC validation, by gold label and topic | Descriptive; input to owner decision 2 | ✅ 67% of gold-neutral in-scope posts are called polar, mostly negative (1,172 of 2,054) |
-| **A4** | Publish the model | S-R11 | Card: CC BY-NC 4.0 weights, intended use, limits; bundle dry run built (`models/publish/vifeedback-sentiment-phobert`, 15 files, 1.09 GB) | The owner reviews the card and uploads | ✅ bundle · 👤 upload |
+| **A4** | Publish the model | S-R11 | Card: CC BY-NC 4.0 weights, intended use, limits; bundle dry run built (`models/publish/vifeedback-sentiment-phobert`, 15 files, 1.09 GB) | The owner reviews the card and uploads | ✅ published 2026-09-28, public: https://huggingface.co/Datk4/vifeedback-sentiment-phobert; every file verified against SHA256SUMS |
 | **A5** | `kaggle_train.ipynb` clones into `/kaggle/working` | G5 | Clone into `/tmp`, as the H7 notebook does, with the same guard test | The guard test passes | ✅ `/tmp/repo`; the zip leaves out test predictions and `local/` |
 
 ### Track B — Cycle 4: student text from other institutions *(the specialization)*
@@ -219,7 +219,7 @@ source, and the rule fixed before the run. Items marked **declare** get their ru
 
 | # | Decision | Default until decided |
 |---|---|---|
-| 1 | Upload the model: `vifeedback serve publish --repo-id Datk4/vifeedback-sentiment-phobert --upload`, after reading `models/publish/vifeedback-sentiment-phobert/README.md`. The token must be allowed to create and write model repositories | Not published |
+| 1 | Upload the model: `vifeedback serve publish --repo-id Datk4/vifeedback-sentiment-phobert --upload`, after reading `models/publish/vifeedback-sentiment-phobert/README.md`. The token must be allowed to create and write model repositories | ✅ done 2026-09-28 (public, full bundle) |
 | 2 | Label policy for other institutions' text: keep UIT-VSFC's (two heads in B2 keep it exactly) or adopt NEU-ESC's | Keep UIT-VSFC's |
 | 3 | Neutral audit (D1); a second annotator? | D2 waits |
 | 4 | U2 label review (15 rows) | v1 stays as frozen |

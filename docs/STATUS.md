@@ -276,8 +276,8 @@ Needs the owner:
 1. **H7 is done**: Qwen3-4B ran on Kaggle (both GPUs, prefix cache, 19–28 s per 1k) and
    `study h7-decide` applied the rule. UIT-VSFC text was never sent to the API.
 2. **The human audit** (P2/P3), which gates E04. `study audit-report` analyses the filled sheet.
-3. **Publishing the model**: `vifeedback serve publish --repo-id <you>/<name>` builds the bundle and
-   card; add `--upload` after reviewing it.
+3. **The model is published** (2026-09-28): <https://huggingface.co/Datk4/vifeedback-sentiment-phobert>, CC BY-NC 4.0 weights, ONNX + PyTorch,
+   restorer and out-of-scope parameters, every file checked against `SHA256SUMS`.
 
 ---
 

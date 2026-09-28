@@ -370,10 +370,10 @@ integration, API contract and image-build jobs.
 
 ## 9. Next
 
-The open items and the work plan are in [NEXT_PLAN.md](NEXT_PLAN.md). Two need the owner:
-- The human neutral audit: the only way to separate label ambiguity from representation (Q1); its
-  analysis is automated.
-- The model upload: the bundle and card are built.
+The open items and the work plan are in [NEXT_PLAN.md](NEXT_PLAN.md). The model is published at
+<https://huggingface.co/Datk4/vifeedback-sentiment-phobert>. One item needs the owner: the human
+neutral audit, the only way to separate label ambiguity from representation (Q1); its analysis is
+automated.
 
 H7 left one lever on the cross-institution gap: in-domain training data. The NEU-ESC authors'
 PhoBERT-base-v2, trained on NEU-ESC itself, reaches 77.7 macro-F1 on its four classes, against 0.46

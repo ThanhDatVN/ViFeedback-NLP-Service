@@ -350,7 +350,7 @@ reproduce, so they are the claim.
 - [x] Reproducible from a clean clone — *G7*
 - [ ] ≥30 error cases coded by linguistic feature — *G5: tooling, robustness suite, a 160-row audit sheet and its analysis done; the human coding is not*
 - [x] ONNX / quantization benchmark — *G6: FP32 ONNX served, 7.6× faster than padded PyTorch; INT8 1.7× faster again but blocked by the quality gate*
-- [ ] HF model card — *built with checksums (`vifeedback serve publish`, dry run); the upload needs the owner's account*
+- [x] HF model card — *published at [Datk4/vifeedback-sentiment-phobert](https://huggingface.co/Datk4/vifeedback-sentiment-phobert) with checksums; every file verified against `SHA256SUMS`*
 
 Open problems: **[docs/STATUS.md](docs/STATUS.md)**.
 External code review and the next research cycle:
