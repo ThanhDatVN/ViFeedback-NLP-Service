@@ -1,0 +1,176 @@
+{
+  "recipe": "two-heads",
+  "seed": 42,
+  "run_id": "p12-sent-phobert-base-seg_pyvi-h8-two-heads-s42-d3eac986-val",
+  "checkpoint": "models\\p12-sent-phobert-base-seg_pyvi-h8-two-heads-s42-d3eac986-ckp",
+  "history": [
+    {
+      "epoch": 1,
+      "train_loss": 0.5298792867094366,
+      "dev_uit_head_uit": 0.803594691636189,
+      "dev_neu_head_uit": 0.3612715659128883,
+      "dev_neu_head_neu": 0.7445217358994647,
+      "selection_score": 0.5824331287745387,
+      "seconds": 247.5
+    },
+    {
+      "epoch": 2,
+      "train_loss": 0.34581839915222123,
+      "dev_uit_head_uit": 0.8607611307423314,
+      "dev_neu_head_uit": 0.494532164373452,
+      "dev_neu_head_neu": 0.7429250240643949,
+      "selection_score": 0.6776466475578917,
+      "seconds": 497.8
+    },
+    {
+      "epoch": 3,
+      "train_loss": 0.26329853992282815,
+      "dev_uit_head_uit": 0.8425598649558039,
+      "dev_neu_head_uit": 0.4493290222781862,
+      "dev_neu_head_neu": 0.7576778062985708,
+      "selection_score": 0.6459444436169951,
+      "seconds": 747.2
+    },
+    {
+      "epoch": 4,
+      "train_loss": 0.20673691632268235,
+      "dev_uit_head_uit": 0.8720289732756091,
+      "dev_neu_head_uit": 0.5326343464150397,
+      "dev_neu_head_neu": 0.7611862158098068,
+      "selection_score": 0.7023316598453244,
+      "seconds": 996.2
+    }
+  ],
+  "best_epoch": 4,
+  "selection": "mean(UIT-VSFC dev, NEU-ESC dev) macro-F1 of the UIT-VSFC head",
+  "train_seconds": 998.3,
+  "neu_esc_train_posts": 21113,
+  "augmentation": {
+    "recipe": "diac-teen",
+    "p": 0.3,
+    "changed": 2560,
+    "changed_share": 0.2241
+  },
+  "sets": {
+    "uit_validation": {
+      "macro_f1": 0.8720289732756091,
+      "accuracy": 0.9532533164876816,
+      "per_class": {
+        "negative": {
+          "precision": 0.950207468879668,
+          "recall": 0.9744680851063829,
+          "f1": 0.9621848739495799,
+          "support": 705,
+          "predicted": 723,
+          "average_precision": 0.9813526007962036
+        },
+        "neutral": {
+          "precision": 0.8269230769230769,
+          "recall": 0.589041095890411,
+          "f1": 0.6880000000000001,
+          "support": 73,
+          "predicted": 52,
+          "average_precision": 0.7341642604869849
+        },
+        "positive": {
+          "precision": 0.9641089108910891,
+          "recall": 0.9677018633540373,
+          "f1": 0.9659020458772475,
+          "support": 805,
+          "predicted": 808,
+          "average_precision": 0.9908903304372254
+        }
+      }
+    },
+    "uit_validation_stripped": {
+      "macro_f1": 0.8533247025456302,
+      "accuracy": 0.9431459254579911,
+      "per_class": {
+        "negative": {
+          "precision": 0.9404432132963989,
+          "recall": 0.9631205673758865,
+          "f1": 0.951646811492642,
+          "support": 705,
+          "predicted": 722,
+          "average_precision": 0.9788075697347058
+        },
+        "neutral": {
+          "precision": 0.8,
+          "recall": 0.547945205479452,
+          "f1": 0.6504065040650406,
+          "support": 73,
+          "predicted": 50,
+          "average_precision": 0.6986059641980467
+        },
+        "positive": {
+          "precision": 0.9543773119605425,
+          "recall": 0.9614906832298137,
+          "f1": 0.9579207920792079,
+          "support": 805,
+          "predicted": 811,
+          "average_precision": 0.9893424694585515
+        }
+      }
+    },
+    "neu_validation": {
+      "macro_f1": 0.5326343464150397,
+      "accuracy": 0.5109054857898215,
+      "per_class": {
+        "negative": {
+          "precision": 0.315820198482195,
+          "recall": 0.9138513513513513,
+          "f1": 0.4694143167028199,
+          "support": 592,
+          "predicted": 1713,
+          "average_precision": 0.36941305825272813
+        },
+        "neutral": {
+          "precision": 0.9189873417721519,
+          "recall": 0.35345666991236613,
+          "f1": 0.510548523206751,
+          "support": 2054,
+          "predicted": 790,
+          "average_precision": 0.859288976740884
+        },
+        "positive": {
+          "precision": 0.5334608030592735,
+          "recall": 0.7342105263157894,
+          "f1": 0.6179401993355482,
+          "support": 380,
+          "predicted": 523,
+          "average_precision": 0.686165439779018
+        }
+      }
+    },
+    "neu_validation_neu_head": {
+      "macro_f1": 0.7611862158098068,
+      "accuracy": 0.8298083278255123,
+      "per_class": {
+        "negative": {
+          "precision": 0.7508896797153025,
+          "recall": 0.7128378378378378,
+          "f1": 0.7313691507798961,
+          "support": 592,
+          "predicted": 562,
+          "average_precision": 0.8172946135866286
+        },
+        "neutral": {
+          "precision": 0.8686062881276396,
+          "recall": 0.9011684518013632,
+          "f1": 0.8845878136200717,
+          "support": 2054,
+          "predicted": 2131,
+          "average_precision": 0.9469571805742321
+        },
+        "positive": {
+          "precision": 0.7147147147147147,
+          "recall": 0.6263157894736842,
+          "f1": 0.667601683029453,
+          "support": 380,
+          "predicted": 333,
+          "average_precision": 0.7617601326767308
+        }
+      }
+    }
+  }
+}

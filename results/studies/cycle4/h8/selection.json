@@ -1,0 +1,29 @@
+{
+  "declared_in": "configs/experiments/cycle4.yaml H8 recipe_selection",
+  "control_s42": {
+    "uit_validation": 0.8644104907582961,
+    "neu_validation": 0.45904846098807833
+  },
+  "recipes": {
+    "mixed": {
+      "uit_validation": 0.8317642356248759,
+      "neu_validation": 0.7497678150061341,
+      "uit_minus_control": -0.03264625513342023,
+      "eligible": false
+    },
+    "two-heads": {
+      "uit_validation": 0.8720289732756091,
+      "neu_validation": 0.5326343464150397,
+      "uit_minus_control": 0.007618482517313008,
+      "eligible": true
+    },
+    "sequential": {
+      "uit_validation": 0.5957963048503295,
+      "neu_validation": 0.7412693552397424,
+      "uit_minus_control": -0.2686141859079666,
+      "eligible": false
+    }
+  },
+  "chosen": "two-heads",
+  "outcome": "confirm"
+}
