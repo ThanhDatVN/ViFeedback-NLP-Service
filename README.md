@@ -236,8 +236,8 @@ vifeedback serve reproduce             # Hub download, SHA-256 checks, validatio
 
 It fetches [Datk4/vifeedback-sentiment-phobert](https://huggingface.co/Datk4/vifeedback-sentiment-phobert),
 verifies every file against the release's `SHA256SUMS`, and scores validation through the service's
-own pipeline. About 1.6 min on the reference laptop; CI times it from a clean clone weekly
-([reproduce.yml](.github/workflows/reproduce.yml), S10).
+own pipeline. From a clean clone in CI it takes 2.3 min, install included (target < 15 min, S10);
+[reproduce.yml](.github/workflows/reproduce.yml) re-checks it weekly.
 
 ### Serving
 

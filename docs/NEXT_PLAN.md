@@ -32,7 +32,7 @@ Status key: ✅ done · ⏳ next, no owner input needed · 👤 needs the owner 
 - S4 neutral 0.576 (target 0.65)
 - S7 540 MB (target 200)
 - S9 0 coded errors (target 30)
-- S10 not timed
+- S10: ✅ met after this section was written (2.3 min from a clean clone in CI)
 
 **Problems found this cycle:**
 - `in_scope` cannot filter other institutions' text (within NEU-ESC AUROC 0.573).
@@ -46,7 +46,7 @@ Status key: ✅ done · ⏳ next, no owner input needed · 👤 needs the owner 
 | # | Step | Needs | Rule |
 |---|---|---|---|
 | 1 | ✅ **A4 upload**: public at [Datk4/vifeedback-sentiment-phobert](https://huggingface.co/Datk4/vifeedback-sentiment-phobert) (commit f0d98e8); all 15 files match SHA256SUMS | done | — |
-| 2 | **F2** S10: a CI job fetches the published model and reproduces validation macro-F1 on CPU | step 1 | < 15 min; same numbers as the manifest |
+| 2 | ✅ **F2** S10: `serve reproduce` from the Hub in CI, 2.3 min from a clean clone, 0.8644 reproduced | done | — |
 | 3 | **B4′** topic-aware scope detector: a small head on the encoder feature, trained on NEU-ESC train topics (in-scope vs off-topic) with UIT-VSFC as in scope | declare first | within-source AUROC ≥ 0.85; UIT-VSFC validation flagged ≤ 5% |
 | 4 | **E1** INT8 power check on UIT-VSFC + NEU-ESC validation; then S5′ or distillation (E2) | — | as in Track E |
 | 5 | Cycle 5 specialization: real typing (C1 consistency training on ViLexNorm pairs) or size (E2) | owner's choice | declared in `cycle5.yaml` |
@@ -85,7 +85,7 @@ p 0.0004 each). On real text:
 | S7 artifact ≤ 200 MB | 540 MB | E1, E2 |
 | S8 image ≤ 700 MB | ✅ 519 MB (was 1.02 GB) | F1 done |
 | S9 ≥ 30 coded errors | 0 | D1 👤 |
-| S10 clean-clone evaluation < 15 min | not timed | F2 |
+| S10 clean-clone evaluation < 15 min | ✅ 2.3 min (CI, clean clone) | F2 done |
 
 **Holes found in the v4 review** (the IDs used below):
 
@@ -158,7 +158,7 @@ source, and the rule fixed before the run. Items marked **declare** get their ru
 | ID | Task | Method | Rule | Status |
 |---|---|---|---|---|
 | **F1** | Image ≤ 700 MB (S8) | Measured in the local environment: pyvi pulls scikit-learn (45 MB) and SciPy (118 MB) only through `sklearn-crfsuite`; the CRF itself needs `python-crfsuite` (1.5 MB). `transformers` (107 MB) is there only for PhoBERT's BPE tokenizer. Load pyvi's CRF with `python-crfsuite` directly, and read `bpe.codes`/`vocab.txt` with a small tokenizer | Byte-identical segmentation and token ids on all UIT-VSFC and NEU-ESC text; release parity; `docker-e2e` passes; image ≤ 700 MB | ✅ **519 MB** (1,023 → 750 without scikit-learn/SciPy → 519 without transformers). Segmentation and token ids identical on all 49,141 texts; `docker-e2e` passes with the same confidences |
-| **F2** | S10 timing | A CI job times the clean-clone evaluation path on CPU | Recorded; < 15 min | ⏳ |
+| **F2** | S10 timing | A CI job times the clean-clone evaluation path on CPU | Recorded; < 15 min | ✅ `serve reproduce` + `reproduce.yml`: install 45 s, data 3 s, Hub download and evaluation 90 s; validation macro-F1 0.8644 reproduced |
 | **F3** | Model card after every serving change | `serve publish` dry run | — | ongoing |
 
 ### Not pursued
