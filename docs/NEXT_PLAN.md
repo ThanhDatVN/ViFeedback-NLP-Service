@@ -16,6 +16,45 @@ Status key: ✅ done · ⏳ next, no owner input needed · 👤 needs the owner 
 
 ---
 
+## 0. State after Cycle 4 (2026-09-28, commit cfc571e)
+
+**Done since v5 was written.**
+- A1: served p95 is 26.9 ms.
+- A2 (ADR-032): `in_scope` tracks the institution, not the topic.
+- A3, A5, and B1 (`cycle4.yaml`).
+- B2 H8 not passed (ADR-033). Two heads lift NEU-ESC test by +0.111, but the stripped-text check
+  and the refitted out-of-scope score fail, so the service is unchanged.
+- F1: the image is 519 MB, so S8 is met.
+
+**Targets still not met:**
+- S1 0.830 (target 0.84)
+- S2 0.804 (target 0.83)
+- S4 neutral 0.576 (target 0.65)
+- S7 540 MB (target 200)
+- S9 0 coded errors (target 30)
+- S10 not timed
+
+**Problems found this cycle:**
+- `in_scope` cannot filter other institutions' text (within NEU-ESC AUROC 0.573).
+- Two-head training costs 0.0107 on stripped UIT-VSFC text.
+- NEU-ESC test has now served H8 (two calls, both logged), so a new claim about other institutions
+  needs new labelled data.
+- The two-head model is exploratory and is neither served nor published.
+
+**Next, in order.** No step needs Kaggle; everything fits the laptop.
+
+| # | Step | Needs | Rule |
+|---|---|---|---|
+| 1 | **A4 upload** of the served model (bundle built, card with the ADR-032 caveat) | 👤 one command | — |
+| 2 | **F2** S10: a CI job fetches the published model and reproduces validation macro-F1 on CPU | step 1 | < 15 min; same numbers as the manifest |
+| 3 | **B4′** topic-aware scope detector: a small head on the encoder feature, trained on NEU-ESC train topics (in-scope vs off-topic) with UIT-VSFC as in scope | declare first | within-source AUROC ≥ 0.85; UIT-VSFC validation flagged ≤ 5% |
+| 4 | **E1** INT8 power check on UIT-VSFC + NEU-ESC validation; then S5′ or distillation (E2) | — | as in Track E |
+| 5 | Cycle 5 specialization: real typing (C1 consistency training on ViLexNorm pairs) or size (E2) | owner's choice | declared in `cycle5.yaml` |
+| 6 | Neutral audit → D2 | 👤 6–8 h | the frozen tree |
+| 7 | A multi-institution service (the NEU-ESC head reaches 0.76) | 👤 decision 2 and new labelled data from another institution | a new declared rule |
+
+---
+
 ## 1. Where things stand
 
 **The service.** It runs the H2-augmented PhoBERT-base with three additions:
