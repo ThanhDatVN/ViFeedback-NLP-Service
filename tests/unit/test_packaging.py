@@ -417,3 +417,15 @@ def test_kaggle_h7_notebook_keeps_corpora_out_of_the_saved_output() -> None:
     assert "WORK = (pathlib.Path('/tmp') if ON_KAGGLE else OUT_BASE) / 'vifeedback'" in code
     assert "out = OUT_BASE / 'h7_results.zip'" in code
     assert "/kaggle/working/vifeedback" not in code
+
+
+def test_kaggle_train_notebook_keeps_corpora_out_of_the_saved_output() -> None:
+    """Same rule for the training notebook (NEXT_PLAN v5 A5): the clone lives in /tmp, and the
+    results zip leaves out test predictions and local/ folders, which can hold corpus text."""
+    import json
+
+    nb = json.loads((ROOT / "notebooks" / "kaggle_train.ipynb").read_text(encoding="utf-8"))
+    code = "\n".join("".join(c["source"]) for c in nb["cells"] if c["cell_type"] == "code")
+    assert "WORK = pathlib.Path('/tmp/repo')" in code
+    assert "/kaggle/working/repo" not in code
+    assert "if holds_text(rel):" in code

@@ -1,0 +1,85 @@
+# Cycle 4 — declared 2026-09-28, before any Cycle 4 training run (NEXT_PLAN v5, Track B).
+#
+# Specialization: student text from other institutions. On 6,613 NEU-ESC forum posts the served
+# model scores macro-F1 0.462, a zero-shot gpt-4o-mini 0.604, and the NEU-ESC authors' PhoBERT-base-v2
+# trained on NEU-ESC 77.7 on four classes. H7 showed that a local 4B LLM does not close the gap
+# (Qwen3-4B 0.475). The measured lever left is in-domain training data.
+#
+# Seen before this was written: the served model's NEU-ESC test scores (external evaluation, v5
+# confirmation, H7) and the NEU-ESC paper. Not seen: any model trained on NEU-ESC, any number on
+# NEU-ESC validation. Changing a rule below after its results are seen needs a new version and an ADR.
+
+version: 1
+declared: 2026-09-28
+
+data:
+  neu_esc_train: >
+    Training only, and only in-scope topics: Academic, Other, Service, Personal Affairs, Social
+    Affairs, Help & Share (21,113 posts). Spam, News, Jobs & Recruitment and Club & Events are left
+    out, so the out-of-scope score keeps its meaning (NEXT_PLAN v5 G7).
+  neu_esc_validation: every selection (recipe, epoch), in-scope topics (3,026 posts)
+  neu_esc_test: >
+    Confirmation, in-scope topics (6,050 posts), once per rule; every use is appended to
+    results/studies/cycle4/neu_esc_test_uses.log with the date, the rule and the models.
+  uit_vsfc_validation: non-inferiority and part of epoch selection
+  uit_vsfc_test: not used
+  labels: NEU-ESC Toxic -> negative, as in cycle3.yaml v5; UIT-VSFC ids (negative 0, neutral 1, positive 2)
+  text: >
+    NEU-ESC text goes through the service's own transform before training and evaluation:
+    serving.pipeline.prepare (lowercase NFC, the released diacritic restorer, pyvi). UIT-VSFC keeps
+    the materialized seg_pyvi variant, as every earlier run did.
+
+H8_in_domain_data:
+  question: >
+    How much of the NEU-ESC gap does in-scope NEU-ESC training data close, and at what cost to
+    UIT-VSFC?
+  control: >
+    The served recipe (PhoBERT-base, seg_pyvi, diac-teen augmentation p = 0.3, 4 epochs, lr 2e-5),
+    seeds 42, 1337, 2024, 7, 31337: the existing checkpoints p9 (s42) and p10 (the others),
+    re-evaluated with the same code as the candidates.
+  recipes:
+    mixed: >
+      UIT-VSFC train plus in-scope NEU-ESC train, one head, the served recipe; the diac-teen
+      augmentation applies to both parts (NEU-ESC raw text is perturbed, then transformed).
+    two_heads: >
+      One shared encoder, a UIT-VSFC head trained on UIT-VSFC and a NEU-ESC head trained on NEU-ESC
+      (masked cross-entropy), heads as RobertaClassificationHead, optimizer as trainer.train. The
+      UIT-VSFC head is the one evaluated and the one that would be served, so the service's labels
+      keep UIT-VSFC's policy; the NEU-ESC head is reported.
+    sequential: >
+      The control checkpoint of the same seed fine-tuned on in-scope NEU-ESC train (augmented as
+      above) for 2 epochs at lr 1e-5.
+  epoch_selection: >
+    Every recipe selects its epoch by the mean of UIT-VSFC validation macro-F1 and NEU-ESC validation
+    macro-F1 (in-scope), both from the head that would be served.
+  recipe_selection: >
+    Each recipe runs once at seed 42. Eligible: UIT-VSFC validation macro-F1 at least the control's
+    seed-42 value minus 0.01. The eligible recipe with the highest NEU-ESC validation macro-F1 goes to
+    confirmation; if none is eligible, H8 is not supported and stops.
+  confirmation: the chosen recipe at the four other seeds (5 in all), against the control's 5 seeds
+  rule: >
+    All must hold, 5 seeds each side:
+    (1) NEU-ESC test (in-scope) macro-F1 higher: the seed-averaged paired difference has a 95%
+        paired-bootstrap interval above 0 (posts resampled, the 5 seed pairs averaged per resample);
+    (2) UIT-VSFC validation macro-F1, 5-seed mean, not lower by more than 0.005;
+    (3) UIT-VSFC validation neutral F1, 5-seed mean, not lower by more than 0.02;
+    (4) UIT-VSFC validation with diacritics stripped, through the restorer, macro-F1 5-seed mean not
+        lower by more than 0.01;
+    (5) seed 42 only (the model that would be served): the out-of-scope score refitted on its
+        training features (UIT-VSFC train + in-scope NEU-ESC train, B4) has AUROC >= 0.90 for
+        NEU-ESC test off-topic posts against UIT-VSFC validation, and flags at most 10% of in-scope
+        NEU-ESC validation posts.
+  reported_not_tested: >
+    NEU-ESC test on all 6,613 posts (continuity with cycle3.yaml v5); per-topic scores; the NEU-ESC
+    head of two_heads; per-class F1.
+  serving: >
+    If the rule holds, the chosen recipe's seed-42 model is released through the gate with the
+    refitted out-of-scope score and an ADR. mixed and sequential teach NEU-ESC's label policy for
+    forum-like text, so their release also needs the owner's decision on label policy (NEXT_PLAN v5
+    decision 2; default: keep UIT-VSFC's). two_heads serves the UIT-VSFC head and needs no such
+    decision.
+
+budget:
+  weight_updating_runs: 7        # 3 selection + 4 confirmation
+  gpu_hours_estimate: {laptop_rtx3050: 3}
+  api_usd: 0

@@ -241,8 +241,15 @@ def train(
     dev_texts: list[str],
     dev_labels: np.ndarray,
     verbose: bool = True,
+    extra_dev: tuple[list[str], np.ndarray] | None = None,
+    init_from: str | None = None,
 ) -> dict[str, Any]:
-    """Fine-tune, selecting the checkpoint by dev macro-F1. Returns model, tokenizer and history."""
+    """Fine-tune, selecting the checkpoint by dev macro-F1. Returns model, tokenizer and history.
+
+    Two options for Cycle 4 (cycle4.yaml H8), both off by default so every earlier run is unchanged:
+    `extra_dev` is a second development set, and the epoch is then selected by the mean of the two
+    macro-F1 scores; `init_from` starts from a saved checkpoint instead of the pretrained model.
+    """
     from transformers import (
         AutoModelForSequenceClassification,
         AutoTokenizer,
@@ -257,14 +264,18 @@ def train(
     model_id = MODEL_IDS[cfg.model_key]
 
     revision = MODEL_REVISIONS.get(cfg.model_key)  # pinned commit (R11); None = branch head
-    tokenizer = AutoTokenizer.from_pretrained(model_id, revision=revision)
-    model = AutoModelForSequenceClassification.from_pretrained(
-        model_id,
-        revision=revision,
-        num_labels=k,
-        id2label={i: n for i, n in LABELS[cfg.task].items()},
-        label2id={n: i for i, n in LABELS[cfg.task].items()},
-    ).to(device)
+    if init_from:  # a saved fine-tuned checkpoint: its own tokenizer, head and label maps
+        tokenizer = AutoTokenizer.from_pretrained(init_from)
+        model = AutoModelForSequenceClassification.from_pretrained(init_from).to(device)
+    else:
+        tokenizer = AutoTokenizer.from_pretrained(model_id, revision=revision)
+        model = AutoModelForSequenceClassification.from_pretrained(
+            model_id,
+            revision=revision,
+            num_labels=k,
+            id2label={i: n for i, n in LABELS[cfg.task].items()},
+            label2id={n: i for i, n in LABELS[cfg.task].items()},
+        ).to(device)
 
     if cfg.freeze_embeddings:
         # XLM-R carries 192M of its 277M parameters in the embedding matrix, so freezing it
@@ -300,6 +311,17 @@ def train(
         shuffle=False,
         collate_fn=collator,
         num_workers=cfg.num_workers,
+    )
+    dev2_loader = (
+        DataLoader(
+            TextDataset(extra_dev[0], extra_dev[1], tokenizer, cfg.max_length),
+            batch_size=cfg.eval_batch_size,
+            shuffle=False,
+            collate_fn=collator,
+            num_workers=cfg.num_workers,
+        )
+        if extra_dev is not None
+        else None
     )
 
     counts = np.bincount(np.asarray(train_labels), minlength=k)
@@ -391,6 +413,12 @@ def train(
         }
         minority = min(dev["per_class"].items(), key=lambda kv: kv[1]["support"])
         row["dev_minority_f1"] = minority[1]["f1"]
+        selection = dev["macro_f1"]
+        if dev2_loader is not None:
+            logits2, labels2 = predict(model, dev2_loader, device, cfg.fp16)
+            row["dev2_macro_f1"] = M.macro_f1(labels2, logits2.argmax(axis=1), k)
+            selection = (dev["macro_f1"] + row["dev2_macro_f1"]) / 2
+            row["selection_score"] = selection
         history.append(row)
 
         if verbose:
@@ -398,13 +426,14 @@ def train(
                 f"  epoch {epoch}/{cfg.epochs}  loss {row['train_loss']:.4f}  "
                 f"dev macro-F1 {dev['macro_f1']:.4f}  wtd {dev['weighted_f1']:.4f}  "
                 f"acc {dev['accuracy']:.4f}  {minority[0]} F1 {minority[1]['f1']:.3f}  "
-                f"({row['seconds']:.0f}s)"
+                + (f"dev2 macro-F1 {row['dev2_macro_f1']:.4f}  " if dev2_loader is not None else "")
+                + f"({row['seconds']:.0f}s)"
             )
 
-        # Selection on dev macro-F1 — the whole point.
-        if dev["macro_f1"] > best["macro_f1"]:
+        # Selection on dev macro-F1 — the whole point (with `extra_dev`, the mean of the two).
+        if selection > best["macro_f1"]:
             best = {
-                "macro_f1": dev["macro_f1"],
+                "macro_f1": selection,
                 "epoch": epoch,
                 "state": {kk: v.detach().cpu().clone() for kk, v in model.state_dict().items()},
             }
@@ -422,7 +451,8 @@ def train(
         "config": asdict(cfg),
         "history": history,
         "best_epoch": best["epoch"],
-        "best_dev_macro_f1": best["macro_f1"],
+        "best_dev_macro_f1": best["macro_f1"],  # the mean of the two with extra_dev
+        "selection": "mean(dev, extra_dev) macro-F1" if extra_dev is not None else "dev macro-F1",
         "train_seconds": round(time.perf_counter() - t0, 1),
         "determinism": describe_determinism(),
         "device": device,
