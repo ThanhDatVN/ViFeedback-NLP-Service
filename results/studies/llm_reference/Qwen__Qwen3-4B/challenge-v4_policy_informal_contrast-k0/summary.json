@@ -1,0 +1,182 @@
+{
+  "model": "Qwen/Qwen3-4B",
+  "revision": "1cfa9a7208912126459214e8b04321603b3df60c",
+  "backend": "hf",
+  "data": "challenge",
+  "variant": "v4_policy_informal_contrast",
+  "shots": 0,
+  "demo_seed": null,
+  "demos": [],
+  "n_scored": 285,
+  "macro_f1": 0.8191871401563519,
+  "per_class": {
+    "negative": {
+      "precision": 0.7701863354037267,
+      "recall": 0.9465648854961832,
+      "f1": 0.8493150684931507,
+      "support": 131,
+      "predicted": 161,
+      "average_precision": 0.9508412348659752
+    },
+    "neutral": {
+      "precision": 0.8676470588235294,
+      "recall": 0.9365079365079365,
+      "f1": 0.9007633587786259,
+      "support": 63,
+      "predicted": 68,
+      "average_precision": 0.9818902371113825
+    },
+    "positive": {
+      "precision": 0.9285714285714286,
+      "recall": 0.5714285714285714,
+      "f1": 0.7074829931972789,
+      "support": 91,
+      "predicted": 56,
+      "average_precision": 0.8831998006410933
+    }
+  },
+  "seconds": 5.701244625000015,
+  "seconds_per_1k": 18.692605327868904,
+  "vs_encoder": {
+    "ce": {
+      "neutral_f1": {
+        "score_a": 0.9007633587786259,
+        "score_b": 0.7132867132867133,
+        "observed_diff": 0.18747664549191256,
+        "mean_diff": 0.18943483429230792,
+        "ci_low": 0.10564110583467827,
+        "ci_high": 0.2771713397663527,
+        "p_value": 0.00019998000199980003,
+        "significant": true,
+        "n_resamples": 10000,
+        "alpha": 0.05
+      },
+      "macro_f1": {
+        "score_a": 0.8191871401563519,
+        "score_b": 0.7739687536735507,
+        "observed_diff": 0.04521838648280119,
+        "mean_diff": 0.0458558017541742,
+        "ci_low": -0.013525107048738893,
+        "ci_high": 0.10688823041902928,
+        "p_value": 0.1297870212978702,
+        "significant": false,
+        "n_resamples": 10000,
+        "alpha": 0.05
+      }
+    },
+    "augmented": {
+      "neutral_f1": {
+        "score_a": 0.9007633587786259,
+        "score_b": 0.7454545454545455,
+        "observed_diff": 0.15530881332408042,
+        "mean_diff": 0.15740036915692748,
+        "ci_low": 0.06587327522106642,
+        "ci_high": 0.25679492678375254,
+        "p_value": 0.0011998800119988001,
+        "significant": true,
+        "n_resamples": 10000,
+        "alpha": 0.05
+      },
+      "macro_f1": {
+        "score_a": 0.8191871401563519,
+        "score_b": 0.8274434485702091,
+        "observed_diff": -0.008256308413857272,
+        "mean_diff": -0.007798563361974952,
+        "ci_low": -0.06546558231362852,
+        "ci_high": 0.04981645230141068,
+        "p_value": 0.7867213278672133,
+        "significant": false,
+        "n_resamples": 10000,
+        "alpha": 0.05
+      }
+    }
+  },
+  "gpu_seconds_per_1k": 18.692605327868904,
+  "batch_size": 64,
+  "dtype": "float16",
+  "max_tokens": 12288,
+  "prefix_cache": {
+    "used": true,
+    "shared_prefix_tokens": 170,
+    "check_prompts": 8,
+    "check_max_abs_diff": 0.078125,
+    "check_same_labels": true,
+    "passed": true
+  },
+  "challenge": {
+    "scored_rows": 285,
+    "accuracy": 0.8245614035087719,
+    "macro_f1": 0.8191871401563519,
+    "per_class_f1": {
+      "negative": 0.8493150684931507,
+      "neutral": 0.9007633587786259,
+      "positive": 0.7074829931972789
+    },
+    "by_category": {
+      "code_switch": {
+        "n": 25,
+        "accuracy": 0.96
+      },
+      "long_context": {
+        "n": 20,
+        "accuracy": 0.95
+      },
+      "mixed_aspect": {
+        "n": 40,
+        "accuracy": 0.525
+      },
+      "negation_pair": {
+        "n": 30,
+        "accuracy": 0.8
+      },
+      "objective_neutral": {
+        "n": 30,
+        "accuracy": 0.9333333333333333
+      },
+      "suggestion_cue": {
+        "n": 25,
+        "accuracy": 1.0
+      },
+      "suggestion_implicit": {
+        "n": 25,
+        "accuracy": 0.84
+      },
+      "teencode_typed": {
+        "n": 40,
+        "accuracy": 0.95
+      },
+      "unaccented_typed": {
+        "n": 50,
+        "accuracy": 0.7
+      }
+    },
+    "negation_pairs": {
+      "pairs": 15,
+      "both_correct": 0.6,
+      "prediction_flips": 0.8
+    },
+    "out_of_scope_confidence": {
+      "out_of_scope": {
+        "n": 20,
+        "max_prob_mean": 0.9758122762356247,
+        "max_prob_median": 0.9999954233313899,
+        "share_above_0_9": 0.9,
+        "predicted": {
+          "negative": 3,
+          "neutral": 14,
+          "positive": 3
+        }
+      },
+      "objective_neutral": {
+        "n": 30,
+        "max_prob_mean": 0.9682797987398303,
+        "max_prob_median": 0.9999984265149473,
+        "share_above_0_9": 0.9333333333333333,
+        "predicted": {
+          "negative": 2,
+          "neutral": 28
+        }
+      }
+    }
+  }
+}

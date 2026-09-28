@@ -68,4 +68,5 @@ Thumbs.db
 
 # Kaggle output staging: extract here, then `vifeedback results merge` (never over results/)
 /kaggle_results/
+/h7_results/
 /results_new/
