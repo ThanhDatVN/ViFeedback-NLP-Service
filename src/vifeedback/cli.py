@@ -2997,6 +2997,31 @@ def study_h8_confirm(recipe: str = typer.Option(..., help="the recipe h8-select 
     typer.echo(f"  H8 {recipe}: {'passed' if out['passed'] else 'not passed'}")
 
 
+@study_app.command("b4prime")
+def study_b4prime() -> None:
+    """B4' topic-aware scope detector (cycle4.yaml v3): select on NEU-ESC validation, then the rule
+    on NEU-ESC test (logged). CPU; the served graph's features take about 20 minutes."""
+    from vifeedback.evaluation import scope as SC
+
+    out = SC.run()
+    ch = out["selection"]["chosen"]
+    typer.echo(f"  chosen: {ch['candidate']} C={ch['C']}  threshold {out['threshold']:.3f}")
+    for g in out["selection"]["grid"]:
+        typer.echo(
+            f"    {g['candidate']:17s} C={g['C']:<5} NEU-ESC validation AUROC {g['neu_validation_auroc']:.4f}"
+        )
+    for name, r in out["rules"].items():
+        typer.echo(
+            f"  {name:28s} {r['value']:.4f} ({r['limit']})  {'PASS' if r['passed'] else 'FAIL'}"
+        )
+    rep = out["reported"]
+    typer.echo(
+        f"  served Mahalanobis within NEU-ESC test AUROC {rep['served_mahalanobis_within_neu_test_auroc']:.4f}; "
+        f"U4 AUROC {rep['u4_vs_uit_validation_auroc']:.4f}"
+    )
+    typer.echo(f"  B4': {'passed' if out['passed'] else 'not passed'}")
+
+
 @study_app.command("h7-decide")
 def study_h7_decide() -> None:
     """Apply the H7 rule once both arms exist (cycle2.yaml H7; cycle3.yaml v6 h7_decision).
