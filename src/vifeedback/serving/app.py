@@ -26,13 +26,12 @@ from contextlib import asynccontextmanager
 from pathlib import Path, PureWindowsPath
 from typing import Any
 
-import numpy as np
 from fastapi import FastAPI, HTTPException, Request
 from fastapi.responses import JSONResponse, PlainTextResponse
 
 from vifeedback import __version__, paths
 from vifeedback.constants import LABELS
-from vifeedback.preprocess.normalize import model_text
+from vifeedback.serving import pipeline
 from vifeedback.serving.schemas import (
     ClassifyRequest,
     ClassifyResponse,
@@ -97,15 +96,8 @@ def _load() -> None:
         spec = m.get("restorer")
         if not spec:
             continue
-        path = MODEL_DIR / task / spec["file"]
         try:
-            import hashlib
-
-            from vifeedback.preprocess.diacritics import Restorer
-
-            if hashlib.sha256(path.read_bytes()).hexdigest() != spec["sha256"]:
-                raise ValueError("sha256 does not match the manifest")
-            _state["restorers"][task] = Restorer.load(path)
+            _state["restorers"][task] = pipeline.load_restorer(MODEL_DIR / task, spec)
             log.info(f"loaded {task} diacritic restorer ({spec['sha256'][:12]})")
         except Exception as e:
             _state["preprocessing_error"] = f"restorer for {task} unusable: {type(e).__name__}: {e}"
@@ -118,19 +110,7 @@ def _load() -> None:
         if not spec:
             continue
         try:
-            import hashlib
-
-            path = MODEL_DIR / task / spec["file"]
-            if hashlib.sha256(path.read_bytes()).hexdigest() != spec["sha256"]:
-                raise ValueError("sha256 does not match the manifest")
-            if not _state["models"][task].has_features:
-                raise ValueError("the graph has no 'features' output")
-            with np.load(path) as z:
-                _state["ood"][task] = {
-                    "means": z["means"],
-                    "precision": z["precision"],
-                    "threshold": float(z["threshold"]),
-                }
+            _state["ood"][task] = pipeline.load_ood(MODEL_DIR / task, spec, _state["models"][task])
             log.info(f"loaded {task} out-of-scope score ({spec['sha256'][:12]})")
         except Exception as e:
             _state["preprocessing_error"] = (
@@ -274,30 +254,13 @@ def classify(req: ClassifyRequest) -> ClassifyResponse:
 
     t0 = time.perf_counter()
     texts = list(req.texts)
-    seg = _state["segmenter"]
-    normalized = [model_text(x) for x in texts]  # the training corpus is lowercase NFC
-    restorer = _state.get("restorers", {}).get(req.task)
-    if restorer is not None:  # rewrites only essentially unaccented input (ADR-031)
-        normalized = [restorer(x) for x in normalized]
-    model_input = seg(normalized) if seg is not None else normalized
-
+    # Lowercase NFC, restore diacritics on unaccented input (ADR-031), segment, score: the same
+    # function `study latency` times.
+    model_input = pipeline.prepare(
+        texts, _state.get("restorers", {}).get(req.task), _state["segmenter"]
+    )
     ood = _state.get("ood", {}).get(req.task)
-    if ood is not None:
-        logits, feats = clf.logits_and_features(model_input)
-        e = np.exp(logits - logits.max(axis=1, keepdims=True))
-        probs = e / e.sum(axis=1, keepdims=True)
-        ids = probs.argmax(axis=1)
-        dist = np.stack(
-            [
-                np.einsum("ij,jk,ik->i", feats - m, ood["precision"], feats - m)
-                for m in ood["means"]
-            ],
-            axis=1,
-        )
-        scope = -dist.min(axis=1)
-    else:
-        ids, probs = clf.predict(model_input)
-        scope = None
+    ids, probs, scope = pipeline.score(clf, model_input, ood)
     names = [LABELS[req.task][i] for i in sorted(LABELS[req.task])]
 
     preds = []

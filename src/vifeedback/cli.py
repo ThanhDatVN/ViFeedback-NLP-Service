@@ -1140,13 +1140,20 @@ def study_latency(
     out_file: str = typer.Option(
         "", "--out", help="output JSON; default results/studies/latency/reference_cpu.json"
     ),
+    with_torch: bool = typer.Option(
+        True, "--torch/--no-torch", help="time the PyTorch rungs L0 and L1 (the slow part)"
+    ),
 ) -> None:
     """Steady-state CPU latency ladder on the reference machine (review R10, § 8.4).
 
-    Model-only timing on inputs segmented once up front, so every configuration runs the same
-    workload. Configurations run in two passes, forward then reversed, so a machine that warms up
-    over the session shows as a pass disagreement instead of favouring whichever ran first.
-    Throughput is texts/s. Peak RSS is recorded. Never run this while training.
+    The L rungs are model-only timing on inputs segmented once up front, so they run the same
+    workload. The S rungs take raw test text, as the API receives it, through the service's own
+    code (`serving.pipeline`): S0 is the pipeline before ADR-031 (lowercase, segment, logits), S1
+    the served one (also the diacritic restorer, the features output and the out-of-scope score);
+    S2 and S3 are the same on text with its diacritics stripped, where the restorer does its work
+    (NEXT_PLAN v5, A1). Configurations run in two passes, forward then reversed, so a machine
+    that warms up over the session shows as a pass disagreement instead of favouring whichever ran
+    first. Throughput is texts/s. Peak RSS is recorded. Never run this while training.
     """
     import os
     import subprocess
@@ -1179,11 +1186,27 @@ def study_latency(
     if gpu_busy:
         raise typer.BadParameter("the GPU is busy: a latency benchmark during training is invalid")
 
+    from vifeedback.preprocess.normalize import strip_diacritics
+    from vifeedback.serving import pipeline as SP
+
     seg = get_segmenter("pyvi")
-    texts = seg(load("test")["sentence"].tolist())  # timing inputs only; no labels are read
+    raw = load("test")["sentence"].tolist()  # timing inputs only; no labels are read
+    raw_stripped = [strip_diacritics(t) for t in raw]
+    texts = seg(raw)
     tok = AutoTokenizer.from_pretrained(checkpoint)
     model = AutoModelForSequenceClassification.from_pretrained(checkpoint).eval()
     onnx = OnnxClassifier(Path(onnx_dir))
+    manifest = json.loads((Path(onnx_dir) / "manifest.json").read_text(encoding="utf-8"))
+    restorer = (
+        SP.load_restorer(Path(onnx_dir), manifest["restorer"]) if manifest.get("restorer") else None
+    )
+    ood = SP.load_ood(Path(onnx_dir), manifest["ood"], onnx) if manifest.get("ood") else None
+
+    def before_adr031(batch):
+        return onnx.logits(SP.prepare(batch, None, seg))
+
+    def served(batch):
+        return SP.score(onnx, SP.prepare(batch, restorer, seg), ood)
 
     def torch_dynamic(batch):
         return model(
@@ -1195,24 +1218,30 @@ def study_latency(
             **tok(batch, return_tensors="pt", padding="max_length", truncation=True, max_length=96)
         ).logits
 
-    configs = {
-        "L0 torch fp32, pad to 96": torch_padmax,
-        "L1 torch fp32, dynamic padding": torch_dynamic,
-        f"L3 onnx fp32 ({onnx.path.name}), dynamic padding": onnx.logits,
-    }
+    # name -> (callable, its inputs): L rungs take segmented text, S rungs raw text.
+    configs = {}
+    if with_torch:
+        configs["L0 torch fp32, pad to 96"] = (torch_padmax, texts)
+        configs["L1 torch fp32, dynamic padding"] = (torch_dynamic, texts)
+    configs[f"L3 onnx fp32 ({onnx.path.name}), dynamic padding"] = (onnx.logits, texts)
+    configs["S0 raw text: lowercase, pyvi, logits (before ADR-031)"] = (before_adr031, raw)
+    configs["S1 raw text: served pipeline"] = (served, raw)
+    configs["S2 unaccented text: before ADR-031"] = (before_adr031, raw_stripped)
+    configs["S3 unaccented text: served pipeline"] = (served, raw_stripped)
     for i, f in enumerate(p for p in extra_onnx.split(",") if p):
         fp = Path(f)
         clf = OnnxClassifier(fp.parent, model_file=fp.name)
         # Timed only: an extra graph here need not have passed its release gate (it is labelled).
-        configs[f"X{i} {fp.parent.parent.name}/{fp.name} (not released)"] = clf.logits
+        configs[f"X{i} {fp.parent.parent.name}/{fp.name} (not released)"] = (clf.logits, texts)
     proc = psutil.Process(os.getpid())
     passes = []
     for order in (list(configs), list(reversed(configs))):
         res = {}
         for name in order:
-            r = BM.time_callable(configs[name], texts, timed=timed, repeats=repeats)
+            fn, inputs = configs[name]
+            r = BM.time_callable(fn, inputs, timed=timed, repeats=repeats)
             r["rss_mb_after"] = round(proc.memory_info().rss / 1e6, 1)
-            r["texts_per_s_b32"] = BM.throughput(configs[name], texts, batch_sizes=(32,))[
+            r["texts_per_s_b32"] = BM.throughput(fn, inputs, batch_sizes=(32,))[
                 "batch32_texts_per_s"
             ]
             res[name] = r
@@ -1222,10 +1251,13 @@ def study_latency(
             )
         passes.append(res)
 
-    summary = BM.summarize_passes(passes, baseline="L0 torch fp32, pad to 96")
+    baseline = next(iter(configs))
+    summary = BM.summarize_passes(passes, baseline=baseline)
     report = {
-        "protocol": "model-only, pre-segmented test inputs, 200 warmup, median-of-repeats p95, "
-        "two passes in rotated order; texts/s at batch 32; RSS after each config",
+        "protocol": "L rungs: model-only on pre-segmented test inputs; S rungs: raw test text "
+        "through serving.pipeline (S2/S3 with diacritics stripped); 200 warmup, median-of-repeats "
+        "p95, two passes in rotated order; texts/s at batch 32; RSS after each config",
+        "manifest_sha256": manifest.get("sha256"),
         "summary": summary,
         "passes": passes,
         "peak_rss_mb": round(proc.memory_info().rss / 1e6, 1),
