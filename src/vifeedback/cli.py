@@ -2490,96 +2490,189 @@ def study_llm_reference(
     data: str = typer.Option("challenge", help="challenge | validation | neu_esc"),
     shots: int = typer.Option(0, help="0, or 6 demonstrations (2 per class)"),
     demo_seed: int = typer.Option(1, help="demonstration draw (declared: 1 and 2)"),
+    configs: str = typer.Option(
+        "",
+        help="several configurations as data:shots:seed,... in one process: the model loads once "
+        "and configurations that already have a summary are skipped (replaces --data/--shots/--demo-seed)",
+    ),
     batch_size: int = typer.Option(8),
     dtype: str = typer.Option("float16", help="HF backend: float16 | bfloat16 | float32"),
     max_tokens: int = typer.Option(8192, help="HF backend: padded tokens per batch"),
+    prefix_cache: bool = typer.Option(
+        True, help="HF backend: reuse the shared prompt prefix's KV cache (self-checked, else off)"
+    ),
     licence_confirmed: bool = typer.Option(
         False, help="owner confirmed the data may be sent to the API (cycle2.yaml data_egress)"
     ),
 ) -> None:
-    """H7: score one LLM configuration with the frozen prompt; compare with the encoders.
+    """H7: score LLM configurations with the frozen prompt; compare with the encoders.
 
     neu_esc (cycle3.yaml v5): zero-shot only, since demonstrations are UIT-VSFC text."""
+    import gc
+
+    from vifeedback.data.loader import load
+    from vifeedback.evaluation import llm_reference as L
+
+    multi = bool(configs)
+    jobs = (
+        [(d, int(k), int(s)) for d, k, s in (c.split(":") for c in configs.split(","))]
+        if multi
+        else [(data, shots, demo_seed)]
+    )
+    for d, k, _ in jobs:
+        if d not in ("challenge", "validation", "neu_esc"):
+            raise typer.BadParameter(f"unknown data {d!r}: challenge | validation | neu_esc")
+        if backend == "openai" and (d != "challenge" or k) and not licence_confirmed:
+            raise typer.BadParameter(
+                "corpus text (validation, NEU-ESC, or train demonstrations) goes to the API only "
+                "after the owner confirms the licence allows it; pass --licence-confirmed once that "
+                "is settled"
+            )
+        if d == "neu_esc" and k:
+            raise typer.BadParameter(
+                "neu_esc is zero-shot only: demonstrations would be UIT-VSFC text"
+            )
+
+    variant = L.frozen_variant()
+    frozen = json.loads(L.PROMPT_DEV_FILE.read_text(encoding="utf-8"))
+    tr = load("train")
+    tr_texts, tr_y = tr.sentence.tolist(), tr.sentiment.to_numpy()
+
+    # Everything is prepared before the LLM loads: the validation baseline may need the encoders,
+    # whose weights must leave a 4 GB GPU first.
+    prepared = []
+    for d, k, s in jobs:
+        run_name = f"{d}-{variant}-k{k}" + (f"-s{s}" if k else "")
+        if multi and (L.OUT / L.slug(model) / run_name / "summary.json").exists():
+            typer.echo(f"{model} {run_name}: already finished, skipped")
+            continue
+        demo_idx = (
+            L.draw_demo_indices(tr_texts, tr_y, s, k // 3, exclude=frozen["subset"]["indices"])
+            if k
+            else []
+        )
+        demos = [(tr_texts[i], L.LABELS[int(tr_y[i])]) for i in demo_idx]
+        prepared.append((d, k, s, run_name, demo_idx, demos, _llm_reference_data(d)))
+    if not prepared:
+        return
+
+    import torch
+
+    gc.collect()
+    if torch.cuda.is_available():
+        torch.cuda.empty_cache()
+    scorer = (
+        L.OpenAIScorer(model)
+        if backend == "openai"
+        else L.HFScorer(model, dtype=dtype, prefix_cache=prefix_cache)
+    )
+    for d, k, s, run_name, demo_idx, demos, ds in prepared:
+        _llm_reference_one(
+            scorer,
+            model,
+            backend,
+            variant,
+            d,
+            k,
+            s,
+            run_name,
+            demo_idx,
+            demos,
+            ds,
+            batch_size=batch_size,
+            max_tokens=max_tokens,
+            dtype=dtype,
+        )
+
+
+def _llm_reference_data(data: str) -> dict:
+    """Texts, gold labels, the scored mask and the seed-42 encoder predictions for one dataset."""
     import numpy as np
     import pandas as pd
 
     from vifeedback.data.loader import load
     from vifeedback.evaluation import challenge as CH
     from vifeedback.evaluation import llm_reference as L
-    from vifeedback.evaluation import metrics as M
-
-    if backend == "openai" and (data != "challenge" or shots) and not licence_confirmed:
-        raise typer.BadParameter(
-            "corpus text (validation, NEU-ESC, or train demonstrations) goes to the API only after "
-            "the owner confirms the licence allows it; pass --licence-confirmed once that is settled"
-        )
-    if data == "neu_esc" and shots:
-        raise typer.BadParameter("neu_esc is zero-shot only: demonstrations would be UIT-VSFC text")
-    variant = L.frozen_variant()
-    frozen = json.loads(L.PROMPT_DEV_FILE.read_text(encoding="utf-8"))
-    tr = load("train")
-    tr_texts, tr_y = tr.sentence.tolist(), tr.sentiment.to_numpy()
-    demo_idx = (
-        L.draw_demo_indices(
-            tr_texts, tr_y, demo_seed, shots // 3, exclude=frozen["subset"]["indices"]
-        )
-        if shots
-        else []
-    )
-    demos = [(tr_texts[i], L.LABELS[int(tr_y[i])]) for i in demo_idx]
 
     if data == "challenge":
         df = CH.load()
-        texts = df.text.tolist()
-        scored = df.scored.to_numpy()
-        y = df.y.to_numpy()
         enc = pd.read_csv(
             paths.RESULTS / "studies" / "challenge" / "predictions.csv", keep_default_na=False
         )
-        enc_pred = {n: enc[f"{n}_pred"].map(L.LABELS.index).to_numpy() for n in ("ce", "augmented")}
-    elif data == "neu_esc":
+        return {
+            "df": df,
+            "texts": df.text.tolist(),
+            "scored": df.scored.to_numpy(),
+            "y": df.y.to_numpy(),
+            "enc_pred": {
+                n: enc[f"{n}_pred"].map(L.LABELS.index).to_numpy() for n in ("ce", "augmented")
+            },
+        }
+    if data == "neu_esc":
         from vifeedback.evaluation import external as X
 
         ne = X.load_neu_esc("test")
-        texts = ne.text.tolist()
         y = ne.sentiment.map({c: i for i, c in enumerate(L.LABELS)}).to_numpy().astype(float)
-        scored = np.ones(len(y), dtype=bool)
         enc = pd.read_csv(paths.RESULTS / "studies" / "external" / "neu_esc" / "predictions.csv")
-        enc_pred = {
-            "ce": enc["lowercased:ce-s42"].to_numpy(),
-            "augmented": enc["lowercased:aug-s42"].to_numpy(),
+        return {
+            "texts": ne.text.tolist(),
+            "scored": np.ones(len(y), dtype=bool),
+            "y": y,
+            "enc_pred": {
+                "ce": enc["lowercased:ce-s42"].to_numpy(),
+                "augmented": enc["lowercased:aug-s42"].to_numpy(),
+            },
         }
-    else:
-        from vifeedback.evaluation import error_analysis as EA
-        from vifeedback.preprocess.variants import load_variant
+    from vifeedback.evaluation import error_analysis as EA
+    from vifeedback.preprocess.variants import load_variant
 
-        dv = load("validation")
-        texts = dv.sentence.tolist()
-        y = dv.sentiment.to_numpy().astype(float)
-        scored = np.ones(len(y), dtype=bool)
-        # Computed once from the local checkpoints and committed (labels only, no text), so a
-        # Kaggle session without the checkpoints compares against the same predictions.
-        cache = L.OUT / "encoder_validation_preds.csv"
-        if not cache.exists():
-            x = load_variant("seg_pyvi", "validation").sentence.tolist()
-            ckp = {
-                "ce": "models/p6-sent-phobert-base-seg_pyvi-base-s42-ckp",
-                "augmented": "models/p9-sent-phobert-base-seg_pyvi-aug-diac-teen-s42-599cf21f-ckp",
-            }
-            pd.DataFrame(
-                {f"{n}_pred": EA.predict_proba(p, x).argmax(1) for n, p in ckp.items()}
-            ).to_csv(cache, index_label="row")
-        cached = pd.read_csv(cache)
-        enc_pred = {n: cached[f"{n}_pred"].to_numpy() for n in ("ce", "augmented")}
+    dv = load("validation")
+    y = dv.sentiment.to_numpy().astype(float)
+    # Computed once from the local checkpoints and committed (labels only, no text), so a Kaggle
+    # session without the checkpoints compares against the same predictions.
+    cache = L.OUT / "encoder_validation_preds.csv"
+    if not cache.exists():
+        x = load_variant("seg_pyvi", "validation").sentence.tolist()
+        ckp = {
+            "ce": "models/p6-sent-phobert-base-seg_pyvi-base-s42-ckp",
+            "augmented": "models/p9-sent-phobert-base-seg_pyvi-aug-diac-teen-s42-599cf21f-ckp",
+        }
+        pd.DataFrame(
+            {f"{n}_pred": EA.predict_proba(p, x).argmax(1) for n, p in ckp.items()}
+        ).to_csv(cache, index_label="row")
+    cached = pd.read_csv(cache)
+    return {
+        "texts": dv.sentence.tolist(),
+        "scored": np.ones(len(y), dtype=bool),
+        "y": y,
+        "enc_pred": {n: cached[f"{n}_pred"].to_numpy() for n in ("ce", "augmented")},
+    }
 
-    import gc
 
-    import torch
+def _llm_reference_one(
+    scorer,
+    model,
+    backend,
+    variant,
+    data,
+    shots,
+    demo_seed,
+    run_name,
+    demo_idx,
+    demos,
+    ds,
+    batch_size: int,
+    max_tokens: int,
+    dtype: str,
+) -> None:
+    """Score one configuration, write its summary and predictions, print the comparison."""
+    import pandas as pd
 
-    gc.collect()  # the encoders' weights must leave the 4 GB GPU before the LLM arrives
-    if torch.cuda.is_available():
-        torch.cuda.empty_cache()
-    scorer = L.OpenAIScorer(model) if backend == "openai" else L.HFScorer(model, dtype=dtype)
+    from vifeedback.evaluation import challenge as CH
+    from vifeedback.evaluation import llm_reference as L
+    from vifeedback.evaluation import metrics as M
+
+    texts, scored, y, enc_pred = ds["texts"], ds["scored"], ds["y"], ds["enc_pred"]
     r = L.run(scorer, texts, variant, demos, batch_size=batch_size, max_tokens=max_tokens)
     pred = r["probs"].argmax(1)
     ys, ps = y[scored].astype(int), pred[scored]
@@ -2619,26 +2712,33 @@ def study_llm_reference(
         summary["batch_size"] = batch_size
         summary["dtype"] = dtype
         summary["max_tokens"] = max_tokens
+        summary["prefix_cache"] = dict(scorer.prefix_cache_check)
     if data == "challenge":
+        df = ds["df"]
         summary["challenge"] = {
             **CH.category_report(df, pred),
             "negation_pairs": CH.negation_pairs(df, pred),
             "out_of_scope_confidence": CH.out_of_scope_confidence(df, r["probs"]),
         }
 
-    run_name = f"{data}-{variant}-k{shots}" + (f"-s{demo_seed}" if shots else "")
     out = L.OUT / L.slug(model) / run_name
     L.write(out / "summary.json", summary)
     table = pd.DataFrame(r["probs"].round(5), columns=[f"p_{c}" for c in L.LABELS])
     table.insert(0, "pred", [L.LABELS[i] for i in pred])
     if data == "challenge":  # constructed text ids only; corpus text is never written here
-        table.insert(0, "id", df.id)
+        table.insert(0, "id", ds["df"].id)
     table.to_csv(out / "predictions.csv", index_label="row")
 
     pc = ev["per_class"]
+    cache_note = ""
+    if "prefix_cache" in summary:
+        pcc = summary["prefix_cache"]
+        cache_note = f"  prefix cache {'on' if pcc.get('used') else 'off'}" + (
+            f" (check diff {pcc['check_max_abs_diff']:.1e})" if "check_max_abs_diff" in pcc else ""
+        )
     typer.echo(
         f"{model} {run_name}: macro-F1 {ev['macro_f1']:.4f}  neutral F1 {pc['neutral']['f1']:.3f}"
-        f"  ({r['seconds_per_1k']:.1f} s per 1k)"
+        f"  ({r['seconds_per_1k']:.1f} s per 1k){cache_note}"
     )
     for name, c in summary["vs_encoder"].items():
         n = c["neutral_f1"]

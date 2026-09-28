@@ -97,6 +97,8 @@ def test_committed_summaries_record_demo_indices_not_corpus_text():
 class _FakeTok:
     """Prompt "p<k>" encodes to k + 1 copies of token k, left-padded with 0."""
 
+    pad_token_id = 0
+
     def __call__(self, prompts, **kw):
         import torch
 
@@ -121,7 +123,7 @@ class _FakeLM:
     def __init__(self, fill=None):
         self.fill, self.batches = fill, []
 
-    def forward(self, input_ids=None, use_cache=None, logits_to_keep=None):
+    def forward(self, input_ids=None, attention_mask=None, use_cache=None, logits_to_keep=None):
         import torch
 
         self.batches.append(tuple(input_ids.shape))
@@ -138,6 +140,7 @@ def _scorer(model):
     s = L.HFScorer.__new__(L.HFScorer)
     s.device, s.single_token, s.label_ids = "cpu", True, [[0], [1], [2]]
     s.tok, s.model = _FakeTok(), model
+    s.prefix_cache, s.prefix_cache_check = True, {}
     return s
 
 
@@ -198,3 +201,96 @@ def test_h7_needs_holm_and_a_positive_difference():
     assert (
         d["better_on_neutral"] == [] and d["outcome"] == "encoder_better_or_equal"
     )  # 0.03 > 0.05 / 2
+
+
+def _tiny_qwen3_scorer():
+    """A 2-layer Qwen3 with random weights and a word-level tokenizer: real attention, masks,
+    rotary positions and KV cache, small enough for CPU in CI."""
+    torch = pytest.importorskip("torch")
+    transformers = pytest.importorskip("transformers")
+    if not hasattr(transformers, "Qwen3ForCausalLM"):
+        pytest.skip("transformers without Qwen3")
+    from tokenizers import Tokenizer
+    from tokenizers.models import WordLevel
+    from tokenizers.pre_tokenizers import Whitespace
+
+    words = [
+        "[PAD]",
+        "[UNK]",
+        *L.LABELS,
+        "sys",
+        "rule",
+        "one",
+        "two",
+        "Feedback:",
+        "a",
+        "b",
+        "c",
+        "d",
+        "e",
+        "end",
+    ]
+    vocab = {w: i for i, w in enumerate(words)}
+    tk = Tokenizer(WordLevel(vocab, unk_token="[UNK]"))
+    tk.pre_tokenizer = Whitespace()
+    tok = transformers.PreTrainedTokenizerFast(
+        tokenizer_object=tk, pad_token="[PAD]", unk_token="[UNK]"
+    )
+    tok.padding_side = "left"
+    torch.manual_seed(0)
+    cfg = transformers.Qwen3Config(
+        vocab_size=len(words),
+        hidden_size=32,
+        intermediate_size=64,
+        num_hidden_layers=2,
+        num_attention_heads=4,
+        num_key_value_heads=2,
+        head_dim=8,
+        max_position_embeddings=256,
+    )
+    s = L.HFScorer.__new__(L.HFScorer)
+    s.device, s.tok = "cpu", tok
+    s.model = transformers.Qwen3ForCausalLM(cfg).eval()
+    s.label_ids = [tok.encode(lab, add_special_tokens=False) for lab in L.LABELS]
+    s.single_token = all(len(i) == 1 for i in s.label_ids)
+    s.prefix_cache, s.prefix_cache_check = True, {}
+    return s
+
+
+PREFIX = " ".join(["sys", "rule", "one", "two"] * 5) + " Feedback:"
+TEXTS = ["a", "b c", "a b c d e", "e", "d d", "c a b", "a b c d e a b c d e end", "b", "e d c b a"]
+
+
+def test_prefix_cache_scores_equal_full_scores_on_a_real_model():
+    s = _tiny_qwen3_scorer()
+    prompts = [f"{PREFIX} {t} end" for t in TEXTS]
+    cached = s.score(prompts, batch_size=4, max_tokens=200)  # several padded batches
+    report = dict(s.prefix_cache_check)
+    s.prefix_cache = False
+    full = s.score(prompts, batch_size=4, max_tokens=200)
+    assert report["used"] and report["passed"]
+    assert report["shared_prefix_tokens"] == len(s.tok(PREFIX, add_special_tokens=False).input_ids)
+    assert np.abs(cached - full).max() < 1e-4
+    one_by_one = np.vstack([s.score([p]) for p in prompts])  # no padding at all
+    assert np.abs(cached - one_by_one).max() < 1e-4
+
+
+def test_no_shared_prefix_means_full_scoring():
+    s = _tiny_qwen3_scorer()
+    s.score(["a b end", "c d end", "e end"])
+    assert (
+        s.prefix_cache_check["used"] is False and s.prefix_cache_check["shared_prefix_tokens"] == 0
+    )
+
+
+def test_a_failed_self_check_falls_back_to_full_scoring(monkeypatch):
+    s = _tiny_qwen3_scorer()
+    prompts = [f"{PREFIX} {t} end" for t in TEXTS]
+    s.prefix_cache = False
+    full = s.score(prompts)
+    s.prefix_cache = True
+    wrong = L.HFScorer._forward_cached
+    monkeypatch.setattr(L.HFScorer, "_forward_cached", lambda self, *a: wrong(self, *a) + 0.5)
+    out = s.score(prompts)
+    assert s.prefix_cache_check["passed"] is False and s.prefix_cache_check["used"] is False
+    assert np.abs(out - full).max() < 1e-6

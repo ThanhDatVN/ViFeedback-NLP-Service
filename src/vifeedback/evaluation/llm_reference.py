@@ -145,6 +145,45 @@ def draw_demos(
 
 # --- scoring: local HF model --------------------------------------------------------------------
 
+# A shared prefix shorter than this is not worth a cache. The tolerance sits above fp16 rounding
+# (measured with Qwen3-0.6B: full scoring batched vs one prompt at a time differs by up to 0.11 in
+# log-probability, and flipped 4 of 800 near-tied NEU-ESC labels; cached scoring flipped 1 of the
+# same 800 against one-at-a-time) and far below what a wrong mask or position would cause.
+MIN_SHARED_PREFIX = 16
+PREFIX_CACHE_TOLERANCE = 0.25
+
+
+def _common_prefix_len(seqs: Sequence[Sequence[int]]) -> int:
+    """Length of the longest token prefix shared by every sequence."""
+    first = seqs[0]
+    n = len(first)
+    for s in seqs[1:]:
+        m = min(n, len(s))
+        i = 0
+        while i < m and s[i] == first[i]:
+            i += 1
+        n = i
+        if n == 0:
+            break
+    return n
+
+
+def _token_batches(lengths: Sequence[int], batch_size: int, max_tokens: int) -> list[list[int]]:
+    """Indices shortest first, cut into batches of <= batch_size items and <= max_tokens padded tokens."""
+    batches: list[list[int]] = []
+    cur: list[int] = []
+    width = 0
+    for i in np.argsort(lengths, kind="stable"):
+        w = max(width, lengths[i])
+        if cur and (len(cur) >= batch_size or w * (len(cur) + 1) > max_tokens):
+            batches.append(cur)
+            cur, w = [], lengths[i]
+        cur.append(int(i))
+        width = w
+    if cur:
+        batches.append(cur)
+    return batches
+
 
 class HFScorer:
     """Label log-likelihoods from a local causal LM, thinking disabled (Qwen3 chat template)."""
@@ -155,6 +194,7 @@ class HFScorer:
         revision: str | None = None,
         device: str = "auto",
         dtype: str = "float16",
+        prefix_cache: bool = True,
     ):
         import torch
         from huggingface_hub import model_info
@@ -179,6 +219,8 @@ class HFScorer:
         self.model = model.to(self.device).eval()
         self.label_ids = [self.tok.encode(lab, add_special_tokens=False) for lab in LABELS]
         self.single_token = all(len(ids) == 1 for ids in self.label_ids)
+        self.prefix_cache = prefix_cache
+        self.prefix_cache_check: dict[str, Any] = {}
 
     def prompt(self, msgs: list[dict[str, str]]) -> str:
         return str(
@@ -206,45 +248,139 @@ class HFScorer:
         Prompts are scored shortest first, in batches of at most `batch_size` prompts and
         `max_tokens` padded tokens, so padding is small and long few-shot prompts still fit. The
         score of a prompt does not depend on its batch beyond floating-point rounding.
-        """
-        import torch
 
+        Every prompt of a configuration starts with the same system prompt and demonstrations,
+        82-95% of its tokens. With `prefix_cache` that shared prefix is run once and its key/value
+        cache reused, so only each prompt's own tokens are computed. Before relying on it, a
+        self-check scores prompts of different lengths both ways; any disagreement, or a
+        transformers version without the cache API, falls back to full scoring. What happened is
+        kept in `prefix_cache_check` and written to the run's summary.
+        """
         out = np.empty((len(prompts), len(LABELS)))
         if not self.single_token:
             for j, p in enumerate(prompts):
                 out[j] = self._score_multi(p)
         else:
-            lengths = [len(x) for x in self.tok(prompts, add_special_tokens=False)["input_ids"]]
-            order = np.argsort(lengths, kind="stable")
-            label_cols = [ids[0] for ids in self.label_ids]
-            kw = self._forward_kwargs()
-            batches: list[list[int]] = []
-            cur: list[int] = []
-            for i in order:
-                width = max([lengths[j] for j in cur] + [lengths[i]])
-                if cur and (len(cur) >= batch_size or width * (len(cur) + 1) > max_tokens):
-                    batches.append(cur)
-                    cur = []
-                cur.append(int(i))
-            if cur:
-                batches.append(cur)
-            with torch.inference_mode():
-                for idx in batches:
-                    enc = self.tok(
-                        [prompts[i] for i in idx],
-                        return_tensors="pt",
-                        padding=True,
-                        add_special_tokens=False,
-                    ).to(self.device)
-                    logits = self.model(**enc, **kw).logits[:, -1, :].float()
-                    lp = torch.log_softmax(logits, dim=-1)
-                    out[idx] = lp[:, label_cols].cpu().numpy()
+            ids = [list(x) for x in self.tok(prompts, add_special_tokens=False)["input_ids"]]
+            shared = min(_common_prefix_len(ids), min(map(len, ids)) - 1)
+            self.prefix_cache_check = {"used": False, "shared_prefix_tokens": int(shared)}
+            done = False
+            if self.prefix_cache and shared >= MIN_SHARED_PREFIX:
+                try:
+                    check = self._check_prefix_cache(ids, shared)
+                    self.prefix_cache_check.update(check)
+                    if check["passed"]:
+                        out[:] = self._score_cached(ids, shared, batch_size, max_tokens)
+                        self.prefix_cache_check["used"] = True
+                        done = True
+                except (AttributeError, TypeError, ValueError, NotImplementedError) as e:
+                    # An older or newer transformers without the cache calls used here.
+                    self.prefix_cache_check["error"] = f"{type(e).__name__}: {e}"[:300]
+            if not done:
+                out[:] = self._score_full(ids, batch_size, max_tokens)
         if not np.isfinite(out).all():
             # fp16 can overflow in larger models; a NaN score would silently become a label.
             raise FloatingPointError(
                 f"{int((~np.isfinite(out)).any(axis=1).sum())} of {len(out)} prompts gave non-finite "
                 "label log-probabilities; re-run with --dtype bfloat16 (Ampere or newer) or float32"
             )
+        return out
+
+    def _pad_id(self) -> int:
+        pad = self.tok.pad_token_id
+        return int(pad if pad is not None else self.tok.eos_token_id)
+
+    def _forward_full(self, batch: list[list[int]]) -> np.ndarray:
+        """Label log-probabilities of whole prompts, left-padded into one batch."""
+        import torch
+
+        width = max(map(len, batch))
+        pad = self._pad_id()
+        x = torch.tensor([[pad] * (width - len(s)) + s for s in batch], device=self.device)
+        mask = torch.tensor(
+            [[0] * (width - len(s)) + [1] * len(s) for s in batch], device=self.device
+        )
+        kw = self._forward_kwargs()
+        with torch.inference_mode():
+            logits = self.model(input_ids=x, attention_mask=mask, **kw).logits[:, -1, :].float()
+            lp = torch.log_softmax(logits, dim=-1)
+        return lp[:, [ids[0] for ids in self.label_ids]].cpu().numpy()
+
+    def _forward_cached(self, cache: Any, batch: list[list[int]], shared: int) -> np.ndarray:
+        """Label log-probabilities from each prompt's own tokens after the cached shared prefix.
+
+        The own tokens are left-padded, so the pads sit between the prefix and the text: the mask
+        hides them and the position ids continue from the prefix without gaps, which is exactly
+        the unpadded prompt. The last position is then every prompt's last token.
+        """
+        import copy
+
+        import torch
+
+        width = max(len(s) - shared for s in batch)
+        pad = self._pad_id()
+        x, mask, pos = [], [], []
+        for s in batch:
+            own = s[shared:]
+            p = width - len(own)
+            x.append([pad] * p + own)
+            mask.append([1] * shared + [0] * p + [1] * len(own))
+            pos.append([shared] * p + list(range(shared, shared + len(own))))
+        kv = copy.deepcopy(cache)
+        kv.batch_repeat_interleave(len(batch))
+        kw = {**self._forward_kwargs(), "use_cache": True}
+        with torch.inference_mode():
+            logits = (
+                self.model(
+                    input_ids=torch.tensor(x, device=self.device),
+                    attention_mask=torch.tensor(mask, device=self.device),
+                    position_ids=torch.tensor(pos, device=self.device),
+                    past_key_values=kv,
+                    **kw,
+                )
+                .logits[:, -1, :]
+                .float()
+            )
+            lp = torch.log_softmax(logits, dim=-1)
+        return lp[:, [ids[0] for ids in self.label_ids]].cpu().numpy()
+
+    def _prefix_cache(self, ids: list[list[int]], shared: int) -> Any:
+        import torch
+
+        with torch.inference_mode():
+            prefix = torch.tensor([ids[0][:shared]], device=self.device)
+            return self.model(input_ids=prefix, use_cache=True).past_key_values
+
+    def _check_prefix_cache(self, ids: list[list[int]], shared: int, k: int = 8) -> dict[str, Any]:
+        """Score k prompts spread over the length range both ways, in one padded batch each."""
+        order = np.argsort([len(s) for s in ids], kind="stable")
+        pick = sorted({int(order[int(q)]) for q in np.linspace(0, len(ids) - 1, min(k, len(ids)))})
+        batch = [ids[i] for i in pick]
+        full = self._forward_full(batch)
+        cached = self._forward_cached(self._prefix_cache(ids, shared), batch, shared)
+        diff = float(np.abs(full - cached).max())
+        same = bool((full.argmax(1) == cached.argmax(1)).all())
+        return {
+            "check_prompts": len(batch),
+            "check_max_abs_diff": diff,
+            "check_same_labels": same,
+            "passed": bool(same and diff <= PREFIX_CACHE_TOLERANCE),
+        }
+
+    def _score_cached(
+        self, ids: list[list[int]], shared: int, batch_size: int, max_tokens: int
+    ) -> np.ndarray:
+        out = np.empty((len(ids), len(LABELS)))
+        cache = self._prefix_cache(ids, shared)
+        # The budget counts the prefix too: attention and the copied cache span the whole prompt.
+        for idx in _token_batches([len(s) for s in ids], batch_size, max_tokens):
+            out[idx] = self._forward_cached(cache, [ids[i] for i in idx], shared)
+        return out
+
+    def _score_full(self, ids: list[list[int]], batch_size: int, max_tokens: int) -> np.ndarray:
+        out = np.empty((len(ids), len(LABELS)))
+        for idx in _token_batches([len(s) for s in ids], batch_size, max_tokens):
+            out[idx] = self._forward_full([ids[i] for i in idx])
         return out
 
     def _score_multi(self, prompt: str) -> np.ndarray:
