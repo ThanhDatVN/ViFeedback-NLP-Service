@@ -76,4 +76,4 @@ markers = [
 
 [tool.coverage.run]
 source = ["src/vifeedback"]
-omit = ["*/cli.py"]
+omit = ["*/vifeedback/cli/*"]

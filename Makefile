@@ -1,7 +1,7 @@
 # ViFeedback — one target per reproducible step.
 # Every target is what CI runs and what the README documents; there is no second way to do anything.
 
-.PHONY: help venv install data report test test-all lint format typecheck baseline train export serve docker docker-run docker-e2e bench clean ci
+.PHONY: help venv install data report variants test test-all lint format typecheck baseline train export publish reproduce serve docker docker-run docker-e2e bench notebooks clean ci
 .DEFAULT_GOAL := help
 
 # The project's .venv when it exists (python scripts/setup_venv.py), otherwise whatever `python` is.
@@ -14,6 +14,8 @@ SEEDS ?= all
 # The served checkpoint (ADR-027: H2-augmented, seed 42); pass CKPT=path to choose another. INT8 needs the `onnx` package (ADR-017/020).
 CKPT ?= $(lastword $(sort $(wildcard models/p9-sent-phobert-base-seg_pyvi-aug-diac-teen-s42*ckp)))
 QUANT ?= none
+# The published release (Hugging Face Hub).
+REPO ?= Datk4/vifeedback-sentiment-phobert
 
 help:  ## Show this help
 	@grep -E '^[a-zA-Z_-]+:.*?## .*$$' $(MAKEFILE_LIST) | awk 'BEGIN{FS=":.*?## "}{printf "  \033[36m%-14s\033[0m %s\n",$$1,$$2}'
@@ -36,12 +38,12 @@ variants:  ## Materialize preprocessing variants
 	$(PY) -m vifeedback.cli data variants --name seg_vncorenlp
 
 lint:  ## ruff check + format check
-	ruff check src tests
-	ruff format --check src tests
+	$(PY) -m ruff check src tests scripts
+	$(PY) -m ruff format --check src tests scripts
 
 format:  ## Apply ruff fixes and formatting
-	ruff check --fix src tests
-	ruff format src tests
+	$(PY) -m ruff check --fix src tests scripts
+	$(PY) -m ruff format src tests scripts
 
 typecheck:  ## mypy
 	$(PY) -m mypy
@@ -61,10 +63,16 @@ train:  ## Fine-tune MODEL on TASK across SEEDS
 	$(PY) -m vifeedback.cli train run --task $(TASK) --model $(MODEL) \
 		--preprocessing $(PREP) --seeds $(SEEDS)
 
-export:  ## Release the serving artifact: ONNX with features (staging -> verify on full dev -> swap), restorer, out-of-scope score (ADR-031)
+export:  ## Rebuild what is served: ONNX (staging -> verify on full dev -> swap), restorer (ADR-031), scope detector (ADR-034)
 	$(PY) -m vifeedback.cli serve export --task $(TASK) --checkpoint $(CKPT) --quantize $(QUANT) --with-features
 	$(PY) -m vifeedback.cli serve add-restorer --task $(TASK)
-	$(PY) -m vifeedback.cli serve add-ood --task $(TASK)
+	$(PY) -m vifeedback.cli serve add-scope --task $(TASK)
+
+publish:  ## Dry run: bundle the served model with its card and SHA256SUMS in models/publish/ (upload is the owner's step)
+	$(PY) -m vifeedback.cli serve publish --repo-id $(REPO)
+
+reproduce:  ## Download the published release, verify its files, reproduce its validation macro-F1 (S10)
+	$(PY) -m vifeedback.cli serve reproduce --repo-id $(REPO)
 
 bench:  ## CPU latency benchmark on the reference machine
 	$(PY) -m vifeedback.cli serve bench --task $(TASK)

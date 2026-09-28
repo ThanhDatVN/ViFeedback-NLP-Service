@@ -401,10 +401,18 @@ class TestDotenv:
 def test_cli_tracebacks_never_show_locals():
     """A failing API call holds the key in its locals; rich tracebacks must not print them."""
     pytest.importorskip("typer")
+    import importlib
+    import pkgutil
+
     from vifeedback import cli
 
-    apps = [v for v in vars(cli).values() if type(v).__name__ == "Typer"]
-    assert apps and all(a.pretty_exceptions_show_locals is False for a in apps)
+    modules = [
+        importlib.import_module(f"vifeedback.cli.{m.name}")
+        for m in pkgutil.iter_modules(cli.__path__)
+    ]
+    apps = {id(v): v for m in modules for v in vars(m).values() if type(v).__name__ == "Typer"}
+    assert len(apps) >= 7  # the root and its six groups
+    assert all(a.pretty_exceptions_show_locals is False for a in apps.values())
 
 
 def test_kaggle_h7_notebook_keeps_corpora_out_of_the_saved_output() -> None:

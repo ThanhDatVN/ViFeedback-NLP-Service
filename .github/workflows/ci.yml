@@ -33,8 +33,8 @@ jobs:
 
       - name: Lint
         run: |
-          ruff check src tests
-          ruff format --check src tests
+          ruff check src tests scripts
+          ruff format --check src tests scripts
 
       - name: Type check
         run: python -m mypy       # blocking since the 35 advisory errors were fixed (NEXT_PLAN I1)
