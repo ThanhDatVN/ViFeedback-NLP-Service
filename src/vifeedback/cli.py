@@ -3122,6 +3122,25 @@ def study_int8_power(
     )
 
 
+@study_app.command("int8-accept")
+def study_int8_accept() -> None:
+    """S5' (cycle4.yaml v4, ADR-035): careful INT8 against FP32 on UIT-VSFC + NEU-ESC validation. CPU."""
+    from vifeedback.evaluation import int8_power as IP
+
+    out = IP.accept()
+    for name, r in out["rules"].items():
+        typer.echo(
+            f"  {name:24s} {r['value']:.4f} ({r['limit']})  {'PASS' if r['passed'] else 'FAIL'}"
+        )
+    for part in ("uit_validation", "neu_esc_validation"):
+        p = out[part]
+        typer.echo(
+            f"  {part:20s} n {p['n']:5d}  agreement {p['label_agreement']:.2%}  "
+            f"macro-F1 FP32 {p['macro_f1_fp32']:.4f} INT8 {p['macro_f1_int8']:.4f}"
+        )
+    typer.echo(f"  S5': {'passed' if out['passed'] else 'not passed'}")
+
+
 @study_app.command("h7-decide")
 def study_h7_decide() -> None:
     """Apply the H7 rule once both arms exist (cycle2.yaml H7; cycle3.yaml v6 h7_decision).

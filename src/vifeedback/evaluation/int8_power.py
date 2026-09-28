@@ -188,3 +188,58 @@ def run(
 
     (OUT / "summary.json").write_text(json.dumps(yaml_safe(out), indent=2), encoding="utf-8")
     return out
+
+
+def accept() -> dict[str, Any]:
+    """S5' (cycle4.yaml v4): the declared rule on UIT-VSFC validation + NEU-ESC validation."""
+    from vifeedback.evaluation import metrics as M
+    from vifeedback.evaluation.report import yaml_safe
+    from vifeedback.inference import int8_recipes as Q
+    from vifeedback.preprocess.variants import load_variant
+    from vifeedback.training.domain import neu_esc, serving_transform
+
+    uit = load_variant("seg_pyvi", "validation")
+    neu = neu_esc("validation", serving_transform(), in_scope=False)
+    x = uit.sentence.tolist() + neu["x"]
+    y = np.r_[uit.sentiment.to_numpy(), neu["y"]]
+    is_uit = np.r_[np.ones(len(uit), dtype=bool), np.zeros(len(neu["y"]), dtype=bool)]
+    fp32, int8 = _predict(FP32, x), _predict(INT8, x)
+
+    pooled = Q.acceptance(y, fp32, int8)
+    uit_part = Q.acceptance(y[is_uit], fp32[is_uit], int8[is_uit])
+    neu_drop = M.macro_f1(y[~is_uit], fp32[~is_uit], K) - M.macro_f1(y[~is_uit], int8[~is_uit], K)
+    size_mb = INT8.stat().st_size / 1e6
+    rules = {
+        "1_pooled_upper_bound": {
+            "value": pooled["macro_f1_drop_upper_95_one_sided"],
+            "limit": "<= 0.005",
+        },
+        "2_neu_esc_drop": {"value": float(neu_drop), "limit": "<= 0.005"},
+        "3_uit_neutral_f1_loss": {"value": uit_part["neutral_f1_loss"], "limit": "<= 0.02"},
+        "4_size_mb": {"value": size_mb, "limit": "<= 200"},
+    }
+    rules["1_pooled_upper_bound"]["passed"] = rules["1_pooled_upper_bound"]["value"] <= 0.005
+    rules["2_neu_esc_drop"]["passed"] = rules["2_neu_esc_drop"]["value"] <= 0.005
+    rules["3_uit_neutral_f1_loss"]["passed"] = rules["3_uit_neutral_f1_loss"]["value"] <= 0.02
+    rules["4_size_mb"]["passed"] = rules["4_size_mb"]["value"] <= 200
+
+    def part(mask: np.ndarray) -> dict[str, Any]:
+        return {
+            "n": int(mask.sum()),
+            "label_agreement": float((fp32[mask] == int8[mask]).mean()),
+            "macro_f1_fp32": M.macro_f1(y[mask], fp32[mask], K),
+            "macro_f1_int8": M.macro_f1(y[mask], int8[mask], K),
+        }
+
+    out = {
+        "declared_in": "configs/experiments/cycle4.yaml v4 S5prime_int8 (ADR-035)",
+        "graph": str(INT8.relative_to(paths.ROOT)),
+        "rules": rules,
+        "passed": all(bool(r["passed"]) for r in rules.values()),
+        "pooled": pooled,
+        "uit_validation": {**part(is_uit), "neutral_f1_loss": uit_part["neutral_f1_loss"]},
+        "neu_esc_validation": part(~is_uit),
+    }
+    OUT.mkdir(parents=True, exist_ok=True)
+    (OUT / "s5prime.json").write_text(json.dumps(yaml_safe(out), indent=2), encoding="utf-8")
+    return out
