@@ -3094,6 +3094,34 @@ def study_b4prime() -> None:
     typer.echo(f"  B4': {'passed' if out['passed'] else 'not passed'}")
 
 
+@study_app.command("int8-power")
+def study_int8_power(
+    simulations: int = typer.Option(40),
+    draws: int = typer.Option(2000),
+    seed: int = typer.Option(0),
+) -> None:
+    """E1 (NEXT_PLAN v5): would UIT-VSFC + NEU-ESC validation demonstrate INT8 non-inferiority at
+    0.005? Estimates INT8's disagreements on held-out data, simulates the acceptance set. CPU."""
+    from vifeedback.evaluation import int8_power as IP
+
+    out = IP.run(simulations=simulations, draws=draws, seed=seed)
+    e = out["estimation"]
+    typer.echo(
+        f"  INT8 vs FP32 disagreement: UIT-VSFC train {e['disagreement_uit']:.2%}, NEU-ESC train {e['disagreement_neu']:.2%}"
+    )
+    for name, r in out["acceptance_sets"].items():
+        typer.echo(
+            f"  {name:26s} n {r['n']:5d}  upper bound median {r['upper_bound_median']:.4f} "
+            f"[{r['upper_bound_p10_p90'][0]:.4f}, {r['upper_bound_p10_p90'][1]:.4f}]  "
+            f"power (< 0.005) {r['power_below_0_005']:.0%}"
+        )
+    cal = out["calibration"]
+    typer.echo(
+        f"  calibration: observed UIT-VSFC bound at quantile {cal['observed_uit_bound_quantile_among_simulations']:.2f} "
+        f"of the simulations -> {cal['reading']}"
+    )
+
+
 @study_app.command("h7-decide")
 def study_h7_decide() -> None:
     """Apply the H7 rule once both arms exist (cycle2.yaml H7; cycle3.yaml v6 h7_decision).

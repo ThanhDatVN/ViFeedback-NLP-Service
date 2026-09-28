@@ -16,15 +16,22 @@ Status key: ✅ done · ⏳ next, no owner input needed · 👤 needs the owner 
 
 ---
 
-## 0. State after Cycle 4 (2026-09-28, commit cfc571e)
+## 0. State after Cycle 4 (2026-09-28, evening)
 
 **Done since v5 was written.**
-- A1: served p95 is 26.9 ms.
-- A2 (ADR-032): `in_scope` tracks the institution, not the topic.
-- A3, A5, and B1 (`cycle4.yaml`).
-- B2 H8 not passed (ADR-033). Two heads lift NEU-ESC test by +0.111, but the stripped-text check
-  and the refitted out-of-scope score fail, so the service is unchanged.
-- F1: the image is 519 MB, so S8 is met.
+- **A1–A5.**
+  - Served p95 is 26.9 ms.
+  - ADR-032: the Mahalanobis `in_scope` tracked the institution, not the topic.
+  - The model is published on the Hub.
+  - `kaggle_train.ipynb` clones into `/tmp`.
+- **B1–B2:** H8 not passed (ADR-033); the sentiment model is unchanged.
+- **B4′ passed and is served (ADR-034).** A TF-IDF topic detector drives `in_scope`: within
+  NEU-ESC test AUROC 0.922, 7.3% of in-scope posts flagged, UIT-VSFC 0.2%.
+- **E1 (ADR-035):** a pooled acceptance set (UIT-VSFC + NEU-ESC validation) would show INT8
+  non-inferiority with a simulated power of 92%; the simulation is calibrated. S5′ is declared in
+  `cycle4.yaml` v4. INT8 changes 12.3% of labels on NEU-ESC, so the NEU-ESC part is checked on its
+  own.
+- **F1–F2:** S8 met (image 519 MB), S10 met (2.3 min from a clean clone in CI).
 
 **Targets still not met:**
 - S1 0.830 (target 0.84)
@@ -32,26 +39,24 @@ Status key: ✅ done · ⏳ next, no owner input needed · 👤 needs the owner 
 - S4 neutral 0.576 (target 0.65)
 - S7 540 MB (target 200)
 - S9 0 coded errors (target 30)
-- S10: ✅ met after this section was written (2.3 min from a clean clone in CI)
 
-**Problems found this cycle:**
-- `in_scope` cannot filter other institutions' text (within NEU-ESC AUROC 0.573).
-- Two-head training costs 0.0107 on stripped UIT-VSFC text.
-- NEU-ESC test has now served H8 (two calls, both logged), so a new claim about other institutions
-  needs new labelled data.
-- The two-head model is exploratory and is neither served nor published.
+**Open problems:**
+- The Hub release predates ADR-034: it still ships the Mahalanobis score and its caveat.
+- Latency with the detector was measured only on a busy machine. It adds +0.5–0.8 ms, less than
+  Mahalanobis did; the absolute p95 needs three sessions on an idle machine.
+- NEU-ESC test has served H8 and B4′ (logged), so new claims about other institutions need new
+  labelled data.
+- Real typing still flips 17% of labels (ViLexNorm, G8).
 
-**Next, in order.** No step needs Kaggle; everything fits the laptop.
+**Next, in order.** No Kaggle is needed.
 
 | # | Step | Needs | Rule |
 |---|---|---|---|
-| 1 | ✅ **A4 upload**: public at [Datk4/vifeedback-sentiment-phobert](https://huggingface.co/Datk4/vifeedback-sentiment-phobert) (commit f0d98e8); all 15 files match SHA256SUMS | done | — |
-| 2 | ✅ **F2** S10: `serve reproduce` from the Hub in CI, 2.3 min from a clean clone, 0.8644 reproduced | done | — |
-| 3 | ✅ **B4′** topic-aware scope detector: TF-IDF logistic chosen over the feature head; NEU-ESC test AUROC 0.922, 7.3% in-scope flagged, 72.3% off-topic caught, UIT-VSFC 0.2%; served (ADR-034) | done | cycle4.yaml v3 |
-| 4 | **E1** INT8 power check on UIT-VSFC + NEU-ESC validation; then S5′ or distillation (E2) | — | as in Track E |
-| 5 | Cycle 5 specialization: real typing (C1 consistency training on ViLexNorm pairs) or size (E2) | owner's choice | declared in `cycle5.yaml` |
-| 6 | Neutral audit → D2 | 👤 6–8 h | the frozen tree |
-| 7 | A multi-institution service (the NEU-ESC head reaches 0.76) | 👤 decision 2 and new labelled data from another institution | a new declared rule |
+| 1 | Update the Hub release: new manifest, `scope.npz` in place of `ood.npz`, new card | 👤 approval | files verified against `SHA256SUMS` after upload |
+| 2 | Latency, three sessions on an idle machine | idle laptop | p95 ≤ 30 ms (C4 protocol) |
+| 3 | **S5′**: INT8 on the pooled acceptance set (declared, `cycle4.yaml` v4); if it holds, an INT8 release candidate for S7 | — | ADR-035 |
+| 4 | Choose Cycle 5: **(a) distillation** to a 6-layer student (S7 if S5′ fails, and speed); **(b) real typing**, consistency training on ViLexNorm pairs (G8); **(c) a multi-institution sentiment head**, which needs decision 2 and new labelled data | 👤 choice | declared in `cycle5.yaml` |
+| 5 | Neutral audit → D2 (S4, S9) | 👤 6–8 h | the frozen tree |
 
 ---
 
@@ -150,7 +155,7 @@ source, and the rule fixed before the run. Items marked **declare** get their ru
 
 | ID | Task | Method | Rule | Status |
 |---|---|---|---|---|
-| **E1** | Power check for careful INT8 | From INT8's disagreement pattern (1.35% of labels, 4.1% of neutral on the held-out train subset), the upper bound reachable on UIT-VSFC validation + NEU-ESC validation (4,888 labelled) | Declare **S5′** (same 0.005 margin, larger set, ADR) only if it is demonstrable | ⏳ after B5 decides the model |
+| **E1** | Power check for careful INT8 | From INT8's disagreement pattern (1.35% of labels, 4.1% of neutral on the held-out train subset), the upper bound reachable on UIT-VSFC validation + NEU-ESC validation (4,888 labelled) | Declare **S5′** (same 0.005 margin, larger set, ADR) only if it is demonstrable | ✅ power 92% on UIT-VSFC + NEU-ESC validation (calibrated: the observed UIT-VSFC bound sits at the 82nd percentile of the simulations); **S5′ declared** (`cycle4.yaml` v4, ADR-035) |
 | **E2** | Distillation into a 6-layer student *(if E1 cannot pass)* | Task-specific distillation from the served model; 6-layer students keep > 99% of the teacher at about 2× speed on GLUE-type tasks [S10] | **declare**; the release gate plus ≤ 200 MB | ⏸ Cycle 5+ |
 
 ### Track F — engineering

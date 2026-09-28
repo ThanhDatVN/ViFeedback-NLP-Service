@@ -14,10 +14,13 @@
 # refitted score's within-NEU-ESC AUROC, and a topic-aware detector is a separate question (B4').
 #
 # Version 3, after H8 (ADR-033) and before any B4' fit: the topic-aware scope detector, declared.
+#
+# Version 4, after the E1 power check (ADR-035) and before INT8 is run on NEU-ESC validation: S5',
+# careful INT8 on a larger acceptance set.
 
-version: 3
+version: 4
 declared: 2026-09-28
-revised: 2026-09-28  # v2 reporting only (ADR-032); v3 B4' scope detector
+revised: 2026-09-28  # v2 reporting only (ADR-032); v3 B4' scope detector; v4 S5' INT8 (ADR-035)
 
 data:
   neu_esc_train: >
@@ -120,6 +123,26 @@ B4prime_scope_detector:   # v3, before any fit
     If the rule holds, the detector replaces the Mahalanobis parameters behind `in_scope` through
     a release step (manifest entry, SHA-256, acceptance recorded), with an ADR and a new card;
     uploading the new files to the Hub needs the owner's approval.
+
+S5prime_int8:   # v4, before INT8 is run on NEU-ESC validation (ADR-035)
+  graph: >
+    models/int8_candidates/pc-head-last2/model.int8.onnx (178.5 MB), built in Cycle 3 from the
+    served checkpoint (p9 s42), against that checkpoint's FP32 graph (logits only).
+  acceptance_set: >
+    UIT-VSFC validation (1,583; INT8 already ran there in Cycle 3, drop 0.0004, bound 0.0095:
+    disclosed) plus NEU-ESC validation (3,305 posts, every topic, through the serving transform;
+    never run with INT8).
+  rule: >
+    All must hold:
+    (1) the pooled macro-F1 drop (FP32 minus INT8) has a one-sided 95% paired-bootstrap upper bound
+        <= 0.005 (10,000 resamples, the S5 procedure);
+    (2) on NEU-ESC validation alone, the macro-F1 drop is <= 0.005;
+    (3) on UIT-VSFC validation, neutral F1 loses <= 0.02 (the S5 condition);
+    (4) the graph is <= 200 MB.
+  reported: label agreement per source; per-class F1; latency later, on an idle machine
+  serving: >
+    If S5' holds, the INT8 graph becomes a release candidate: the release gate with the restorer and
+    the scope detector, three latency sessions, an ADR; the Hub update needs the owner's approval.
 
 budget:
   weight_updating_runs: 7        # 3 selection + 4 confirmation (B4' fits no encoder weights)

@@ -1099,3 +1099,54 @@ separates topics less well.
   only as far as U4 suggests.
 - The model already on the Hugging Face Hub still carries the Mahalanobis file and the ADR-032
   caveat until the owner approves a new upload.
+
+**Latency.** Three sessions with the detector served (`cycle4_scope_session{1,2,3}.json`) ran on a
+busier machine than the morning's sessions: every rung was slower, including code that did not
+change. S0, the pipeline before ADR-031, had p95 35–36 ms, against 22–25 ms in the morning. Measured
+within each session:
+- the served pipeline adds **+0.5 to +0.8 ms** over S0, against +1.3 to +3.1 ms with the Mahalanobis
+  score;
+- on unaccented input it is 6–15 ms faster than S0, because restored text tokenizes into fewer
+  pieces.
+
+The detector therefore costs less than the score it replaced. The absolute p95 target (≤ 30 ms) was
+last shown at 26.9 ms with the heavier Mahalanobis step, and is to be re-measured on an idle machine.
+
+---
+
+## ADR-035 · 2026-09-28 · A larger acceptance set for careful INT8 (S5′), declared before it is run · Accepted
+
+**Context.** The careful INT8 recipe (pc-head-last2, 178.5 MB) failed its non-inferiority test only
+on power. The drop was 0.0004, but the upper bound was 0.0095 against a 0.005 margin, on 1,583
+validation sentences. NEXT_PLAN v5 E1 asked, before any new rule was declared, whether a larger
+labelled set (UIT-VSFC validation + NEU-ESC validation, 4,888) could show the margin
+(`study int8-power`).
+
+**Method.** INT8's disagreements were estimated on held-out data as P(INT8 label | source, gold,
+FP32 label): the INT8 study's train subset, and 3,000 NEU-ESC train posts the model never saw.
+INT8 predictions were then simulated on the acceptance set, where only FP32 was run, and the paired
+bootstrap bound was computed, 40 simulations each.
+
+**Findings.**
+- **The simulation is calibrated.** On UIT-VSFC validation, where INT8 was really run, the observed
+  bound (0.0095) falls at the 82nd percentile of the simulated bounds. That is inside the bulk, on
+  the optimistic side.
+- **The larger set has the power.**
+
+  | Acceptance set | Median simulated bound | Share of simulations below 0.005 |
+  |---|---:|---:|
+  | UIT-VSFC validation alone | −0.0001 | 75% |
+  | UIT-VSFC + NEU-ESC validation | −0.0008 | 92% |
+
+- **INT8 is much less faithful off-domain.** It changes 12.3% of labels on NEU-ESC train posts,
+  against 1.35% on UIT-VSFC train. The changes fall on low-confidence posts, which is why the
+  simulated macro-F1 change stays near zero. The acceptance rule must therefore check the NEU-ESC
+  part on its own, not only the pooled number.
+
+An earlier draft of this ADR read the median against the observed bound, ignored the spread, and
+called the simulation uncalibrated. The calibration check in the code says otherwise, and this
+version follows it.
+
+**Decision.** Declare S5′ in `cycle4.yaml` v4 before INT8 is run on NEU-ESC validation, with the
+pooled set and per-source guards. UIT-VSFC validation's INT8 result is already known from Cycle 3
+and is disclosed as such. If S5′ fails, S7 goes to distillation (track B).
