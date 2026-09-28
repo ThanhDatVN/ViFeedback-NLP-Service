@@ -30,6 +30,15 @@ def test_evidence_matches_the_checkpoint_not_the_other_finalist():
     assert ev["test"]["robustness_test"]["nodiacritic"]["macro_f1"] > 0.6  # CE scores 0.27
 
 
+def test_stale_hub_files_are_the_ones_the_new_bundle_lacks(tmp_path):
+    """An update deletes what the release no longer ships (ood.npz after ADR-034), nothing else."""
+    for name in ("model.opt.onnx", "scope.npz", "README.md", "pytorch/config.json"):
+        (tmp_path / name).parent.mkdir(parents=True, exist_ok=True)
+        (tmp_path / name).write_bytes(b"x")
+    remote = [".gitattributes", "README.md", "model.opt.onnx", "ood.npz", "pytorch/config.json"]
+    assert P.stale_files(remote, tmp_path) == ["ood.npz"]
+
+
 def test_basename_splits_windows_paths_on_any_os():
     """The closing gate recorded a Windows path; on Linux, Path().name would not split it."""
     assert P._basename(r"D:\GitHub\repo\models\p9-x-ckp") == "p9-x-ckp"

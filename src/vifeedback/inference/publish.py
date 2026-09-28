@@ -339,16 +339,28 @@ def build(repo_id: str, include_pytorch: bool = True) -> dict[str, Any]:
     }
 
 
+def stale_files(remote: list[str], folder: Path) -> list[str]:
+    """Files on the Hub that the new bundle no longer has (e.g. ood.npz after ADR-034)."""
+    local = {p.relative_to(folder).as_posix() for p in folder.rglob("*") if p.is_file()}
+    return sorted(f for f in remote if f not in local and f != ".gitattributes")
+
+
 def upload(repo_id: str, folder: Path, private: bool = False) -> str:
-    """Create the repository if needed and upload the folder. Uses the caller's HF login/token."""
+    """Create the repository if needed and make it hold exactly the folder, in one commit.
+
+    Files the new release no longer ships are deleted in the same commit, so the Hub never serves a
+    stale file next to a manifest that does not mention it. Uses the caller's HF login/token.
+    """
     from huggingface_hub import HfApi
 
     api = HfApi()
     api.create_repo(repo_id, repo_type="model", private=private, exist_ok=True)
+    stale = stale_files(api.list_repo_files(repo_id, repo_type="model"), folder)
     info = api.upload_folder(
         repo_id=repo_id,
         folder_path=str(folder),
         repo_type="model",
         commit_message="ViFeedback sentiment model (release manifest included)",
+        delete_patterns=stale or None,
     )
-    return str(info)
+    return str(info) + (f"\n  removed from the Hub: {', '.join(stale)}" if stale else "")
