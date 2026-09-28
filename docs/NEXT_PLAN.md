@@ -115,8 +115,12 @@ cost to UIT-VSFC, and does a local LLM add anything beyond it?
   - UIT-VSFC test is not used.
 - **Label mapping** as in v5 (Toxic → negative). Any change of policy is owner decision 3, declared
   before training.
-- **Licence.** NEU-ESC is CC BY 4.0 (paper) and Apache-2.0 (card), gated. A model trained on it is
-  not published until the owner confirms the gated conditions allow it (decision 2).
+- **Licence** (checked on the Hub, 2026-09-28).
+  - NEU-ESC's card is Apache-2.0, and its gate approves automatically with no condition of its own,
+    so a model trained on it may be published with attribution (cite Mai et al., 2025, and state the
+    data licence).
+  - The posts themselves are never re-uploaded.
+  - The binding constraint is UIT-VSFC (decision 2).
 
 ### Step 2 — H8: in-domain training data *(≤ 7 weight-updating runs, laptop or Kaggle)*
 
@@ -189,7 +193,7 @@ This is the only route to S4 and S9.
 | # | Decision | Default until decided |
 |---|---|---|
 | 1 | Run the Kaggle H7 notebook (§ 8) | H7 stays undecided |
-| 2 | Do NEU-ESC's gated conditions allow publishing a model trained on it? | H8 runs; a model trained on NEU-ESC is not published |
+| 2 | UIT-VSFC has no formal licence (the Hub says unknown; the UIT NLP group releases its datasets for research purposes). Publish the model as a research artifact whose card says so, or first ask the authors about any other use? | Not published; if published, as research use |
 | 3 | Label policy for other institutions' text: keep UIT-VSFC's (requests are negative, neutral is rare) or adopt NEU-ESC's (neutral = no emotion) | Keep UIT-VSFC's; report both |
 | 4 | Neutral audit; a second annotator? | Step 5 waits; intra-annotator after 24 h |
 | 5 | U2 label review (15 rows) | Challenge v1 stays as frozen |
