@@ -1912,6 +1912,186 @@ def study_restore_compare() -> None:
     )
 
 
+@study_app.command("neu-esc-confirm")
+def study_neu_esc_confirm() -> None:
+    """Cycle 3 confirmation on NEU-ESC (cycle3.yaml v5, ADR-030): S2b, S2b-prime and S3 rules."""
+    from pathlib import Path
+
+    import numpy as np
+    import pandas as pd
+
+    from vifeedback.data.loader import load
+    from vifeedback.evaluation import bootstrap as B
+    from vifeedback.evaluation import error_analysis as EA
+    from vifeedback.evaluation import external as X
+    from vifeedback.evaluation import metrics as M
+    from vifeedback.evaluation import ood as OOD
+    from vifeedback.evaluation.report import yaml_safe
+    from vifeedback.preprocess.diacritics import Restorer
+    from vifeedback.preprocess.normalize import model_text, strip_diacritics
+    from vifeedback.preprocess.segment import get_segmenter
+
+    ne = X.load_neu_esc("test")
+    y = ne.sentiment.map({"negative": 0, "neutral": 1, "positive": 2}).to_numpy()
+    words = ne.text.str.split().str.len().to_numpy()
+    contrast_re = r"(?<!\w)(?:nhưng|tuy|mặc dù|song)(?!\w)"
+    cells = {
+        "all": np.ones(len(ne), bool),
+        "contrast": ne.text.str.contains(contrast_re, regex=True).to_numpy(),
+        "short_neutral": (y == 1) & (words <= 10),
+    }
+    off_topic = ne.topic.isin(("Spam", "News", "Jobs & Recruitment", "Club & Events")).to_numpy()
+    sizes = {k: int(v.sum()) for k, v in cells.items()}
+    sizes.update({"unaccented": len(ne), "off_topic": int(off_topic.sum())})
+    typer.echo(f"cells: {sizes}")
+
+    restorer = Restorer.load(paths.MODELS / "diacritics" / "restorer.json")
+    segment = get_segmenter("pyvi")
+
+    def plain(ts: list[str]) -> list[str]:
+        return segment([model_text(t) for t in ts])
+
+    def restored(ts: list[str]) -> list[str]:
+        return segment([restorer(model_text(t)) for t in ts])
+
+    texts = ne.text.tolist()
+    stripped = [strip_diacritics(t) for t in texts]
+    x_r, x_rs = restored(texts), restored(stripped)
+    dv = load("validation")
+    x_dv = restored(dv.sentence.tolist())
+
+    ckps = _study_checkpoints("")
+    seeds = sorted({n.split("-s")[-1] for n in ckps if n.startswith("ce-")}, key=int)
+    seeds = [s for s in seeds if f"aug-s{s}" in ckps]
+    pred: dict[str, np.ndarray] = {}
+    val_f1: dict[str, float] = {}
+    for kind in ("ce", "aug"):
+        for s in seeds:
+            ckp = ckps[f"{kind}-s{s}"]
+            pred[f"{kind}-s{s}:R"] = EA.predict_proba(ckp, x_r).argmax(1)
+            pred[f"{kind}-s{s}:R_stripped"] = EA.predict_proba(ckp, x_rs).argmax(1)
+            p_dv = EA.predict_proba(ckp, x_dv).argmax(1)
+            val_f1[f"{kind}-s{s}"] = M.macro_f1(dv.sentiment.to_numpy(), p_dv, 3)
+            typer.echo(f"  {kind}-s{s} done")
+    manifest = json.loads(
+        (paths.MODELS / "serve" / "sentiment" / "manifest.json").read_text(encoding="utf-8")
+    )
+    served = str(paths.ROOT / manifest["checkpoint"])
+    pred["served:plain"] = EA.predict_proba(served, plain(texts)).argmax(1)
+    pred["served:plain_stripped"] = EA.predict_proba(served, plain(stripped)).argmax(1)
+    served_name = next(n for n, p in ckps.items() if Path(p).name == Path(served).name)
+
+    def f1(p: np.ndarray, m: np.ndarray) -> float:
+        return M.macro_f1(y[m], p[m], 3)
+
+    def acc(p: np.ndarray, m: np.ndarray) -> float:
+        return float((p[m] == y[m]).mean())
+
+    result: dict = {"cells": sizes, "seeds": seeds, "served": served_name}
+
+    # S2b: the served model with vs without the restorer
+    s_r, s_rs = pred[f"{served_name}:R"], pred[f"{served_name}:R_stripped"]
+    pb = B.paired_bootstrap(y, s_rs, pred["served:plain_stripped"], 3, n_resamples=5000, seed=42)
+    all_diff = f1(s_r, cells["all"]) - f1(pred["served:plain"], cells["all"])
+    result["S2b_restoration"] = {
+        "unaccented_macro_f1": {
+            "without": f1(pred["served:plain_stripped"], cells["all"]),
+            "with": f1(s_rs, cells["all"]),
+        },
+        "paired": pb,
+        "all_cell_diff": all_diff,
+        "passed": bool(pb["ci_low"] > 0 and abs(all_diff) <= 0.002),
+    }
+
+    # S2b-prime: CE + restorer vs augmented + restorer, five seeds
+    def mean(kind: str, key: str, fn, m: np.ndarray) -> float:
+        return float(np.mean([fn(pred[f"{kind}-s{s}:{key}"], m) for s in seeds]))
+
+    c = cells["contrast"]
+    ce_err = np.concatenate([pred[f"ce-s{s}:R"][c] != y[c] for s in seeds])
+    aug_err = np.concatenate([pred[f"aug-s{s}:R"][c] != y[c] for s in seeds])
+    mc = X.paired_flip_test(
+        aug_err, ce_err
+    )  # first: only augmented+R wrong; second: only CE+R wrong
+    checks: dict[str, dict] = {
+        "contrast_accuracy": {
+            "ce": mean("ce", "R", acc, c),
+            "aug": mean("aug", "R", acc, c),
+            "only_aug_wrong": mc["only_first_flips"],
+            "only_ce_wrong": mc["only_second_flips"],
+            "p": mc["exact_mcnemar_p"],
+            "passed": bool(
+                sizes["contrast"] >= 100
+                and mc["exact_mcnemar_p"] < 0.05
+                and mc["only_first_flips"] > mc["only_second_flips"]
+            ),
+        },
+        "unaccented_macro_f1": {
+            "ce": mean("ce", "R_stripped", f1, cells["all"]),
+            "aug": mean("aug", "R_stripped", f1, cells["all"]),
+        },
+        "all_macro_f1": {
+            "ce": mean("ce", "R", f1, cells["all"]),
+            "aug": mean("aug", "R", f1, cells["all"]),
+        },
+        "short_neutral_accuracy": {
+            "ce": mean("ce", "R", acc, cells["short_neutral"]),
+            "aug": mean("aug", "R", acc, cells["short_neutral"]),
+        },
+        "validation_macro_f1": {
+            "ce": float(np.mean([val_f1[f"ce-s{s}"] for s in seeds])),
+            "aug": float(np.mean([val_f1[f"aug-s{s}"] for s in seeds])),
+        },
+    }
+    margins = {
+        "unaccented_macro_f1": 0.02,
+        "all_macro_f1": 0.005,
+        "short_neutral_accuracy": 0.05,
+        "validation_macro_f1": 0.005,
+    }
+    for key, margin in margins.items():
+        d = checks[key]
+        d["diff"] = d["ce"] - d["aug"]
+        big_enough = key != "short_neutral_accuracy" or sizes["short_neutral"] >= 100
+        d["passed"] = bool(d["diff"] >= -margin and big_enough)
+    result["S2b_prime"] = {"checks": checks, "passed": all(v["passed"] for v in checks.values())}
+
+    # S3: Mahalanobis on the served model, threshold as in development
+    tr = load("train")
+    f_tr, _ = OOD.encode(served, plain(tr.sentence.tolist()))
+    maha = OOD.fit_mahalanobis(f_tr, tr.sentiment.to_numpy())
+    f_dv, l_dv = OOD.encode(served, plain(dv.sentence.tolist()))
+    off_texts = [t for t, m in zip(texts, off_topic, strict=True) if m]
+    f_o, l_o = OOD.encode(served, plain(off_texts))
+    s_in, s_out = OOD.scores(l_dv, f_dv, maha), OOD.scores(l_o, f_o, maha)
+    s3 = {m: OOD.evaluate(s_in[m], s_out[m]) for m in s_in}
+    result["S3_out_of_scope"] = {
+        "methods": s3,
+        "passed": bool(s3["neg_mahalanobis"]["auroc"] >= 0.90),
+    }
+
+    out = paths.RESULTS / "studies" / "neu_esc_confirm"
+    out.mkdir(parents=True, exist_ok=True)
+    (out / "summary.json").write_text(json.dumps(yaml_safe(result), indent=2), encoding="utf-8")
+    pd.DataFrame(pred).to_csv(out / "predictions.csv", index_label="row")  # labels only, no text
+    r2 = result["S2b_restoration"]
+    typer.echo(
+        f"S2b: unaccented macro-F1 {r2['unaccented_macro_f1']['without']:.4f} -> "
+        f"{r2['unaccented_macro_f1']['with']:.4f} [{pb['ci_low']:+.4f}, {pb['ci_high']:+.4f}]; "
+        f"all-cell diff {all_diff:+.4f} -> passed {r2['passed']}"
+    )
+    for k, v in checks.items():
+        typer.echo(f"S2b': {k:24s} CE+R {v['ce']:.4f}  aug+R {v['aug']:.4f}  passed {v['passed']}")
+    typer.echo(
+        f"S2b' passed: {result['S2b_prime']['passed']} "
+        f"(contrast p = {checks['contrast_accuracy']['p']:.4g})"
+    )
+    typer.echo(
+        f"S3: Mahalanobis AUROC {s3['neg_mahalanobis']['auroc']:.3f} "
+        f"(max-prob {s3['max_probability']['auroc']:.3f}) -> passed {result['S3_out_of_scope']['passed']}"
+    )
+
+
 @study_app.command("external")
 def study_external(
     corpus: str = typer.Option("vilexnorm", help="vilexnorm | case | neu_esc"),
