@@ -33,6 +33,7 @@ GOLDEN = [
     ("thầy giảng bài không dễ hiểu", "negative"),
     ("Giảng viên nhiệt tình", "positive"),  # capitalized input: lowercased by the service
     ("THẦY GIẢNG BÀI KHÔNG DỄ HIỂU", "negative"),
+    ("thay giang bai rat de hieu", "positive"),  # unaccented: restored first (ADR-031)
 ]
 
 

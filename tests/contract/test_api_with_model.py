@@ -72,6 +72,8 @@ def test_classify_returns_a_valid_distribution(client) -> None:
         # People capitalize; the corpus never does. The service lowercases first (cycle3.yaml).
         ("Giảng viên nhiệt tình", "positive"),
         ("THẦY GIẢNG BÀI KHÔNG DỄ HIỂU", "negative"),
+        # Unaccented input goes through the restorer when the release declares one (ADR-031).
+        ("thay giang bai rat de hieu", "positive"),
     ],
 )
 def test_golden_predictions(client, text: str, label: str) -> None:
