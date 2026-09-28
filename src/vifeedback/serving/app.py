@@ -26,6 +26,7 @@ from contextlib import asynccontextmanager
 from pathlib import Path, PureWindowsPath
 from typing import Any
 
+import numpy as np
 from fastapi import FastAPI, HTTPException, Request
 from fastapi.responses import JSONResponse, PlainTextResponse
 
@@ -108,6 +109,33 @@ def _load() -> None:
             log.info(f"loaded {task} diacritic restorer ({spec['sha256'][:12]})")
         except Exception as e:
             _state["preprocessing_error"] = f"restorer for {task} unusable: {type(e).__name__}: {e}"
+            log.error(_state["preprocessing_error"] + " — /readyz will report not ready")
+
+    # The out-of-scope score (ADR-031): parameters from train features, hash-checked like the restorer.
+    _state["ood"] = {}
+    for task, m in manifests.items():
+        spec = m.get("ood")
+        if not spec:
+            continue
+        try:
+            import hashlib
+
+            path = MODEL_DIR / task / spec["file"]
+            if hashlib.sha256(path.read_bytes()).hexdigest() != spec["sha256"]:
+                raise ValueError("sha256 does not match the manifest")
+            if not _state["models"][task].has_features:
+                raise ValueError("the graph has no 'features' output")
+            with np.load(path) as z:
+                _state["ood"][task] = {
+                    "means": z["means"],
+                    "precision": z["precision"],
+                    "threshold": float(z["threshold"]),
+                }
+            log.info(f"loaded {task} out-of-scope score ({spec['sha256'][:12]})")
+        except Exception as e:
+            _state["preprocessing_error"] = (
+                f"out-of-scope score for {task} unusable: {type(e).__name__}: {e}"
+            )
             log.error(_state["preprocessing_error"] + " — /readyz will report not ready")
 
     vf = MODEL_DIR / "VERSION"
@@ -253,11 +281,27 @@ def classify(req: ClassifyRequest) -> ClassifyResponse:
         normalized = [restorer(x) for x in normalized]
     model_input = seg(normalized) if seg is not None else normalized
 
-    ids, probs = clf.predict(model_input)
+    ood = _state.get("ood", {}).get(req.task)
+    if ood is not None:
+        logits, feats = clf.logits_and_features(model_input)
+        e = np.exp(logits - logits.max(axis=1, keepdims=True))
+        probs = e / e.sum(axis=1, keepdims=True)
+        ids = probs.argmax(axis=1)
+        dist = np.stack(
+            [
+                np.einsum("ij,jk,ik->i", feats - m, ood["precision"], feats - m)
+                for m in ood["means"]
+            ],
+            axis=1,
+        )
+        scope = -dist.min(axis=1)
+    else:
+        ids, probs = clf.predict(model_input)
+        scope = None
     names = [LABELS[req.task][i] for i in sorted(LABELS[req.task])]
 
     preds = []
-    for text, i, p in zip(texts, ids, probs, strict=True):
+    for k, (text, i, p) in enumerate(zip(texts, ids, probs, strict=True)):
         label = names[int(i)]
         _counters[f"{req.task}:{label}"] = _counters.get(f"{req.task}:{label}", 0) + 1
         preds.append(
@@ -271,6 +315,8 @@ def classify(req: ClassifyRequest) -> ClassifyResponse:
                     if req.return_probabilities
                     else None
                 ),
+                in_scope=None if scope is None else bool(scope[k] >= ood["threshold"]),
+                scope_score=None if scope is None else round(float(scope[k]), 2),
             )
         )
 

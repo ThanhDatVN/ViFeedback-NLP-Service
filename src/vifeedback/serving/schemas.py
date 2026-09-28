@@ -39,6 +39,11 @@ class Prediction(BaseModel):
     label_id: int
     confidence: float
     probabilities: dict[str, float] | None = None
+    # Out-of-scope score (ADR-031), when the release carries one: negative Mahalanobis distance of
+    # the sentence feature to the nearest class mean. `in_scope` is false below the threshold that
+    # keeps 95% of validation; the service still returns a label, and the caller decides.
+    in_scope: bool | None = None
+    scope_score: float | None = None
 
 
 class ClassifyResponse(BaseModel):

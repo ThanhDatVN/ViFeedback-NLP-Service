@@ -181,6 +181,7 @@ def release(
     accept_y: np.ndarray,
     max_length: int = 96,
     log: Callable[[str], None] = print,
+    with_features: bool = False,
 ) -> dict[str, Any]:
     """Build in staging, verify, and only then replace `out_dir`. Returns the manifest.
 
@@ -199,7 +200,7 @@ def release(
     model = AutoModelForSequenceClassification.from_pretrained(str(checkpoint))
     tok = AutoTokenizer.from_pretrained(str(checkpoint))
 
-    fp32 = OX.export_fp32(model, tok, staging, max_length)
+    fp32 = OX.export_fp32(model, tok, staging, max_length, with_features=with_features)
     try:
         if quantize == "none":
             served = OX.optimize_graph(fp32, staging / "model.opt.onnx")
@@ -257,6 +258,7 @@ def release(
         "preprocessing": preprocessing,
         "max_length": max_length,
         "labels": label_names(task),
+        "outputs": ["logits", "features"] if with_features else ["logits"],
         "checkpoint": str(checkpoint),
         "calibration": f"{len(calib_raw)} stratified train sentences"
         if quantize == "static"

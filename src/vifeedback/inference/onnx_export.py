@@ -20,11 +20,14 @@ import numpy as np
 OPSET = 17
 
 
-def export_fp32(model, tokenizer, out_dir: Path, max_length: int = 96) -> Path:
+def export_fp32(
+    model, tokenizer, out_dir: Path, max_length: int = 96, with_features: bool = False
+) -> Path:
     """Export to ONNX with dynamic axes on batch *and* sequence.
 
     Both axes must be dynamic or the graph silently re-introduces fixed-length padding, which is
-    the very thing that cost 3.49x in the first place.
+    the very thing that cost 3.49x in the first place. `with_features` adds a second output, the
+    final <s> hidden state the classification head reads, for the out-of-scope score (ADR-031).
     """
     import torch
 
@@ -48,18 +51,37 @@ def export_fp32(model, tokenizer, out_dir: Path, max_length: int = 96) -> Path:
     legacy: dict[str, Any] = (
         {"dynamo": False} if "dynamo" in inspect.signature(torch.onnx.export).parameters else {}
     )
+    export_model = model
+    output_names = ["logits"]
+    axes = {"logits": {0: "batch"}}
+    if with_features:
+
+        class _WithFeatures(torch.nn.Module):
+            def __init__(self, inner):
+                super().__init__()
+                self.inner = inner
+
+            def forward(self, input_ids, attention_mask):
+                out = self.inner(
+                    input_ids=input_ids, attention_mask=attention_mask, output_hidden_states=True
+                )
+                return out.logits, out.hidden_states[-1][:, 0, :]
+
+        export_model = _WithFeatures(model).eval()
+        output_names = ["logits", "features"]
+        axes["features"] = {0: "batch"}
     with torch.no_grad():
         torch.onnx.export(
-            model,
+            export_model,
             inputs,
             str(path),
             **legacy,
             input_names=["input_ids", "attention_mask"],
-            output_names=["logits"],
+            output_names=output_names,
             dynamic_axes={
                 "input_ids": {0: "batch", 1: "sequence"},
                 "attention_mask": {0: "batch", 1: "sequence"},
-                "logits": {0: "batch"},
+                **axes,
             },
             opset_version=OPSET,
             do_constant_folding=True,
@@ -187,6 +209,24 @@ class OnnxClassifier:
             },
         )
         return out[0]
+
+    @property
+    def has_features(self) -> bool:
+        return any(o.name == "features" for o in self.session.get_outputs())
+
+    def logits_and_features(self, texts: list[str]) -> tuple[np.ndarray, np.ndarray]:
+        """Both outputs of a graph exported `with_features` (one session call)."""
+        enc = self.tokenizer(
+            texts, return_tensors="np", padding=True, truncation=True, max_length=self.max_length
+        )
+        logits, features = self.session.run(
+            ["logits", "features"],
+            {
+                "input_ids": enc["input_ids"].astype(np.int64),
+                "attention_mask": enc["attention_mask"].astype(np.int64),
+            },
+        )
+        return logits, features
 
     def predict(self, texts: list[str]) -> tuple[np.ndarray, np.ndarray]:
         z = self.logits(texts)

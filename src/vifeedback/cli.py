@@ -405,6 +405,9 @@ def serve_export(
     quantize: str = typer.Option("dynamic", help="none | dynamic | static"),
     out: str = typer.Option("", help="defaults to models/serve/<task>"),
     calib_size: int = typer.Option(300, help="stratified train sentences for static INT8"),
+    with_features: bool = typer.Option(
+        False, help="also output the sentence feature (for the out-of-scope score, ADR-031)"
+    ),
 ) -> None:
     """Export, verify against the quality contract, and release (review R3).
 
@@ -447,6 +450,7 @@ def serve_export(
         accept_y=y_dv,
         max_length=max_length,
         log=typer.echo,
+        with_features=with_features,
     )
     typer.echo(f"  manifest: {manifest['model_file']}  sha256 {manifest['sha256'][:12]}...")
 
@@ -515,6 +519,87 @@ def serve_add_restorer(task: str = typer.Option("sentiment")) -> None:
     record = paths.RESULTS / "studies" / "export" / "laptop_fp32_augmented_restorer_manifest.json"
     record.write_text(json.dumps(manifest, indent=2, ensure_ascii=False), encoding="utf-8")
     typer.echo(f"  restorer attached: {out.name} sha256={manifest['restorer']['sha256'][:12]}")
+
+
+@serve_app.command("add-ood")
+def serve_add_ood(task: str = typer.Option("sentiment")) -> None:
+    """Attach the out-of-scope score to a release exported with features (cycle3.yaml v5 S3, ADR-031).
+
+    Mahalanobis parameters from UIT-VSFC train features of the served graph; threshold keeps 95% of
+    validation. Accepted only if the declared S3 check holds on the served graph itself: NEU-ESC
+    off-topic posts vs validation, AUROC >= 0.90.
+    """
+    import hashlib
+    import shutil
+
+    import numpy as np
+
+    from vifeedback.data.loader import load
+    from vifeedback.evaluation import external as X
+    from vifeedback.evaluation import ood as OOD
+    from vifeedback.inference.onnx_export import OnnxClassifier
+    from vifeedback.preprocess.diacritics import Restorer
+    from vifeedback.preprocess.normalize import model_text
+    from vifeedback.preprocess.segment import get_segmenter
+
+    d = paths.MODELS / "serve" / task
+    mpath = d / "manifest.json"
+    manifest = json.loads(mpath.read_text(encoding="utf-8"))
+    clf = OnnxClassifier(d, max_length=manifest.get("max_length", 96))
+    if not clf.has_features:
+        raise typer.BadParameter(
+            "the served graph has no 'features' output: serve export --with-features"
+        )
+    restorer = Restorer.load(d / manifest["restorer"]["file"]) if manifest.get("restorer") else None
+    segment = get_segmenter("pyvi")
+
+    def encode(texts: list[str]) -> tuple[np.ndarray, np.ndarray]:
+        prep = [model_text(t) for t in texts]
+        if restorer is not None:
+            prep = [restorer(t) for t in prep]
+        x = segment(prep)
+        parts = [clf.logits_and_features(x[i : i + 64]) for i in range(0, len(x), 64)]
+        return np.concatenate([p[0] for p in parts]), np.concatenate([p[1] for p in parts])
+
+    tr = load("train")
+    _, f_tr = encode(tr.sentence.tolist())
+    maha = OOD.fit_mahalanobis(f_tr, tr.sentiment.to_numpy())
+    l_dv, f_dv = encode(load("validation").sentence.tolist())
+    s_dv = OOD.scores(l_dv, f_dv, maha)["neg_mahalanobis"]
+    threshold = float(np.quantile(s_dv, 0.05))
+
+    ne = X.load_neu_esc("test")
+    off = ne[ne.topic.isin(("Spam", "News", "Jobs & Recruitment", "Club & Events"))].text.tolist()
+    l_o, f_o = encode(off)
+    check = OOD.evaluate(s_dv, OOD.scores(l_o, f_o, maha)["neg_mahalanobis"])
+    acceptance = {**check, "off_topic_rows": len(off), "passed": check["auroc"] >= 0.90}
+    typer.echo(f"  acceptance: {acceptance}")
+    if not acceptance["passed"]:
+        raise typer.Exit(1)
+
+    out = d / "ood.npz"
+    np.savez(
+        out,
+        means=maha["means"].astype(np.float32),
+        precision=maha["precision"].astype(np.float32),
+        threshold=np.float32(threshold),
+    )
+    shutil.copy2(mpath, d / "manifest.before-ood.json")
+    manifest["ood"] = {
+        "file": out.name,
+        "sha256": hashlib.sha256(out.read_bytes()).hexdigest(),
+        "method": "negative Mahalanobis distance to the nearest class mean, shared covariance (train)",
+        "threshold": threshold,
+        "keeps_validation": 0.95,
+        "decided_by": "cycle3.yaml v5 S3 (NEU-ESC confirmation), ADR-031",
+        "acceptance": acceptance,
+    }
+    mpath.write_text(json.dumps(manifest, indent=2, ensure_ascii=False), encoding="utf-8")
+    record = (
+        paths.RESULTS / "studies" / "export" / "laptop_fp32_augmented_restorer_ood_manifest.json"
+    )
+    record.write_text(json.dumps(manifest, indent=2, ensure_ascii=False), encoding="utf-8")
+    typer.echo(f"  out-of-scope score attached: {out.name} sha256={manifest['ood']['sha256'][:12]}")
 
 
 @serve_app.command("publish")
