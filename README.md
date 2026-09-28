@@ -190,14 +190,14 @@ python scripts/setup_venv.py   # .venv with the pinned versions; CUDA torch if a
 .venv\Scripts\Activate.ps1      # Windows  (Linux/macOS: source .venv/bin/activate)
 cp .env.example .env           # optional: API keys, read by the CLI; .env is git-ignored
 make data             # fetch UIT-VSFC + run the integrity suite
-make test             # 372 fast tests
+make test             # 376 fast tests
 make report           # Phase 0 profiling + EDA figures
 make baseline         # TF-IDF ladder
 make train            # fine-tune PhoBERT (needs a GPU; ~5 min/seed on an RTX 3050)
 ```
 
 `make` targets use `.venv` automatically when it exists. Keys go in `.env`, never in a tracked file
-or a chat: `OPENAI_API_KEY` only for the LLM reference measurements (NEXT_PLAN v3 § 2), `HF_TOKEN`
+or a chat: `OPENAI_API_KEY` only for the LLM reference measurements (NEXT_PLAN § 2), `HF_TOKEN`
 only for publishing the model.
 
 Research studies are CLI calls too, each writing to `results/studies/`:
@@ -210,6 +210,7 @@ vifeedback study robustness          # perturbation suites, slices, negation pro
 vifeedback study cycle1              # apply Cycle 1's declared decision rules
 vifeedback study challenge           # Cycle 2 H6 on the frozen challenge set
 vifeedback study llm-reference       # Cycle 2 H7: an LLM scored by label likelihood
+vifeedback study h7-decide           # the H7 rule once both arms exist (Holm, cycle3.yaml v6)
 vifeedback study audit-report        # analyse the filled neutral-audit sheet
 ```
 

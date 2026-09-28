@@ -267,11 +267,13 @@ Full traceability, including the study designs, catalog and backlog:
 
 ## 7. Next
 
-Every unmet target and gap, with where it is handled: **[NEXT_PLAN.md](NEXT_PLAN.md) v3 § 1**; the
-Cycle 3 steps are in § 3. Needs the owner:
+Every unmet target, hole, unrun experiment and unconfirmed result, with where it is handled:
+**[NEXT_PLAN.md](NEXT_PLAN.md) v4 § 1**. Cycle 4 (student text from other institutions) is § 3.
+Needs the owner:
 
-1. **The declared H7 Qwen3-4B run**: Kaggle `notebooks/kaggle_h7_llm.ipynb`. The gpt-4o-mini arm is
-   done (challenge v1 and NEU-ESC); UIT-VSFC text is still not sent to the API.
+1. **The declared H7 Qwen3-4B run**: Kaggle `notebooks/kaggle_h7_llm.ipynb` (NEXT_PLAN v4 § 8), then
+   `study h7-decide`. The gpt-4o-mini arm is done (challenge v1 and NEU-ESC); UIT-VSFC text is still
+   not sent to the API.
 2. **The human audit** (P2/P3), which gates E04. `study audit-report` analyses the filled sheet.
 3. **Publishing the model**: `vifeedback serve publish --repo-id <you>/<name>` builds the bundle and
    card; add `--upload` after reviewing it.
