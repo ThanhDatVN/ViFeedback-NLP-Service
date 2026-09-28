@@ -31,6 +31,7 @@ under a laptop-GPU budget (RTX 3050, 4.29 GB) plus free Kaggle.
 | Q6 | What quality survives the move to a CPU serving artifact? | Release contract (ADR-020); INT8 (ADR-022); latency ladder |
 | Q7 | Do sparse and dense topic models make errors different enough to combine? | H5, out-of-fold stacking (Cycle 2) |
 | Q8 | Where the encoder is weakest, does an instruction-tuned LLM do better, and at what cost? | H7, Study E (Cycle 2) |
+| Q9 | How well does the service handle student text from other institutions, and what closes the gap? | H8 and the out-of-scope check (Cycle 4, § 5.10) |
 
 ## 3. Method
 
@@ -290,6 +291,30 @@ The restoration result reframes Q2: most of the unaccented gap is recoverable *b
 sees the text, at almost no cost, while augmentation recovered it only partly. The ViLexNorm result
 bounds what spelling fixes can do: on real, off-domain comments the instability is larger than
 spelling.
+
+### 5.10 Cycle 4: student text from other institutions (Q9)
+
+Declared in `configs/experiments/cycle4.yaml` before any training (ADR-032, ADR-033).
+
+**The out-of-scope score measures the institution, not the topic.** On NEU-ESC validation it flags
+75.5% of Academic and 64.6% of Service posts, and within NEU-ESC it separates in-scope from
+off-topic posts at AUROC 0.573. Cycle 3's check (0.977) compared another institution's off-topic
+posts with UIT-VSFC, so it confounded the two kinds of shift.
+
+**In-domain data helps only when each label policy keeps its own head.** Three recipes were tried at
+one seed:
+- One head trained on UIT-VSFC and NEU-ESC together loses 0.033 on UIT-VSFC validation.
+- Fine-tuning the served model on NEU-ESC loses 0.269.
+- A shared encoder with one head per dataset gains on both.
+
+At five seeds the two-head model's UIT-VSFC head raises in-scope NEU-ESC test macro-F1 from 0.444
+to 0.554 (+0.111 [+0.102, +0.119], 5/5 seeds) and stays within 0.005 on UIT-VSFC. Its NEU-ESC head
+reaches 0.76 on NEU-ESC validation. The declared rule still fails on two conditions:
+- text with its diacritics stripped: −0.0107 against a 0.01 limit;
+- the refitted out-of-scope score: AUROC 0.886, flagging 31% of in-scope posts.
+
+The service is unchanged. The lesson is about the rule: it tied a sentiment question to a scope
+detector that does not measure scope.
 
 ## 6. Negative and inconclusive results
 

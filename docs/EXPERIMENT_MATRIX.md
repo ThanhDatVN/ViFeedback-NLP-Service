@@ -560,6 +560,8 @@ ADR-029; v4 S2b′; v5 confirmation on NEU-ESC, ADR-030). Challenge v1 is develo
 | v5 S3 confirmation | NEU-ESC off-topic posts (563) vs validation | Mahalanobis AUROC 0.977; energy 0.936; max-prob 0.920 | passed → served (ADR-031); confounded by institution (ADR-032) |
 | A2 `in_scope` within NEU-ESC | validation, in-scope (3,026) vs off-topic (279) | flagged 77.1% vs 84.2%; AUROC 0.573 | measures resemblance to UIT-VSFC, not topic (ADR-032) |
 | S5 careful INT8 | train fidelity; validation | 178.5 MB; drop +0.0004, upper 0.0095 | not passed |
+| **H8** selection (seed 42) | UIT-VSFC / NEU-ESC validation | control 0.864 / 0.459; mixed 0.832 / 0.750; sequential 0.596 / 0.741; two heads 0.872 / 0.533 (NEU-ESC head 0.761) | two heads chosen (cycle4.yaml) |
+| **H8** confirmation (5 seeds) | NEU-ESC test in scope (6,050); UIT-VSFC validation | +0.111 [+0.102, +0.119]; UIT-VSFC −0.0045, neutral −0.010, stripped −0.0107; refitted out-of-scope AUROC 0.886, 31% flagged | **not passed** (ADR-033) |
 
 ---
 

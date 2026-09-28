@@ -1009,3 +1009,52 @@ tracked the institution. This is the background-versus-semantic-shift distinctio
   unaccented text (S3 − S2 = −4.2 ms): the target of ≤ 30 ms and ≤ 5 ms is met.
 - On in-scope NEU-ESC validation posts, the served model calls 67% of gold-neutral posts polar,
   mostly negative (1,172 of 2,054). Its "a request is negative" policy meets forum questions.
+
+---
+
+## ADR-033 · 2026-09-28 · H8 not passed: two heads close much of the NEU-ESC gap, but not by the declared rule · Accepted
+
+**Context.** `cycle4.yaml` (v1 before any run, v2 reporting-only) asked whether in-scope NEU-ESC
+training data closes the gap on another institution's posts.
+
+| Recipe, seed 42 (validation) | UIT-VSFC | NEU-ESC (served head) | Eligible |
+|---|---:|---:|---|
+| Control (the served recipe) | 0.8644 | 0.4590 | — |
+| mixed: one head, both datasets | 0.8318 | 0.7498 | no (−0.033) |
+| sequential: served model, then NEU-ESC | 0.5958 | 0.7413 | no (−0.269) |
+| **two heads**: shared encoder, one head per dataset | 0.8720 | 0.5326 (NEU-ESC head 0.7612) | **yes → confirmed** |
+
+Confirmation, two heads against the control, five seeds each:
+1. NEU-ESC test (6,050 in-scope posts): +0.111 [+0.102, +0.119], higher in 5 of 5 seeds (0.554 vs
+   0.444). **Passed.**
+2. UIT-VSFC validation macro-F1: −0.0045 against a 0.005 limit. **Passed.**
+3. UIT-VSFC neutral F1: −0.010 against a 0.02 limit. **Passed.**
+4. UIT-VSFC validation with diacritics stripped, through the restorer: −0.0107 against a 0.01 limit.
+   **Not passed.**
+5. The out-of-scope score refitted on UIT-VSFC + NEU-ESC training features: AUROC 0.886 (< 0.90), and
+   it flags 31% of in-scope NEU-ESC validation posts (> 10%). **Not passed.** Within NEU-ESC it
+   separates topics at 0.540.
+
+The first confirmation call stopped in rule 5 on a swapped return order, after computing test
+predictions it never showed. Both calls are in `neu_esc_test_uses.log`.
+
+**Decision.** H8 is not passed; the served model stays. B3 (backbone) is not triggered; there is no
+B5 release.
+
+**What the cycle established.**
+- **Label policy is the conflict.** One head trained on both datasets' labels loses UIT-VSFC
+  (mixed −0.033; sequential −0.269, which forgets it), because the two corpora mean different
+  things by `neutral`. Separate heads remove the conflict: the shared encoder improves UIT-VSFC at
+  seed 42 and lifts the UIT-VSFC head on NEU-ESC by 0.11.
+- **The NEU-ESC head reaches 0.76 on validation**, near the NEU-ESC authors' in-domain 77.7 on four
+  classes. A service that labels other institutions' text by their annotators' policy is within
+  reach, but it is owner decision 2.
+- **Rule 5 tied a sentiment question to a scope detector that ADR-032 had just shown measures
+  resemblance, not topic.** Refitting on more data did not make it a topic detector. Any release that
+  widens the service to other institutions needs a topic-aware scope detector first (B4′).
+- **Rule 4 is a real, small cost.** It measures unaccented UIT-VSFC text after the restorer and
+  missed by 0.0007.
+
+**What would change it.** NEU-ESC test has now served H8, so a new claim needs new confirmation data:
+another institution's labelled text, or a fresh human-labelled sample. Until then, the two-heads
+model is an exploratory result and is not published or served.

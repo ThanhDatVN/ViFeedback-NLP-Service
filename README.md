@@ -176,6 +176,15 @@ NEU-ESC (forum posts by students of another university, human labels), which is 
 | Plain CE + restoration instead of the augmented model | Its contrast-sentence advantage (0.875 vs 0.800) did not replicate on real posts (0.440 vs 0.437): the augmented model stays |
 | Real-typing lexicon, careful INT8 | Both failed their declared rules (negative results, kept) |
 
+**Cycle 4 — student text from other institutions**
+([configs/experiments/cycle4.yaml](configs/experiments/cycle4.yaml)).
+
+| Question | Result |
+|---|---|
+| Does in-domain NEU-ESC data close the gap? (H8) | Only with **two heads**, one per label policy: NEU-ESC test +0.111 [+0.102, +0.119] at 5 seeds, UIT-VSFC within 0.005. One head for both policies costs UIT-VSFC 0.03–0.27. **Not passed** as declared (stripped text −0.0107, out-of-scope refit), so the service is unchanged (ADR-033) |
+| Does `in_scope` find off-topic posts from another university? | No: it tracks the institution (77% of in-scope posts flagged, AUROC 0.573 within the corpus; ADR-032) |
+| Served-pipeline latency | p95 26.9 ms, raw text in (target 30) |
+
 Details: [STATUS § 3–4](docs/STATUS.md#3-cycle-1--declared-hypotheses-and-their-outcome) ·
 report: [RESEARCH_REPORT](docs/RESEARCH_REPORT.md) · work list: [NEXT_PLAN § 2](docs/NEXT_PLAN.md).
 
@@ -261,7 +270,7 @@ text before segmenting it; it never refuses an off-topic input, so the caller de
 |---|---|
 | **[STATUS](docs/STATUS.md)** | **Progress, open problems, next experiments, compute plan** |
 | [ROADMAP](docs/ROADMAP.md) | Objectives, 8 phases, exit gates, risk register |
-| [DECISIONS](docs/DECISIONS.md) | 31 ADRs — every plan correction forced by measurement or review |
+| [DECISIONS](docs/DECISIONS.md) | 33 ADRs — every plan correction forced by measurement or review |
 | [DATA_CARD](docs/DATA_CARD.md) | Provenance, splits, distributions, 11 measured limitations |
 | [EVALUATION_PROTOCOL](docs/EVALUATION_PROTOCOL.md) | Metrics, seeds, significance, latency harness, error taxonomy, perturbation suites, calibration |
 | [ANNOTATION_GUIDE](docs/ANNOTATION_GUIDE.md) | Neutral-label audit: taxonomy, ambiguity vs incorrect gold, agreement and adjudication |
