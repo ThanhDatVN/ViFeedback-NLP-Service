@@ -1,0 +1,97 @@
+{
+  "cells": {
+    "all": 6613,
+    "contrast": 414,
+    "short_neutral": 1898,
+    "unaccented": 6613,
+    "off_topic": 563
+  },
+  "seeds": [
+    "7",
+    "42",
+    "1337",
+    "2024",
+    "31337"
+  ],
+  "served": "aug-s42",
+  "S2b_restoration": {
+    "unaccented_macro_f1": {
+      "without": 0.270098395912588,
+      "with": 0.373918505386066
+    },
+    "paired": {
+      "score_a": 0.373918505386066,
+      "score_b": 0.270098395912588,
+      "observed_diff": 0.10382010947347803,
+      "mean_diff": 0.10380557272398651,
+      "ci_low": 0.09061139239134497,
+      "ci_high": 0.11751881218375719,
+      "p_value": 0.0003999200159968006,
+      "significant": true,
+      "n_resamples": 5000,
+      "alpha": 0.05
+    },
+    "all_cell_diff": -0.0005608151738076828,
+    "passed": true
+  },
+  "S2b_prime": {
+    "checks": {
+      "contrast_accuracy": {
+        "ce": 0.4400966183574879,
+        "aug": 0.43671497584541064,
+        "only_aug_wrong": 108,
+        "only_ce_wrong": 101,
+        "p": 0.6782220277695626,
+        "passed": false
+      },
+      "unaccented_macro_f1": {
+        "ce": 0.39327820248695666,
+        "aug": 0.35698447441134895,
+        "diff": 0.03629372807560771,
+        "passed": true
+      },
+      "all_macro_f1": {
+        "ce": 0.4621212863885365,
+        "aug": 0.4343632738824085,
+        "diff": 0.027758012506128027,
+        "passed": true
+      },
+      "short_neutral_accuracy": {
+        "ce": 0.3679662802950474,
+        "aug": 0.33519494204425715,
+        "diff": 0.03277133825079026,
+        "passed": true
+      },
+      "validation_macro_f1": {
+        "ce": 0.8642730574842883,
+        "aug": 0.8684738270976444,
+        "diff": -0.004200769613356137,
+        "passed": true
+      }
+    },
+    "passed": false
+  },
+  "S3_out_of_scope": {
+    "methods": {
+      "max_probability": {
+        "auroc": 0.9203072386558337,
+        "threshold": 0.9409326314926147,
+        "in_domain_flagged": 0.05053695514845231,
+        "out_of_scope_caught": 0.605683836589698
+      },
+      "neg_energy": {
+        "auroc": 0.9359984919700772,
+        "threshold": 2.7933757305145264,
+        "in_domain_flagged": 0.05053695514845231,
+        "out_of_scope_caught": 0.6358792184724689
+      },
+      "neg_mahalanobis": {
+        "auroc": 0.9771809490041281,
+        "threshold": -3624.2668373834144,
+        "in_domain_flagged": 0.05053695514845231,
+        "out_of_scope_caught": 0.8614564831261101
+      }
+    },
+    "passed": true
+  }
+}
