@@ -156,3 +156,45 @@ def test_non_finite_scores_are_refused():
     pytest.importorskip("torch")
     with pytest.raises(FloatingPointError, match="non-finite"):
         _scorer(_FakeLM(fill=float("nan"))).score(["p1"])
+
+
+def _arm(diff: float, p: float) -> dict:
+    return {
+        "model": "m",
+        "revision": "r",
+        "per_class": {"neutral": {"f1": 0.7 + diff}},
+        "vs_encoder": {
+            "ce": {
+                "neutral_f1": {
+                    "observed_diff": diff,
+                    "ci_low": diff - 0.1,
+                    "ci_high": diff + 0.1,
+                    "p_value": p,
+                }
+            }
+        },
+    }
+
+
+def test_holm_adjusted_matches_the_step_down():
+    adj = L.holm_adjusted([0.01, 0.04, 0.03])
+    assert adj == pytest.approx([0.03, 0.06, 0.06])  # 3*0.01; max(2*0.03, 0.03); max(1*0.04, 0.06)
+    for p in ([0.01, 0.04], [0.03, 0.04], [0.02, 0.2, 0.001]):
+        assert [a <= 0.05 for a in L.holm_adjusted(p)] == L.holm(p)
+
+
+def test_h7_waits_for_both_arms():
+    d = L.h7_decide({"qwen3-4b": None, "gpt-4o-mini": _arm(0.24, 0.0002)})
+    assert not d["decided"] and d["missing"] == ["qwen3-4b"] and d["outcome"] is None
+
+
+def test_h7_needs_holm_and_a_positive_difference():
+    d = L.h7_decide({"qwen3-4b": _arm(-0.30, 0.0002), "gpt-4o-mini": _arm(0.24, 0.0002)})
+    assert d["decided"] and d["better_on_neutral"] == [
+        "gpt-4o-mini"
+    ]  # a significant loss is not "better"
+    assert d["outcome"] == "llm_better_on_neutral"
+    d = L.h7_decide({"qwen3-4b": _arm(0.05, 0.04), "gpt-4o-mini": _arm(0.05, 0.03)})
+    assert (
+        d["better_on_neutral"] == [] and d["outcome"] == "encoder_better_or_equal"
+    )  # 0.03 > 0.05 / 2

@@ -445,6 +445,61 @@ def holm(p_values: Sequence[float], alpha: float = 0.05) -> list[bool]:
     return reject
 
 
+def holm_adjusted(p_values: Sequence[float]) -> list[float]:
+    """Holm-adjusted p-values (step-down, monotone); `holm` rejects exactly where these are <= alpha."""
+    m = len(p_values)
+    order = np.argsort(p_values)
+    adjusted = [0.0] * m
+    running = 0.0
+    for rank, i in enumerate(order):
+        running = max(running, min(1.0, (m - rank) * float(p_values[i])))
+        adjusted[i] = running
+    return adjusted
+
+
+# The two declared H7 arms (cycle2.yaml H7_llm_reference; cycle3.yaml v6 h7_decision).
+H7_ARMS = {"qwen3-4b": "Qwen/Qwen3-4B", "gpt-4o-mini": API_MODEL}
+
+
+def h7_decide(arms: dict[str, dict[str, Any] | None], alpha: float = 0.05) -> dict[str, Any]:
+    """Apply the H7 rule: Holm over the arms' zero-shot neutral-F1 p-values vs CE on challenge v1.
+
+    `arms` maps each arm to its zero-shot challenge summary.json, or None while that run does not
+    exist. With an arm missing nothing is decided (cycle3.yaml v6 h7_decision).
+    """
+    rows: dict[str, dict[str, Any] | None] = {}
+    for name, s in arms.items():
+        if s is None:
+            rows[name] = None
+            continue
+        n = s["vs_encoder"]["ce"]["neutral_f1"]
+        rows[name] = {
+            "model": s["model"],
+            "revision": s["revision"],
+            "neutral_f1": s["per_class"]["neutral"]["f1"],
+            "neutral_f1_minus_ce": n["observed_diff"],
+            "ci95": [n["ci_low"], n["ci_high"]],
+            "p": n["p_value"],
+        }
+    missing = [k for k, v in rows.items() if v is None]
+    if missing:
+        return {"decided": False, "missing": missing, "arms": rows, "outcome": None}
+    present = {k: v for k, v in rows.items() if v is not None}
+    names = list(present)
+    p_values = [present[k]["p"] for k in names]
+    for k, rejected, adj in zip(names, holm(p_values, alpha), holm_adjusted(p_values), strict=True):
+        present[k]["p_holm"] = adj
+        present[k]["better_on_neutral"] = bool(rejected and present[k]["neutral_f1_minus_ce"] > 0)
+    better = [k for k in names if present[k]["better_on_neutral"]]
+    return {
+        "decided": True,
+        "missing": [],
+        "arms": rows,
+        "better_on_neutral": better,
+        "outcome": "llm_better_on_neutral" if better else "encoder_better_or_equal",
+    }
+
+
 def frozen_variant() -> str:
     if not PROMPT_DEV_FILE.exists():
         raise FileNotFoundError(

@@ -2650,6 +2650,93 @@ def study_llm_reference(
         typer.echo(f"  API: {scorer.usage['calls']} calls, USD {scorer.cost_usd():.4f}")
 
 
+@study_app.command("h7-decide")
+def study_h7_decide() -> None:
+    """Apply the H7 rule once both arms exist (cycle2.yaml H7; cycle3.yaml v6 h7_decision).
+
+    Challenge v1: Holm over the two zero-shot arms' neutral-F1 p-values against CE. NEU-ESC
+    (descriptive, h7_neu_esc_local): each arm against the encoders, and Qwen3-4B against gpt-4o-mini
+    on the same posts. Labels and scores only are written.
+    """
+    import pandas as pd
+
+    from vifeedback.evaluation import llm_reference as L
+
+    variant = L.frozen_variant()
+
+    def run_dir(model: str, data: str):
+        return L.OUT / L.slug(model) / f"{data}-{variant}-k0"
+
+    def summary(model: str, data: str) -> dict | None:
+        f = run_dir(model, data) / "summary.json"
+        return json.loads(f.read_text(encoding="utf-8")) if f.exists() else None
+
+    decision = L.h7_decide({name: summary(m, "challenge") for name, m in L.H7_ARMS.items()})
+
+    neu: dict = {}
+    for name, m in L.H7_ARMS.items():
+        s = summary(m, "neu_esc")
+        neu[name] = (
+            None
+            if s is None
+            else {
+                "macro_f1": s["macro_f1"],
+                "neutral_f1": s["per_class"]["neutral"]["f1"],
+                "vs_encoder": {
+                    enc: {k: c[k]["observed_diff"] for k in ("macro_f1", "neutral_f1")}
+                    for enc, c in s["vs_encoder"].items()
+                },
+            }
+        )
+    if all(v is not None for v in neu.values()):
+        from vifeedback.evaluation import external as X
+
+        ne = X.load_neu_esc("test")
+        y = ne.sentiment.map({c: i for i, c in enumerate(L.LABELS)}).to_numpy().astype(int)
+        pred = {
+            name: pd.read_csv(run_dir(m, "neu_esc") / "predictions.csv")
+            .pred.map(L.LABELS.index)
+            .to_numpy()
+            for name, m in L.H7_ARMS.items()
+        }
+        neu["qwen3-4b_minus_gpt-4o-mini"] = L.compare_to_encoder(
+            y, pred["qwen3-4b"], pred["gpt-4o-mini"]
+        )
+
+    out = {
+        "declared_in": "cycle2.yaml H7_llm_reference; cycle3.yaml v6 h7_decision, h7_neu_esc_local",
+        "prompt_variant": variant,
+        "challenge_v1": decision,
+        "neu_esc": neu,
+        "caveat": "challenge v1 is development data since ADR-028; routing is measured on real text",
+    }
+    L.write(L.OUT / "h7_decision.json", out)
+
+    for name, r in decision["arms"].items():
+        if r is None:
+            typer.echo(f"  {name:12s} challenge v1: not run yet")
+            continue
+        extra = f"  Holm p {r['p_holm']:.4f}" if "p_holm" in r else ""
+        typer.echo(
+            f"  {name:12s} challenge v1 neutral F1 {r['neutral_f1']:.3f}, minus CE "
+            f"{r['neutral_f1_minus_ce']:+.3f} [{r['ci95'][0]:+.3f}, {r['ci95'][1]:+.3f}] "
+            f"p {r['p']:.4f}{extra}"
+        )
+    typer.echo(
+        f"  H7: {decision['outcome']} (better on neutral: {decision['better_on_neutral']})"
+        if decision["decided"]
+        else f"  H7: not decided, waiting for {decision['missing']}"
+    )
+    for name in L.H7_ARMS:
+        r = neu[name]
+        typer.echo(
+            f"  {name:12s} NEU-ESC: not run yet"
+            if r is None
+            else f"  {name:12s} NEU-ESC macro-F1 {r['macro_f1']:.3f}  neutral F1 {r['neutral_f1']:.3f}"
+        )
+    typer.echo(f"  written: {L.OUT / 'h7_decision.json'}")
+
+
 @results_app.command("merge")
 def results_merge(
     source: str = typer.Argument(..., help="an extracted results folder, e.g. kaggle_results/"),

@@ -405,3 +405,15 @@ def test_cli_tracebacks_never_show_locals():
 
     apps = [v for v in vars(cli).values() if type(v).__name__ == "Typer"]
     assert apps and all(a.pretty_exceptions_show_locals is False for a in apps)
+
+
+def test_kaggle_h7_notebook_keeps_corpora_out_of_the_saved_output() -> None:
+    """Kaggle saves /kaggle/working with each version; the clone, and the corpora it downloads into
+    data/, must live elsewhere, and only the results zip may be written there (cycle3.yaml v6)."""
+    import json
+
+    nb = json.loads((ROOT / "notebooks" / "kaggle_h7_llm.ipynb").read_text(encoding="utf-8"))
+    code = "\n".join("".join(c["source"]) for c in nb["cells"] if c["cell_type"] == "code")
+    assert "WORK = (pathlib.Path('/tmp') if ON_KAGGLE else OUT_BASE) / 'vifeedback'" in code
+    assert "out = OUT_BASE / 'h7_results.zip'" in code
+    assert "/kaggle/working/vifeedback" not in code

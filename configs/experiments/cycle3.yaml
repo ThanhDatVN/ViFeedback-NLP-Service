@@ -18,10 +18,14 @@
 # (NEU-ESC test) becomes the confirmation data for S2b, S2b-prime and S3, and H7 is repeated on it with
 # gpt-4o-mini. Declared after the overall NEU-ESC scores were seen (CE 0.463 > augmented 0.434) and
 # before any cell below was computed.
+#
+# Version 6, before any Qwen3-4B result exists: which H7 configuration decides and how Holm is
+# applied (both were implicit in cycle2.yaml), and Qwen3-4B on NEU-ESC, a local model from which no
+# text leaves the machine it runs on.
 
-version: 5
+version: 6
 declared: 2026-09-27
-revised: 2026-09-28  # v2 external; v3 S2a (ADR-029); v4 S2b-prime; v5 NEU-ESC replaces challenge v2 (ADR-030)
+revised: 2026-09-28  # v2 external; v3 S2a (ADR-029); v4 S2b-prime; v5 NEU-ESC replaces challenge v2 (ADR-030); v6 H7 decision, Qwen3-4B on NEU-ESC
 budget:
   weight_updating_runs: 30          # V1 8, Step 2 up to 10, Step 4 branch up to 12
   gpu_hours_estimate: {laptop_rtx3050: 3, kaggle_t4: 0.5}
@@ -184,3 +188,32 @@ h7_neu_esc:   # v5
   comparison: vs CE seed 42 and augmented seed 42 on the same posts, paired bootstrap on macro-F1 and neutral F1; 5-seed encoder means reported
   caveat: the prompt states UIT-VSFC's label policy; NEU-ESC's differs (forum posts, neutral = no emotion)
 
+h7_decision:   # v6, declared before any Qwen3-4B result exists
+  rule: cycle2.yaml H7_llm_reference.outcomes, unchanged
+  primary_configuration: >
+    Zero-shot for both arms. The API arm has no few-shot run (UIT-VSFC text is not sent), so the two
+    zero-shot runs are the like-for-like pair. Qwen3-4B's two six-shot runs are reported, not tested.
+  test: >
+    Each arm's paired bootstrap p-value for neutral F1 minus that of the CE seed-42 encoder on
+    challenge_set_v1, as recorded in its summary.json. Holm over the two arms at 0.05: an arm is
+    better on neutral if Holm rejects its hypothesis and its observed difference is positive.
+    Unadjusted 95% intervals are reported next to it. With one arm missing, no decision is made.
+  caveat: >
+    challenge_set_v1 has been development data since ADR-028 (constructed in the prompt's
+    convention). The decision is applied as Cycle 2 declared it and reported with this caveat; the
+    question it opens (routing) is measured on real text, never on v1.
+  applied_by: vifeedback study h7-decide
+
+h7_neu_esc_local:   # v6
+  model: Qwen/Qwen3-4B on a Kaggle T4, fp16, zero-shot, the frozen prompt; Hub revision recorded at run time
+  data: >
+    NEU-ESC test (6,613 posts), fetched on Kaggle with the owner's HF token. The clone lives outside
+    /kaggle/working, so no corpus file is saved with the notebook version; only results (labels and
+    probabilities) come back.
+  comparison: >
+    As h7_neu_esc (vs CE and augmented seed 42, paired bootstrap on macro-F1 and neutral F1), plus
+    Qwen3-4B vs gpt-4o-mini on the same posts.
+  purpose: >
+    Descriptive; it decides nothing here. A local model is the only LLM a router could use without
+    sending student text to a third party, so this tells Cycle 4 whether a local router is worth
+    declaring.

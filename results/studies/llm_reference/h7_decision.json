@@ -1,0 +1,43 @@
+{
+  "declared_in": "cycle2.yaml H7_llm_reference; cycle3.yaml v6 h7_decision, h7_neu_esc_local",
+  "prompt_variant": "v4_policy_informal_contrast",
+  "challenge_v1": {
+    "decided": false,
+    "missing": [
+      "qwen3-4b"
+    ],
+    "arms": {
+      "qwen3-4b": null,
+      "gpt-4o-mini": {
+        "model": "gpt-4o-mini-2024-07-18",
+        "revision": "gpt-4o-mini-2024-07-18",
+        "neutral_f1": 0.9545454545454545,
+        "neutral_f1_minus_ce": 0.24125874125874125,
+        "ci95": [
+          0.16394934274154674,
+          0.3293871710637963
+        ],
+        "p": 0.00019998000199980003
+      }
+    },
+    "outcome": null
+  },
+  "neu_esc": {
+    "qwen3-4b": null,
+    "gpt-4o-mini": {
+      "macro_f1": 0.6037633476987398,
+      "neutral_f1": 0.7694689211717075,
+      "vs_encoder": {
+        "ce": {
+          "macro_f1": 0.10943669190668953,
+          "neutral_f1": 0.2432972839227726
+        },
+        "augmented": {
+          "macro_f1": 0.14213111013233154,
+          "neutral_f1": 0.2949991646909534
+        }
+      }
+    }
+  },
+  "caveat": "challenge v1 is development data since ADR-028; routing is measured on real text"
+}
