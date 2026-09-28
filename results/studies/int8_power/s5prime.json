@@ -1,0 +1,48 @@
+{
+  "declared_in": "configs/experiments/cycle4.yaml v4 S5prime_int8 (ADR-035)",
+  "graph": "models\\int8_candidates\\pc-head-last2\\model.int8.onnx",
+  "rules": {
+    "1_pooled_upper_bound": {
+      "value": 0.0006104223959493834,
+      "limit": "<= 0.005",
+      "passed": true
+    },
+    "2_neu_esc_drop": {
+      "value": -0.004425385805486903,
+      "limit": "<= 0.005",
+      "passed": true
+    },
+    "3_uit_neutral_f1_loss": {
+      "value": -0.005249343832021025,
+      "limit": "<= 0.02",
+      "passed": true
+    },
+    "4_size_mb": {
+      "value": 178.505085,
+      "limit": "<= 200",
+      "passed": true
+    }
+  },
+  "passed": true,
+  "pooled": {
+    "macro_f1_drop": -0.005799384898879323,
+    "macro_f1_drop_upper_95_one_sided": 0.0006104223959493834,
+    "neutral_f1_fp32": 0.4848847650404071,
+    "neutral_f1_int8": 0.5054236294341836,
+    "neutral_f1_loss": -0.0205388643937765,
+    "quality_passed": true
+  },
+  "uit_validation": {
+    "n": 1583,
+    "label_agreement": 0.9917877447883765,
+    "macro_f1_fp32": 0.8644104907582961,
+    "macro_f1_int8": 0.8639891687403124,
+    "neutral_f1_loss": -0.005249343832021025
+  },
+  "neu_esc_validation": {
+    "n": 3305,
+    "label_agreement": 0.8841149773071104,
+    "macro_f1_fp32": 0.45627176014517273,
+    "macro_f1_int8": 0.46069714595065964
+  }
+}
