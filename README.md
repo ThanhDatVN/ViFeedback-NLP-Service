@@ -182,7 +182,7 @@ NEU-ESC (forum posts by students of another university, human labels), which is 
 | Question | Result |
 |---|---|
 | Does in-domain NEU-ESC data close the gap? (H8) | Only with **two heads**, one per label policy: NEU-ESC test +0.111 [+0.102, +0.119] at 5 seeds, UIT-VSFC within 0.005. One head for both policies costs UIT-VSFC 0.03–0.27. **Not passed** as declared (stripped text −0.0107, out-of-scope refit), so the service is unchanged (ADR-033) |
-| Does `in_scope` find off-topic posts from another university? | No: it tracks the institution (77% of in-scope posts flagged, AUROC 0.573 within the corpus; ADR-032) |
+| Does `in_scope` find off-topic posts from another university? | The Mahalanobis score did not: it tracked the institution (AUROC 0.573 within the corpus; ADR-032). **Replaced** by a TF-IDF topic detector (B4′, ADR-034): AUROC 0.922 on NEU-ESC test, 7% of in-scope posts flagged, 72% of off-topic caught, 0.2% of UIT-VSFC validation flagged |
 | Served-pipeline latency | p95 26.9 ms, raw text in (target 30) |
 
 Details: [STATUS § 3–4](docs/STATUS.md#3-cycle-1--declared-hypotheses-and-their-outcome) ·
@@ -283,7 +283,7 @@ text before segmenting it; it never refuses an off-topic input, so the caller de
 |---|---|
 | **[STATUS](docs/STATUS.md)** | **Progress, open problems, next experiments, compute plan** |
 | [ROADMAP](docs/ROADMAP.md) | Objectives, 8 phases, exit gates, risk register |
-| [DECISIONS](docs/DECISIONS.md) | 33 ADRs — every plan correction forced by measurement or review |
+| [DECISIONS](docs/DECISIONS.md) | 34 ADRs — every plan correction forced by measurement or review |
 | [DATA_CARD](docs/DATA_CARD.md) | Provenance, splits, distributions, 11 measured limitations |
 | [EVALUATION_PROTOCOL](docs/EVALUATION_PROTOCOL.md) | Metrics, seeds, significance, latency harness, error taxonomy, perturbation suites, calibration |
 | [ANNOTATION_GUIDE](docs/ANNOTATION_GUIDE.md) | Neutral-label audit: taxonomy, ambiguity vs incorrect gold, agreement and adjudication |

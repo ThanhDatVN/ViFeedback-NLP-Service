@@ -102,11 +102,27 @@ def _optional_parts(manifest: dict[str, Any], scope_check: dict[str, Any] | None
                 f"{scope_check['within_source_auroc_in_scope_vs_off_topic']:.3f}. Do not use it to "
                 "filter another institution's feedback."
             )
+    sc = manifest.get("scope")
+    if sc:
+        a = sc["acceptance"]
+        items.append(
+            f"- `{sc['file']}`: a topic-aware scope detector (ADR-034): logistic regression on TF-IDF "
+            f"word unigrams and bigrams of the model input ({sc['terms']:,} terms), trained to tell "
+            "course-related student text (UIT-VSFC, and in-scope posts of another university's "
+            "forum, NEU-ESC) from spam, news, job and club posts. Below "
+            f"{sc['threshold']:.3f} the input is out of scope. On NEU-ESC test it separates in-scope "
+            f"from off-topic posts at AUROC {a['1_within_source_auroc']:.3f}, flags "
+            f"{a['2_in_scope_flagged']:.0%} of in-scope posts and catches "
+            f"{a['3_off_topic_caught']:.0%} of off-topic ones; it flags "
+            f"{a['4_uit_validation_flagged']:.1%} of UIT-VSFC validation. Served by a numpy "
+            "re-implementation checked equal to scikit-learn. The service reports it as `in_scope` "
+            "and `scope_score` next to the label and never refuses an input."
+        )
     if not items:
         return ""
     head = (
         "\n## Optional parts of the release\n\n"
-        "Both are declared in `manifest.json` with a SHA-256; the service refuses to start on a "
+        "Each is declared in `manifest.json` with a SHA-256; the service refuses to start on a "
         "mismatch.\n\n"
     )
     return head + "\n".join(items) + "\n"
@@ -217,8 +233,9 @@ teencode {rob["teencode-100"]["macro_f1"]:.3f}; 5% character noise {rob["charnoi
   seeds), and better still with the restorer (NEU-ESC posts stripped of diacritics: 0.270 → 0.374).
 - **Input is lowercased** before scoring, as the training data is; capitalized input otherwise changed
   about 1% of labels.
-- **Off-topic input still gets a label**, often a confident one. The out-of-scope score (above)
-  flags text unlike the training surveys, which includes most feedback from other institutions.
+- **Off-topic input still gets a label**, often a confident one; `in_scope` (above) is the signal
+  to act on. It judges topic from words, so a short or unusual course comment can be flagged, and
+  off-topic text that talks like a course comment can pass.
 - **Real student text from another university is much harder.** On 6,613 forum posts from NEU-ESC
   (human labels) this model's macro-F1 is 0.46 (0.43 averaged over five seeds): annotators called 69%
   of posts neutral, this model 27%. Forum posts are mostly non-evaluative; the model was trained
@@ -267,7 +284,7 @@ def build(repo_id: str, include_pytorch: bool = True) -> dict[str, Any]:
     if out.exists():
         shutil.rmtree(out)
     out.mkdir(parents=True)
-    optional = [manifest[k]["file"] for k in ("restorer", "ood") if manifest.get(k)]
+    optional = [manifest[k]["file"] for k in ("restorer", "ood", "scope") if manifest.get(k)]
     for name in (manifest["model_file"], "manifest.json", *_TOKENIZER_FILES, *optional):
         if (SERVED / name).exists():
             shutil.copy2(SERVED / name, out / name)

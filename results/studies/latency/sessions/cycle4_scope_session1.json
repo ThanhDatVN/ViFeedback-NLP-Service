@@ -1,0 +1,299 @@
+{
+  "protocol": "L rungs: model-only on pre-segmented test inputs; S rungs: raw test text through serving.pipeline (S2/S3 with diacritics stripped); 200 warmup, median-of-repeats p95, two passes in rotated order; texts/s at batch 32; RSS after each config",
+  "manifest_sha256": "c93262abe34ea0990818508508349e372618fa2f9d491ab340d153da1f86f4b0",
+  "summary": {
+    "L3 onnx fp32 (model.opt.onnx), dynamic padding": {
+      "p95_ms_by_pass": [
+        34.766,
+        34.084
+      ],
+      "spread_by_pass": [
+        0.0393,
+        0.022
+      ],
+      "steady_passes": [
+        1,
+        2
+      ],
+      "basis": "mean of both steady passes",
+      "reportable": true,
+      "p50_ms": 16.01,
+      "p95_ms": 34.42,
+      "p99_ms": 58.63,
+      "texts_per_s_b32": 25.1,
+      "speedup_p95_vs_baseline": 1.0,
+      "speedup_p50_vs_baseline": 1.0
+    },
+    "S0 raw text: lowercase, pyvi, logits (before ADR-031)": {
+      "p95_ms_by_pass": [
+        35.635,
+        35.383
+      ],
+      "spread_by_pass": [
+        0.0178,
+        0.0186
+      ],
+      "steady_passes": [
+        1,
+        2
+      ],
+      "basis": "mean of both steady passes",
+      "reportable": true,
+      "p50_ms": 16.22,
+      "p95_ms": 35.51,
+      "p99_ms": 58.38,
+      "texts_per_s_b32": 25.4,
+      "speedup_p95_vs_baseline": 0.97,
+      "speedup_p50_vs_baseline": 0.99
+    },
+    "S1 raw text: served pipeline": {
+      "p95_ms_by_pass": [
+        36.065,
+        36.616
+      ],
+      "spread_by_pass": [
+        0.0159,
+        0.0375
+      ],
+      "steady_passes": [
+        1,
+        2
+      ],
+      "basis": "mean of both steady passes",
+      "reportable": true,
+      "p50_ms": 17.21,
+      "p95_ms": 36.34,
+      "p99_ms": 59.07,
+      "texts_per_s_b32": 25.4,
+      "speedup_p95_vs_baseline": 0.95,
+      "speedup_p50_vs_baseline": 0.93
+    },
+    "S2 unaccented text: before ADR-031": {
+      "p95_ms_by_pass": [
+        52.852,
+        52.867
+      ],
+      "spread_by_pass": [
+        0.0209,
+        0.0725
+      ],
+      "steady_passes": [
+        1,
+        2
+      ],
+      "basis": "mean of both steady passes",
+      "reportable": true,
+      "p50_ms": 21.46,
+      "p95_ms": 52.86,
+      "p99_ms": 74.79,
+      "texts_per_s_b32": 17.9,
+      "speedup_p95_vs_baseline": 0.65,
+      "speedup_p50_vs_baseline": 0.75
+    },
+    "S3 unaccented text: served pipeline": {
+      "p95_ms_by_pass": [
+        37.175,
+        37.707
+      ],
+      "spread_by_pass": [
+        0.0298,
+        0.023
+      ],
+      "steady_passes": [
+        1,
+        2
+      ],
+      "basis": "mean of both steady passes",
+      "reportable": true,
+      "p50_ms": 17.36,
+      "p95_ms": 37.44,
+      "p99_ms": 62.06,
+      "texts_per_s_b32": 25.2,
+      "speedup_p95_vs_baseline": 0.92,
+      "speedup_p50_vs_baseline": 0.92
+    }
+  },
+  "passes": [
+    {
+      "L3 onnx fp32 (model.opt.onnx), dynamic padding": {
+        "p50_ms": 16.169,
+        "p95_ms": 34.766,
+        "p99_ms": 57.586,
+        "mean_ms": 18.983,
+        "repeats": 5,
+        "timed_per_repeat": 300,
+        "p95_spread_across_repeats": 0.0393,
+        "throttling_suspected": false,
+        "rss_mb_after": 1969.5,
+        "texts_per_s_b32": 25.4
+      },
+      "S0 raw text: lowercase, pyvi, logits (before ADR-031)": {
+        "p50_ms": 16.295,
+        "p95_ms": 35.635,
+        "p99_ms": 59.442,
+        "mean_ms": 19.235,
+        "repeats": 5,
+        "timed_per_repeat": 300,
+        "p95_spread_across_repeats": 0.0178,
+        "throttling_suspected": false,
+        "rss_mb_after": 2094.8,
+        "texts_per_s_b32": 25.2
+      },
+      "S1 raw text: served pipeline": {
+        "p50_ms": 16.871,
+        "p95_ms": 36.065,
+        "p99_ms": 58.846,
+        "mean_ms": 19.599,
+        "repeats": 5,
+        "timed_per_repeat": 300,
+        "p95_spread_across_repeats": 0.0159,
+        "throttling_suspected": false,
+        "rss_mb_after": 2094.9,
+        "texts_per_s_b32": 25.1
+      },
+      "S2 unaccented text: before ADR-031": {
+        "p50_ms": 21.37,
+        "p95_ms": 52.852,
+        "p99_ms": 75.971,
+        "mean_ms": 25.341,
+        "repeats": 5,
+        "timed_per_repeat": 300,
+        "p95_spread_across_repeats": 0.0209,
+        "throttling_suspected": false,
+        "rss_mb_after": 2094.9,
+        "texts_per_s_b32": 17.9
+      },
+      "S3 unaccented text: served pipeline": {
+        "p50_ms": 17.075,
+        "p95_ms": 37.175,
+        "p99_ms": 61.539,
+        "mean_ms": 20.252,
+        "repeats": 5,
+        "timed_per_repeat": 300,
+        "p95_spread_across_repeats": 0.0298,
+        "throttling_suspected": false,
+        "rss_mb_after": 2181.7,
+        "texts_per_s_b32": 25.0
+      }
+    },
+    {
+      "S3 unaccented text: served pipeline": {
+        "p50_ms": 17.64,
+        "p95_ms": 37.707,
+        "p99_ms": 62.575,
+        "mean_ms": 20.632,
+        "repeats": 5,
+        "timed_per_repeat": 300,
+        "p95_spread_across_repeats": 0.023,
+        "throttling_suspected": false,
+        "rss_mb_after": 2181.7,
+        "texts_per_s_b32": 25.5
+      },
+      "S2 unaccented text: before ADR-031": {
+        "p50_ms": 21.546,
+        "p95_ms": 52.867,
+        "p99_ms": 73.614,
+        "mean_ms": 25.568,
+        "repeats": 5,
+        "timed_per_repeat": 300,
+        "p95_spread_across_repeats": 0.0725,
+        "throttling_suspected": false,
+        "rss_mb_after": 2156.8,
+        "texts_per_s_b32": 18.0
+      },
+      "S1 raw text: served pipeline": {
+        "p50_ms": 17.549,
+        "p95_ms": 36.616,
+        "p99_ms": 59.286,
+        "mean_ms": 20.219,
+        "repeats": 5,
+        "timed_per_repeat": 300,
+        "p95_spread_across_repeats": 0.0375,
+        "throttling_suspected": false,
+        "rss_mb_after": 2157.5,
+        "texts_per_s_b32": 25.6
+      },
+      "S0 raw text: lowercase, pyvi, logits (before ADR-031)": {
+        "p50_ms": 16.135,
+        "p95_ms": 35.383,
+        "p99_ms": 57.314,
+        "mean_ms": 19.049,
+        "repeats": 5,
+        "timed_per_repeat": 300,
+        "p95_spread_across_repeats": 0.0186,
+        "throttling_suspected": false,
+        "rss_mb_after": 2157.4,
+        "texts_per_s_b32": 25.5
+      },
+      "L3 onnx fp32 (model.opt.onnx), dynamic padding": {
+        "p50_ms": 15.86,
+        "p95_ms": 34.084,
+        "p99_ms": 59.675,
+        "mean_ms": 18.578,
+        "repeats": 5,
+        "timed_per_repeat": 300,
+        "p95_spread_across_repeats": 0.022,
+        "throttling_suspected": false,
+        "rss_mb_after": 2157.4,
+        "texts_per_s_b32": 24.9
+      }
+    }
+  ],
+  "peak_rss_mb": 2157.4,
+  "environment": {
+    "captured_at": "2026-09-28T10:58:25+00:00",
+    "python": "3.11.9",
+    "executable": "D:\\GitHub\\ViFeedback NLP Service\\.venv\\Scripts\\python.exe",
+    "os": {
+      "system": "Windows",
+      "release": "10",
+      "version": "10.0.26200"
+    },
+    "cpu": {
+      "platform_processor": "AMD64 Family 25 Model 68 Stepping 1, AuthenticAMD",
+      "machine": "AMD64",
+      "logical_cores": 12,
+      "brand": "AMD Ryzen 5 6600H with Radeon Graphics",
+      "physical_cores": 6,
+      "flags": {
+        "avx": true,
+        "avx2": true,
+        "fma": true,
+        "avx512f": false,
+        "avx512_vnni": false,
+        "avx_vnni": false,
+        "sse4_2": true
+      },
+      "flags_source": "py-cpuinfo"
+    },
+    "has_vnni": false,
+    "gpu": {
+      "available": true,
+      "name": "NVIDIA GeForce RTX 3050 Laptop GPU",
+      "count": 1,
+      "capability": [
+        8,
+        6
+      ],
+      "cuda": "12.6"
+    },
+    "packages": {
+      "numpy": "2.4.6",
+      "pandas": "2.3.3",
+      "scikit-learn": "1.7.2",
+      "scipy": "1.17.1",
+      "torch": "2.14.0+cu126",
+      "transformers": "5.17.0",
+      "datasets": "5.0.1",
+      "onnxruntime": "1.30.0",
+      "optimum": null,
+      "fastapi": "0.141.1"
+    },
+    "git": {
+      "sha": "5f34b4079d89a1733d368ff47a8eadea133b311a",
+      "branch": "main",
+      "dirty": true
+    },
+    "source_sha256": "7c4c115b9f5b6494c37643e1a305d26c679ec383856e88eeeb2e9dacc93fc8f5"
+  }
+}

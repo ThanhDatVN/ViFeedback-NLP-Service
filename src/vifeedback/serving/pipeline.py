@@ -45,6 +45,13 @@ def load_ood(model_dir: Path, spec: dict[str, Any], clf: Any) -> dict[str, Any]:
         }
 
 
+def load_scope(model_dir: Path, spec: dict[str, Any]) -> Any:
+    """The manifest's topic-aware scope detector (ADR-034), refused unless its SHA-256 matches."""
+    from vifeedback.serving.scope_tfidf import TfidfScope
+
+    return TfidfScope.load(_checked(Path(model_dir) / spec["file"], spec["sha256"]))
+
+
 def prepare(
     texts: Sequence[str],
     restorer: Callable[[str], str] | None = None,
@@ -58,13 +65,20 @@ def prepare(
 
 
 def score(
-    clf: Any, model_input: list[str], ood: dict[str, Any] | None = None
+    clf: Any,
+    model_input: list[str],
+    ood: dict[str, Any] | None = None,
+    scope: Any = None,
 ) -> tuple[np.ndarray, np.ndarray, np.ndarray | None]:
-    """Label ids, probabilities, and the out-of-scope score (None without one).
+    """Label ids, probabilities, and the scope score (None without one); higher = more in scope.
 
-    The score is the negative Mahalanobis distance of the sentence feature to the nearest class
-    mean; the caller compares it with `ood["threshold"]`.
+    With `scope` (ADR-034) the score is the topic-aware detector's decision value, compared with
+    `scope.threshold`. Otherwise, with `ood` (ADR-031), it is the negative Mahalanobis distance of
+    the sentence feature to the nearest class mean, compared with `ood["threshold"]`.
     """
+    if scope is not None:
+        ids, probs = clf.predict(model_input)
+        return ids, probs, scope.decision(model_input)
     if ood is None:
         ids, probs = clf.predict(model_input)
         return ids, probs, None

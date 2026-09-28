@@ -103,12 +103,13 @@ def test_version_names_the_released_checkpoint_and_hash(client) -> None:
 
 
 def test_out_of_scope_score_when_the_release_declares_one(client) -> None:
-    """ADR-031: every prediction carries the score, and off-topic text scores below course feedback."""
+    """ADR-031/034: every prediction carries the score, and off-topic text scores below course
+    feedback (with either the Mahalanobis score or the topic-aware detector)."""
     import json
 
     manifest = json.loads((SERVE / "sentiment" / "manifest.json").read_text(encoding="utf-8"))
-    if not manifest.get("ood"):
-        pytest.skip("this release has no out-of-scope score (serve add-ood)")
+    if not (manifest.get("ood") or manifest.get("scope")):
+        pytest.skip("this release has no scope score (serve add-ood / add-scope)")
     feedback = ["giảng viên nhiệt tình", "thầy giảng bài dễ hiểu", "phòng học nóng"]
     off_topic = ["giá vàng hôm nay tăng mạnh", "đội tuyển bóng đá thắng hai không"]
     preds = client.post("/v1/classify", json={"texts": feedback + off_topic}).json()["predictions"]

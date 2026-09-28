@@ -121,14 +121,15 @@ def main() -> int:
         else:
             for (text, want), p in zip(GOLDEN, out["predictions"], strict=True):
                 ok = p["label"] == want
-                scope = f" in_scope={p.get('in_scope')}" if manifest.get("ood") else ""
+                declares = manifest.get("ood") or manifest.get("scope")
+                scope = f" in_scope={p.get('in_scope')}" if declares else ""
                 print(
                     f"  {'ok ' if ok else 'BAD'} {p['label']:9s} {max(p['probabilities'].values()):.3f}{scope}  {text}"
                 )
                 if not ok:
                     failures.append(f"{text!r}: {p['label']} != {want}")
-                # A release with the out-of-scope score must report it on every prediction (ADR-031).
-                if manifest.get("ood") and not isinstance(p.get("in_scope"), bool):
+                # A release with a scope score must report it on every prediction (ADR-031, ADR-034).
+                if declares and not isinstance(p.get("in_scope"), bool):
                     failures.append(f"{text!r}: no in_scope although the manifest declares one")
     finally:
         docker("rm", "-f", NAME, check=False)

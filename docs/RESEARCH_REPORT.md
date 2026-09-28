@@ -313,8 +313,16 @@ reaches 0.76 on NEU-ESC validation. The declared rule still fails on two conditi
 - text with its diacritics stripped: −0.0107 against a 0.01 limit;
 - the refitted out-of-scope score: AUROC 0.886, flagging 31% of in-scope posts.
 
-The service is unchanged. The lesson is about the rule: it tied a sentiment question to a scope
-detector that does not measure scope.
+The service's sentiment model is unchanged. The lesson is about the rule: it tied a sentiment
+question to a scope detector that does not measure scope.
+
+**A scope detector must be judged within one source.** B4′ trained one on labelled topics. The two
+candidates were logistic regression on TF-IDF words and logistic regression on the encoder's
+feature; TF-IDF won (0.921 against 0.869 on validation). On NEU-ESC test it separates in-scope from
+off-topic posts at AUROC 0.922, flags 7.3% of in-scope posts and catches 72.3% of off-topic ones,
+while flagging 0.2% of UIT-VSFC validation. It now drives `in_scope` (ADR-034), through a numpy
+re-implementation equal to scikit-learn. Topic is lexical, and a feature tuned for sentiment keeps
+less of it.
 
 ## 6. Negative and inconclusive results
 

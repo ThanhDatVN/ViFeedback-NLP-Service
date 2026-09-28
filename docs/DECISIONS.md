@@ -1058,3 +1058,44 @@ B5 release.
 **What would change it.** NEU-ESC test has now served H8, so a new claim needs new confirmation data:
 another institution's labelled text, or a fresh human-labelled sample. Until then, the two-heads
 model is an exploratory result and is not published or served.
+
+---
+
+## ADR-034 · 2026-09-28 · `in_scope` comes from a topic-aware detector, not the Mahalanobis score · Accepted
+
+**Context.** ADR-032 showed that the served `in_scope` (Mahalanobis on the sentence feature) tracks
+the institution, not the topic: within NEU-ESC it separates in-scope from off-topic posts at AUROC
+0.573 on validation and 0.595 on test. `cycle4.yaml` v3 declared B4′ before any fit: a detector
+trained on labelled topics.
+
+**Result** (`study b4prime`, `results/studies/cycle4/b4prime/decision.json`).
+- **Selection.** Chosen on NEU-ESC validation from two candidates: TF-IDF logistic regression
+  (AUROC 0.921, C = 1) over logistic regression on the served feature (0.869).
+- **Confirmation on NEU-ESC test,** logged. All four declared conditions passed:
+  1. within-source AUROC **0.922**;
+  2. in-scope posts flagged **7.3%**, where the Mahalanobis score flagged about 77%;
+  3. off-topic posts caught **72.3%**;
+  4. UIT-VSFC validation flagged **0.2%**.
+- **Generated off-topic sentences** (U4): AUROC 0.918.
+
+Topic is a property of words. The encoder's feature was fine-tuned for sentiment, which is why it
+separates topics less well.
+
+**Decision.** `serve add-scope` attaches the detector to the release:
+- `scope.npz` holds 70,377 terms, idf, coefficients and a threshold of −0.177, with its SHA-256 in
+  the manifest.
+- The service scores it with a numpy re-implementation (`serving/scope_tfidf.py`). It equals
+  scikit-learn on all 12,032 evaluation texts (max |diff| 8e-15, same flags), so the runtime image
+  still needs no scikit-learn.
+- The Mahalanobis entry leaves the manifest (kept in `manifest.before-scope.json`). The graph keeps
+  its `features` output, unused.
+- The API's shape is unchanged. `scope_score` is now the detector's decision value (higher = in
+  scope), and `in_scope` is that value at or above the threshold.
+
+**Limits.**
+- It judges topic from words: an unusual or very short course comment can be flagged, and off-topic
+  text that uses course vocabulary can pass.
+- Its off-topic training examples are four NEU-ESC topics; other kinds of off-topic text are covered
+  only as far as U4 suggests.
+- The model already on the Hugging Face Hub still carries the Mahalanobis file and the ADR-032
+  caveat until the owner approves a new upload.

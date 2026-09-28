@@ -631,6 +631,77 @@ def serve_publish(
     typer.echo("  " + P.upload(repo_id, b["folder"], private=private))
 
 
+@serve_app.command("add-scope")
+def serve_add_scope(task: str = typer.Option("sentiment")) -> None:
+    """Replace the Mahalanobis score behind `in_scope` with B4's topic-aware detector (ADR-034).
+
+    Exports the fitted TF-IDF logistic regression to scope.npz (no pickle at serving time), checks
+    the numpy scorer equal to scikit-learn on every B4' evaluation text, and records the file's
+    SHA-256, the threshold and B4's acceptance in the manifest. The Mahalanobis entry is removed
+    (kept in manifest.before-scope.json).
+    """
+    import hashlib
+    import pickle
+    import shutil
+
+    import numpy as np
+
+    from vifeedback.evaluation import scope as SC
+    from vifeedback.serving.scope_tfidf import TfidfScope
+
+    d = paths.MODELS / "serve" / task
+    mpath = d / "manifest.json"
+    manifest = json.loads(mpath.read_text(encoding="utf-8"))
+    src = paths.MODELS / "scope" / "b4prime_tfidf_logistic.pkl"
+    decision = json.loads((SC.OUT / "decision.json").read_text(encoding="utf-8"))
+    if not decision["passed"] or decision["selection"]["chosen"]["candidate"] != "tfidf_logistic":
+        raise typer.BadParameter("B4' did not pass with the TF-IDF detector; nothing to attach")
+    with open(src, "rb") as fh:  # written by `study b4prime` on this machine
+        fitted = pickle.load(fh)
+    scope = TfidfScope.from_sklearn(fitted["model"], fitted["threshold"])
+
+    sets = SC.data()
+    texts = (
+        sets["uit_validation"] + sets["neu_validation"]["x"] + sets["neu_test"]["x"] + sets["u4"]
+    )
+    ours = scope.decision(texts)
+    ref = fitted["model"].decision_function(texts)
+    max_diff = float(np.abs(ours - ref).max())
+    same_flags = bool(((ours >= scope.threshold) == (ref >= scope.threshold)).all())
+    typer.echo(
+        f"  numpy vs scikit-learn on {len(texts)} texts: max |diff| {max_diff:.2e}, same flags {same_flags}"
+    )
+    if max_diff > 1e-9 or not same_flags:
+        raise typer.Exit(1)
+
+    out = d / "scope.npz"
+    scope.save(out)
+    if TfidfScope.load(out).decision(texts[:500]).tolist() != ours[:500].tolist():
+        raise RuntimeError("scope.npz does not round-trip")
+    shutil.copy2(mpath, d / "manifest.before-scope.json")
+    manifest.pop("ood", None)
+    manifest["scope"] = {
+        "file": out.name,
+        "sha256": hashlib.sha256(out.read_bytes()).hexdigest(),
+        "method": "logistic regression on TF-IDF word unigrams and bigrams of the model input",
+        "threshold": scope.threshold,
+        "terms": len(scope.index),
+        "decided_by": "cycle4.yaml v3 B4', ADR-034",
+        "acceptance": {
+            **{k: v["value"] for k, v in decision["rules"].items()},
+            "passed": decision["passed"],
+            "numpy_vs_sklearn_max_abs_diff": max_diff,
+            "texts_checked": len(texts),
+        },
+    }
+    mpath.write_text(json.dumps(manifest, indent=2, ensure_ascii=False), encoding="utf-8")
+    record = (
+        paths.RESULTS / "studies" / "export" / "laptop_fp32_augmented_restorer_scope_manifest.json"
+    )
+    record.write_text(json.dumps(manifest, indent=2, ensure_ascii=False), encoding="utf-8")
+    typer.echo(f"  scope detector attached: {out.name} sha256={manifest['scope']['sha256'][:12]}")
+
+
 @serve_app.command("reproduce")
 def serve_reproduce(
     repo_id: str = typer.Option("Datk4/vifeedback-sentiment-phobert", help="the published release"),
@@ -1230,12 +1301,13 @@ def study_latency(
         SP.load_restorer(Path(onnx_dir), manifest["restorer"]) if manifest.get("restorer") else None
     )
     ood = SP.load_ood(Path(onnx_dir), manifest["ood"], onnx) if manifest.get("ood") else None
+    detector = SP.load_scope(Path(onnx_dir), manifest["scope"]) if manifest.get("scope") else None
 
     def before_adr031(batch):
         return onnx.logits(SP.prepare(batch, None, seg))
 
-    def served(batch):
-        return SP.score(onnx, SP.prepare(batch, restorer, seg), ood)
+    def served(batch):  # as the API: the scope detector (ADR-034) when present, else Mahalanobis
+        return SP.score(onnx, SP.prepare(batch, restorer, seg), None if detector else ood, detector)
 
     def torch_dynamic(batch):
         return model(

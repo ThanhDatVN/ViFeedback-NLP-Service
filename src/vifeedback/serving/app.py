@@ -118,6 +118,22 @@ def _load() -> None:
             )
             log.error(_state["preprocessing_error"] + " — /readyz will report not ready")
 
+    # The topic-aware scope detector (ADR-034); when a release declares it, it replaces the
+    # Mahalanobis score behind `in_scope`.
+    _state["scope"] = {}
+    for task, m in manifests.items():
+        spec = m.get("scope")
+        if not spec:
+            continue
+        try:
+            _state["scope"][task] = pipeline.load_scope(MODEL_DIR / task, spec)
+            log.info(f"loaded {task} scope detector ({spec['sha256'][:12]})")
+        except Exception as e:
+            _state["preprocessing_error"] = (
+                f"scope detector for {task} unusable: {type(e).__name__}: {e}"
+            )
+            log.error(_state["preprocessing_error"] + " — /readyz will report not ready")
+
     vf = MODEL_DIR / "VERSION"
     if vf.exists():
         _state["version"] = vf.read_text(encoding="utf-8").strip()
@@ -259,8 +275,12 @@ def classify(req: ClassifyRequest) -> ClassifyResponse:
     model_input = pipeline.prepare(
         texts, _state.get("restorers", {}).get(req.task), _state["segmenter"]
     )
-    ood = _state.get("ood", {}).get(req.task)
-    ids, probs, scope = pipeline.score(clf, model_input, ood)
+    detector = _state.get("scope", {}).get(req.task)
+    ood = None if detector is not None else _state.get("ood", {}).get(req.task)
+    ids, probs, scope = pipeline.score(clf, model_input, ood, detector)
+    threshold = (
+        detector.threshold if detector is not None else ood["threshold"] if ood is not None else 0.0
+    )
     names = [LABELS[req.task][i] for i in sorted(LABELS[req.task])]
 
     preds = []
@@ -278,8 +298,8 @@ def classify(req: ClassifyRequest) -> ClassifyResponse:
                     if req.return_probabilities
                     else None
                 ),
-                in_scope=None if scope is None else bool(scope[k] >= ood["threshold"]),
-                scope_score=None if scope is None else round(float(scope[k]), 2),
+                in_scope=None if scope is None else bool(scope[k] >= threshold),
+                scope_score=None if scope is None else round(float(scope[k]), 3),
             )
         )
 

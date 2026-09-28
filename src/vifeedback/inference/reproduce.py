@@ -51,7 +51,7 @@ def download(repo_id: str, revision: str | None = None) -> tuple[Path, dict[str,
         get(name)
     manifest = json.loads((dst / "manifest.json").read_text(encoding="utf-8"))
     extra = [manifest["model_file"]] + [
-        manifest[k]["file"] for k in ("restorer", "ood") if manifest.get(k)
+        manifest[k]["file"] for k in ("restorer", "ood", "scope") if manifest.get(k)
     ]
     for name in extra:
         get(name)
