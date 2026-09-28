@@ -29,7 +29,7 @@ stands, what is wrong with it, and what runs next.**
 |---|---|---|
 | **0** | Fix validity problems; what does the current model get wrong? | ✅ [results/studies/](../results/studies/README.md) |
 | **1** | Four hypotheses, declared before running ([cycle1.yaml](../configs/experiments/cycle1.yaml) v1 + v2) | ✅ all four decided; closing gate on test done (H2 and calibration confirmed) |
-| **2** | Track A: confirmation on a frozen challenge set, the serving model, topic stacking, an LLM reference ([cycle2.yaml](../configs/experiments/cycle2.yaml) v2) | 🔶 H5 not supported; H6 switched the served model; H7 pilot done, declared Qwen3-4B and API runs pending (👤) |
+| **2** | Track A: confirmation on a frozen challenge set, the serving model, topic stacking, an LLM reference ([cycle2.yaml](../configs/experiments/cycle2.yaml) v2) | ✅ H5 not supported; H6 switched the served model; H7 decided: both LLM arms better on neutral on challenge v1 (construction caveat); on real posts only gpt-4o-mini is ahead |
 | **3** | Reliability of the served model on real input ([cycle3.yaml](../configs/experiments/cycle3.yaml) v5) | 🔶 confirmed on NEU-ESC real student text (ADR-030): the service now lowercases, restores diacritics and reports an out-of-scope score (ADR-031); CE + restoration, the real-typing lexicon and careful INT8 fail their rules. Owner items: Kaggle Qwen3-4B, neutral audit, HF upload (👤) |
 
 **Compute to date** ([ledger](../configs/experiments/ledger.csv)): 124 weight-updating runs, about 9.9 GPU-hours, of which 19 regenerated runs after the `results/` loss (ADR-023), plus 12 GPU-minutes of LLM inference. The registry holds 153 rows.
@@ -128,7 +128,7 @@ uses the official test.
 |---|---|---|
 | **H5** topic stacking (TF-IDF B4 × PhoBERT, out-of-fold meta-model) | Stacked − PhoBERT 5-fold ensemble −0.0102 [−0.0228, +0.0013]; `facility` and `others` both lower | **Not supported.** The "TF-IDF wins facility" gap reverses under a paired interval: −0.021 [−0.060, +0.015] |
 | **H6** serve the H2-augmented model? | Constructed typed-style noise (90 rows): accuracy 0.611 → 0.800, +0.189 [+0.067, +0.311]; other rows unchanged (0.867) | **Switched** (ADR-027), released through the FP32 gate. Possible regressions, not significant at one seed (ADR-028): teencode 0.975 → 0.875 (p = 0.13); short factual sentences 0.767 → 0.633 (p = 0.22) |
-| **H7 pilot** Qwen3-1.7B, label likelihood, frozen prompt | Validation macro-F1 0.68 / 0.65 (0- / 6-shot) vs 0.86; neutral F1 0.26–0.29 vs 0.66; over-calls neutral (precision 0.16–0.18) | Pilot only. Declared Qwen3-4B (Kaggle cell 4f) and gpt-4o-mini (owner's key) pending |
+| **H7 pilot** Qwen3-1.7B, label likelihood, frozen prompt | Validation macro-F1 0.68 / 0.65 (0- / 6-shot) vs 0.86; neutral F1 0.26–0.29 vs 0.66; over-calls neutral (precision 0.16–0.18) | Pilot only; the declared arms are below (H7 decision) |
 
 **What Cycle 2 establishes so far.**
 
@@ -161,6 +161,7 @@ v2 as the confirmation set (ADR-030), with rules committed before the cells were
 | S2b′: CE + restoration (v4) | Development, 5 seeds: unaccented 0.904 vs 0.880; contrast 0.875 vs 0.800 (p = 0.004). **NEU-ESC**: contrast 0.440 vs 0.437 (p = 0.68); overall +0.028, unaccented +0.036, short neutral +0.033 | **Not passed**: the contrast advantage did not replicate; the augmented model stays |
 | S3: out-of-scope score | Development: Mahalanobis AUROC 0.949 vs max-probability 0.862. **NEU-ESC** off-topic posts (563): AUROC 0.977 vs 0.920; 86% flagged at 5% of validation | **Confirmed → served** as `in_scope` (ADR-031) |
 | S5: careful INT8 | 178.5 MB, macro-F1 drop +0.0004, neutral 0.661 → 0.667, upper bound 0.0095; p50 about 6.4 ms vs 11.1 ms (indicative: no steady pass) | **Not passed** (0.005 margin not demonstrable with 73 neutral examples) |
+| **H7 decision** (Holm over two zero-shot arms, `cycle3.yaml` v6) | Challenge v1 neutral F1 minus CE: Qwen3-4B +0.187 [+0.106, +0.277], gpt-4o-mini +0.241 [+0.164, +0.329], Holm p 0.0004 each. Qwen3-4B elsewhere: UIT-VSFC validation 0.816 (encoder 0.86); NEU-ESC 0.475, served model +0.014 [−0.001, +0.028], gpt-4o-mini −0.128; calls 3,923 posts negative (gold 1,221) | **llm_better_on_neutral**, on constructed text only. A local 4B model does not close the real-text gap: the router is not worth declaring (NEXT_PLAN v5) |
 | H7 API arm | gpt-4o-mini zero-shot. Challenge v1: neutral F1 0.955 vs 0.713 (construction confound). **NEU-ESC** (6,613 real posts): macro-F1 **0.604** vs CE 0.494 and augmented 0.462 (seed 42; 5-seed means 0.463 / 0.434); neutral F1 0.769 vs 0.526 / 0.474; over-calls negative (precision 0.43). USD 0.21, about 1.1 s per call | Recorded: the LLM transfers across the domain shift better; not in the serving path |
 | NEU-ESC (real forum posts, Tier B) | macro-F1 CE 0.463 · augmented 0.434 · S2a 0.433 (5 seeds each); predicted neutral 30% vs gold 69%; augmented − CE at s42 −0.033 [−0.042, −0.024] | Domain and label-policy shift is large; augmentation hurts on real text: evidence for CE + restoration |
 
@@ -268,12 +269,11 @@ Full traceability, including the study designs, catalog and backlog:
 ## 7. Next
 
 Every unmet target, hole, unrun experiment and unconfirmed result, with where it is handled:
-**[NEXT_PLAN.md](NEXT_PLAN.md) v4 § 1**. Cycle 4 (student text from other institutions) is § 3.
+**[NEXT_PLAN.md](NEXT_PLAN.md) v5 § 2**, one prioritized work list. Cycle 4 (student text from other institutions) is its Track B.
 Needs the owner:
 
-1. **The declared H7 Qwen3-4B run**: Kaggle `notebooks/kaggle_h7_llm.ipynb` (NEXT_PLAN v4 § 8), then
-   `study h7-decide`. The gpt-4o-mini arm is done (challenge v1 and NEU-ESC); UIT-VSFC text is still
-   not sent to the API.
+1. **H7 is done**: Qwen3-4B ran on Kaggle (both GPUs, prefix cache, 19–28 s per 1k) and
+   `study h7-decide` applied the rule. UIT-VSFC text was never sent to the API.
 2. **The human audit** (P2/P3), which gates E04. `study audit-report` analyses the filled sheet.
 3. **Publishing the model**: `vifeedback serve publish --repo-id <you>/<name>` builds the bundle and
    card; add `--upload` after reviewing it.

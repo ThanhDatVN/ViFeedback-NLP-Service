@@ -192,7 +192,7 @@ and the Hugging Face upload.
 
 ## What happens next
 
-The register of every open item, with what closes it: [NEXT_PLAN.md § 1](NEXT_PLAN.md). Done in this
+The register of every open item, with what closes it: [NEXT_PLAN.md § 2](NEXT_PLAN.md) (the work list). Done in this
 round: Cycle 2 declared and its evaluation data frozen; H5 and H6 decided; the served model switched
 through the gate; the H7 pipeline, prompt freeze and pilot; mypy blocking; Docker end-to-end script;
 provenance of Kaggle runs; publish bundle and model card; audit analysis tooling.

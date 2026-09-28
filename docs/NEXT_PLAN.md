@@ -1,267 +1,204 @@
-# Next Plan — v4: what is still open after Cycle 3, and Cycle 4
+# Next Plan — v5: one work list after H7
 
-**v4, 2026-09-28.** Cycle 3 closed every step that needed no owner input and confirmed its serving
-changes on real student text (NEU-ESC, ADR-030/031); its outcome is kept as
+**v5, 2026-09-28.** Since v4:
+- **H7 is decided.** Qwen3-4B ran on Kaggle, and `study h7-decide` applied the rule.
+- **Publishing is settled.** The licences were checked on the Hub, and the owner chose to publish the
+  model as a non-commercial research artifact.
+- **Every open problem was researched.** The sources are in § 6.
+
+v5 merges four things into **one prioritized work list**: v4's register of open items, Cycle 4, the
+earlier development plan (the ROADMAP targets, track B, engineering), and the research findings.
+The Cycle 3 outcome is kept as
 [Appendix A](#appendix-a--cycle-3-outcome-v3-closed-2026-09-28), and the v2 register as
-[Appendix B](#appendix-b--v2-register-closed-2026-09-27). v4 starts from a review of what is still
-open: targets not met, holes found in the current system, experiments not run, results not confirmed.
-It then proposes one specialization for Cycle 4 and says what is ready for the owner to run on Kaggle.
+[Appendix B](#appendix-b--v2-register-closed-2026-09-27).
 
-Status key: ✅ done · ⏳ next, no owner input needed · 👤 needs the owner · ⏸ deferred, with the reason.
+Status key: ✅ done · ⏳ next, no owner input needed · 👤 needs the owner · ⏸ deferred, with the reason · ✖ dropped, with the reason.
 
 ---
 
-## 1. Register of what is open
+## 1. Where things stand
 
-### 1a. Targets not met
+**The service.** It runs the H2-augmented PhoBERT-base with three additions:
+- it lowercases input;
+- it restores diacritics on unaccented input (ADR-031);
+- it returns an `in_scope` score next to the label (ADR-031).
 
-| Target | Now | Why | Handled in |
-|---|---|---|---|
-| **S1** sentiment test macro-F1 ≥ 0.84 (min 0.80 ✅) | 0.830 served, 0.837 best | 0.003–0.010 short, inside seed spread; the test split is spent (28 uses) | Not chased (§ 6) |
-| **S2** topic test macro-F1 ≥ 0.83 (min 0.79 ✅) | 0.804; `others` recall 0.53 | `others` is a residual class; stacking (H5) and multi-task (H4) gave nothing | Not chased; label-policy note only |
-| **S4** neutral F1 ≥ 0.65 (min 0.55 ✅) | 0.576 served (UIT test, 5 seeds); 0.474 on NEU-ESC | Label ambiguity vs representation is undecided | Step 5, gated on the audit 👤 |
-| **S7** served artifact ≤ 200 MB (target 120) | 540 MB FP32 | Careful INT8 (178.5 MB) could not show non-inferiority: 73 neutral validation examples give an upper bound of 0.0095 against a 0.005 margin | Step 4 |
-| Efficiency stretch: ≥ 1.5× over FP32, neutral loss ≤ 0.02 | INT8 about 1.7× (indicative) | Same as S7 | Step 4 |
-| **S8** Docker image ≤ 700 MB (min 1.2 GB ✅) | 1.02 GB | pyvi pulls scikit-learn and SciPy; transformers is kept for one tokenizer | Step 6 |
-| **S9** ≥ 30 coded error cases | 0 | The audit's 160 rows are not annotated | Step 5 👤 |
-| **S10** clean-clone evaluation path < 15 min on CPU | Not timed | — | Step 6 |
+Every part is SHA-256-checked, `docker-e2e` passes, and CI is green. On UIT-VSFC the service scores
+0.830 test macro-F1 (5 seeds). On real posts from another university (NEU-ESC) it scores 0.462.
 
-### 1b. Holes found in this review
+**What H7 settled.** Both LLM arms beat the encoder on neutral, on constructed text only (Holm
+p 0.0004 each). On real text:
+- gpt-4o-mini, zero-shot, reaches 0.604 on NEU-ESC. It is not deployable, because student text cannot
+  be sent to a third party without consent.
+- Qwen3-4B, which could run locally, reaches only 0.475 on NEU-ESC (vs 0.462 for the served model,
+  p 0.06) and 0.816 on UIT-VSFC validation (vs 0.86 for the encoder).
+- So no LLM route closes the gap cheaply. The measured lever that is left is in-domain training
+  data: the NEU-ESC authors' PhoBERT-base-v2, trained on NEU-ESC, reaches 77.7 macro-F1 on its four
+  classes [S1].
 
-| ID | Hole | Why it matters | What closes it |
-|---|---|---|---|
-| **G1** | `serve bench` times segmentation + ONNX only. Since ADR-031 the service also lowercases, restores diacritics and computes the out-of-scope score (a second graph output and a Mahalanobis distance) | The latency claim (C4, p95 19–20 ms ≤ 30 ms) predates the pipeline that is served now; S2b's "added p95 ≤ 5 ms" was measured in development only | Step 0 |
-| **G2** | The `in_scope` threshold keeps 95% of UIT-VSFC validation; how often it flags **in-scope** student text from another institution was never measured | A partner university's real feedback could be flagged as off-topic | Step 0 (descriptive, by NEU-ESC topic) |
-| **G3** | NEU-ESC test has now served the external evaluation, three v5 rules and H7 | Adaptive reuse of one test set | Cycle 4 selects on NEU-ESC **validation** only; each declared rule uses test once, and every use is logged |
-| **G4** | The H7 rule (Cycle 2) was never applied | H7 has been open since Cycle 2 | `study h7-decide` (added 2026-09-28; `cycle3.yaml` v6) applies it once Qwen3-4B has run 👤 |
-| **G5** | `kaggle_train.ipynb` clones into `/kaggle/working/repo`, which Kaggle saves with each version, data and checkpoints included | Corpus files end up in the notebook's output | Step 6, before its next use (the H7 notebook is fixed: it clones into `/tmp`) |
-| **G6** | NEU-ESC's label policy is not UIT-VSFC's: annotators call 69% of posts neutral ("no emotion"); Toxic is merged into negative | Every cross-domain score mixes domain shift with policy shift, and training on NEU-ESC changes what `neutral` means for the service | Step 1 (declared data roles) and owner decision 3 |
-| **G7** | Training on all of NEU-ESC train would teach the model that spam, news, job and club posts are in-domain | The out-of-scope score (ADR-031) would degrade silently | Cycle 4 trains only on in-scope topics (§ 3) and re-checks the score |
-| **G8** | Real-typing instability (ViLexNorm: 17% of labels flip) is untouched after S2a failed | The largest robustness gap left | Not in Cycle 4 (one specialization); candidate for Cycle 5: a normalization model or consistency training on ViLexNorm pairs |
-| **G9** | The augmentation's contrast-sentence drop is confirmed on constructed v1 but did not replicate on NEU-ESC | Which one describes UIT-register text is unknown | Only a human-typed challenge v2 settles it (optional 👤) |
-| **G10** | The rollback copy is now the augmented model without the features output; the CE copy is gone | A rollback drops the out-of-scope score; CE needs a re-export | Documented; `make export CKPT=<ce checkpoint>` on demand |
+**Targets not met** (ROADMAP):
 
-### 1c. Experiments not run
-
-| ID | Experiment | Blocked by | Status |
-|---|---|---|---|
-| **H7-4B** | Qwen3-4B, the six declared configurations, plus NEU-ESC zero-shot (`cycle3.yaml` v6) | A Kaggle run | 👤 notebook ready and verified (§ 8) |
-| **A1** | Neutral audit (160 rows) | Owner annotation | 👤 tooling ready (`study audit-report`) |
-| **E04** / soft labels / representation | The audit's branch | A1 | ⏸ gated |
-| **U2** | 15-row label review of challenge v1 | Owner | 👤 `results/studies/challenge/label_review_v1.csv` |
-| **U5** | Router measurement | H7-4B on NEU-ESC | Step 3, conditional |
-| Challenge v2 | Human-typed challenge set | Owner time and people | ⏸ optional (ADR-030) |
-| Track B | Distillation into a 6-layer student | Step 4's outcome | ⏸ |
-| R8′ | Per-model learning rates, repeated CV for finalist selection | A named question | ⏸ |
-| U3 | Teencode candidates from the API | Superseded by S2a (ViLexNorm) | Dropped |
-
-### 1d. Results not confirmed
-
-| Claim | Why it is not confirmed | What confirms or refutes it |
+| Target | Now | Work item |
 |---|---|---|
-| gpt-4o-mini is better on neutral (challenge v1: +0.24 neutral F1 over CE) | v1 is written in the prompt's own convention (ADR-028) | `h7-decide` applies the declared rule; the stronger evidence is NEU-ESC (+0.24 neutral F1 over CE on real posts) |
-| The augmentation hurts contrast sentences | Exploratory on v1; not replicated on NEU-ESC | Challenge v2 (optional) |
-| INT8 is non-inferior | Power, not quality: the drop is +0.0004 | Step 4 |
-| Served p95 ≤ 30 ms | Measured before ADR-031 | Step 0 (G1) |
-| NEU-ESC comparisons with the LLM | Seed 42 encoders only (the served seed); 5-seed means reported beside them | Accepted as declared; Cycle 4 uses 5 seeds |
+| S1 sentiment test ≥ 0.84 | 0.830 served, 0.837 best | Not chased (§ 5) |
+| S2 topic test ≥ 0.83 | 0.804 | Not chased (§ 5) |
+| S4 neutral F1 ≥ 0.65 | 0.576 (UIT-VSFC test), 0.474 (NEU-ESC) | D1–D2 👤 |
+| S7 artifact ≤ 200 MB | 540 MB | E1, E2 |
+| S8 image ≤ 700 MB | 1.02 GB | F1 |
+| S9 ≥ 30 coded errors | 0 | D1 👤 |
+| S10 clean-clone evaluation < 15 min | not timed | F2 |
+
+**Holes found in the v4 review** (the IDs used below):
+
+| ID | Hole | Work item |
+|---|---|---|
+| G1 | Served-pipeline latency unmeasured since ADR-031 | A1 |
+| G2 | `in_scope` never checked on another institution's in-scope text | A2, B4 |
+| G3 | NEU-ESC test reused (external evaluation, three v5 rules, H7) | B1: validation for selection, test once per rule, logged |
+| G4 | H7 never applied | ✅ decided 2026-09-28 |
+| G5 | `kaggle_train.ipynb` saves corpus files with the Kaggle version | A5 |
+| G6 | NEU-ESC's label policy differs from UIT-VSFC's | A3, B2 (b), decision 2 |
+| G7 | Training on NEU-ESC off-topic posts would disable the out-of-scope score | B1, B4 |
+| G8 | Real typing flips 17% of labels (ViLexNorm) | Track C (Cycle 5) |
+| G9 | The contrast-sentence drop is confirmed on v1 only | Challenge v2 (optional) |
+| G10 | The rollback copy has no features output; the CE copy is gone | Documented; re-export on demand |
 
 ---
 
-## 2. What the OpenAI API is for
+## 2. The work list
 
-**Principle** (unchanged): the API produces measurements and material a person checks. It never
-produces evaluation truth, never labels UIT-VSFC, and is not in the serving path. UIT-VSFC text is
-not sent. NEU-ESC text may be (owner, 2026-09-28).
+Each item gives the gap it closes (v4's register IDs: G = hole, S = target), the method and its
+source, and the rule fixed before the run. Items marked **declare** get their rule frozen in
+`cycle4.yaml` before any run.
 
-| Use | Status |
+### Track A — close now *(CPU or none; no training)*
+
+| ID | Task | Closes | Method | Rule | Status |
+|---|---|---|---|---|---|
+| **A1** | Latency of the pipeline that is served | G1, C4 | `serve bench` times lowercase → restorer → pyvi → ONNX logits + features → Mahalanobis, on clean test and stripped test, in three sessions | p95 ≤ 30 ms (unchanged); ADR-031's additions ≤ 5 ms at p95 | ⏳ |
+| **A2** | `in_scope` on other institutions' in-scope text | G2 | Flag rate by NEU-ESC topic on validation. Fine-tuned Mahalanobis separates *semantic* shift (off-topic) well and *background* shift (another institution's in-scope text) poorly [S3, S4, S5], which is what the service wants | Descriptive. If Academic or Service posts are flagged at > 10% (twice validation's 5%), the limit goes into the card and the API docs, and B4 refits the score | ⏳ |
+| **A3** | Label-policy description | G6 | The served model's confusion on NEU-ESC validation, by gold label and topic | Descriptive; input to owner decision 2 | ⏳ |
+| **A4** | Publish the model | S-R11 | Card: CC BY-NC 4.0 weights, intended use, limits; bundle dry run built (`models/publish/vifeedback-sentiment-phobert`, 15 files, 1.09 GB) | The owner reviews the card and uploads | ✅ bundle · 👤 upload |
+| **A5** | `kaggle_train.ipynb` clones into `/kaggle/working` | G5 | Clone into `/tmp`, as the H7 notebook does, with the same guard test | The guard test passes | ⏳ before its next use |
+
+### Track B — Cycle 4: student text from other institutions *(the specialization)*
+
+| ID | Task | Closes | Method | Rule | Status |
+|---|---|---|---|---|---|
+| **B1** | Declare `cycle4.yaml` | G3, G7 | Data roles as in v4 § 3: in-scope NEU-ESC train only (21,113 posts, four off-topic topics excluded); NEU-ESC validation for every selection; NEU-ESC test once per rule, logged; UIT-VSFC validation for non-inferiority; UIT-VSFC test unused | Committed before the first B2 run | ⏳ |
+| **B2** | **H8: in-domain training data** | the NEU-ESC gap; G6 | Three candidate recipes, each at one seed on NEU-ESC validation; the best goes to 5 seeds against the served recipe (control checkpoints exist). **(a) mixed**: UIT-VSFC + NEU-ESC train, one head, NEU-ESC labels mapped as in v5. **(b) two heads**: one shared encoder with a UIT-VSFC head and a NEU-ESC head, so each dataset keeps its own label policy [S9, S1's multitask setup]; the service keeps the UIT-VSFC head. **(c) sequential**: the served checkpoint fine-tuned on NEU-ESC at a lower learning rate. Reference ceiling: 77.7 mF1 on four classes [S1] | **declare**. NEU-ESC test macro-F1 up with a paired CI above 0; UIT-VSFC validation macro-F1 not lower by more than 0.005 and neutral F1 not lower by more than 0.02 (5-seed means); stripped validation with the restorer not lower by more than 0.01; out-of-scope AUROC on NEU-ESC off-topic ≥ 0.90 | ⏳ ≤ 8 runs |
+| **B3** | Backbone for informal text *(conditional)* | NEU-ESC gap, G8 | PhoBERT-base-v2 or ViSoBERT under B2's winning recipe. ViSoBERT is pretrained on social media; on NEU-ESC it reaches 75.8 mF1 alone and 77.2 in the authors' best multitask setup, against PhoBERT-base-v2's 77.7 and 77.5 [S1]. One axis: only the backbone changes | **declare**; only if B2 passes. Same rule as B2, against B2's model | ⏸ after B2 |
+| **B4** | Refit the out-of-scope score | G2, G7 | Mahalanobis means and covariance from UIT-VSFC train plus in-scope NEU-ESC train features, so another institution's in-scope text counts as in-domain [S3, S4] | Off-topic AUROC ≥ 0.90; in-scope NEU-ESC flag rate ≤ 10% | ⏳ with B2's release, or alone if A2 fails |
+| **B5** | Release | — | Through the gate; the restorer and the score are re-accepted; ADR; card | Release gate | ⏳ if B2 passes |
+| ~~H9~~ | Local LLM router | — | — | — | ✖ H7: Qwen3-4B is not ahead on real text (+0.014 [−0.001, +0.028]) |
+
+### Track C — robustness to real typing *(G8; the next specialization, Cycle 5)*
+
+| ID | Task | Method | Rule | Status |
+|---|---|---|---|---|
+| **C1** | Consistency training on real typing | The instability is between a real comment and its normalized form (17% flips on ViLexNorm), not in spelling alone (S2a failed). Train with an invariance loss between each ViLexNorm train pair's two forms (stability training, as in R-Drop-style consistency) | **declare** (Cycle 5). ViLexNorm test flips down with a paired CI above 0; UIT-VSFC validation non-inferior at 0.005 | ⏸ Cycle 5 |
+| **C2** | A normalization front-end | A BARTpho normalizer trained on ViLexNorm reaches 57.7% error reduction and helps downstream tasks [S6]; ViSoLex packages one [S7]. Measure the flip reduction and the CPU latency. ViLexNorm is CC BY-NC-SA: a shipped normalizer must carry that licence | Flips down with CI; p95 ≤ 30 ms in total | ⏸ Cycle 5; latency is the likely blocker |
+
+### Track D — neutral on UIT-VSFC *(S4, S9; owner-gated)*
+
+| ID | Task | Method | Status |
+|---|---|---|---|
+| **D1** | Neutral audit | The 160-row sheet; `study audit-report` applies the tree frozen in `cycle2.yaml` | 👤 6–8 h |
+| **D2** | The audit's branch | E04 label correction, **or** a soft-label run, **or** one representation experiment. For soft labels, training on soft and gold labels together is the robust choice when items have few annotations [S8]. The audit's second pass supplies the disagreement | ⏸ after D1 |
+
+### Track E — size and speed *(S7, efficiency stretch)*
+
+| ID | Task | Method | Rule | Status |
+|---|---|---|---|---|
+| **E1** | Power check for careful INT8 | From INT8's disagreement pattern (1.35% of labels, 4.1% of neutral on the held-out train subset), the upper bound reachable on UIT-VSFC validation + NEU-ESC validation (4,888 labelled) | Declare **S5′** (same 0.005 margin, larger set, ADR) only if it is demonstrable | ⏳ after B5 decides the model |
+| **E2** | Distillation into a 6-layer student *(if E1 cannot pass)* | Task-specific distillation from the served model; 6-layer students keep > 99% of the teacher at about 2× speed on GLUE-type tasks [S10] | **declare**; the release gate plus ≤ 200 MB | ⏸ Cycle 5+ |
+
+### Track F — engineering
+
+| ID | Task | Method | Rule | Status |
+|---|---|---|---|---|
+| **F1** | Image ≤ 700 MB (S8) | Measured in the local environment: pyvi pulls scikit-learn (45 MB) and SciPy (118 MB) only through `sklearn-crfsuite`; the CRF itself needs `python-crfsuite` (1.5 MB). `transformers` (107 MB) is there only for PhoBERT's BPE tokenizer. Load pyvi's CRF with `python-crfsuite` directly, and read `bpe.codes`/`vocab.txt` with a small tokenizer | Byte-identical segmentation and token ids on all UIT-VSFC and NEU-ESC text; release parity; `docker-e2e` passes; image ≤ 700 MB | ⏳ |
+| **F2** | S10 timing | A CI job times the clean-clone evaluation path on CPU | Recorded; < 15 min | ⏳ |
+| **F3** | Model card after every serving change | `serve publish` dry run | — | ongoing |
+
+### Not pursued
+
+| Item | Why |
 |---|---|
-| **U1** gpt-4o-mini reference on challenge v1 and NEU-ESC | ✅ USD 0.21 in total |
-| **U2** Label check of challenge v1 | 👤 the review list is ready |
-| **U3** Teencode candidates | Dropped (S2a used ViLexNorm) |
-| **U4** Off-topic development set | ✅ used for S3 development |
-| **U5** Router measurement | Only with a local model (Step 3): an API router would send student text to a third party |
-
-Cycle 4 needs no API spending. Key handling is unchanged: `OPENAI_API_KEY` in the git-ignored `.env`.
+| Sweeps for S1/S2 on the old validation set | S1 is inside seed noise; S2's two interventions failed; the test split is spent |
+| An LLM in the serving path (API or router) | Consent for API calls; a local 4B model is not ahead on real text (H7) |
+| Challenge v2 | Replaced as the confirmation set by NEU-ESC (ADR-030); optional if the owner ever has the people |
+| U3 (API teencode candidates) | Superseded by ViLexNorm |
 
 ---
 
-## 3. Cycle 4 — one specialization: student text from other institutions
+## 3. Order
 
-**Why this one.** It is the largest measured gap that needs no owner input to work on. On 6,613 real
-posts from another university the served model scores macro-F1 0.462 (neutral F1 0.474), while a
-zero-shot gpt-4o-mini reaches 0.604 (0.769). The gap is mostly the neutral boundary under a domain
-shift, and NEU-ESC comes with human-labelled train (23,048) and validation (3,305) splits. A service
-used outside UIT meets this first. Neutral on UIT-VSFC stays gated on the audit (Step 5); size stays a
-CPU side track (Step 4).
-
-**Question (Q9).** How much of the cross-institution gap does in-domain training data close, at what
-cost to UIT-VSFC, and does a local LLM add anything beyond it?
-
-### Step 0 — Close the review holes *(CPU, no training, before `cycle4.yaml`)*
-
-| Item | Method | Rule, fixed before running |
+| Step | Without the owner | The owner |
 |---|---|---|
-| **G1** latency of the served pipeline | `serve bench` times the service's own path: lowercase → restorer → pyvi → ONNX logits and features → Mahalanobis. Clean test sentences and the same with diacritics stripped (the restorer's worst case); three sessions under the C4 protocol | Unchanged: p95 ≤ 30 ms; ADR-031's additions ≤ 5 ms at p95 |
-| **G2** `in_scope` on other institutions' in-scope text | Flag rate per NEU-ESC topic on validation (Academic, Service, Other … vs the four off-topic topics) | Descriptive. If Academic or Service posts are flagged at more than twice the validation rate (10%), the limitation goes into the model card and the API docs |
-| **G6** label policy | The served model's confusion on NEU-ESC validation by gold label and topic; how many gold-neutral posts are evaluative under the UIT guide is left to the owner (decision 3) | Descriptive |
+| 1 | A1, A2, A3 (CPU); A5; B1 | A4 upload; decision 2 |
+| 2 | B2: three recipes at one seed, then the winner at 5 seeds; B4 | D1 audit |
+| 3 | B2 confirmation on NEU-ESC test; B5 release if it passes; F1 | U2 review |
+| 4 | E1 on the released model; F2; the D2 branch once D1 is done | Review the new card; upload |
+| later | B3 (if B2 passed); Cycle 5: C1/C2, or E2 | — |
 
-### Step 1 — Declare `cycle4.yaml` *(before any Cycle 4 training run)*
-
-- **Data roles.**
-  - NEU-ESC train is for training only, restricted to in-scope topics (G7): 21,113 posts, with Spam, News, Jobs & Recruitment, and Club & Events excluded.
-  - NEU-ESC validation is for every selection.
-  - NEU-ESC test is used once per rule, and each use is logged (G3).
-  - UIT-VSFC validation is used for non-inferiority.
-  - UIT-VSFC test is not used.
-- **Label mapping** as in v5 (Toxic → negative). Any change of policy is owner decision 3, declared
-  before training.
-- **Licence** (checked on the Hub, 2026-09-28).
-  - NEU-ESC's card is Apache-2.0, and its gate approves automatically with no condition of its own,
-    so a model trained on it may be published with attribution (cite Mai et al., 2025, and state the
-    data licence).
-  - The posts themselves are never re-uploaded.
-  - The binding constraint is UIT-VSFC (decision 2).
-
-### Step 2 — H8: in-domain training data *(≤ 7 weight-updating runs, laptop or Kaggle)*
-
-- **Recipes.** At most two, each chosen with one seed on NEU-ESC validation:
-  - **(a) mixed:** UIT-VSFC train plus in-scope NEU-ESC train, under the served recipe.
-  - **(b) sequential:** the served checkpoint, fine-tuned on in-scope NEU-ESC train at a lower learning rate.
-- **Seeds and control.** The chosen recipe runs at 5 seeds. The control is the served recipe at the same seeds; those checkpoints already exist from V1.
-- **Rule (draft; frozen in `cycle4.yaml`).** All of these must hold:
-  - NEU-ESC test macro-F1 is higher, with a paired 95% CI above 0, pooled over seeds.
-  - On UIT-VSFC validation (5-seed mean), macro-F1 is not lower by more than 0.005 and neutral F1 not lower by more than 0.02.
-  - Stripped UIT-VSFC validation with the restorer is not lower by more than 0.01.
-  - The out-of-scope AUROC on NEU-ESC off-topic posts stays ≥ 0.90.
-- **If it passes.** Release through the gate with an ADR; the restorer and the out-of-scope score are refitted and re-accepted.
-
-### Step 3 — H9: a local router *(conditional; measurement only)*
-
-Only if Qwen3-4B on NEU-ESC test (H7-4B) is ahead of the served model with a paired CI above 0.
-- **Design.** The encoder answers first; the LLM answers when the encoder's confidence is below τ. τ is set on NEU-ESC validation for a fixed routed share, which needs a second Kaggle run on validation.
-- **Report.** Macro-F1, the share routed, GPU-seconds per 1k, and the gain over H8's model.
-- **Why only a measurement.** The CPU service does not run a 4B model. Deployment is the owner's call.
-
-### Step 4 — Size: S7 *(CPU, after Step 2 decides the served model)*
-
-- **Power check before any rule.** Take the INT8 disagreement pattern observed on the held-out train subset: 1.35% of labels overall, 4.1% of FP32-neutral predictions. Estimate the one-sided upper bound reachable on a larger labelled acceptance set (UIT-VSFC validation + NEU-ESC validation, 4,888 posts).
-- **If the 0.005 margin becomes demonstrable.** Declare **S5′**: same recipe, same margin, larger set, with an ADR.
-- **Otherwise.** Distillation (track B) becomes Cycle 5.
-
-### Step 5 — Neutral on UIT-VSFC *(owner-gated, unchanged)*
-
-The owner annotates the 160-row sheet. `study audit-report` applies the tree frozen in `cycle2.yaml`
-and selects one branch: E04 label correction, a soft-label ceiling, or one representation experiment.
-This is the only route to S4 and S9.
-
-### Step 6 — Engineering
-
-- **S8.** Measure package sizes inside the image, then trim what serving does not use. pyvi's scikit-learn/SciPy chain is the first candidate. `docker-e2e` must still pass.
-- **S10.** Time the clean-clone evaluation path on CPU in CI and record the result.
-- **G5.** Move `kaggle_train.ipynb`'s clone to `/tmp`, with the same guard test as the H7 notebook.
-- **Model card.** Rebuild it after any serving change. The upload stays with the owner.
-
----
-
-## 4. Order
-
-| Week | Without the owner | The owner |
-|---|---|---|
-| 1 | Step 0 (G1, G2, G6); `cycle4.yaml`; H8 recipe choice on NEU-ESC validation | Kaggle H7 notebook (§ 8); decisions 2 and 3; start the audit |
-| 2 | H8 at 5 seeds and its confirmation; `study h7-decide`; Step 3 if triggered | U2 review; the audit; a second Kaggle run if Step 3 is triggered |
-| 3 | Step 4 power check → S5′ or track B; release if H8 passes; documents; the audit branch | Review the model card; upload |
-
-## 5. Budget
+## 4. Budget
 
 | Resource | Estimate |
 |---|---|
-| Weight-updating runs | ≤ 19: H8 up to 7, the audit branch up to 12 |
-| Laptop GPU | ≈ 3 h, one job at a time with cool-downs |
-| Kaggle | ≈ 0.5 h for the H7 notebook, ≈ 0.5 h more if Step 3 runs |
-| API | none planned |
+| Weight-updating runs | B2 ≤ 8 (3 selection + 5), B3 ≤ 6, D2 ≤ 12: ≤ 26 in Cycle 4 |
+| Laptop GPU | B2 ≈ 3 h (34k training posts ≈ 3× UIT-VSFC per seed), one job at a time with cool-downs |
+| Kaggle | not needed; optional for B2 if the laptop is busy |
+| API | none |
 
-## 6. What not to do
+## 5. What not to do
 
-- No selection on NEU-ESC test; no NEU-ESC off-topic post in training data.
-- No sweep for S1 or S2 on the old validation set.
-- No UIT-VSFC text to the API; no LLM output as a gold label; no LLM in the CPU service.
-- No decision on the official test.
-- No second specialization in Cycle 4: real typing (G8) and size (beyond Step 4) wait.
+- No selection on NEU-ESC test, and no NEU-ESC off-topic post in any training set.
+- No change to what the service's labels mean without owner decision 2. With two heads (B2 b), the
+  UIT-VSFC head stays the served one.
+- No UIT-VSFC text to an API; no LLM output as a gold label; no LLM in the CPU service.
+- No sweep for S1 or S2; no decision on the official test.
+- One specialization per cycle: real typing (C) and distillation (E2) wait for Cycle 5.
+
+## 6. Research sources
+
+| | Source | Used for |
+|---|---|---|
+| S1 | Mai et al., 2025. *NEU-ESC: A Comprehensive Vietnamese dataset for Educational Sentiment analysis and topic Classification toward multitask learning*. [arXiv:2506.23524](https://arxiv.org/abs/2506.23524). Table 6: PhoBERT-base-v2 81.75 accuracy / 77.70 mF1 (4 classes); ViSoBERT 75.79; GPT-4o zero-shot 49.70; Claude 4 few-shot 70.89; posts from Facebook forums, more slang than UIT-VSFC | B2 ceiling, B3, the two-head design |
+| S2 | Gururangan et al., 2020. *Don't Stop Pretraining*. [ACL 2020](https://aclanthology.org/2020.acl-main.740/) | Domain/task-adaptive pretraining, a B3 alternative |
+| S3 | Podolskiy et al., 2021. *Revisiting Mahalanobis Distance for Transformer-Based Out-of-Domain Detection*. [AAAI 2021](https://ojs.aaai.org/index.php/AAAI/article/view/17612) | Why Mahalanobis on fine-tuned features (ADR-031), B4 |
+| S4 | Arora et al., 2021. *Types of Out-of-Distribution Texts and How to Detect Them*. [EMNLP 2021](https://aclanthology.org/2021.emnlp-main.835/) | Background vs semantic shift: A2, B4 |
+| S5 | *Fine-Tuning Deteriorates General Textual Out-of-Distribution Detection by Distorting Task-Agnostic Features*. [arXiv:2301.12715](https://arxiv.org/abs/2301.12715) | Fine-tuned features catch semantic shift, miss non-semantic shift: A2 |
+| S6 | Nguyen et al., 2024. *ViLexNorm: A Lexical Normalization Corpus for Vietnamese Social Media Text*. [EACL 2024](https://aclanthology.org/2024.eacl-long.85/). Best ERR 57.74% (BARTpho); normalization helps downstream tasks; research use only | C2 |
+| S7 | *ViSoLex: An Open-Source Repository for Vietnamese Social Media Lexical Normalization*. [COLING 2025 demos](https://aclanthology.org/2025.coling-demos.18/) | C2 |
+| S8 | Uma et al., 2021. *Learning from Disagreement: A Survey*. JAIR 72 | D2 soft labels |
+| S9 | Dataset-specific heads over a shared encoder for inconsistent label spaces, e.g. [Plain-Det, 2024](https://arxiv.org/abs/2407.10083); multi-dataset hate-speech training, [arXiv:2208.10598](https://arxiv.org/abs/2208.10598) | B2 (b) |
+| S10 | Wang et al., 2020. *MiniLM*. [NeurIPS 2020](https://proceedings.neurips.cc/paper/2020/file/3f5ee243547dee91fbd053c1c4a845aa-Paper.pdf): a 6-layer student about 2× faster with > 99% of the teacher | E2 |
 
 ## 7. Decisions needed from the owner
 
 | # | Decision | Default until decided |
 |---|---|---|
-| 1 | Run the Kaggle H7 notebook (§ 8) | H7 stays undecided |
-| 2 | UIT-VSFC has no formal licence (the Hub says unknown; the UIT NLP group releases its datasets for research purposes). Publish the model as a research artifact whose card says so, or first ask the authors about any other use? | Not published; if published, as research use |
-| 3 | Label policy for other institutions' text: keep UIT-VSFC's (requests are negative, neutral is rare) or adopt NEU-ESC's (neutral = no emotion) | Keep UIT-VSFC's; report both |
-| 4 | Neutral audit; a second annotator? | Step 5 waits; intra-annotator after 24 h |
-| 5 | U2 label review (15 rows) | Challenge v1 stays as frozen |
-| 6 | Upload the model (`serve publish --upload`) | Not published |
-| 7 | Challenge v2 | Not written; NEU-ESC confirms instead (ADR-030) |
+| 1 | Upload the model: `vifeedback serve publish --repo-id Datk4/vifeedback-sentiment-phobert --upload`, after reading `models/publish/vifeedback-sentiment-phobert/README.md`. The token must be allowed to create and write model repositories | Not published |
+| 2 | Label policy for other institutions' text: keep UIT-VSFC's (two heads in B2 keep it exactly) or adopt NEU-ESC's | Keep UIT-VSFC's |
+| 3 | Neutral audit (D1); a second annotator? | D2 waits |
+| 4 | U2 label review (15 rows) | v1 stays as frozen |
+| 5 | Challenge v2 | Not written |
+
+Settled on 2026-09-28:
+- NEU-ESC may be used for training and published with attribution. Its card is Apache-2.0, and its
+  gate adds no condition.
+- The owner publishes the model as a non-commercial research artifact, so the weights carry
+  CC BY-NC 4.0 in line with UIT-VSFC's research-purpose release.
 
 ---
 
-## 8. Kaggle: what is ready to run
+## 8. Kaggle
 
-**Notebook:** [`notebooks/kaggle_h7_llm.ipynb`](../notebooks/kaggle_h7_llm.ipynb). It runs H7's six
-declared configurations and Qwen3-4B zero-shot on NEU-ESC test (`cycle3.yaml` v6). The encoder
-predictions it compares against, the frozen prompt and the challenge set are committed files, so it
-needs no checkpoint and no dataset upload.
-
-**Optimized for the free tier.**
-- The model loads once per GPU for its whole queue (`llm-reference --configs`).
-- The system prompt and demonstrations are shared by every prompt of a configuration (82–95% of its
-  tokens). They are run once and their key/value cache is reused, after a self-check against full
-  scoring; the summary records whether the cache was used.
-- Prompts are batched by a token budget; logits are computed for the last position only; weights
-  are fp16. Only the results zip is written to `/kaggle/working`.
-
-**Verified on 2026-09-28.** The notebook ran end to end on the laptop with `jupyter nbconvert
---execute` twice, with Qwen3-0.6B in place of Qwen3-4B, since it fits 4 GB:
-- At commit `faf15da`, before the optimization, four configurations took 4.6 min.
-- At commit `0a23bd5`, all seven took 4.0 min, at 11–18 s per 1,000 prompts instead of 24–43. The
-  self-check passed in every configuration, with differences of 0.03–0.08 in log-probability.
-
-What the two runs showed:
-- The code cloned at the expected commit, and every frozen input was present.
-- UIT-VSFC and NEU-ESC were fetched and matched their pinned hashes (NEU-ESC with the owner's token).
-- The summaries, the summary table and `h7_results.zip` (2.9 MB) were all written.
-- `results merge --dry-run` lists exactly the new run folders.
-- The zip holds no data file, and no NEU-ESC post matched it (25,153 posts checked).
-
-Equivalence, measured separately on real prompts:
-- Cached and full scoring gave the same labels on all 1,110 UIT-VSFC prompts.
-- On 800 NEU-ESC posts, cached scoring changed 1 label against one-prompt-at-a-time scoring, a
-  near-tie (margin 0.016). Batched full scoring, the previous code, changed 4.
-- A 2-layer Qwen3 test checks the equivalence to 1e-4 in CI.
-
-**What only Kaggle can show:**
-- Two GPUs in parallel. The laptop has one GPU, so the queue code ran as one queue.
-- Qwen3-4B's memory on a T4: 8 GB of fp16 weights on 15 GB, and the token budget (12,288) was set
-  for it.
-- Kaggle's installed package versions. Cell 4 installs `transformers>=4.51` if the installed one is
-  older.
-
-Each cell stops loudly on an error, and a rerun in the same session resumes where the last one
-stopped.
-
-**The owner's steps** (about 5 minutes of clicking, then roughly 25–40 minutes of background run):
-
-1. Kaggle → *Create → New Notebook → File → Import Notebook*; import
-   `notebooks/kaggle_h7_llm.ipynb` from the GitHub repository (or upload the file).
-2. *Settings*: Accelerator **GPU T4 x2**, Internet **On**.
-3. *Add-ons → Secrets*: `HF_TOKEN`, from the Hugging Face account that accepted the conditions on
-   the NEU-ESC dataset page; tick *Attach to notebook*. Without it, only the NEU-ESC configuration is
-   skipped.
-4. *Save Version → Save & Run All (Commit)*; the browser can be closed.
-5. From the version's *Output*, download `h7_results.zip` and extract it into `kaggle_results/`, never
-   over the repository. Then run:
-   ```
-   vifeedback results merge kaggle_results --dry-run
-   vifeedback results merge kaggle_results
-   vifeedback study h7-decide
-   ```
+H7 is done. The Kaggle run took 19–28 s per 1,000 prompts on two T4s, and the prefix cache was used
+in all seven configurations, with self-check differences of 0.05–0.10. The notebook stays as it is,
+verified, for any rerun. Cycle 4 needs no Kaggle: PhoBERT-base training fits the laptop.
+`kaggle_train.ipynb` gets the `/tmp` fix (A5) before any use.
 
 ---
 

@@ -157,7 +157,7 @@ before any model saw it ([data/challenge](data/challenge/README.md)).
 |---|---|
 | H5 Stacking TF-IDF with PhoBERT helps topic | **No.** −0.010 macro-F1; TF-IDF's apparent edge on `facility` was noise |
 | H6 Serve the augmented model | **Yes, by the declared rule.** Constructed noisy text 0.61 → 0.80 accuracy, other rows unchanged. Possible costs, not significant at one seed: teencode 0.975 → 0.875 (p = 0.13), short factual sentences 0.77 → 0.63 (p = 0.22) |
-| H7 An instruction LLM does better on the hard cases | **gpt-4o-mini on real posts from another university (NEU-ESC): yes**, macro-F1 0.60 vs 0.49 / 0.46, mostly on neutral (USD 0.21 for 6,613 posts; a reference, not the serving path). **Pilot (Qwen3-1.7B): no.** Neutral F1 0.26–0.29 against the encoder's 0.66. It rejects the corpus's label policy (requests as negative), yet gets factual sentences right where the encoder fails. Declared Qwen3-4B and gpt-4o-mini runs pending |
+| H7 An instruction LLM does better on the hard cases | **Decided: yes on neutral, on constructed text** (Qwen3-4B and gpt-4o-mini, Holm p 0.0004 each). On real posts from another university (NEU-ESC) only gpt-4o-mini is ahead (0.60 vs 0.49 / 0.46); Qwen3-4B (0.475) is not, and on UIT-VSFC validation it trails the encoder (0.816 vs 0.86). **Pilot (Qwen3-1.7B): no.** Neutral F1 0.26–0.29 against the encoder's 0.66. It rejects the corpus's label policy (requests as negative), yet gets factual sentences right where the encoder fails. Declared Qwen3-4B and gpt-4o-mini runs pending |
 
 **Cycle 3 — the served model on real input**
 ([configs/experiments/cycle3.yaml](configs/experiments/cycle3.yaml),
@@ -177,7 +177,7 @@ NEU-ESC (forum posts by students of another university, human labels), which is 
 | Real-typing lexicon, careful INT8 | Both failed their declared rules (negative results, kept) |
 
 Details: [STATUS § 3–4](docs/STATUS.md#3-cycle-1--declared-hypotheses-and-their-outcome) ·
-report: [RESEARCH_REPORT](docs/RESEARCH_REPORT.md) · open items: [NEXT_PLAN § 1](docs/NEXT_PLAN.md).
+report: [RESEARCH_REPORT](docs/RESEARCH_REPORT.md) · work list: [NEXT_PLAN § 2](docs/NEXT_PLAN.md).
 
 ---
 
@@ -197,7 +197,7 @@ make train            # fine-tune PhoBERT (needs a GPU; ~5 min/seed on an RTX 30
 ```
 
 `make` targets use `.venv` automatically when it exists. Keys go in `.env`, never in a tracked file
-or a chat: `OPENAI_API_KEY` only for the LLM reference measurements (NEXT_PLAN § 2), `HF_TOKEN`
+or a chat: `OPENAI_API_KEY` only for the LLM reference measurements (H7; limits in NEXT_PLAN § 5), `HF_TOKEN`
 only for publishing the model.
 
 Research studies are CLI calls too, each writing to `results/studies/`:

@@ -519,7 +519,10 @@ by SHA-256 before any evaluation). No Cycle 2 decision uses the official test.
 | **H6** serve the H2-augmented model? | challenge set (305) | Typed noise (90 rows): accuracy 0.611 → 0.800, **+0.189** [+0.067, +0.311]; other rows 0.867 → 0.867 | **Switch** (ADR-027). Hidden by pooling: `teencode_typed` 0.975 → 0.875, `objective_neutral` 0.767 → 0.633 |
 | **H7 pilot** Qwen3-1.7B, label likelihood, frozen prompt | validation | macro-F1 0.680 (0-shot), 0.655 / 0.653 (6-shot); neutral F1 0.29 / 0.26 / 0.26 vs encoder 0.66 | Pilot, not declared. Neutral precision 0.16–0.18: the LLM over-calls neutral |
 | **H7 pilot** | challenge set | macro-F1 0.62 / 0.62 / 0.60 vs 0.77 (CE), 0.83 (augmented) | `objective_neutral` 0.97–1.00 (encoder 0.63–0.77); `mixed_aspect` 0.15–0.20 and `suggestion_cue` 0.40–0.60 (encoder 0.88–1.00) |
-| **H7 declared** Qwen3-4B | both | Kaggle cell 4f | 👤 pending |
+| **H7 declared** Qwen3-4B, zero-shot | challenge set (285) | macro-F1 0.819; neutral F1 0.901 vs 0.713 (CE): +0.187 [+0.106, +0.277] | Holm p 0.0004 with the API arm: `llm_better_on_neutral` |
+| **H7 declared** Qwen3-4B, 6-shot (s1 / s2) | challenge set | macro-F1 0.843 / 0.851; neutral F1 0.810 / 0.846 | reported, not tested |
+| **H7 declared** Qwen3-4B, 0 / 6-shot (s1 / s2) | validation | macro-F1 0.816 / 0.798 / 0.816 vs 0.864 (CE); neutral F1 0.547 / 0.507 / 0.554 vs 0.661 | below the encoder on UIT-VSFC |
+| **H7 local arm** Qwen3-4B, zero-shot | NEU-ESC test (6,613) | macro-F1 0.475 vs 0.494 (CE s42), 0.462 (served s42): +0.014 [−0.001, +0.028]; gpt-4o-mini 0.604 | a local 4B model does not close the gap (`cycle3.yaml` v6) |
 | **H7 API arm** gpt-4o-mini, zero-shot | challenge set (285 scored) | macro-F1 0.944 vs 0.774 (CE), 0.827 (augmented); neutral F1 0.955 | construction confound (v1 written in the prompt's convention) |
 | **H7 API arm** gpt-4o-mini, zero-shot | NEU-ESC test (6,613) | macro-F1 0.604 vs 0.494 (CE s42), 0.462 (augmented s42); neutral F1 0.769 vs 0.526 / 0.474; USD 0.21 | LLM ahead on real off-domain posts, mostly neutral |
 

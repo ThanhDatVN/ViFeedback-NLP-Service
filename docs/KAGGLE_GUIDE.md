@@ -10,7 +10,7 @@ and faster (69 s/epoch, no session limits) — see [ADR-009 and ADR-014](DECISIO
 > [`notebooks/kaggle_h7_llm.ipynb`](../notebooks/kaggle_h7_llm.ipynb) and skip Steps 1–3: it needs
 > **no Kaggle Dataset**, because it clones the code from GitHub and downloads UIT-VSFC, NEU-ESC and
 > Qwen3-4B from Hugging Face. It needs only GPU T4 x2, Internet On, and the `HF_TOKEN` secret
-> (Step 4). Its own first cell explains the rest; [NEXT_PLAN § 8](NEXT_PLAN.md) has the checklist.
+> (Step 4). Its own first cell explains the rest, step by step.
 > Steps 1–3 below are for `kaggle_train.ipynb` (fine-tuning), which no current step needs.
 
 ---
