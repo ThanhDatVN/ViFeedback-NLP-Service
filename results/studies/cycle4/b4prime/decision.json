@@ -1,0 +1,125 @@
+{
+  "declared_in": "configs/experiments/cycle4.yaml v3 B4prime_scope_detector",
+  "selection": {
+    "grid": [
+      {
+        "candidate": "feature_logistic",
+        "C": 0.01,
+        "neu_validation_auroc": 0.86901216932345
+      },
+      {
+        "candidate": "feature_logistic",
+        "C": 0.1,
+        "neu_validation_auroc": 0.8648558372243424
+      },
+      {
+        "candidate": "feature_logistic",
+        "C": 1.0,
+        "neu_validation_auroc": 0.8632935111944984
+      },
+      {
+        "candidate": "feature_logistic",
+        "C": 10.0,
+        "neu_validation_auroc": 0.8632390252222673
+      },
+      {
+        "candidate": "tfidf_logistic",
+        "C": 0.1,
+        "neu_validation_auroc": 0.9130001160788104
+      },
+      {
+        "candidate": "tfidf_logistic",
+        "C": 1.0,
+        "neu_validation_auroc": 0.920955068024552
+      },
+      {
+        "candidate": "tfidf_logistic",
+        "C": 10.0,
+        "neu_validation_auroc": 0.920129487097485
+      }
+    ],
+    "chosen": {
+      "candidate": "tfidf_logistic",
+      "C": 1.0
+    }
+  },
+  "threshold": -0.17707026030102108,
+  "rules": {
+    "1_within_source_auroc": {
+      "value": 0.9219447176430868,
+      "limit": ">= 0.85",
+      "passed": true
+    },
+    "2_in_scope_flagged": {
+      "value": 0.07338842975206611,
+      "limit": "<= 0.10",
+      "passed": true
+    },
+    "3_off_topic_caught": {
+      "value": 0.7229129662522202,
+      "limit": ">= 0.50",
+      "passed": true
+    },
+    "4_uit_validation_flagged": {
+      "value": 0.0018951358180669614,
+      "limit": "<= 0.05",
+      "passed": true
+    }
+  },
+  "passed": true,
+  "reported": {
+    "served_mahalanobis_within_neu_test_auroc": 0.5954470589962273,
+    "u4_vs_uit_validation_auroc": 0.917628807967898,
+    "u4_caught": 0.02071563088512241,
+    "served_mahalanobis_uit_validation_threshold_check": -3624.278076171875,
+    "per_topic_neu_test": {
+      "Academic": {
+        "n": 2104,
+        "flagged": 0.1088403041825095
+      },
+      "Club & Events": {
+        "n": 133,
+        "flagged": 0.7819548872180451
+      },
+      "Help & Share": {
+        "n": 137,
+        "flagged": 0.11678832116788321
+      },
+      "Jobs & Recruitment": {
+        "n": 163,
+        "flagged": 0.8098159509202454
+      },
+      "News": {
+        "n": 183,
+        "flagged": 0.6557377049180327
+      },
+      "Other": {
+        "n": 2882,
+        "flagged": 0.03261623872310895
+      },
+      "Personal Affairs": {
+        "n": 298,
+        "flagged": 0.06711409395973154
+      },
+      "Service": {
+        "n": 474,
+        "flagged": 0.11392405063291139
+      },
+      "Social Affairs": {
+        "n": 155,
+        "flagged": 0.2
+      },
+      "Spam": {
+        "n": 84,
+        "flagged": 0.6071428571428571
+      }
+    }
+  },
+  "sizes": {
+    "train": 34474,
+    "train_off_topic": 1935,
+    "neu_validation": 3305,
+    "neu_test": 6613,
+    "u4": 531
+  }
+}
