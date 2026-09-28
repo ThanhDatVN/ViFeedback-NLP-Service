@@ -1,0 +1,9 @@
+{
+  "question": "does pyvi segment identically without scikit-learn? (NEXT_PLAN v5 F1)",
+  "texts": 49141,
+  "uit_vsfc": 16175,
+  "neu_esc": 32966,
+  "different": 0,
+  "identical": true,
+  "sha256_of_segmented_output": "3fb5e20d9f4644ffc3e62e9f4effbd33a933ed3af173162dbe0adfcb7d3bee18"
+}

@@ -429,3 +429,35 @@ def test_kaggle_train_notebook_keeps_corpora_out_of_the_saved_output() -> None:
     assert "WORK = pathlib.Path('/tmp/repo')" in code
     assert "/kaggle/working/repo" not in code
     assert "if holds_text(rel):" in code
+
+
+def test_pyvi_segments_identically_without_scikit_learn() -> None:
+    """The runtime image installs pyvi without scikit-learn and SciPy (NEXT_PLAN v5 F1); this is
+    the fast guard, scripts/check_pyvi_without_sklearn.py the full-corpus check."""
+    pytest.importorskip("pyvi")
+    import json
+
+    texts = [
+        "giảng viên nhiệt tình và dễ hiểu",
+        "thầy giảng bài không dễ hiểu lắm",
+        "phòng học nóng , máy chiếu hư",
+        "môn học có ba tín chỉ",
+        "cô dạy hay nhưng cho nhiều bài tập quá",
+    ]
+    code = (
+        "import sys, json\n"
+        "sys.modules['sklearn'] = None\n"
+        "from pyvi import ViTokenizer\n"
+        # ASCII JSON: a Windows child writes stdout in the console code page, not UTF-8.
+        "print(json.dumps([ViTokenizer.tokenize(t) for t in json.loads(sys.argv[1])]))\n"
+    )
+    r = subprocess.run(
+        [sys.executable, "-c", code, json.dumps(texts)],
+        capture_output=True,
+        text=True,
+        encoding="utf-8",
+        check=True,
+    )
+    from pyvi import ViTokenizer
+
+    assert json.loads(r.stdout) == [ViTokenizer.tokenize(t) for t in texts]

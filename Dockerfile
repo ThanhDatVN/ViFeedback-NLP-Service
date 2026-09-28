@@ -13,10 +13,16 @@ COPY src/ ./src/
 
 RUN python -m venv /opt/venv
 ENV PATH="/opt/venv/bin:$PATH"
+# pyvi and sklearn-crfsuite without their declared dependencies: they list scikit-learn, which pulls
+# SciPy (about 160 MB), but segmentation only needs python-crfsuite; sklearn_crfsuite.compat falls
+# back to a plain base class. Checked byte-identical on every UIT-VSFC and NEU-ESC text
+# (scripts/check_pyvi_without_sklearn.py; NEXT_PLAN v5 F1).
 RUN pip install --no-cache-dir --upgrade pip \
  && pip install --no-cache-dir \
       "onnxruntime>=1.19" "fastapi>=0.115" "uvicorn[standard]>=0.30" \
-      "transformers>=4.44" "numpy>=2.0" "pyvi" "pyyaml" \
+      "transformers>=4.44" "numpy>=2.0" "pyyaml" \
+      "python-crfsuite>=0.9" "tabulate" "tqdm" \
+ && pip install --no-cache-dir --no-deps "pyvi" "sklearn-crfsuite" \
  && pip install --no-cache-dir --no-deps .
 
 
