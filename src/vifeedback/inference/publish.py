@@ -111,7 +111,7 @@ def model_card(repo_id: str, manifest: dict[str, Any], ev: dict[str, Any]) -> st
     files = "\n".join(f"| `{name}` | `{sha}` |" for name, sha in sorted(manifest["_files"].items()))
     return f"""---
 language: vi
-license: mit
+license: cc-by-nc-4.0
 library_name: onnx
 pipeline_tag: text-classification
 base_model: vinai/phobert-base
@@ -223,10 +223,18 @@ teencode {rob["teencode-100"]["macro_f1"]:.3f}; 5% character noise {rob["charnoi
 Release manifest: `manifest.json` (acceptance on the full validation set). Training run:
 `{ev["run_id"]}`.
 
+## Intended use
+
+Research and experiments on Vietnamese student feedback about courses: aggregate sentiment over
+many comments, error analysis, robustness studies. It is not meant for decisions about an individual
+student or lecturer, and its labels follow UIT-VSFC's annotation guide (a request for change is
+`negative`), which other institutions' annotators may not share.
+
 ## Licence
 
-Code and weights: MIT. The weights derive from PhoBERT (MIT) and are trained on UIT-VSFC; the
-dataset's own terms apply to any use of the data, and should be checked before commercial use.
+Weights: **CC BY-NC 4.0**, for research and other non-commercial use. They are trained on UIT-VSFC,
+which its authors release for research purposes, and derive from PhoBERT (MIT). The code that
+produced them is MIT-licensed in the GitHub repository.
 
 ## Citation
 
