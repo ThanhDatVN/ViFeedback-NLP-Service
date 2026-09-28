@@ -6,6 +6,13 @@ and faster (69 s/epoch, no session limits) — see [ADR-009 and ADR-014](DECISIO
 **What you need:** a Kaggle account (phone-verified, which is what unlocks GPU and Internet).
 **Time:** ~5 minutes to set up, then 40–90 minutes per model.
 
+> **Running the H7 LLM reference (the only Kaggle run pending)?** Use
+> [`notebooks/kaggle_h7_llm.ipynb`](../notebooks/kaggle_h7_llm.ipynb) and skip Steps 1–3: it needs
+> **no Kaggle Dataset**, because it clones the code from GitHub and downloads UIT-VSFC, NEU-ESC and
+> Qwen3-4B from Hugging Face. It needs only GPU T4 x2, Internet On, and the `HF_TOKEN` secret
+> (Step 4). Its own first cell explains the rest; [NEXT_PLAN § 8](NEXT_PLAN.md) has the checklist.
+> Steps 1–3 below are for `kaggle_train.ipynb` (fine-tuning), which no current step needs.
+
 ---
 
 ## Step 1 — Build the upload archive (on the laptop)
@@ -97,7 +104,7 @@ run that updates weights counts against the cycle budget in `configs/experiments
 |---|---|---:|---|---|
 | **4f** | **H7 declared: Qwen3-4B, frozen prompt, challenge set + validation, 0-shot and 6-shot (seeds 1, 2)** | 0 (inference) | **~20–30 min** | **yes, the only Kaggle-only part of Cycle 2** |
 
-**Simpler, and the one to use: [`notebooks/kaggle_h7_llm.ipynb`](../notebooks/kaggle_h7_llm.ipynb)** runs the same six configurations plus Qwen3-4B zero-shot on NEU-ESC test (`cycle3.yaml` v6). It clones the code from GitHub into `/tmp` (no Dataset upload, and no corpus file is saved with the version), uses both GPUs of *GPU T4 x2* as two balanced queues, resumes after an interruption in the same session and packages `h7_results.zip`. Run it with *Save Version → Save & Run All (Commit)*; about 40–70 minutes in total. At home: `vifeedback results merge`, then `vifeedback study h7-decide`.
+**Simpler, and the one to use: [`notebooks/kaggle_h7_llm.ipynb`](../notebooks/kaggle_h7_llm.ipynb)** runs the same six configurations plus Qwen3-4B zero-shot on NEU-ESC test (`cycle3.yaml` v6). It clones the code from GitHub into `/tmp` (no Dataset upload, and no corpus file is saved with the version), uses both GPUs of *GPU T4 x2* as two balanced queues, resumes after an interruption in the same session and packages `h7_results.zip`. It loads Qwen3-4B once per GPU and reuses the cached shared prompt prefix (self-checked). Run it with *Save Version → Save & Run All (Commit)*; roughly 25–40 minutes in total. At home: `vifeedback results merge`, then `vifeedback study h7-decide`.
 
 Cell 4f needs no checkpoint: the encoder baselines it compares against are committed files. It reuses
 the prompt frozen in `results/studies/llm_reference/prompt_dev.json`; do not edit it on Kaggle. Enable

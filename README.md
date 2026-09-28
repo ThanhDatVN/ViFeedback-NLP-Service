@@ -190,7 +190,7 @@ python scripts/setup_venv.py   # .venv with the pinned versions; CUDA torch if a
 .venv\Scripts\Activate.ps1      # Windows  (Linux/macOS: source .venv/bin/activate)
 cp .env.example .env           # optional: API keys, read by the CLI; .env is git-ignored
 make data             # fetch UIT-VSFC + run the integrity suite
-make test             # 376 fast tests
+make test             # 379 fast tests
 make report           # Phase 0 profiling + EDA figures
 make baseline         # TF-IDF ladder
 make train            # fine-tune PhoBERT (needs a GPU; ~5 min/seed on an RTX 3050)

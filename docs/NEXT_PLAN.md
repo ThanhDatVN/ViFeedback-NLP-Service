@@ -177,7 +177,7 @@ This is the only route to S4 and S9.
 |---|---|
 | Weight-updating runs | ≤ 19: H8 up to 7, the audit branch up to 12 |
 | Laptop GPU | ≈ 3 h, one job at a time with cool-downs |
-| Kaggle | ≈ 1 h for the H7 notebook, ≈ 0.5 h more if Step 3 runs |
+| Kaggle | ≈ 0.5 h for the H7 notebook, ≈ 0.5 h more if Step 3 runs |
 | API | none planned |
 
 ## 6. What not to do
@@ -209,19 +209,32 @@ declared configurations and Qwen3-4B zero-shot on NEU-ESC test (`cycle3.yaml` v6
 predictions it compares against, the frozen prompt and the challenge set are committed files, so it
 needs no checkpoint and no dataset upload.
 
-**Verified on 2026-09-28 at commit `faf15da`.** The notebook ran end to end on the laptop with
-`jupyter nbconvert --execute`. Two things differed from the Kaggle run: the model was Qwen3-0.6B,
-since it fits 4 GB, and four of the seven configurations ran (challenge 0-shot and 6-shot, validation
-0-shot, NEU-ESC 0-shot). What the run showed:
+**Optimized for the free tier.**
+- The model loads once per GPU for its whole queue (`llm-reference --configs`).
+- The system prompt and demonstrations are shared by every prompt of a configuration (82–95% of its
+  tokens). They are run once and their key/value cache is reused, after a self-check against full
+  scoring; the summary records whether the cache was used.
+- Prompts are batched by a token budget; logits are computed for the last position only; weights
+  are fp16. Only the results zip is written to `/kaggle/working`.
+
+**Verified on 2026-09-28.** The notebook ran end to end on the laptop with `jupyter nbconvert
+--execute` twice, with Qwen3-0.6B in place of Qwen3-4B, since it fits 4 GB:
+- At commit `faf15da`, before the optimization, four configurations took 4.6 min.
+- At commit `0a23bd5`, all seven took 4.0 min, at 11–18 s per 1,000 prompts instead of 24–43. The
+  self-check passed in every configuration, with differences of 0.03–0.08 in log-probability.
+
+What the two runs showed:
 - The code cloned at the expected commit, and every frozen input was present.
 - UIT-VSFC and NEU-ESC were fetched and matched their pinned hashes (NEU-ESC with the owner's token).
-- The sanity check passed, and all four configurations finished and wrote their summaries and
-  predictions (4.6 min).
-- The summary table was printed and `h7_results.zip` was built (2.9 MB).
+- The summaries, the summary table and `h7_results.zip` (2.9 MB) were all written.
 - `results merge --dry-run` lists exactly the new run folders.
-- The zip holds no data file. A scan of it against all UIT-VSFC and NEU-ESC text (35,229 sentences of
-  30 characters or more) matched no NEU-ESC post. It matched only three stock phrases inside the
-  project's own challenge sentences.
+- The zip holds no data file, and no NEU-ESC post matched it (25,153 posts checked).
+
+Equivalence, measured separately on real prompts:
+- Cached and full scoring gave the same labels on all 1,110 UIT-VSFC prompts.
+- On 800 NEU-ESC posts, cached scoring changed 1 label against one-prompt-at-a-time scoring, a
+  near-tie (margin 0.016). Batched full scoring, the previous code, changed 4.
+- A 2-layer Qwen3 test checks the equivalence to 1e-4 in CI.
 
 **What only Kaggle can show:**
 - Two GPUs in parallel. The laptop has one GPU, so the queue code ran as one queue.
@@ -233,7 +246,7 @@ since it fits 4 GB, and four of the seven configurations ran (challenge 0-shot a
 Each cell stops loudly on an error, and a rerun in the same session resumes where the last one
 stopped.
 
-**The owner's steps** (about 5 minutes of clicking, then 40–70 minutes of background run):
+**The owner's steps** (about 5 minutes of clicking, then roughly 25–40 minutes of background run):
 
 1. Kaggle → *Create → New Notebook → File → Import Notebook*; import
    `notebooks/kaggle_h7_llm.ipynb` from the GitHub repository (or upload the file).
