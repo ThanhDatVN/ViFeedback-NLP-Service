@@ -408,6 +408,10 @@ def serve_export(
         help="validation (UIT-VSFC) | pooled: UIT-VSFC + NEU-ESC validation (S5', cycle4.yaml v4)",
     ),
     out: str = typer.Option("", help="defaults to models/serve/<task>"),
+    prebuilt: str = typer.Option(
+        "",
+        help="release an already built graph (e.g. the INT8 file S5' accepted) instead of exporting",
+    ),
     calib_size: int = typer.Option(300, help="stratified train sentences for static INT8"),
     with_features: bool = typer.Option(
         False, help="also output the sentence feature (for the out-of-scope score, ADR-031)"
@@ -472,6 +476,7 @@ def serve_export(
         with_features=with_features,
         accept_pipeline=accept_pipeline,
         acceptance_set=acceptance_set,
+        prebuilt=Path(prebuilt) if prebuilt else None,
     )
     typer.echo(f"  manifest: {manifest['model_file']}  sha256 {manifest['sha256'][:12]}...")
 

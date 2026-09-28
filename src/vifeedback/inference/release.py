@@ -184,6 +184,7 @@ def release(
     with_features: bool = False,
     accept_pipeline: Callable[[list[str]], list[str]] | str | None = "same",
     acceptance_set: str = "validation",
+    prebuilt: Path | None = None,
 ) -> dict[str, Any]:
     """Build in staging, verify, and only then replace `out_dir`. Returns the manifest.
 
@@ -202,44 +203,54 @@ def release(
     model = AutoModelForSequenceClassification.from_pretrained(str(checkpoint))
     tok = AutoTokenizer.from_pretrained(str(checkpoint))
 
-    fp32 = OX.export_fp32(model, tok, staging, max_length, with_features=with_features)
-    try:
-        if quantize == "none":
-            served = OX.optimize_graph(fp32, staging / "model.opt.onnx")
-        else:
-            pre = OX.preprocess_for_quantization(fp32, staging / "model.pre.onnx")
-            if quantize == "dynamic":
-                served = OX.quantize_dynamic_int8(pre, staging / "model.quant.onnx")
-            elif quantize == "careful":
-                # S5' (cycle4.yaml v4, ADR-035): per-channel dynamic INT8, classifier head and the
-                # last two encoder layers kept in FP32 (Cycle 3's pc-head-last2).
-                from vifeedback.inference import int8_recipes as Q
-
-                served = Path(Q.build(pre, staging, staging, "pc-head-last2")["path"])
+    if prebuilt is not None:
+        # A graph built and tested earlier (S5' accepted exactly this file): staged as it is, with
+        # its tokenizer files, then verified against PyTorch like any other build.
+        staging.mkdir(parents=True)
+        src = Path(prebuilt)
+        for f in src.parent.iterdir():
+            if f.is_file() and (f == src or f.suffix in (".txt", ".json", ".codes")):
+                shutil.copy2(f, staging / f.name)
+        served = staging / src.name
+    else:
+        fp32 = OX.export_fp32(model, tok, staging, max_length, with_features=with_features)
+        try:
+            if quantize == "none":
+                served = OX.optimize_graph(fp32, staging / "model.opt.onnx")
             else:
-                calib = pipeline(calib_raw)
-                served = OX.quantize_static_int8(
-                    pre, staging / "model.quant.onnx", calib, tok, max_length
-                )
-    except Exception as e:
-        # A failed build still leaves a manifest saying why; a staging dir with no explanation is
-        # what the first Kaggle INT8 attempt produced.
-        (staging / MANIFEST).write_text(
-            json.dumps(
-                {
-                    "task": task,
-                    "quantization": quantize,
-                    "passed": False,
-                    "build_error": f"{type(e).__name__}: {e}"[:2000],
-                },
-                indent=2,
-            ),
-            encoding="utf-8",
-        )
-        raise
-    for f in staging.glob("*.onnx"):
-        if f != served:
-            f.unlink()  # one model file per release: nothing stale left to be picked up
+                pre = OX.preprocess_for_quantization(fp32, staging / "model.pre.onnx")
+                if quantize == "dynamic":
+                    served = OX.quantize_dynamic_int8(pre, staging / "model.quant.onnx")
+                elif quantize == "careful":
+                    # S5' (cycle4.yaml v4, ADR-035): per-channel dynamic INT8, classifier head and the
+                    # last two encoder layers kept in FP32 (Cycle 3's pc-head-last2).
+                    from vifeedback.inference import int8_recipes as Q
+
+                    served = Path(Q.build(pre, staging, staging, "pc-head-last2")["path"])
+                else:
+                    calib = pipeline(calib_raw)
+                    served = OX.quantize_static_int8(
+                        pre, staging / "model.quant.onnx", calib, tok, max_length
+                    )
+        except Exception as e:
+            # A failed build still leaves a manifest saying why; a staging dir with no explanation is
+            # what the first Kaggle INT8 attempt produced.
+            (staging / MANIFEST).write_text(
+                json.dumps(
+                    {
+                        "task": task,
+                        "quantization": quantize,
+                        "passed": False,
+                        "build_error": f"{type(e).__name__}: {e}"[:2000],
+                    },
+                    indent=2,
+                ),
+                encoding="utf-8",
+            )
+            raise
+        for f in staging.glob("*.onnx"):
+            if f != served:
+                f.unlink()  # one model file per release: nothing stale left to be picked up
     log(f"  staged {served.name}  {served.stat().st_size / 1e6:.1f} MB  in {staging}")
 
     # `accept_pipeline`: "same" = `pipeline`; None = the texts are already model input (S5' pooled).
@@ -280,6 +291,7 @@ def release(
         else None,
         "acceptance": verdict,
         "acceptance_set": acceptance_set,
+        "prebuilt_from": str(prebuilt) if prebuilt is not None else None,
         "created": stamp,
         "software": {
             "onnxruntime": onnxruntime.__version__,
