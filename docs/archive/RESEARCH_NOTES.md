@@ -1,5 +1,7 @@
 # Research Notes
 
+> **Archived 2026-09-29.** A dated snapshot, kept as the record of what was known and planned at the time. It is not updated. Current state: [STATUS.md](../STATUS.md); current plan: [NEXT_PLAN.md](../NEXT_PLAN.md).
+
 Landscape survey conducted 2026-09-22, before planning. Recorded so that the roadmap's choices are
 traceable to evidence rather than to habit. Sources are listed in [§ 7](#7-sources).
 
@@ -8,7 +10,7 @@ traceable to evidence rather than to habit. Sources are listed in [§ 7](#7-sour
 ## 1. Dataset landscape
 
 ### Primary: UIT-VSFC
-Chosen and fixed. Full details in [DATA_CARD.md](DATA_CARD.md). The decisive properties: it carries
+Chosen and fixed. Full details in [DATA_CARD.md](../DATA_CARD.md). The decisive properties: it carries
 **both** sentiment and topic labels on the same sentences (which makes the multi-task experiment free),
 it has an official split (comparability), and it is genuinely informal student writing (which makes the
 teencode/diacritic error analysis real rather than contrived).
@@ -54,7 +56,7 @@ Three consequences for this project:
 1. **A macro-F1 of ~0.82–0.84 is a competitive result**, not a disappointing one. Anyone benchmarking
    against the 94% figure without checking the metric definition will conclude they have failed when they
    have not.
-2. The [ROADMAP § 3](ROADMAP.md#3-success-criteria) targets (S1 ≥ 0.81, minimum 0.76) are calibrated
+2. The [ROADMAP § 3](../ROADMAP.md#3-success-criteria) targets (S1 ≥ 0.81, minimum 0.76) are calibrated
    against 0.83, not against 0.94.
 3. Phase 2's "literature reconciliation" step exists precisely to make this explicit. Reporting both
    columns turns a potential embarrassment into the project's sharpest observation.
@@ -104,7 +106,7 @@ If that call costs 5–50 ms per sentence while the quantized encoder costs ~15 
 majority of p95 latency — and an accuracy difference of under 1 pp is not a tie, it is a clear win for
 dropping it.
 
-That reframing is what makes [Phase 3](ROADMAP.md#phase-3--preprocessing-and-word-segmentation-ablation)
+That reframing is what makes [Phase 3](../ROADMAP.md#phase-3--preprocessing-and-word-segmentation-ablation)
 worth a week: it converts a checklist item into the project's most quotable result, and it lands in
 Week 4 rather than Week 7.
 
@@ -150,7 +152,7 @@ Evidence gathered before Phase 6 so the ladder is designed around it rather than
 - L6 (OpenVINO) is in the plan from the start;
 - L1 (dynamic padding) sits *before* every quantization step, because on short Vietnamese sentences it may
   beat all of them — and it is nearly free;
-- [EXPERIMENT_MATRIX § Expected ranges](EXPERIMENT_MATRIX.md#expected-ranges-pre-registered) records
+- [EXPERIMENT_MATRIX § Expected ranges](../EXPERIMENT_MATRIX.md#expected-ranges-pre-registered) records
   L4 as "0.5×–2.5×", i.e. explicitly two-sided.
 
 **A regression reported well is still a strong CV item.** "I measured dynamic INT8, found it slower on a

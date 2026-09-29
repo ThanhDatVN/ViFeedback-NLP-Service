@@ -1,5 +1,7 @@
 # Proposals — techniques, models and workflow
 
+> **Archived 2026-09-29.** A dated snapshot, kept as the record of what was known and planned at the time. It is not updated. Current state: [STATUS.md](../STATUS.md); current plan: [NEXT_PLAN.md](../NEXT_PLAN.md).
+
 **Written:** 2026-09-22, after Gate G3 and ADR-015.
 
 Every proposal below is anchored to a **measurement from this project**, not to a technique's general
@@ -76,7 +78,7 @@ macro-F1. Currently a 1-step and a 2-step error cost the same, which is wrong fo
 | Cost | ~1 day to implement; 5 runs (~25 min) |
 | Applies to | sentiment only — topic is genuinely unordered |
 | Hypothesis | neutral F1 +0.02 to +0.05; macro-F1 +0.01 to +0.03 |
-| Risk | The ordinal assumption may be wrong: some "neutral" cases are *off-topic* or *no opinion*, not *middling* sentiment ([DATA_CARD § 6](DATA_CARD.md#6-surface-and-linguistic-profile--measured) lists 6 sub-types). If the gain is zero, that is itself a finding about what the label means |
+| Risk | The ordinal assumption may be wrong: some "neutral" cases are *off-topic* or *no opinion*, not *middling* sentiment ([DATA_CARD § 6](../DATA_CARD.md#6-surface-and-linguistic-profile--measured) lists 6 sub-types). If the gain is zero, that is itself a finding about what the label means |
 
 ### T2 — Decoupled training: cRT / τ-normalization ⭐ *best cost-to-value*
 

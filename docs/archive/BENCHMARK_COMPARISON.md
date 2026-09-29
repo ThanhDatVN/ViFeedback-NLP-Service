@@ -1,5 +1,7 @@
 # Where this project stands against published UIT-VSFC results
 
+> **Archived 2026-09-29.** A dated snapshot, kept as the record of what was known and planned at the time. It is not updated. Current state: [STATUS.md](../STATUS.md); current plan: [NEXT_PLAN.md](../NEXT_PLAN.md).
+
 **Updated:** 2026-09-22, after Gate G3.
 
 Short answer to "do we have an advantage yet?": **on methodology, clearly yes. On the score, probably
@@ -20,7 +22,7 @@ both halves precisely rather than picking the flattering one.
 
 **Only two of five report macro-F1.** The rest report weighted F1 or accuracy on a corpus that is
 4.32% neutral — where a model that never predicts neutral scores 0.947 accuracy and 0.922 weighted F1
-([DATA_CARD § 4](DATA_CARD.md#4-label-schemes-and-class-distribution--measured)).
+([DATA_CARD § 4](../DATA_CARD.md#4-label-schemes-and-class-distribution--measured)).
 
 ---
 
@@ -112,7 +114,7 @@ the most stable toolkit — also reproduces here (VnCoreNLP > pyvi > underthesea
 
 ### 4.3 A documented self-correction
 
-[ADR-015](DECISIONS.md) retracts one of our own Gate G1 conclusions: decision-threshold tuning looked
+[ADR-015](../DECISIONS.md) retracts one of our own Gate G1 conclusions: decision-threshold tuning looked
 worth +0.035 macro-F1 and was worth **zero** once cross-fitted. The correction *raised* the reported
 lift (+0.085 → +0.096) because the inflated baseline had been understating the model.
 

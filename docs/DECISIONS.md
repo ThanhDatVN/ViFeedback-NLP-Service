@@ -672,7 +672,7 @@ re-run on the released artifact.
 
 ## ADR-021 · 2026-09-27 · Add H4 (shared encoder) to Cycle 1; pool the finalist seeds · Accepted
 
-**Context.** The compliance audit ([REVIEW_COMPLIANCE.md](REVIEW_COMPLIANCE.md)) found that
+**Context.** The compliance audit ([REVIEW_COMPLIANCE.md](archive/REVIEW_COMPLIANCE.md)) found that
 Cycle 1 v1 omitted the one item from the review's *recommended starting point* not yet covered:
 "test one shared sentiment/topic encoder" (E07, Study D). The review's example Cycle 1 allocation
 included it too.

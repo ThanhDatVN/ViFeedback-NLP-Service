@@ -2,5 +2,6 @@
 
 from vifeedback.cli import app
 
-if __name__ == "__main__":  # importing this module (e.g. to check every module imports) runs nothing
+# Importing this module (the packaging test imports every module) must not run the CLI.
+if __name__ == "__main__":
     app()

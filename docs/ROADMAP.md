@@ -275,7 +275,7 @@ comparison recorded; the best baseline's neutral-class F1 documented as the numb
 4. Evaluate on dev throughout; **one** locked test evaluation at the gate; log it.
 5. Compare against published UIT-VSFC results and **reconcile the metric definitions explicitly**. The
    literature's ~92–94% figures are weighted F1 / accuracy, not macro-F1 (see
-   [RESEARCH_NOTES.md § Prior results](RESEARCH_NOTES.md#prior-results-on-uit-vsfc)). Put both columns in
+   [RESEARCH_NOTES.md § Prior results](archive/RESEARCH_NOTES.md#prior-results-on-uit-vsfc)). Put both columns in
    the table so the comparison misleads in neither direction.
 
 **Artifacts** — 10 training runs in the registry, a seed-variance table, the first macro-vs-weighted F1

@@ -12,7 +12,7 @@ revisions:
     change: >
       Added H4 (shared sentiment/topic encoder, E07 / Study D). The review lists it in its
       recommended starting point and in its example Cycle 1 allocation; version 1 omitted it,
-      found by the compliance audit (docs/REVIEW_COMPLIANCE.md). Declared before any H4 run.
+      found by the compliance audit (docs/archive/REVIEW_COMPLIANCE.md). Declared before any H4 run.
     budget_change: >
       Finalist seeds move from per-hypothesis allowances to one shared pool of 4. Known when this
       was written: cRT does not meet its advance rule (+0.0028 mean). Not yet computed or looked

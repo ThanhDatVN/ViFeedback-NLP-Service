@@ -265,7 +265,7 @@ class TestOrdinalMetrics:
     """Sentiment labels are ordered (negative < neutral < positive) and macro-F1 cannot express it.
 
     Motivated by the Gate G3 confusion matrix: 59.4% of all errors involve the middle class, and
-    true neutrals split 20.8%/20.3% between the two poles. See docs/PROPOSALS.md F1.
+    true neutrals split 20.8%/20.3% between the two poles. See docs/archive/PROPOSALS.md F1.
     """
 
     def test_qwk_matches_sklearn(self, rng):

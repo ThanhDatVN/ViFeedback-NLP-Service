@@ -189,7 +189,7 @@ def format_report(metrics: dict[str, Any], title: str = "") -> str:
 # `positive -> negative` error is plainly worse than `positive -> neutral`. Measured at Gate G3,
 # 59.4% of all errors involve the middle class, and true neutrals split almost exactly evenly
 # between the two poles (20.8% / 20.3%) - the signature of ordinal confusion. These metrics make
-# that structure measurable; macro-F1 cannot express it. See docs/PROPOSALS.md F1.
+# that structure measurable; macro-F1 cannot express it. See docs/archive/PROPOSALS.md F1.
 
 ORDINAL_TASKS = frozenset({"sentiment"})
 

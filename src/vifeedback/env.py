@@ -5,7 +5,7 @@ Every run writes an `env.json`. A latency number without one is an anecdote
 
 CPU instruction-set flags matter here beyond bookkeeping: INT8 quantization speedups on CPU depend
 heavily on AVX512-VNNI, and without it ONNX Runtime dynamic quantization can be *slower* than FP32
-(hypothesis H3, docs/RESEARCH_NOTES.md § 6).
+(hypothesis H3, docs/archive/RESEARCH_NOTES.md § 6).
 """
 
 from __future__ import annotations

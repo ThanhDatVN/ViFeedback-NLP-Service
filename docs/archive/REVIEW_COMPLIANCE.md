@@ -1,6 +1,8 @@
 # Review Compliance — every recommendation, its status, and its evidence
 
-Traceability from [REVIEW_AND_RESEARCH_PLAN.md](REVIEW_AND_RESEARCH_PLAN.md) to what exists in the
+> **Archived 2026-09-29.** A dated snapshot, kept as the record of what was known and planned at the time. It is not updated. Current state: [STATUS.md](../STATUS.md); current plan: [NEXT_PLAN.md](../NEXT_PLAN.md).
+
+Traceability from [REVIEW_AND_RESEARCH_PLAN.md](../REVIEW_AND_RESEARCH_PLAN.md) to what exists in the
 repository. **Audited 2026-09-27 during Cycle 1; re-audited the same day during Cycle 2** (NEXT_PLAN v2, item I3). Each status points to a file, commit or result,
 not to intent.
 
@@ -51,7 +53,7 @@ and the Hugging Face upload.
 |---|---|---|---|
 | 1 | Correct the paper interpretation; separate VnCoreNLP/pyvi | ✅ | ADR-018, README Result table |
 | 2 | Validate or disable FGM; protect run artifacts | ✅ | R2 tests; config hash + `_assert_not_clobbering` |
-| 3 | Stratified train/dev error sample with predictions and uncertainty; audit guide | ✅ | `results/studies/study_a/` (160-row sheet, OOF over train), [ANNOTATION_GUIDE.md](ANNOTATION_GUIDE.md) |
+| 3 | Stratified train/dev error sample with predictions and uncertainty; audit guide | ✅ | `results/studies/study_a/` (160-row sheet, OOF over train), [ANNOTATION_GUIDE.md](../ANNOTATION_GUIDE.md) |
 | 4 | Freeze a baseline, the calibration protocol, the robustness slices | ✅ | `configs/experiments/cycle1.yaml` `common`; EVALUATION_PROTOCOL § 8; `SLICES_VERSION = "1"` |
 | 5 | Three hypotheses, only the needed controls, within budget | ✅ | `cycle1.yaml` committed before the first run (0f3055d); ledger |
 
@@ -79,7 +81,7 @@ and the Hugging Face upload.
 | `training/low_resource.py` | P2 | ⏸ Cycle 2 (data-efficiency branch) |
 | `training/distillation.py` | P2 | ⏸ Cycle 2 (efficient-modelling branch) |
 | `evaluation/llm_reference.py` | P2 | ✅ label likelihood, HF and OpenAI backends, prompt frozen on a train subset, data-egress rule; pilot run (Cycle 2 H7) |
-| `docs/RESEARCH_REPORT.md` | Final | ✅ [written](RESEARCH_REPORT.md) from settled results, Cycles 0–2, with an explicit research-question list |
+| `docs/RESEARCH_REPORT.md` | Final | ✅ [written](../RESEARCH_REPORT.md) from settled results, Cycles 0–2, with an explicit research-question list |
 
 ## § 3 Research questions
 
@@ -178,7 +180,7 @@ and the Hugging Face upload.
 
 | Item | Status |
 |---|---|
-| Problem statement with 3–5 research questions | ✅ [RESEARCH_REPORT § 2](RESEARCH_REPORT.md): Q1–Q8, each with the study that answers it (Q3 deferred) |
+| Problem statement with 3–5 research questions | ✅ [RESEARCH_REPORT § 2](../RESEARCH_REPORT.md): Q1–Q8, each with the study that answers it (Q3 deferred) |
 | Strong sparse and neural baselines | ✅ |
 | ≥ 3 controlled investigations incl. a negative/inconclusive one | ✅ segmentation (+), Tier E (negative, narrowed), cRT (inconclusive), boundary test (negative), topic stacking (negative) |
 | Manually inspected error taxonomy of 60–100 cases | 👤 |
@@ -186,13 +188,13 @@ and the Hugging Face upload.
 | Seed variation vs evaluation uncertainty kept apart | ✅ |
 | One extension completed deeply | 🔶 Cycle 2 track A (encoder vs LLM): pipeline, prompt freeze, pilot; the declared runs need Kaggle and the API key 👤 |
 | Executed notebooks, figures, artifact checksums | ✅ `02_results.ipynb` rebuilt and executed; release manifest has SHA-256 |
-| Short technical report | ✅ [RESEARCH_REPORT.md](RESEARCH_REPORT.md) |
+| Short technical report | ✅ [RESEARCH_REPORT.md](../RESEARCH_REPORT.md) |
 
 ---
 
 ## What happens next
 
-The register of every open item, with what closes it: [NEXT_PLAN.md § 2](NEXT_PLAN.md) (the work list). Done in this
+The register of every open item, with what closes it: [NEXT_PLAN.md § 2](../NEXT_PLAN.md) (the work list). Done in this
 round: Cycle 2 declared and its evaluation data frozen; H5 and H6 decided; the served model switched
 through the gate; the H7 pipeline, prompt freeze and pilot; mypy blocking; Docker end-to-end script;
 provenance of Kaggle runs; publish bundle and model card; audit analysis tooling.
@@ -200,7 +202,7 @@ provenance of Kaggle runs; publish bundle and model card; audit analysis tooling
 **Needs you (👤):**
 
 - **Neutral audit**: annotate `results/studies/study_a/local/audit_sheet.csv` under
-  [ANNOTATION_GUIDE.md](ANNOTATION_GUIDE.md); a second pass over ≥ 50 rows; then
+  [ANNOTATION_GUIDE.md](../ANNOTATION_GUIDE.md); a second pass over ≥ 50 rows; then
   `vifeedback study audit-report --second <file> --kind inter|intra`.
 - **H7 declared runs**: Kaggle cell 4f (Qwen3-4B); set `OPENAI_API_KEY` for gpt-4o-mini; confirm
   whether UIT-VSFC may be sent to the API.
