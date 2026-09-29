@@ -1,0 +1,111 @@
+# Cycle 5 — declared 2026-09-29, before any Cycle 5 run (NEXT_PLAN v6).
+#
+# The owner chose the order (b) -> (a) -> (c):
+#   H10 (b) robustness to real typing: consistency training on ViLexNorm pairs. Declared below.
+#   H11 (a) a distilled student for S7 (<= 200 MB). Planned; its rule is declared in a later version,
+#           before its first run, once H10 has decided which model is the teacher.
+#   H12 (c) other institutions. Planned; needs the owner's label-policy decision (NEXT_PLAN v6 § 8,
+#           decision 2) and new labelled data, because NEU-ESC test is spent (ADR-033, ADR-034).
+#
+# Seen before this was written: the ViLexNorm test flip rates of the CE and augmented recipes at 5
+# seeds (Cycle 3: 17%, augmentation no help, p = 0.93) and the S2a gate on ViLexNorm test (lexicon
+# from ViLexNorm train: 0.169 -> 0.177, p = 0.13). Not seen: any model trained with a consistency
+# loss, any number on the ViLexNorm development split defined below. Changing a rule after its
+# results are seen needs a new version and an ADR.
+
+version: 1
+declared: 2026-09-29
+
+data:
+  vilexnorm_train: >
+    8,372 pairs (a real social-media comment and its human normalization). Split once, before any
+    run: rows ordered by numpy.random.default_rng(42).permutation(8372); the first 837 are the
+    development split, the other 7,535 the consistency-training pairs. The row indices are written
+    to results/studies/cycle5/vilexnorm_dev_index.csv (indices only, no text).
+  vilexnorm_dev: every H10 selection (recipe)
+  vilexnorm_test: >
+    Confirmation, 1,045 pairs, once per rule. Disclosed earlier uses: the Cycle 3 measurement and the
+    S2a development gate (both on models without a consistency loss). Every Cycle 5 use is appended
+    to results/studies/cycle5/vilexnorm_test_uses.log with the date, the rule and the models.
+  uit_vsfc_validation: epoch selection (as in the served recipe) and non-inferiority
+  neu_esc_validation: a non-inferiority guard (in-scope topics, 3,026 posts)
+  uit_vsfc_test: not used by H10
+  neu_esc_test: not used (spent)
+  text: >
+    ViLexNorm and NEU-ESC text goes through the service's own transform, serving.pipeline.prepare
+    (lowercase NFC, the released diacritic restorer, pyvi), in training and in evaluation. UIT-VSFC
+    keeps the materialized seg_pyvi variant, as every earlier run did.
+  licence: >
+    ViLexNorm is CC BY-NC-SA 4.0. A released H10 model is trained on it, so its weights would carry
+    CC BY-NC-SA 4.0; releasing it to the Hub needs the owner's decision (HUONG_DAN_THU_CONG.md § 4).
+
+H10_real_typing_consistency:
+  question: >
+    Does training the served recipe to give a real comment and its normalized form the same
+    prediction reduce label flips on real typing, at no material cost on UIT-VSFC and NEU-ESC?
+  why: >
+    17% of ViLexNorm test labels flip between a comment and its normalization. A spelling lexicon
+    (S2a) and synthetic augmentation (H2) did not reduce it: the instability is not spelling alone.
+    Consistency training on real noisy/clean pairs targets it directly; UDA shows the quality of the
+    noise pair is what matters [NEXT_PLAN v6 S11], and R-Drop / stability training give the loss
+    [S12, S13].
+  control: >
+    The served recipe (PhoBERT-base, seg_pyvi, diac-teen augmentation p = 0.3, 4 epochs, lr 2e-5),
+    seeds 42, 1337, 2024, 7, 31337: the existing checkpoints p9 (s42) and p10 (the others),
+    re-evaluated with the same code as the candidates.
+  recipes:
+    consistency_onesided: >
+      The served recipe plus, at every step, a batch of consistency-training pairs of the same size:
+      loss = cross-entropy on UIT-VSFC + 1.0 * KL(p(normalized) || p(original)), with no gradient
+      through p(normalized). The normalized form is closer to UIT-VSFC's text, so it is the target.
+    consistency_symmetric: >
+      The same, with the bidirectional KL of R-Drop: 0.5 * (KL(p(n) || p(o)) + KL(p(o) || p(n))),
+      gradients through both forms.
+  epoch_selection: UIT-VSFC validation macro-F1, as the served recipe
+  recipe_selection: >
+    Each recipe runs once at seed 42. Eligible: UIT-VSFC validation macro-F1 at least the control's
+    seed-42 value minus 0.01. The eligible recipe with the lowest flip rate on ViLexNorm dev goes to
+    confirmation; if none is eligible, or neither lowers the dev flip rate below the control's, H10
+    is not supported and stops.
+  confirmation: the chosen recipe at the four other seeds (5 in all), against the control's 5 seeds
+  flip_rate: >
+    The share of pairs whose predicted labels differ between the original and the normalized form,
+    both through the served pipeline (transform above, then the model).
+  rule: >
+    All must hold, 5 seeds each side:
+    (1) ViLexNorm test flip rate lower: the seed-averaged paired difference (candidate minus control)
+        has a 95% paired-bootstrap interval below 0 (pairs resampled, the 5 seed pairs averaged per
+        resample, 10,000 resamples);
+    (2) UIT-VSFC validation macro-F1, 5-seed mean, not lower by more than 0.005;
+    (3) UIT-VSFC validation neutral F1, 5-seed mean, not lower by more than 0.02;
+    (4) UIT-VSFC validation with diacritics stripped, through the restorer, macro-F1 5-seed mean not
+        lower by more than 0.01;
+    (5) NEU-ESC validation (in-scope) macro-F1, 5-seed mean, not lower by more than 0.01.
+  reported_not_tested: >
+    Flip rate on the pairs whose two forms differ after the transform; which labels flip, in both
+    directions; per-class F1 on every set; NEU-ESC validation on all 3,305 posts; the scope
+    detector's flag rate on ViLexNorm test (reported, not a condition: ViLexNorm is off-domain).
+  serving: >
+    If the rule holds, the chosen recipe's seed-42 model is released through the gate with the
+    restorer and the scope detector re-accepted, three latency sessions, an ADR and a new card. The
+    Hub update needs the owner's approval and the licence decision above.
+
+planned:   # outlines only; nothing here is a rule until a later version declares it
+  H11_distilled_student: >
+    A 6-layer student distilled from the teacher (H10's model if released, else the served model),
+    with soft labels from the teacher recipe's 5-seed ensemble and an unlabeled transfer set
+    (in-scope NEU-ESC train text, ViLexNorm consistency-training originals). Weights stored in FP16
+    and computed in FP32 (about 185 MB; no per-batch activation scales, the failure of ADR-036).
+    Candidate rule: <= 200 MB; pooled UIT-VSFC + NEU-ESC validation non-inferior to the teacher at
+    0.01 with per-source guards; the release gate's parity and batch-independence checks.
+  H12_other_institutions: >
+    The two-heads design of ADR-033 with H10's objective, confirmed on a new human-labelled sample
+    from another institution (>= 600 in-scope posts, two annotators).
+  cycle5_closing_gate: >
+    After the last release of the cycle, the released model(s) on UIT-VSFC test once, logged in
+    results/test_evaluations.log, as Cycle 1's closing gate (S1 is re-measured there, not chased).
+
+budget:
+  weight_updating_runs: 6        # H10: 2 selection + 4 confirmation
+  gpu_hours_estimate: {laptop_rtx3050: 2}
+  api_usd: 0

@@ -558,13 +558,41 @@ ADR-029; v4 S2b′; v5 confirmation on NEU-ESC, ADR-030). Challenge v1 is develo
 | v5 S2b confirmation | NEU-ESC test, diacritics stripped (6,613) | served model 0.270 → 0.374 (+0.104 [+0.091, +0.118]); as written −0.0006 | **passed → served** (ADR-031) |
 | v5 S2b′ confirmation | NEU-ESC contrast posts (414), 5 seeds | CE + R 0.440 vs augmented + R 0.437 (p = 0.68); overall +0.028 | **not passed** |
 | v5 S3 confirmation | NEU-ESC off-topic posts (563) vs validation | Mahalanobis AUROC 0.977; energy 0.936; max-prob 0.920 | passed → served (ADR-031); confounded by institution (ADR-032) |
-| A2 `in_scope` within NEU-ESC | validation, in-scope (3,026) vs off-topic (279) | flagged 77.1% vs 84.2%; AUROC 0.573 | measures resemblance to UIT-VSFC, not topic (ADR-032) |
-| **E1** INT8 power check | held-out estimation; simulated acceptance | pooled power 92% (median bound −0.0008), UIT-VSFC alone 75%; calibrated (observed bound at the 82nd percentile) | S5′ declared (ADR-035) |
-| **S5′** careful INT8 | UIT-VSFC + NEU-ESC validation (4,888) | pooled bound 0.0006; NEU-ESC drop −0.0044; neutral −0.0052; 178.5 MB; agreement 99.2% / 88.4% | **passed**; release gate: agreement 91.4% < 99%, batch-dependent → **not released** (ADR-036) |
-| **B4′** scope detector | NEU-ESC validation (selection), test (rule) | TF-IDF logistic 0.921 vs feature logistic 0.869 (validation); test AUROC 0.922, in-scope flagged 7.3%, off-topic caught 72.3%, UIT-VSFC 0.2%; U4 0.918 | **passed → served** (ADR-034) |
 | S5 careful INT8 | train fidelity; validation | 178.5 MB; drop +0.0004, upper 0.0095 | not passed |
+
+### 5.10 Research Cycle 4 — student text from other institutions
+
+Declared in `configs/experiments/cycle4.yaml` (v1 before any run; v2 reporting-only, ADR-032; v3 B4′;
+v4 S5′, ADR-035). Selection on NEU-ESC validation; NEU-ESC test once per rule, logged in
+`results/studies/cycle4/neu_esc_test_uses.log`.
+
+| Step | Data | Result | Decision |
+|---|---|---|---|
+| A1 served-pipeline latency | raw test text, 3 sessions | p95 26.9 ms (range 23.4–39.5); additions +2.2 ms; unaccented −4.2 ms | met (≤ 30 ms, additions ≤ 5 ms) |
+| A2 `in_scope` within NEU-ESC | validation, in-scope (3,026) vs off-topic (279) | flagged 77.1% vs 84.2%; AUROC 0.573 | measures resemblance to UIT-VSFC, not topic (ADR-032) |
+| A3 label policy | NEU-ESC validation, gold neutral in scope (2,054) | 67% called polar, 1,172 negative | input to owner decision 2 |
 | **H8** selection (seed 42) | UIT-VSFC / NEU-ESC validation | control 0.864 / 0.459; mixed 0.832 / 0.750; sequential 0.596 / 0.741; two heads 0.872 / 0.533 (NEU-ESC head 0.761) | two heads chosen (cycle4.yaml) |
 | **H8** confirmation (5 seeds) | NEU-ESC test in scope (6,050); UIT-VSFC validation | +0.111 [+0.102, +0.119]; UIT-VSFC −0.0045, neutral −0.010, stripped −0.0107; refitted out-of-scope AUROC 0.886, 31% flagged | **not passed** (ADR-033) |
+| **B4′** scope detector | NEU-ESC validation (selection), test (rule) | TF-IDF logistic 0.921 vs feature logistic 0.869 (validation); test AUROC 0.922, in-scope flagged 7.3%, off-topic caught 72.3%, UIT-VSFC 0.2%; U4 0.918 | **passed → served** (ADR-034) |
+| Latency with the detector | raw test text, 3 sessions (busy machine) | +0.5–0.8 ms over S0 within session (Mahalanobis: +1.3–3.1 ms) | cheaper; absolute p95 to re-measure idle |
+| **E1** INT8 power check | held-out estimation; simulated acceptance | pooled power 92% (median bound −0.0008), UIT-VSFC alone 75%; calibrated (observed bound at the 82nd percentile) | S5′ declared (ADR-035) |
+| **S5′** careful INT8 | UIT-VSFC + NEU-ESC validation (4,888) | pooled bound 0.0006; NEU-ESC drop −0.0044; neutral −0.0052; 178.5 MB; agreement 99.2% / 88.4% | **passed**; release gate: agreement 91.4% < 99%, batch-dependent → **not released** (ADR-036) |
+| F1 runtime image | Docker build | 1,023 → 750 → **519 MB**; token ids identical on 49,141 texts | S8 met |
+| F2 clean-clone reproduction | CI (`reproduce.yml`), Hub download | 2.3 min; validation 0.8644 reproduced | S10 met |
+
+### 5.11 Research Cycle 5 — declared, to fill
+
+Declared in `configs/experiments/cycle5.yaml` v1 (2026-09-29, before any run). Order chosen by the
+owner: H10 (real typing), H11 (distilled student), H12 (other institutions); H11 and H12 are declared
+in later versions before their first run. Rows are filled from `results/studies/cycle5/`.
+
+| Step | Data | Result | Decision |
+|---|---|---|---|
+| H10 selection (seed 42): one-sided vs symmetric consistency | ViLexNorm dev (837 pairs); UIT-VSFC validation | — | — |
+| H10 confirmation (5 seeds) | ViLexNorm test (1,045 pairs, logged); UIT-VSFC, stripped, NEU-ESC validation | — | — |
+| H11 distilled student (6 layers, FP16 storage) | UIT-VSFC + NEU-ESC validation (4,888) | — | to declare (v2) |
+| H12 other institutions | a new labelled sample (≥ 600 in-scope posts) | — | to declare; needs owner decision 2 and the data |
+| Cycle 5 closing gate | UIT-VSFC test, once | — | — |
 
 ---
 

@@ -1,10 +1,11 @@
 # Status, Open Problems and Next Experiments
 
-**Updated:** 2026-09-27, during research Cycle 2. Living document. Results live in
+**Updated:** 2026-09-29, after research Cycle 4, with Cycle 5 declared. Living document. Results live in
 [EXPERIMENT_MATRIX.md](EXPERIMENT_MATRIX.md) and [results/studies/](../results/studies/README.md);
-decisions in [DECISIONS.md](DECISIONS.md); the external review this cycle follows is
-[REVIEW_AND_RESEARCH_PLAN.md](REVIEW_AND_RESEARCH_PLAN.md). This file says **where the project
-stands, what is wrong with it, and what runs next.**
+decisions in [DECISIONS.md](DECISIONS.md); the work plan in [NEXT_PLAN.md](NEXT_PLAN.md) (v6); the
+owner's manual tasks, in Vietnamese, in [HUONG_DAN_THU_CONG.md](HUONG_DAN_THU_CONG.md). The external
+review the cycles follow is [REVIEW_AND_RESEARCH_PLAN.md](REVIEW_AND_RESEARCH_PLAN.md). This file
+says **where the project stands, what is wrong with it, and what runs next.**
 
 ---
 
@@ -20,7 +21,7 @@ stands, what is wrong with it, and what runs next.**
 | **G3** | Word-segmentation ablation | ✅ | 15 runs + latency benchmark |
 | **G4** | Locked test evaluation | ✅ | 21 test rows, every touch in `results/test_evaluations.log` |
 | G5 | Error analysis & robustness | 🔶 | Tooling, robustness suite, audit sheet and its analysis (`study audit-report`) done ([Cycle 0](#2-cycle-0--what-the-current-model-gets-wrong)); the human annotation is not |
-| **G6** | CPU inference optimization | ✅ | FP32 ONNX released through the gate (ADR-020) and served (augmented model, ADR-027); latency ladder measured; INT8 blocked by the quality gate (ADR-022) |
+| **G6** | CPU inference optimization | ✅ | FP32 ONNX released through the gate (ADR-020) and served (augmented model, ADR-027); latency ladder measured; INT8 blocked by the quality gate (ADR-022), and again by the release gate's fidelity rule after passing S5′ (ADR-036) |
 | **G7** | Service, Docker, CI | ✅ | FastAPI, multi-stage image, CI; API now also tested against a real artifact (R4) |
 
 ### Research cycles (after external review)
@@ -30,10 +31,11 @@ stands, what is wrong with it, and what runs next.**
 | **0** | Fix validity problems; what does the current model get wrong? | ✅ [results/studies/](../results/studies/README.md) |
 | **1** | Four hypotheses, declared before running ([cycle1.yaml](../configs/experiments/cycle1.yaml) v1 + v2) | ✅ all four decided; closing gate on test done (H2 and calibration confirmed) |
 | **2** | Track A: confirmation on a frozen challenge set, the serving model, topic stacking, an LLM reference ([cycle2.yaml](../configs/experiments/cycle2.yaml) v2) | ✅ H5 not supported; H6 switched the served model; H7 decided: both LLM arms better on neutral on challenge v1 (construction caveat); on real posts only gpt-4o-mini is ahead |
-| **3** | Reliability of the served model on real input ([cycle3.yaml](../configs/experiments/cycle3.yaml) v5) | 🔶 confirmed on NEU-ESC real student text (ADR-030): the service now lowercases, restores diacritics and reports an out-of-scope score (ADR-031); CE + restoration, the real-typing lexicon and careful INT8 fail their rules. ✅ H7 decided |
-| **4** | Student text from other institutions ([cycle4.yaml](../configs/experiments/cycle4.yaml) v2) | ✅ H8 **not passed** (ADR-033): two heads (one per label policy) lift NEU-ESC test by +0.111 [+0.102, +0.119] at 5 seeds with UIT-VSFC within 0.005, but stripped text −0.0107 and the refitted out-of-scope score fail; the served model stays. ADR-032: the Mahalanobis `in_scope` tracked the institution; ADR-034 replaced it with a TF-IDF topic detector (NEU-ESC test AUROC 0.922, 7% of in-scope posts flagged). S8 (519 MB) and S10 (2.3 min) met. Careful INT8 passed S5′ but the release gate held it back (91% agreement, batch-dependent; ADR-036): S7 goes to distillation. Hub release updated to ADR-034 (2026-09-29, reproduced 0.8644 from the Hub). Owner item: neutral audit (👤) |
+| **3** | Reliability of the served model on real input ([cycle3.yaml](../configs/experiments/cycle3.yaml) v6) | ✅ closed 2026-09-28. Confirmed on NEU-ESC real student text (ADR-030): the service lowercases, restores diacritics and reports an out-of-scope score (ADR-031); CE + restoration, the real-typing lexicon and careful INT8 fail their rules; H7 decided ([§ 5](#5-cycle-3--reliability-on-real-input)) |
+| **4** | Student text from other institutions ([cycle4.yaml](../configs/experiments/cycle4.yaml) v4) | ✅ closed 2026-09-29. H8 **not passed** (ADR-033); `in_scope` now comes from a topic detector (ADR-032, ADR-034); careful INT8 passed S5′ but the release gate held it back (ADR-035, ADR-036); S8 and S10 met; Hub release updated to ADR-034 ([§ 6](#6-cycle-4--student-text-from-other-institutions)) |
+| **5** | Real typing, then a distilled student, then other institutions ([cycle5.yaml](../configs/experiments/cycle5.yaml) v1) | ⏳ declared 2026-09-29: H10 (consistency training on ViLexNorm pairs) before any run; H11 and H12 planned ([NEXT_PLAN v6](NEXT_PLAN.md)) |
 
-**Compute to date** ([ledger](../configs/experiments/ledger.csv)): 124 weight-updating runs, about 9.9 GPU-hours, of which 19 regenerated runs after the `results/` loss (ADR-023), plus 12 GPU-minutes of LLM inference. The registry holds 153 rows.
+**Compute to date** ([ledger](../configs/experiments/ledger.csv)): 144 weight-updating runs, about 12.9 GPU-hours including 12 GPU-minutes of LLM inference on the laptop; 19 of the runs regenerated results lost in Cycle 1 (ADR-023). The Qwen3-4B H7 run used two Kaggle T4s for inference only. The registry holds 173 rows.
 
 ---
 
@@ -145,7 +147,11 @@ uses the official test.
    drifts. The two error sets are the audit's two hypotheses, label policy and representation.
 5. **Off-topic input is not flagged.** Both encoders label it with mean confidence 0.86–0.90.
 
-### Cycle 3 — reliability on real input (in progress)
+---
+
+## 5. Cycle 3 — reliability on real input
+
+**Closed 2026-09-28.**
 
 Declared in [cycle3.yaml](../configs/experiments/cycle3.yaml) (v1–v5, ADR-029, ADR-030). Evidence
 ranking and the evaluation matrix: [EVALUATION_DATA.md](EVALUATION_DATA.md). Challenge v1 is
@@ -168,7 +174,40 @@ v2 as the confirmation set (ADR-030), with rules committed before the cells were
 
 ---
 
-## 5. Open problems
+## 6. Cycle 4 — student text from other institutions
+
+**Closed 2026-09-29.** Declared in [cycle4.yaml](../configs/experiments/cycle4.yaml) (v1 before any
+run; v2 reporting-only; v3 B4′; v4 S5′). Selection on NEU-ESC validation; NEU-ESC test used once per
+rule, every use logged in `results/studies/cycle4/neu_esc_test_uses.log`.
+
+| Step | Result | Decision |
+|---|---|---|
+| A1 served-pipeline latency | p95 26.9 ms (median of 3 sessions, range 23.4–39.5); ADR-031's additions +2.2 ms; unaccented input 4 ms faster | Target met (≤ 30 ms, additions ≤ 5 ms) |
+| A2 `in_scope` by NEU-ESC topic | Academic 75.5%, Service 64.6% of in-scope posts flagged; within-NEU-ESC AUROC 0.573 | **ADR-032**: the Mahalanobis score measures resemblance to UIT-VSFC, not topic. Card and README corrected |
+| A3 label policy | 67% of NEU-ESC gold-neutral in-scope posts called polar (1,172 of 2,054 negative) | Input to owner decision 2 |
+| H8 selection (seed 42) | Control UIT-VSFC 0.8644 / NEU-ESC 0.459; mixed 0.832 / 0.750; sequential 0.596 / 0.741; **two heads 0.872 / 0.533** (NEU-ESC head 0.761) | Two heads the only eligible recipe |
+| **H8 confirmation** (5 seeds) | NEU-ESC test +0.111 [+0.102, +0.119], 5/5 seeds (0.554 vs 0.444); UIT-VSFC −0.0045; neutral −0.010; **stripped −0.0107** (limit 0.01); **refitted score AUROC 0.886, 31% flagged** | **Not passed** (ADR-033). The served model stays. Label policy is the conflict: one head for both corpora loses UIT-VSFC, two heads do not |
+| **B4′** topic-aware scope detector | TF-IDF logistic chosen on validation (0.921 vs 0.869 on the encoder feature). NEU-ESC test: AUROC **0.922**, in-scope flagged **7.3%**, off-topic caught **72.3%**, UIT-VSFC flagged **0.2%**; U4 generated off-topic 0.918 | **Passed and served** (ADR-034): `scope.npz`, 70,377 terms, numpy scorer equal to scikit-learn (8e-15) |
+| Latency with the detector | Busy machine (every rung slower); within session +0.5–0.8 ms over S0, against +1.3–3.1 ms for Mahalanobis | Cheaper than what it replaced; absolute p95 to re-measure on an idle machine |
+| **E1** INT8 power | Simulation calibrated (observed bound at the 82nd percentile); pooled UIT-VSFC + NEU-ESC validation: 92% of simulations below 0.005 | **S5′ declared** (ADR-035) |
+| **S5′** careful INT8 | Pooled bound 0.0006; NEU-ESC drop −0.0044; neutral −0.0052; 178.5 MB | **Passed** |
+| Release gate on the S5′ graph | Label agreement with PyTorch **91.4%** (< 99%); batch-vs-single logits differ by up to 0.93 | **Not released** (ADR-036). S7 goes to distillation (H11) |
+| F1 image size | 1,023 MB → 519 MB: pyvi's CRF without scikit-learn/SciPy; a PhoBERT BPE tokenizer without `transformers`, identical ids on 49,141 texts | S8 met |
+| F2 clean-clone reproduction | Install 45 s, data 3 s, Hub download and evaluation 90 s; 0.8644 reproduced, in CI | S10 met |
+| Publication | 2026-09-28 public (CC BY-NC 4.0); 2026-09-29 updated to ADR-034 (Hub commit `ba58267`): 8 files verified, 0.8644 reproduced from the Hub | ✅ |
+
+**What Cycle 4 establishes.**
+1. **In-domain data closes much of the cross-institution gap, but only if each label policy keeps
+   its own head.** The two corpora mean different things by `neutral`.
+2. **A scope check must be judged within one source.** Comparing another institution's off-topic
+   posts with UIT-VSFC mixed a change of institution with a change of topic. Topic is lexical, so a
+   word-level detector beats the sentiment-tuned encoder feature.
+3. **Quantization fidelity matters beyond macro-F1.** INT8 kept macro-F1 on the pooled set, but
+   changed 1 label in 12 and depended on the batch, so it cannot be served.
+
+---
+
+## 7. Open problems
 
 Ordered by how much they threaten the conclusions.
 
@@ -183,8 +222,9 @@ same-session controls (Cycle 1), OOF predictions over train for anything label-r
 ### P2 — The neutral gap is not a threshold problem
 Cycle 0 shows the errors are confident and the boundary nearly optimal. What remains is whether the
 confident errors are **label policy / ambiguity** or **representation**. Only the human audit can
-separate them ([ANNOTATION_GUIDE.md](ANNOTATION_GUIDE.md); 160-row sheet ready). *Blocking for:*
-E04 (training on corrected labels) and any further imbalance work.
+separate them ([ANNOTATION_GUIDE.md](ANNOTATION_GUIDE.md) v1.1; 160-row sheet ready; the owner's
+steps, in Vietnamese: [HUONG_DAN_THU_CONG.md § 1](HUONG_DAN_THU_CONG.md)). *Blocking for:* the D2
+branch (E04 label correction, soft labels, or a representation run), S4 and S9.
 
 ### P3 — Measured gold-label noise bounds the ceiling
 ~4.8% disagreement on textually identical train/test pairs. The corpus annotates suggestions as
@@ -199,13 +239,19 @@ the weak class. Cycle 3's review (`results/studies/topic_others.json`): recall 0
 missed `others` rows go to `lecturer` (27) and `training_program` (17), the neutral pattern again: a
 residual minority class absorbed by the majority. *Open:* include `others` in the audit design.
 
-### P5 — Robustness to informal orthography is a deployment risk
-Cycle 0 measured it; H2's augmentation is now served (ADR-027). On constructed typed-style text it lifts
-unaccented accuracy from 0.32 to 0.74 (p < 0.001); teencode moves 0.975 → 0.875, not significant at one seed. The no-diacritic failure is a
-whole-pipeline failure: pyvi also mis-segments unaccented text. A diacritic-restoration front-end
-remains the untested alternative (NEXT_PLAN P5, conditional).
+### P5 — Real typing still flips labels
+Missing diacritics are largely handled: H2's augmentation is served (ADR-027), and the diacritic
+restorer (ADR-031) lifts unaccented NEU-ESC posts from 0.270 to 0.374 and stripped validation from
+0.686 to 0.857. What remains is real informal typing: **17% of labels flip** between a ViLexNorm
+comment and its human normalization, and neither a spelling lexicon (S2a) nor augmentation reduces
+it. *Next:* H10, consistency training on real noisy/clean pairs ([NEXT_PLAN v6 § 2](NEXT_PLAN.md#2-cycle-5-b-robustness-to-real-typing--h10)).
 
-### P6 — Latency measured; INT8 is faster but blocked by the quality gate
+### P6 — Latency is met; the artifact is still 540 MB
+*Update (Cycle 4).* The served pipeline, raw text in, has p95 26.9 ms (A1); the scope detector adds
+less than the score it replaced; careful INT8 passed S5′ but agrees with PyTorch on only 91.4% of
+labels and depends on the batch, so the release gate blocked it (ADR-036). *Next:* H11, a 6-layer
+student stored in FP16 (about 185 MB), and three idle latency sessions. The Cycle 2 measurements
+below are unchanged.
 Reference CPU (Ryzen 5 6600H, AVX2, no AVX512-VNNI), single sentence, model-only on pre-segmented
 input, two steady passes in rotated order agreeing within 1% (`results/studies/latency/reference_cpu.json`):
 
@@ -243,12 +289,22 @@ uncommitted tree; that is recorded, not hidden.
 | `FacebookAI/xlm-roberta-base` | `e73636d4f797dec63c3081bb6ed5c7b0bb3f2089` |
 | UIT-VSFC `refs/convert/parquet` | `2d76906157232f87e9883fa37ebfc91ffdee1f83` |
 
+### P8 — New claims about other institutions need new labelled data
+NEU-ESC test has served H8 and B4′ (logged), and no other public, labelled Vietnamese
+student-feedback corpus from a third institution exists. H12 waits for a new human-labelled sample
+and the owner's label-policy decision ([HUONG_DAN_THU_CONG.md § 6–7](HUONG_DAN_THU_CONG.md)).
+
+### P9 — The scope detector judges topic from words
+It flags an unusual or very short course comment more easily, and lets off-topic text that uses
+course vocabulary through. Its off-topic examples are four NEU-ESC topics. Stated in the card and
+the API docs; revisited with H12's data.
+
 ---
 
-## 6. External review — item status
+## 8. External review — item status
 
 Full traceability, including the study designs, catalog and backlog:
-[REVIEW_COMPLIANCE.md](REVIEW_COMPLIANCE.md).
+[REVIEW_COMPLIANCE.md](archive/REVIEW_COMPLIANCE.md).
 
 | Item | Severity | Status |
 |---|---|---|
@@ -267,21 +323,31 @@ Full traceability, including the study designs, catalog and backlog:
 
 ---
 
-## 7. Next
+## 9. Next
 
-Every unmet target, hole, unrun experiment and unconfirmed result, with where it is handled:
-**[NEXT_PLAN.md](NEXT_PLAN.md) v5 § 2**, one prioritized work list. Cycle 4 (student text from other institutions) is its Track B.
-Needs the owner:
+Every open target, problem and unrun experiment, with where it is handled:
+**[NEXT_PLAN.md](NEXT_PLAN.md) v6**. Cycle 5 runs in the owner's order:
+1. **H10**, real typing (declared in `cycle5.yaml` v1);
+2. **H11**, a distilled student for S7;
+3. **H12**, other institutions.
 
-1. **H7 is done**: Qwen3-4B ran on Kaggle (both GPUs, prefix cache, 19–28 s per 1k) and
-   `study h7-decide` applied the rule. UIT-VSFC text was never sent to the API.
-2. **The human audit** (P2/P3), which gates E04. `study audit-report` analyses the filled sheet.
-3. **The model is published** (2026-09-28): <https://huggingface.co/Datk4/vifeedback-sentiment-phobert>, CC BY-NC 4.0 weights, ONNX + PyTorch,
-   restorer and out-of-scope parameters, every file checked against `SHA256SUMS`.
+Needs the owner (step by step, in Vietnamese: [HUONG_DAN_THU_CONG.md](HUONG_DAN_THU_CONG.md)):
+
+1. **The neutral audit** (P2/P3), which gates D2 and S9. `study audit-report` analyses the filled
+   sheet.
+2. **An idle machine** for three latency sessions.
+3. **Decisions:**
+   - the weights licence if H10 is released (ViLexNorm is CC BY-NC-SA);
+   - the label policy for other institutions' text;
+   - each Hub upload.
+4. **For H12:** a new labelled sample from another institution.
+
+The model is published at <https://huggingface.co/Datk4/vifeedback-sentiment-phobert> (CC BY-NC 4.0,
+ONNX + PyTorch, restorer and scope detector, every file checked against `SHA256SUMS`).
 
 ---
 
-## 8. Compute plan
+## 10. Compute plan
 
 | Work | Where | Why |
 |---|---|---|
@@ -290,6 +356,8 @@ Needs the owner:
 | **All latency benchmarking** | **Laptop only, idle** | the reference machine is recorded in `env.json`; no benchmark while training runs |
 | LLM pilot (Qwen3-1.7B, fp16) | Laptop | fits 4 GB; about 70 s per 1k sentences zero-shot |
 | Declared LLM (Qwen3-4B) | **Kaggle** (cell 4f) | 8 GB in fp16 |
+| Cycle 5: H10 consistency training, H11 distillation (6-layer student), teacher soft labels | **Laptop RTX 3050** | PhoBERT-base-sized; one job at a time, cool-down between runs |
+| H11's FP16-storage export | Laptop via `torch.onnx.export`, or Kaggle | the `onnx` package's DLL is blocked by Windows Application Control here (ADR-036) |
 
 Notebook: [`notebooks/kaggle_train.ipynb`](../notebooks/kaggle_train.ipynb) (§ 4e for Cycle 1, § 4f for Cycle 2 H7) and
 [KAGGLE_GUIDE.md](KAGGLE_GUIDE.md).
