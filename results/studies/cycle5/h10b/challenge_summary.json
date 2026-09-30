@@ -1,0 +1,83 @@
+{
+  "challenge_sha256": "c4879de4ea7a6a23007358f12657cd0feaab4b499fec5834eafb2d18ab5b4a39",
+  "checkpoints": {
+    "h10b": "D:\\GitHub\\ViFeedback NLP Service\\models\\p15-sent-phobert-base-seg_pyvi-h10b-anchored_orig-s42-063770c8-ckp"
+  },
+  "h10b": {
+    "scored_rows": 285,
+    "accuracy": 0.8596491228070176,
+    "macro_f1": 0.8475932378371404,
+    "per_class_f1": {
+      "negative": 0.8888888888888888,
+      "neutral": 0.7967479674796747,
+      "positive": 0.8571428571428572
+    },
+    "by_category": {
+      "code_switch": {
+        "n": 25,
+        "accuracy": 0.96
+      },
+      "long_context": {
+        "n": 20,
+        "accuracy": 0.85
+      },
+      "mixed_aspect": {
+        "n": 40,
+        "accuracy": 0.925
+      },
+      "negation_pair": {
+        "n": 30,
+        "accuracy": 0.8666666666666667
+      },
+      "objective_neutral": {
+        "n": 30,
+        "accuracy": 0.8666666666666667
+      },
+      "suggestion_cue": {
+        "n": 25,
+        "accuracy": 1.0
+      },
+      "suggestion_implicit": {
+        "n": 25,
+        "accuracy": 0.84
+      },
+      "teencode_typed": {
+        "n": 40,
+        "accuracy": 1.0
+      },
+      "unaccented_typed": {
+        "n": 50,
+        "accuracy": 0.58
+      }
+    },
+    "negation_pairs": {
+      "pairs": 15,
+      "both_correct": 0.7333333333333333,
+      "prediction_flips": 0.8666666666666667
+    },
+    "out_of_scope_confidence": {
+      "out_of_scope": {
+        "n": 20,
+        "max_prob_mean": 0.7888211607933044,
+        "max_prob_median": 0.9276572465896606,
+        "share_above_0_9": 0.55,
+        "predicted": {
+          "negative": 9,
+          "neutral": 6,
+          "positive": 5
+        }
+      },
+      "objective_neutral": {
+        "n": 30,
+        "max_prob_mean": 0.7547919154167175,
+        "max_prob_median": 0.7867624759674072,
+        "share_above_0_9": 0.2,
+        "predicted": {
+          "negative": 3,
+          "neutral": 26,
+          "positive": 1
+        }
+      }
+    }
+  }
+}

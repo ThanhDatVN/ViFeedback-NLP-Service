@@ -1,0 +1,69 @@
+{
+  "what": "challenge v1 (development data, constructed) through each release's own served pipeline (lowercase, restorer, pyvi, ONNX); input to owner decision 9, not a decision rule",
+  "challenge_sha256": "c4879de4ea7a6a23007358f12657cd0feaab4b499fec5834eafb2d18ab5b4a39",
+  "releases": {
+    "12-layer served recipe (p9 s42)": {
+      "checkpoint": "models/p9-sent-phobert-base-seg_pyvi-aug-diac-teen-s42-599cf21f-ckp",
+      "model_sha256": "c93262abe34ea0990818508508349e372618fa2f9d491ab340d153da1f86f4b0",
+      "macro_f1": 0.8507371158585268,
+      "per_class_f1": {
+        "negative": 0.8850174216027874,
+        "neutral": 0.7706422018348623,
+        "positive": 0.896551724137931
+      },
+      "by_category": {
+        "code_switch": 0.96,
+        "long_context": 0.9,
+        "mixed_aspect": 0.925,
+        "negation_pair": 0.8333333333333334,
+        "objective_neutral": 0.6333333333333333,
+        "suggestion_cue": 1.0,
+        "suggestion_implicit": 0.84,
+        "teencode_typed": 0.875,
+        "unaccented_typed": 0.86
+      }
+    },
+    "6-layer student (H11 s42)": {
+      "checkpoint": "models/p14-sent-phobert-base-seg_pyvi-h11-pretrained-first6-from-served-s42-6b169fb7-ckp",
+      "model_sha256": "46dc62a7a91737c61ea002c5df262ef94c00675b645ac3a47aa34049781bac07",
+      "macro_f1": 0.8597910190169807,
+      "per_class_f1": {
+        "negative": 0.9052631578947368,
+        "neutral": 0.7787610619469026,
+        "positive": 0.8953488372093024
+      },
+      "by_category": {
+        "code_switch": 0.88,
+        "long_context": 0.9,
+        "mixed_aspect": 0.85,
+        "negation_pair": 0.8333333333333334,
+        "objective_neutral": 0.7,
+        "suggestion_cue": 1.0,
+        "suggestion_implicit": 0.88,
+        "teencode_typed": 0.95,
+        "unaccented_typed": 0.9
+      }
+    },
+    "12-layer H10b (s42)": {
+      "checkpoint": "models/p15-sent-phobert-base-seg_pyvi-h10b-anchored_orig-s42-063770c8-ckp",
+      "model_sha256": "3c80ae301c4d9bffa526edf7bdab0ea9812f20c0d0e4b78dcacb458c610ca3a6",
+      "macro_f1": 0.9162297083608558,
+      "per_class_f1": {
+        "negative": 0.9377289377289377,
+        "neutral": 0.8852459016393444,
+        "positive": 0.9257142857142856
+      },
+      "by_category": {
+        "code_switch": 0.96,
+        "long_context": 0.85,
+        "mixed_aspect": 0.925,
+        "negation_pair": 0.8666666666666667,
+        "objective_neutral": 0.8666666666666667,
+        "suggestion_cue": 1.0,
+        "suggestion_implicit": 0.84,
+        "teencode_typed": 1.0,
+        "unaccented_typed": 0.94
+      }
+    }
+  }
+}

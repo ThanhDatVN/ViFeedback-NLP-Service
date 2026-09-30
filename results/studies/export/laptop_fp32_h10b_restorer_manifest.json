@@ -1,0 +1,52 @@
+{
+  "task": "sentiment",
+  "model_file": "model.opt.onnx",
+  "sha256": "3c80ae301c4d9bffa526edf7bdab0ea9812f20c0d0e4b78dcacb458c610ca3a6",
+  "quantization": "none",
+  "preprocessing": "seg_pyvi",
+  "max_length": 96,
+  "labels": [
+    "negative",
+    "neutral",
+    "positive"
+  ],
+  "outputs": [
+    "logits"
+  ],
+  "checkpoint": "models/p15-sent-phobert-base-seg_pyvi-h10b-anchored_orig-s42-063770c8-ckp",
+  "calibration": null,
+  "acceptance": {
+    "n": 1583,
+    "max_abs_logit_diff": 1.8514692783355713e-05,
+    "logits_close": true,
+    "label_agreement": 1.0,
+    "macro_f1_torch": 0.8616759239790208,
+    "macro_f1_onnx": 0.8616759239790208,
+    "macro_f1_drop": 0.0,
+    "batch_vs_single_max_diff": 0.0,
+    "batch_vs_single_label_agreement": 1.0,
+    "failures": [],
+    "passed": true
+  },
+  "acceptance_set": "validation",
+  "prebuilt_from": null,
+  "created": "20261001-020349",
+  "software": {
+    "onnxruntime": "1.30.0",
+    "transformers": "5.17.0"
+  },
+  "restorer": {
+    "file": "restorer.json",
+    "sha256": "7ed4a90368905eb6d532d795ced2f138c3a03434200e47d7b31cdf4b4f63c018",
+    "threshold": 0.09090909090909091,
+    "fitted_on": "UIT-VSFC train (syllable forms and word bigrams)",
+    "decided_by": "cycle3.yaml v5 S2b (NEU-ESC confirmation), ADR-031",
+    "acceptance": {
+      "validation_labels_changed": 0,
+      "validation_macro_f1": 0.8616759239790208,
+      "stripped_validation_macro_f1_without": 0.6578550283168334,
+      "stripped_validation_macro_f1_with": 0.8457042145597139,
+      "passed": true
+    }
+  }
+}

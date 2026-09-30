@@ -406,6 +406,7 @@ __all__ = [
     "CONFIRM_INDEX",
     "OUT",
     "apply_rule",
+    "challenge_report",
     "closing_gate",
     "confirm",
     "confirm_split",
@@ -461,4 +462,29 @@ def closing_gate(recipe: str = "anchored_orig") -> dict[str, Any]:
     }
     dst.parent.mkdir(parents=True, exist_ok=True)
     dst.write_text(json.dumps(yaml_safe(out), indent=2, ensure_ascii=False), encoding="utf-8")
+    return out
+
+
+def challenge_report(recipe: str = "anchored_orig") -> dict[str, Any]:
+    """The seed-42 H10b model on challenge v1 (development data), for decision 9 and a card."""
+    from vifeedback.evaluation import challenge as CH
+    from vifeedback.evaluation import error_analysis as EA
+    from vifeedback.evaluation.report import yaml_safe
+
+    ck = paths.MODELS / C.config(recipe, 42).run_id("ckpt")
+    df = CH.load()  # raises if the file differs from the hash frozen in cycle2.yaml
+    probs = EA.predict_proba(ck, CH.pipeline("seg_pyvi")(df.text.tolist()))
+    pred = probs.argmax(1)
+    out = {
+        "challenge_sha256": CH.declared_sha256(),
+        "checkpoints": {"h10b": str(ck)},
+        "h10b": {
+            **CH.category_report(df, pred),
+            "negation_pairs": CH.negation_pairs(df, pred),
+            "out_of_scope_confidence": CH.out_of_scope_confidence(df, probs),
+        },
+    }
+    (OUT / "challenge_summary.json").write_text(
+        json.dumps(yaml_safe(out), indent=2, ensure_ascii=False), encoding="utf-8"
+    )
     return out
