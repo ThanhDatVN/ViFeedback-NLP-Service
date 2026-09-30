@@ -50,7 +50,7 @@ decision 9 (§ 8):
 
 | ID | Problem | Evidence | Where handled |
 |---|---|---|---|
-| G8 | Real typing flips 17% of labels | ViLexNorm test, 5 seeds; a lexicon (S2a), augmentation and consistency training (H10, degenerate: ADR-038) did not help | Open; a next attempt needs new confirmation data (§ 2, outcome) |
+| G8 | Real typing flips 17% of labels | A lexicon (S2a), augmentation and own-prediction consistency (H10, degenerate: ADR-038) did not help; **H10b cut flips to about 12% with no collapse** (ADR-042) | Reduced; the H10b model is a release candidate (decision 9) |
 | — | The served student is 0.013 below the 12-layer model on test, while equal on validation | ADR-040: 5/5 seeds lower; 73 neutral validation sentences cannot resolve it | Owner's choice of served model (§ 8); a larger acceptance set for any future size rule |
 | — | Other institutions' text: 0.444 in-scope NEU-ESC test | Two heads reach +0.111, but failed two conditions (ADR-033); NEU-ESC test is spent | **H12**, Cycle 5 (c) |
 | G6 | NEU-ESC's `neutral` differs from UIT-VSFC's | 67% of NEU-ESC gold-neutral posts are called polar (ADR-032) | Owner decision 2 (§ 8) |
@@ -314,7 +314,7 @@ make the target robust to machine state.
 | F7 | ✅ `cli.py` (3,371 lines) split into `vifeedback/cli/` by group and by cycle; same 59 commands and options, checked command by command | done 2026-09-29 |
 | F8 | ✅ `make export` rebuilt the retired Mahalanobis configuration; it now attaches the scope detector. `make publish` and `make reproduce` were added | done 2026-09-29 |
 | F9 | ✅ Calibrated confidence in the service (ADR-041): `serve add-temperature`, T in the manifest; student T = 1.491, 12-layer T = 1.551; labels unchanged | done 2026-09-30 |
-| H10b | ⏳ A second real-typing attempt (`cycle5.yaml` v4): consistency anchored on the frozen 5-seed teacher, agreement and label-distribution metrics a constant prediction cannot game, 1,500 fresh confirmation pairs | running |
+| H10b | ✅ **Passed** (ADR-042): consistency anchored on the frozen 5-seed teacher; flips −0.061, agreement +0.062, label_tv 0.013, all guards held. Closing gate: test 0.824 over 5 seeds (−0.006, n.s.). Release candidate built in `models/candidate/sentiment` (`cycle5.yaml` v5) | done 2026-10-01 |
 
 ## 7. Budget and what not to do
 
@@ -347,7 +347,7 @@ The step-by-step versions, in Vietnamese: [HUONG_DAN_THU_CONG.md](HUONG_DAN_THU_
 | 4 | Approve each Hub upload | No upload | every release |
 | 5 | A new labelled sample from another institution | H12 not declared | H12 |
 | 6 | ✅ Latency sessions: the owner waived the idle-machine condition (2026-09-30) | — | — |
-| 9 | Which model the service runs: the student (185 MB, 1.8x faster, −0.013 on test; served now, as declared) or the 12-layer model (one folder swap) | The student | — |
+| 9 | Which model the service runs: the 12-layer served recipe, the student (served now, as declared), or the 12-layer H10b candidate. Recommendation: **H10b** (see STATUS § 6b for the comparison) | The student | — |
 | 7 | U2: 15 challenge v1 labels | v1 stays as frozen | F6 |
 | 8 | Challenge v2 | Not written | optional |
 

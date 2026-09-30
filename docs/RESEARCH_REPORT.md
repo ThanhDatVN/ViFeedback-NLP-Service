@@ -380,6 +380,18 @@ the cheap solution, one class for all of them, and the model found it. UDA's con
 sharpening and in-domain unlabeled data exist for this reason. The result also shows that a flip
 rate alone cannot certify invariance: a constant classifier scores zero.
 
+**Anchoring the consistency on a frozen teacher works (H10b, ADR-042).**
+- **The method.** Each real comment is trained towards the label distribution that the frozen 5-seed
+  ensemble of the served recipe gives its normalized form. A constant prediction cannot match that
+  target.
+- **Results.** On 1,500 fresh pairs, five seeds each side: agreement with the teacher rose 0.062 and
+  flips fell from about 18% to 12%. The label distribution on informal text stayed where the teacher
+  puts it (0.013), while the served recipe's own drifts (0.108). UIT-VSFC, neutral, stripped text and
+  NEU-ESC all held.
+- **Test.** It cannot be told apart from the served recipe at five seeds (−0.006 [−0.019, +0.007]).
+- **Challenge v1** (constructed, through the served pipeline): macro-F1 0.916 against 0.851, neutral
+  F1 0.885 against 0.771, mostly from short factual sentences and typed teencode.
+
 **A route to S7 without per-batch scales (F4, H11).** Weights stored in FP16 and cast to FP32 inside
 the graph halve the file while computing in FP32. On the served 12-layer model the graph is 270 MB,
 its logits match the FP16-rounded PyTorch model within 1.5e-5, and a sentence scores identically
@@ -420,7 +432,7 @@ alone and in a batch.
 | H8 two heads: NEU-ESC test +0.111, but stripped text −0.0107 and the refitted score failed (ADR-033) | Releasing in-domain training without a robustness check | H12 with H10's objective, on a new labelled sample (Cycle 5) |
 | H8 one head on both corpora: UIT-VSFC −0.033 (mixed), −0.269 (sequential) | Pooling corpora with different label policies | — |
 | Careful INT8 (S5′): passed non-inferiority, 91.4% label agreement, batch-dependent (ADR-036) | Macro-F1 non-inferiority as sufficient for a serving transform | A distilled student in FP16 storage (H11) |
-| Consistency training on ViLexNorm pairs (H10): flips 16.6% → 0.3%, but 99.4% of informal text labelled negative; NEU-ESC −0.087 (ADR-038) | A flip rate as evidence of invariance; off-domain unlabeled pairs as the perturbation | A non-gameable invariance metric, a class-distribution guard, in-domain pairs, new confirmation data |
+| Consistency training on ViLexNorm pairs (H10): flips 16.6% → 0.3%, but 99.4% of informal text labelled negative; NEU-ESC −0.087 (ADR-038) | A flip rate as evidence of invariance; the model's own prediction as the target | Settled by H10b (ADR-042): a frozen teacher's target, agreement and label-distribution metrics |
 
 ## 7. Limitations
 
@@ -482,8 +494,9 @@ Vietnamese in [HUONG_DAN_THU_CONG.md](HUONG_DAN_THU_CONG.md). The model is publi
 
 Cycle 5 ran in the owner's order; H12 waits for the owner:
 1. **H10, real typing (Q2).** Not passed (ADR-038): the flips vanished only because informal text was
-   labelled negative. A next attempt needs a non-gameable invariance metric, a class-distribution
-   guard, in-domain pairs and new confirmation data.
+   labelled negative. **H10b** anchored the consistency on a frozen teacher and passed (ADR-042):
+   flips about 18% → 12% on fresh pairs, no collapse, every guard held, and test not distinguishable
+   from the served recipe.
 2. **H11, a distilled student (Q6, S7).** Passed and served (ADR-039, ADR-040): 185 MB, 1.8x faster,
    equal on validation, 0.013 lower on test.
 3. **H12, other institutions (Q9).** The two-heads design with H10's objective. It is confirmed on a

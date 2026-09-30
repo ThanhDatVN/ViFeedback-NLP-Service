@@ -37,6 +37,7 @@ models/
 │                           #   (185 MB, FP16 weights computed in FP32), tokenizer files, restorer.json
 │                           #   (ADR-031), scope.npz (ADR-034), manifest.json with every SHA-256
 ├── serve/.previous-sentiment/  # the 12-layer release (model.opt.onnx, 540 MB); swap back to serve it
+├── candidate/sentiment/    # the 12-layer H10b release candidate (ADR-042), waiting for decision 9
 ├── publish/<name>/         # `serve publish` dry-run bundles: the card, SHA256SUMS, the PyTorch copy
 ├── hub/<owner>__<name>/    # `serve reproduce` download cache
 ├── distill/                # H11: the teachers' soft-label cache (SHA-1 keys, no text) and the
@@ -47,6 +48,8 @@ models/
 ├── p6-…-base-s42-ckp/, p10-…-base-s*-ckp/         # the CE baseline's 5 seeds (study external, V1)
 ├── p14-…-h11-pretrained-first6-…-s*-ckp/          # the H11 students, 5 seeds (seed 42 is served)
 ├── p14-…-h11-teacher-alternate-…-s42-ckp/         # H11's other selection candidate
+├── p15-…-h10b-anchored_orig-s*-ckp/                # H10b, 5 seeds (passed, ADR-042); seed 42 is the candidate
+├── p15-…-h10b-anchored_both-s42-ckp/              # H10b's other selection candidate
 └── p13-…-h10-*-ckp/        # H10 (not passed, ADR-038): no planned step needs them
 ```
 

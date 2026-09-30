@@ -225,7 +225,25 @@ v2 H11 before any H11 run and before H10 decided. The owner's order is b → a �
 | Latency (idle condition waived by the owner) | S1 p95 median 12.3 ms (sessions 11.6, 12.9; one session without a steady pass at 11.5–11.7); the 12-layer model 22.1 ms in the same sessions | **Served** (ADR-040), the 12-layer model kept as `.previous-sentiment` |
 | H11 closing gate (test, once) | Student 0.8168 over 5 seeds vs 0.8296: **−0.0129 [−0.0204, −0.0054]**, lower in 5/5; seed 42 neutral F1 0.545 (0.592) | Reported; stated in the card and README |
 | Calibrated confidence | T fitted on validation logits of each release (student 1.491, 12-layer 1.551); test evidence from both closing gates | **Served** (ADR-041) |
-| H10b (`cycle5.yaml` v4) | Consistency anchored on the frozen teacher; fresh confirmation pairs | running |
+| H10b selection (seed 42) | anchored_orig and anchored_both tie on dev agreement (0.8626; control 0.828); anchored_orig kept (declared order; no tie-break was declared) | — |
+| **H10b confirmation** (5 seeds each, 1,500 fresh pairs) | Agreement +0.062 [+0.048, +0.075]; flips −0.061 [−0.073, −0.049] (about 18% → 12%); label_tv 0.013 (the control's 0.108); UIT-VSFC +0.0014; neutral +0.003; stripped +0.0028; NEU-ESC −0.0039 | **Passed** (ADR-042) |
+| H10b closing gate (test, once) | 0.8237 over 5 seeds vs 0.8296 for the served recipe: −0.0059 [−0.019, +0.007]; seed 42 0.8208, neutral 0.550 | Reported |
+| H10b release candidate | FP32 graph through the gate (parity 1.85e-5), restorer re-accepted, scope detector and T = 1.349 attached, 12 API tests pass | Waits for decision 9 |
+
+**Decision 9: which model the service runs** (the owner's call; the student is served now, as `cycle5.yaml` v3 declared):
+
+| | 12-layer served recipe (p9 s42) | 6-layer student (served now) | 12-layer H10b (candidate) |
+|---|---|---|---|
+| Size / served p95 | 540 MB / 22.1 ms | **185 MB / 12.3 ms** | 540 MB / about 22 ms |
+| Test macro-F1, 5 seeds | **0.830** | 0.817 (−0.013, significant) | 0.824 (−0.006 [−0.019, +0.007]) |
+| Test neutral F1, seed 42 | **0.592** | 0.545 | 0.550 |
+| Real-typing flips (ViLexNorm) | about 18% | about 11% (dev) | **about 12%** (confirmed, ADR-042) |
+| Challenge v1 through the served pipeline | 0.851, neutral 0.771 | 0.860, neutral 0.779 | **0.916, neutral 0.885** |
+| Weights licence | CC BY-NC 4.0 | CC BY-NC-SA 4.0 | CC BY-NC-SA 4.0 |
+
+The recommendation is H10b. Its real-typing gain was confirmed by a rule declared in advance, on
+fresh pairs. It leads on the constructed hard cases (development data, one author). On test it cannot
+be told apart from the served recipe at five seeds.
 
 **What H10 establishes.** A consistency loss on unlabeled, off-domain pairs has a cheap solution:
 one class for the whole register. An invariance metric that a constant prediction satisfies needs
@@ -266,14 +284,14 @@ the weak class. Cycle 3's review (`results/studies/topic_others.json`): recall 0
 missed `others` rows go to `lecturer` (27) and `training_program` (17), the neutral pattern again: a
 residual minority class absorbed by the majority. *Open:* include `others` in the audit design.
 
-### P5 — Real typing still flips labels (H10 did not fix it)
+### P5 — Real typing flips fewer labels with H10b (not yet served)
 Missing diacritics are largely handled: H2's augmentation is served (ADR-027), and the diacritic
 restorer (ADR-031) lifts unaccented NEU-ESC posts from 0.270 to 0.374 and stripped validation from
 0.686 to 0.857. What remains is real informal typing: **17% of labels flip** between a ViLexNorm
 comment and its human normalization, and neither a spelling lexicon (S2a) nor augmentation reduces
 it. H10's consistency training removed the flips only by labelling informal text negative
-(ADR-038). *Next:* a non-degenerate invariance metric, a guard on the predicted class distribution,
-in-domain unlabeled pairs and new confirmation data ([NEXT_PLAN v6 § 2](NEXT_PLAN.md#2-cycle-5-b-robustness-to-real-typing--h10)).
+(ADR-038). H10b anchored the consistency on a frozen teacher and cut flips to about 12% with no
+collapse and no measurable cost (ADR-042). It is a release candidate, and serving it is decision 9.
 
 ### P6 — Latency and size are met; the smaller model costs 0.013 on test
 *Update (Cycle 4).* The served pipeline, raw text in, has p95 26.9 ms (A1); the scope detector adds

@@ -40,6 +40,8 @@ validation macro-F1 is **0.8634**, which reproduces the registry row for that se
 | **Cycle 5** | | |
 | `cycle5/h10/` | `vifeedback study h10-control`, `h10-run`, `h10-select`, `h10-confirm` (H10, not passed: ADR-038) | 7 runs |
 | `cycle5/h11/` | `vifeedback study h11-run`, `h11-select`, `h11-confirm`, `h11-closing-gate`, `h11-challenge` (H11 passed and served: ADR-039, ADR-040); `latency.json` | 6 runs |
+| `cycle5/h10b/` | `vifeedback study h10b-control`, `h10b-run`, `h10b-select`, `h10b-confirm`, `h10b-closing-gate` (H10b passed: ADR-042); `challenge_summary.json` | 6 runs |
+| `cycle5/h10b_confirm_index.csv`, `decision9_challenge_served_pipeline.json` | `vifeedback study h10b-split`; the three releases on challenge v1 through their served pipelines (decision 9) | — |
 | `cycle5/vilexnorm_dev_index.csv`, `vilexnorm_test_uses.log` | `vifeedback study h10-split`; every ViLexNorm test use in Cycle 5 | — |
 
 Files containing corpus text go to `*/local/` and are gitignored ([DATA_CARD § 11](../../docs/DATA_CARD.md)).
