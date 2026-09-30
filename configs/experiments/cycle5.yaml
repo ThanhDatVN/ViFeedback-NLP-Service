@@ -19,10 +19,14 @@
 # Version 3 (2026-09-30), after H11 passed (ADR-039) and before any latency number of the candidate
 # or any UIT-VSFC test evaluation of a student: how the candidate replaces the served model, and its
 # closing gate. The owner waived the idle-machine condition of the latency sessions.
+#
+# Version 4 (2026-09-30), after H10 failed (ADR-038) and before any H10b run: H10b, consistency
+# anchored on a frozen teacher, with the three changes ADR-038 named: a target a constant prediction
+# cannot match, a guard on the predicted class distribution, and fresh confirmation pairs.
 
-version: 3
+version: 4
 declared: 2026-09-29
-revised: 2026-09-30  # v2 H11 declared; v3 H11 release condition and closing gate
+revised: 2026-09-30  # v2 H11; v3 H11 release and closing gate; v4 H10b declared
 
 data:
   vilexnorm_train: >
@@ -175,6 +179,50 @@ H11_release:   # v3
     for the model card and S1; no decision depends on it. The teacher's figures are Cycle 1's (5-seed
     mean 0.8296, seed 42 0.8371).
 
+H10b_anchored_consistency:   # v4, before any H10b run
+  question: >
+    Does training the served 12-layer recipe to give a real comment the label a frozen teacher gives
+    its normalized form make real typing change fewer labels, without collapsing the informal
+    register onto one class and at no material cost on labelled data?
+  why: >
+    H10's own-prediction consistency had a constant solution and found it (ADR-038). Here the target
+    is fixed and diverse: the 5-seed ensemble of the served recipe (p9 s42, p10 others), frozen, its
+    mean softmax on the normalized form.
+  data: >
+    The 7,535 ViLexNorm training pairs outside the dev split, split once by
+    numpy.random.default_rng(43).permutation(7535): the first 1,500 are the confirmation pairs, the
+    other 6,035 the training pairs; indices written to results/studies/cycle5/h10b_confirm_index.csv.
+    No model in this comparison has trained on the confirmation pairs, and no rule has been evaluated
+    on them (H10's models trained on them; they are not part of H10b). The dev split (837) is H10's.
+    ViLexNorm test is not used. Text through the serving transform, as in H10.
+  control: the served recipe at 5 seeds (the teacher's members), re-evaluated with the same code
+  recipes:
+    anchored_orig: >
+      The served recipe plus, at every step, a same-size batch of training pairs:
+      1.0 * KL(q(normalized) || p(original)), q the frozen ensemble's probabilities.
+    anchored_both: >
+      The same with 1.0 * 0.5 * (KL(q(normalized) || p(original)) + KL(q(normalized) || p(normalized))).
+  metrics: >
+    agreement: the share of pairs where the model's label on the original equals the ensemble's label
+    on the normalized form. flip rate: as H10. label_tv: the total-variation distance between the
+    model's label distribution on the originals and the ensemble's on the normalized forms.
+  epoch_selection: UIT-VSFC validation macro-F1, as the served recipe
+  recipe_selection: >
+    Each recipe once at seed 42. Eligible: UIT-VSFC validation within 0.01 of the control's seed 42,
+    and dev label_tv <= 0.10. The eligible recipe with the highest dev agreement goes to confirmation
+    if that agreement is higher than the control's; otherwise H10b is not supported.
+  rule: >
+    All must hold, 5 seeds each side, on the 1,500 confirmation pairs (10,000 paired resamples of
+    pairs, seed pairs averaged per resample): (1) agreement higher, interval above 0; (2) flip rate
+    lower, interval below 0; (3) label_tv, 5-seed mean, <= 0.10; and on validation, 5-seed means:
+    (4) UIT-VSFC macro-F1 not lower by more than 0.005; (5) neutral F1 not lower by more than 0.02;
+    (6) stripped text through the restorer not lower by more than 0.01; (7) NEU-ESC (in scope) not
+    lower by more than 0.01.
+  serving: >
+    If the rule holds, the seed-42 model is a 12-layer release candidate and a candidate teacher for
+    a later student; any release goes through the gate with an ADR. Its weights would carry
+    CC BY-NC-SA 4.0 (ViLexNorm).
+
 planned:   # outlines only; nothing here is a rule until a later version declares it
   H12_other_institutions: >
     The two-heads design of ADR-033 with H10's objective, confirmed on a new human-labelled sample
@@ -184,6 +232,6 @@ planned:   # outlines only; nothing here is a rule until a later version declare
     results/test_evaluations.log, as Cycle 1's closing gate (S1 is re-measured there, not chased).
 
 budget:
-  weight_updating_runs: 12       # H10: 2 selection + 4 confirmation; H11: 2 + 4 (v2)
+  weight_updating_runs: 18       # H10: 2 + 4; H11: 2 + 4 (v2); H10b: 2 + 4 (v4)
   gpu_hours_estimate: {laptop_rtx3050: 4}  # plus H11's five teacher inference passes
   api_usd: 0
