@@ -8,6 +8,7 @@ import pytest
 torch = pytest.importorskip("torch")
 ort = pytest.importorskip("onnxruntime")
 transformers = pytest.importorskip("transformers")
+pytest.importorskip("onnx")  # torch.onnx.export needs it, even on the legacy path (`export` extra)
 
 from vifeedback.inference import onnx_export as OX  # noqa: E402
 
