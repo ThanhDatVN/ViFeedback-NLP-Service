@@ -1183,3 +1183,101 @@ request.
   the batch dependence shows why fidelity matters beyond macro-F1.
 - S7 (≤ 200 MB) goes to distillation (track B, E2): a 6-layer student has no per-batch activation
   scales and is judged on both corpora.
+
+---
+
+## ADR-037 · 2026-09-30 · Cycle 5 is declared in the owner's order; S7 is attempted with a 6-layer student stored in FP16 · Accepted
+
+**Context.** Cycle 4 closed with three open lines:
+- real typing flips 17% of labels;
+- the serving artifact is 540 MB, and INT8 cannot be released (ADR-036);
+- other institutions' text needs new labelled data.
+
+The owner chose the order: (b) real typing, then (a) a smaller model, then (c) other institutions
+(NEXT_PLAN v6).
+
+**Decision.**
+1. **H10** (`cycle5.yaml` v1, before any run): consistency training on ViLexNorm pairs, a real
+   comment and its human normalization, with a KL term that asks both forms for the same prediction.
+   - Two recipes: one-sided, where the normalized form is a fixed target, and R-Drop's symmetric KL.
+   - Selection on a declared ViLexNorm development split (837 of the 8,372 training pairs, by a
+     fixed permutation).
+   - Confirmation on ViLexNorm test, whose two earlier uses are disclosed; every Cycle 5 use is
+     logged.
+   - Four non-inferiority guards on labelled data: UIT-VSFC, its neutral class, stripped text, and
+     NEU-ESC validation.
+2. **H11** (`cycle5.yaml` v2, before any H11 run and before H10 decided): a 6-layer student
+   distilled from a 5-seed ensemble teacher, with its weights stored in FP16 and computed in FP32.
+   - **Teacher.** Fixed by a written condition: H10's recipe if H10 passes, the served recipe
+     otherwise. It does not depend on H10's numbers beyond its pass or fail.
+   - **Rule.** ≤ 200 MB; a pooled drop bound ≤ 0.01 against the teacher; per-source guards;
+     parity with the PyTorch student and no batch dependence.
+3. **Why FP16 storage and not INT8 or vocabulary trimming.**
+   - From the served config, neither 6 layers (370 MB) nor FP16 storage (270 MB) alone reaches
+     200 MB; together they give 185 MB.
+   - FP16 storage rounds weights once and computes in FP32, so nothing is scaled per batch: the
+     failure that stopped INT8.
+   - Vocabulary trimming would map unseen tokens to `<unk>` on exactly the informal text H10 targets.
+4. **Export.** `onnx_export.export_fp16_storage` casts parametrized FP16 weights inside the traced
+   graph, with the legacy exporter and without the `onnx` package (still blocked here).
+   - Constant folding is off, and the graph skips the offline optimizer, so the casts survive into
+     the file.
+   - On a tiny RoBERTa the file is half the size, the logits equal the FP16-rounded model within
+     1e-4, and a row scores the same alone and in a padded batch.
+
+**Consequences.**
+- Both H10 and a released H11 student learn from ViLexNorm text (CC BY-NC-SA 4.0). Their weights
+  would carry that licence, which the owner decides before any upload (HUONG_DAN_THU_CONG § 4).
+- The first H10 run shared the 4 GB GPU with another project's job and was stopped. The run guard
+  now also waits for no other GPU compute process, in line with the owner's one-heavy-job rule.
+
+---
+
+## ADR-038 · 2026-09-30 · H10 not passed: consistency training made the model invariant by labelling informal text negative · Accepted
+
+**Context.** `cycle5.yaml` v1 H10, run on 2026-09-30 by the declared code
+(`results/studies/cycle5/h10/`).
+
+**Selection (seed 42, ViLexNorm dev, 837 pairs).**
+
+| | UIT-VSFC validation | Dev flip rate | Eligible |
+|---|---:|---:|---|
+| Control (served recipe) | 0.8644 | 0.135 | — |
+| One-sided KL | 0.8541 (−0.0103) | 0.007 | no (limit −0.01) |
+| Symmetric KL (R-Drop) | 0.8689 (+0.0045) | 0.002 | **yes → confirmed** |
+
+**Confirmation** (symmetric, five seeds each side; ViLexNorm test, 1,045 pairs, use logged):
+
+| Rule | Result | |
+|---|---|---|
+| (1) flip rate lower | 16.6% → 0.3%, −0.164 [−0.180, −0.149] | pass |
+| (2) UIT-VSFC validation macro-F1 | −0.0016 (limit −0.005) | pass |
+| (3) neutral F1 | −0.0029 (limit −0.02) | pass |
+| (4) stripped text through the restorer | −0.0065 (limit −0.01) | pass |
+| (5) NEU-ESC validation macro-F1 | **−0.0866** (limit −0.01) | **fail** |
+
+**What happened.** The invariance is degenerate:
+- **ViLexNorm.** The consistency-trained models label 99.4–99.5% of the test comments *negative*,
+  in both forms. The control labels 56–83% negative, with the rest split between neutral and
+  positive. A model that gives informal social-media text one label cannot flip.
+- **NEU-ESC.** The same shift reaches real student posts. Predicted negative rises from 58% to 76%
+  of NEU-ESC validation. Neutral F1 falls in every seed (seed 42: 0.47 → 0.30), because the
+  informal register now pushes predictions towards negative.
+- **UIT-VSFC** is untouched: its clean, labelled text anchors the cross-entropy term.
+
+The consistency term had one cheap solution: collapse the unlabeled, off-domain pairs to a single
+class. Nothing in it forbids that. UDA avoids it with confidence masking, sharpening and in-domain
+unlabeled data; H10 had none of the three. Guard (5) was declared for exactly this possibility
+(NEXT_PLAN v6 § 2) and caught it.
+
+**Decision.**
+- H10 is not passed, and nothing is released.
+- Under `cycle5.yaml` v2, H11's teacher is the served recipe.
+- ViLexNorm test has now served three rules (the Cycle 3 measurement, S2a, H10), so any new
+  real-typing claim needs new confirmation data.
+
+**What a next attempt would need** (not declared):
+- a flip metric that a constant prediction cannot game, for example agreement with the control's
+  label on the normalized form, reported next to each form's label distribution;
+- a guard on the predicted class distribution of the unlabeled text;
+- in-domain unlabeled pairs (student posts and their normalizations), or UDA's confidence mask.

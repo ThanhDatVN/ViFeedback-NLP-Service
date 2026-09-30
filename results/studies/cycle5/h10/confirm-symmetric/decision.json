@@ -1,0 +1,97 @@
+{
+  "declared_in": "configs/experiments/cycle5.yaml H10 rule",
+  "recipe": "symmetric",
+  "seeds": [
+    42,
+    1337,
+    2024,
+    7,
+    31337
+  ],
+  "rules": {
+    "1_vilexnorm_test_flip_rate_down": {
+      "observed_diff": -0.1642105263157895,
+      "ci_low": -0.1797129186602871,
+      "ci_high": -0.1490909090909091,
+      "p_one_sided": 9.999000099990002e-05,
+      "n_resamples": 10000,
+      "seeds": 5,
+      "pairs": 1045,
+      "passed": true
+    },
+    "2_uit_validation_macro_f1": {
+      "mean_diff": -0.0015718505178882402,
+      "limit": -0.005,
+      "passed": true
+    },
+    "3_uit_validation_neutral_f1": {
+      "mean_diff": -0.0029299338783642217,
+      "limit": -0.02,
+      "passed": true
+    },
+    "4_uit_validation_stripped_macro_f1": {
+      "mean_diff": -0.006547928723051699,
+      "limit": -0.01,
+      "passed": true
+    },
+    "5_neu_validation_macro_f1": {
+      "mean_diff": -0.0866319833988491,
+      "limit": -0.01,
+      "passed": false
+    }
+  },
+  "passed": false,
+  "reported": {
+    "flip_rate_per_seed": {
+      "42": {
+        "candidate": 0.0019138755980861245,
+        "control": 0.16172248803827752
+      },
+      "1337": {
+        "candidate": 0.0009569377990430622,
+        "control": 0.1339712918660287
+      },
+      "2024": {
+        "candidate": 0.0028708133971291866,
+        "control": 0.17799043062200956
+      },
+      "7": {
+        "candidate": 0.004784688995215311,
+        "control": 0.18086124401913875
+      },
+      "31337": {
+        "candidate": 0.0028708133971291866,
+        "control": 0.1799043062200957
+      }
+    },
+    "changed_pairs": 1044,
+    "flip_rate_changed_pairs_mean": {
+      "candidate": 0.0026819923371647508,
+      "control": 0.16704980842911876
+    },
+    "flip_directions_seed42": {
+      "candidate": {
+        "negative->neutral": 2,
+        "negative->positive": 0,
+        "neutral->negative": 0,
+        "neutral->positive": 0,
+        "positive->negative": 0,
+        "positive->neutral": 0
+      },
+      "control": {
+        "negative->neutral": 67,
+        "negative->positive": 12,
+        "neutral->negative": 47,
+        "neutral->positive": 12,
+        "positive->negative": 11,
+        "positive->neutral": 20
+      }
+    },
+    "neu_validation_all_macro_f1_mean_diff": -0.08821996226054199,
+    "scope_flagged_vilexnorm_test": {
+      "original": 0.020095693779904306,
+      "normalized": 0.021052631578947368
+    }
+  },
+  "vilexnorm_test_pairs": 1045
+}

@@ -1,0 +1,23 @@
+{
+  "declared_in": "configs/experiments/cycle5.yaml H10 recipe_selection",
+  "control_s42": {
+    "uit_validation": 0.8644104907582961,
+    "vilexnorm_dev_flip_rate": 0.13500597371565112
+  },
+  "recipes": {
+    "onesided": {
+      "uit_validation": 0.8540918292862717,
+      "uit_minus_control": -0.010318661472024426,
+      "vilexnorm_dev_flip_rate": 0.007168458781362007,
+      "eligible": false
+    },
+    "symmetric": {
+      "uit_validation": 0.868861178368376,
+      "uit_minus_control": 0.004450687610079829,
+      "vilexnorm_dev_flip_rate": 0.0023894862604540022,
+      "eligible": true
+    }
+  },
+  "chosen": "symmetric",
+  "outcome": "confirm"
+}

@@ -1,0 +1,182 @@
+{
+  "recipe": "symmetric",
+  "seed": 31337,
+  "history": [
+    {
+      "epoch": 1,
+      "train_ce": 0.43277060186396765,
+      "train_consistency": 0.012163855347459793,
+      "dev_macro_f1": 0.7610353563669986,
+      "dev_neutral_f1": 0.3736263736263736,
+      "seconds": 393.3,
+      "vilexnorm_dev_flip_rate": 0.0047789725209080045
+    },
+    {
+      "epoch": 2,
+      "train_ce": 0.20387116640639705,
+      "train_consistency": 0.007537150312463529,
+      "dev_macro_f1": 0.8514652140888715,
+      "dev_neutral_f1": 0.6349206349206349,
+      "seconds": 820.3,
+      "vilexnorm_dev_flip_rate": 0.008363201911589008
+    },
+    {
+      "epoch": 3,
+      "train_ce": 0.15157258419018219,
+      "train_consistency": 0.0051357097173884885,
+      "dev_macro_f1": 0.8584449683933862,
+      "dev_neutral_f1": 0.6495726495726495,
+      "seconds": 1255.3,
+      "vilexnorm_dev_flip_rate": 0.0023894862604540022
+    },
+    {
+      "epoch": 4,
+      "train_ce": 0.11767394416159092,
+      "train_consistency": 0.004713835683456159,
+      "dev_macro_f1": 0.8741613294871908,
+      "dev_neutral_f1": 0.6890756302521008,
+      "seconds": 1686.1,
+      "vilexnorm_dev_flip_rate": 0.0047789725209080045
+    }
+  ],
+  "best_epoch": 4,
+  "consistency_weight": 1.0,
+  "run_id": "p13-sent-phobert-base-seg_pyvi-h10-symmetric-s31337-96e2fc3d-val",
+  "checkpoint": "models\\p13-sent-phobert-base-seg_pyvi-h10-symmetric-s31337-96e2fc3d-ckp",
+  "train_seconds": 1693.3,
+  "augmentation": {
+    "recipe": "diac-teen",
+    "p": 0.3,
+    "changed": 2555,
+    "changed_share": 0.2236
+  },
+  "pair_passes_per_epoch": 1.52,
+  "sets": {
+    "uit_validation": {
+      "macro_f1": 0.8741613294871908,
+      "accuracy": 0.9564118761844599,
+      "per_class": {
+        "negative": {
+          "precision": 0.9516574585635359,
+          "recall": 0.9773049645390071,
+          "f1": 0.9643107067879635,
+          "support": 705,
+          "predicted": 724,
+          "average_precision": 0.9786655665979683
+        },
+        "neutral": {
+          "precision": 0.8913043478260869,
+          "recall": 0.5616438356164384,
+          "f1": 0.6890756302521008,
+          "support": 73,
+          "predicted": 46,
+          "average_precision": 0.7304619235395191
+        },
+        "positive": {
+          "precision": 0.964329643296433,
+          "recall": 0.9739130434782609,
+          "f1": 0.969097651421508,
+          "support": 805,
+          "predicted": 813,
+          "average_precision": 0.991839661559971
+        }
+      }
+    },
+    "uit_validation_stripped": {
+      "macro_f1": 0.84681480984002,
+      "accuracy": 0.9469361970941251,
+      "per_class": {
+        "negative": {
+          "precision": 0.9406896551724138,
+          "recall": 0.9673758865248226,
+          "f1": 0.9538461538461538,
+          "support": 705,
+          "predicted": 725,
+          "average_precision": 0.9775248138364437
+        },
+        "neutral": {
+          "precision": 0.8043478260869565,
+          "recall": 0.5068493150684932,
+          "f1": 0.6218487394957983,
+          "support": 73,
+          "predicted": 46,
+          "average_precision": 0.6852422144230768
+        },
+        "positive": {
+          "precision": 0.9605911330049262,
+          "recall": 0.968944099378882,
+          "f1": 0.9647495361781077,
+          "support": 805,
+          "predicted": 812,
+          "average_precision": 0.9902204151478334
+        }
+      }
+    },
+    "neu_validation": {
+      "macro_f1": 0.3358940592812765,
+      "accuracy": 0.3113020489094514,
+      "per_class": {
+        "negative": {
+          "precision": 0.2328042328042328,
+          "recall": 0.9662162162162162,
+          "f1": 0.37520498524106266,
+          "support": 592,
+          "predicted": 2457,
+          "average_precision": 0.4172381098806749
+        },
+        "neutral": {
+          "precision": 0.8791666666666667,
+          "recall": 0.10272638753651411,
+          "f1": 0.18395815170008717,
+          "support": 2054,
+          "predicted": 240,
+          "average_precision": 0.7764618544061164
+        },
+        "positive": {
+          "precision": 0.48328267477203646,
+          "recall": 0.41842105263157897,
+          "f1": 0.4485190409026798,
+          "support": 380,
+          "predicted": 329,
+          "average_precision": 0.4139595338428432
+        }
+      }
+    },
+    "neu_validation_all": {
+      "macro_f1": 0.3273487198877288,
+      "accuracy": 0.30196671709531014,
+      "per_class": {
+        "negative": {
+          "precision": 0.2205992509363296,
+          "recall": 0.9671592775041051,
+          "f1": 0.3592558706922843,
+          "support": 609,
+          "predicted": 2670,
+          "average_precision": 0.4049023075311392
+        },
+        "neutral": {
+          "precision": 0.8819188191881919,
+          "recall": 0.104870557261957,
+          "f1": 0.18745098039215685,
+          "support": 2279,
+          "predicted": 271,
+          "average_precision": 0.7853341955846365
+        },
+        "positive": {
+          "precision": 0.46703296703296704,
+          "recall": 0.407673860911271,
+          "f1": 0.4353393085787452,
+          "support": 417,
+          "predicted": 364,
+          "average_precision": 0.40415364992208375
+        }
+      }
+    }
+  },
+  "vilexnorm_dev": {
+    "pairs": 837,
+    "changed_pairs": 837,
+    "flip_rate": 0.0047789725209080045,
+    "flip_rate_changed_pairs": 0.0047789725209080045
+  }
+}
