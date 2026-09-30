@@ -90,6 +90,82 @@ def export_fp32(
     return path
 
 
+def export_fp16_storage(model, inputs: tuple[Any, Any], path: Path) -> Path:
+    """Export with every weight stored in FP16 and computed in FP32 (NEXT_PLAN v6, H11 and S7).
+
+    Each parameter becomes an FP16 initializer followed by a Cast to FP32, so the file is about half
+    the FP32 size while every multiplication stays FP32. Unlike dynamic INT8 (ADR-036) nothing is
+    scaled per batch, so a sentence's label cannot depend on what else is in the request.
+
+    Constant folding is off on purpose: folding would turn each Cast back into an FP32 initializer.
+    For the same reason the file must not go through `optimize_graph`, which saves ORT's folded
+    graph; the serving session folds the casts in memory when it loads the file. The legacy
+    TorchScript exporter is used, as in `export_fp32`, because the `onnx` package is blocked on the
+    reference machine.
+    """
+    import copy
+    import inspect
+
+    import torch
+    from torch.nn.utils import parametrize
+
+    class _ToFloat(torch.nn.Module):
+        def forward(self, w):
+            return w.float()
+
+    class _Logits(torch.nn.Module):
+        def __init__(self, inner) -> None:
+            super().__init__()
+            self.inner = inner
+
+        def forward(self, input_ids, attention_mask):
+            return self.inner(input_ids=input_ids, attention_mask=attention_mask).logits
+
+    # A copy whose every parameter is stored in FP16 and read through a cast to FP32; the trace
+    # records the cast, so the graph keeps the FP16 initializers.
+    stored = copy.deepcopy(model).eval()
+    for module in list(stored.modules()):
+        for name, p in list(module.named_parameters(recurse=False)):
+            setattr(module, name, torch.nn.Parameter(p.detach().half(), requires_grad=False))
+            parametrize.register_parametrization(module, name, _ToFloat(), unsafe=True)
+
+    legacy: dict[str, Any] = (
+        {"dynamo": False} if "dynamo" in inspect.signature(torch.onnx.export).parameters else {}
+    )
+    path.parent.mkdir(parents=True, exist_ok=True)
+    with torch.no_grad():
+        torch.onnx.export(
+            _Logits(stored).eval(),
+            inputs,
+            str(path),
+            **legacy,
+            input_names=["input_ids", "attention_mask"],
+            output_names=["logits"],
+            dynamic_axes={
+                "input_ids": {0: "batch", 1: "sequence"},
+                "attention_mask": {0: "batch", 1: "sequence"},
+                "logits": {0: "batch"},
+            },
+            opset_version=OPSET,
+            do_constant_folding=False,
+        )
+    return path
+
+
+def fp16_rounded(model):
+    """A copy of `model` whose weights went through FP16 and back: the PyTorch reference an
+    FP16-storage graph must match (its logits differ from the FP32 model's only by that rounding)."""
+    import copy
+
+    import torch
+
+    ref = copy.deepcopy(model).eval()
+    with torch.no_grad():
+        for p in ref.parameters():
+            p.copy_(p.to(torch.float16).float())
+    return ref
+
+
 def optimize_graph(src: Path, dst: Path) -> Path:
     """Offline ORT optimization at the EXTENDED level: node fusions, no layout transforms.
 
