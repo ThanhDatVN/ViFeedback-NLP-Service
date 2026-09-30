@@ -4,7 +4,7 @@ Every experiment in this project is a CLI call, so the laptop and Kaggle run ide
 notebooks stay logic-free (docs/ROADMAP.md § 4).
 
 One module per command group: `data`, `baseline`, `train`, `serve`, `results`. The `study` group is
-split by research cycle (`study_cycle1` … `study_cycle4`), matching configs/experiments/cycleN.yaml.
+split by research cycle (`study_cycle1` … `study_cycle5`), matching configs/experiments/cycleN.yaml.
 The groups themselves are declared in `_apps`.
 """
 
@@ -20,6 +20,7 @@ from vifeedback.cli import (  # noqa: F401
     study_cycle2,
     study_cycle3,
     study_cycle4,
+    study_cycle5,
     train,
 )
 from vifeedback.cli._apps import app
