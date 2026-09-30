@@ -132,3 +132,34 @@ def study_h11_confirm(init: str = typer.Option(..., help="the student h11-select
         }
         typer.echo(f"  {name:40s} {'PASS' if r['passed'] else 'FAIL'}  {detail}")
     typer.echo(f"  H11 {init}: {'passed' if out['passed'] else 'not passed'}")
+
+
+@study_app.command("h11-closing-gate")
+def study_h11_closing_gate() -> None:
+    """Cycle 5 H11 closing gate (cycle5.yaml v3): the students on UIT-VSFC test, once, logged."""
+    from vifeedback.training import distill as K
+
+    out = K.closing_gate()
+    r = out["checkpoints"]["h11_student"]
+    typer.echo(
+        f"  seed 42: test macro-F1 {r['test']['macro_f1']:.4f} (excl. overlap "
+        f"{r['test_excluding_train_overlap']['macro_f1']:.4f}), neutral F1 "
+        f"{r['test']['per_class_f1']['neutral']:.3f}, no-diacritic "
+        f"{r['robustness_test']['nodiacritic']['macro_f1']:.3f}"
+    )
+    f = out["five_seed_test"]
+    p = f["paired_student_minus_teacher"]
+    typer.echo(f"  5 seeds: student {f['student']}")
+    typer.echo(f"  student - teacher (Cycle 1 test): {p['mean_delta']:+.4f} {p.get('ci95')}")
+
+
+@study_app.command("h11-challenge")
+def study_h11_challenge() -> None:
+    """The seed-42 H11 student on challenge v1 (development data), for its model card."""
+    from vifeedback.training import distill as K
+
+    r = K.challenge_report()["h11_student"]
+    typer.echo(
+        f"  challenge v1: macro-F1 {r['macro_f1']:.4f}, accuracy {r['accuracy']:.4f}, "
+        f"neutral F1 {r['per_class_f1']['neutral']:.3f}"
+    )

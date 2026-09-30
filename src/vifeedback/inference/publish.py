@@ -20,6 +20,14 @@ from vifeedback import paths
 from vifeedback.constants import HF_DATASET_ID, MODEL_REVISIONS
 
 SERVED = paths.MODELS / "serve" / "sentiment"
+CLOSING_GATES = (
+    paths.RESULTS / "studies" / "closing_gate" / "summary.json",
+    paths.RESULTS / "studies" / "cycle5" / "h11" / "closing_gate" / "summary.json",
+)
+CHALLENGES = (
+    paths.RESULTS / "studies" / "challenge" / "summary.json",
+    paths.RESULTS / "studies" / "cycle5" / "h11" / "challenge_summary.json",
+)
 PUBLISH_ROOT = paths.MODELS / "publish"
 _TOKENIZER_FILES = ("vocab.txt", "bpe.codes", "added_tokens.json", "tokenizer_config.json")
 
@@ -42,26 +50,62 @@ def _basename(path: str) -> str:
     return PureWindowsPath(path).name
 
 
+def _student_dir(ckp: str) -> str:
+    """The H11 result folder of a student checkpoint, e.g. pretrained-first6-s42."""
+    import re
+
+    m = re.search(r"-h11-(.+)-from-.+-s(\d+)-[0-9a-f]{8}-ckp$", ckp)
+    if not m:
+        raise ValueError(f"not an H11 student checkpoint: {ckp}")
+    return f"{m.group(1)}-s{m.group(2)}"
+
+
 def evidence(manifest: dict[str, Any]) -> dict[str, Any]:
     """Collect the card's numbers from committed results for the manifest's checkpoint."""
     ckp = _basename(manifest["checkpoint"])
     run_id = ckp.removesuffix("-ckp")
     val = _json(paths.RUNS / f"{run_id}-val" / "metrics.json")
     config = (paths.RUNS / f"{run_id}-val" / "config.yaml").read_text(encoding="utf-8")
-    gate = _json(paths.RESULTS / "studies" / "closing_gate" / "summary.json")["checkpoints"]
-    gate_row = next(v for v in gate.values() if _basename(v["checkpoint"]) == ckp)
-    challenge = _json(paths.RESULTS / "studies" / "challenge" / "summary.json")
-    which = next(k for k, v in challenge["checkpoints"].items() if _basename(v) == ckp)
+    # The closing gate and the challenge set: Cycle 1's record, or Cycle 5 H11's for the student.
+    gate_row = next(
+        v
+        for f in (CLOSING_GATES[0], CLOSING_GATES[1])
+        if f.exists()
+        for v in _json(f)["checkpoints"].values()
+        if _basename(v["checkpoint"]) == ckp
+    )
+    challenge_row = None
+    for f in CHALLENGES:
+        if f.exists():
+            c = _json(f)
+            which = next((k for k, v in c["checkpoints"].items() if _basename(v) == ckp), None)
+            if which:
+                challenge_row = c[which]
+                break
+    if challenge_row is None:
+        raise KeyError(f"{ckp} has no challenge-set record")
     scope = paths.RESULTS / "studies" / "cycle4_step0" / "served_neu_esc_validation.json"
-    return {
+    out = {
         "run_id": run_id,
         "config_yaml": config,
         "validation": val,
         "test": gate_row,
-        "challenge": challenge[which],
+        "challenge": challenge_row,
         # ADR-032: what `in_scope` does on another institution's text (NEXT_PLAN v5 A2).
         "scope_check": _json(scope) if scope.exists() else None,
     }
+    if "-h11-" in ckp:  # the distilled student (ADR-039): its rule and its five-seed test
+        h11 = paths.RESULTS / "studies" / "cycle5" / "h11"
+        out["h11_decision"] = _json(next(iter(sorted(h11.glob("confirm-*/decision.json")))))
+        out["h11_gate"] = _json(CLOSING_GATES[1])
+        out["h11_summary"] = _json(h11 / _student_dir(ckp) / "summary.json")
+        h10 = paths.RESULTS / "studies" / "cycle5" / "h10"
+        teacher = out["h11_decision"]["teacher"]
+        name = "control-s42" if teacher == "served" else f"{teacher.removeprefix('h10-')}-s42"
+        out["h11_teacher_summary"] = _json(h10 / name / "summary.json")
+        lat = h11 / "latency.json"
+        out["h11_latency"] = _json(lat) if lat.exists() else None
+    return out
 
 
 def _optional_parts(manifest: dict[str, Any], scope_check: dict[str, Any] | None = None) -> str:
@@ -129,6 +173,8 @@ def _optional_parts(manifest: dict[str, Any], scope_check: dict[str, Any] | None
 
 
 def _graph_kind(manifest: dict[str, Any]) -> str:
+    if manifest.get("quantization") == "fp16-storage":
+        return "ONNX graph with its weights stored in FP16 and computed in FP32 (ADR-039)"
     if manifest.get("quantization") == "careful":
         return (
             "INT8 ONNX graph (per-channel dynamic quantization, classifier head and last two "
@@ -141,6 +187,12 @@ def _graph_kind(manifest: dict[str, Any]) -> str:
 
 def _agreement(manifest: dict[str, Any]) -> str:
     a = manifest["acceptance"]
+    if manifest.get("quantization") == "fp16-storage":
+        return (
+            "The graph and the PyTorch model with the same FP16-rounded weights agree on every "
+            f"validation label (max logit difference {a['max_abs_logit_diff']:.1e}); a sentence "
+            "scores the same alone and inside a padded batch."
+        )
     if manifest.get("quantization") in (None, "none"):
         return (
             "ONNX and PyTorch agree on every validation label (max logit difference "
@@ -159,6 +211,8 @@ def _agreement(manifest: dict[str, Any]) -> str:
 
 
 def model_card(repo_id: str, manifest: dict[str, Any], ev: dict[str, Any]) -> str:
+    if "h11_decision" in ev:
+        return student_card(repo_id, manifest, ev)
     v, t, c = ev["validation"], ev["test"], ev["challenge"]
     pc = v["per_class"]
     rob = t["robustness_test"]
@@ -298,6 +352,175 @@ produced them is MIT-licensed in the GitHub repository.
 
 UIT-VSFC: Nguyen et al., 2018, *UIT-VSFC: Vietnamese Students' Feedback Corpus for Sentiment
 Analysis*. PhoBERT: Nguyen and Nguyen, 2020, *PhoBERT: Pre-trained language models for Vietnamese*.
+"""
+
+
+def _latency_line(lat: dict[str, Any] | None) -> str:
+    if not lat:
+        return ""
+    return (
+        f"\n**Speed** (laptop CPU, one sentence, raw text through the served pipeline; median of "
+        f"{lat['sessions']} sessions): p95 **{lat['candidate_p95_median_ms']:.1f} ms** against "
+        f"{lat['served_p95_median_ms']:.1f} ms for the 12-layer model measured in the same sessions "
+        f"({lat['served_p95_median_ms'] / lat['candidate_p95_median_ms']:.1f}x faster).\n"
+    )
+
+
+def student_card(repo_id: str, manifest: dict[str, Any], ev: dict[str, Any]) -> str:
+    """The card of the distilled 6-layer student (Cycle 5 H11, ADR-039)."""
+    v, t, c = ev["validation"], ev["test"], ev["challenge"]
+    pc = v["per_class"]
+    rob, cal = t["robustness_test"], t["calibration"]
+    rules = ev["h11_decision"]["rules"]
+    five = ev["h11_gate"]["five_seed_test"]
+    paired = five["paired_student_minus_teacher"]
+    sd, td = ev["h11_summary"]["sets"], ev["h11_teacher_summary"]["sets"]
+    size_mb = (SERVED / manifest["model_file"]).stat().st_size / 1e6
+    flips = ev["h11_summary"]["vilexnorm_dev"]["flip_rate"]
+    t_flips = ev["h11_teacher_summary"]["vilexnorm_dev"]["flip_rate"]
+    cats = "\n".join(
+        f"| `{k}` | {x['n']} | {x['accuracy']:.3f} |" for k, x in sorted(c["by_category"].items())
+    )
+    files = "\n".join(f"| `{name}` | `{sha}` |" for name, sha in sorted(manifest["_files"].items()))
+    student5 = ", ".join(f"{x:.4f}" for x in five["student"].values())
+    return f"""---
+language: vi
+license: cc-by-nc-sa-4.0
+library_name: onnx
+pipeline_tag: text-classification
+base_model: vinai/phobert-base
+datasets:
+- {HF_DATASET_ID}
+tags:
+- sentiment-analysis
+- vietnamese
+- phobert
+- onnx
+- knowledge-distillation
+- student-feedback
+---
+
+# ViFeedback sentiment: a 6-layer PhoBERT student, {size_mb:.0f} MB
+
+Sentiment (negative / neutral / positive) for Vietnamese student feedback about university courses.
+A 6-layer PhoBERT student distilled from a 5-seed ensemble of the 12-layer ViFeedback model, as
+accurate as its teacher on UIT-VSFC at about half the latency. Shipped as the {_graph_kind(manifest)}
+({size_mb:.1f} MB) the ViFeedback service runs, plus the PyTorch checkpoint it was exported from.
+
+Code, evaluation protocol and every number below: https://github.com/ThanhDatVN/ViFeedback-NLP-Service
+
+## Input contract
+
+The model expects **pyvi word-segmented, lowercase** text (`giảng_viên nhiệt_tình`), at most
+{manifest["max_length"]} tokens. ONNX Runtime folds the FP16-to-FP32 casts when it loads the graph.
+
+```python
+import numpy as np, onnxruntime as ort
+from pyvi import ViTokenizer
+from transformers import AutoTokenizer
+
+tok = AutoTokenizer.from_pretrained("{repo_id}")
+sess = ort.InferenceSession("{manifest["model_file"]}")  # downloaded from this repository
+text = ViTokenizer.tokenize("thầy dạy rất dễ hiểu".lower())
+enc = tok([text], truncation=True, max_length={manifest["max_length"]}, return_tensors="np")
+logits = sess.run(None, {{"input_ids": enc["input_ids"], "attention_mask": enc["attention_mask"]}})[0]
+print({manifest["labels"]}[int(logits.argmax())])
+```
+
+For calibrated probabilities, divide the logits by **T = {cal["temperature_fit_on_validation"]:.2f}**
+(fitted on validation) before the softmax.
+{_optional_parts(manifest, None)}
+## Training (knowledge distillation)
+
+- **Student.** PhoBERT-base's embeddings and first six layers (`vinai/phobert-base` at
+  `{MODEL_REVISIONS.get("phobert-base", "?")[:12]}`) and a new 3-class head: 92.5 M parameters.
+- **Teacher.** The mean, at temperature 2, of five seeds of the 12-layer ViFeedback model (PhoBERT-base
+  trained on UIT-VSFC with diacritic and teencode augmentation).
+- **Data.** UIT-VSFC train (11,426 sentences, gold labels, the same 30% augmentation) plus 28,648
+  unlabeled texts labelled by the teacher: in-scope forum posts from another university (NEU-ESC train)
+  and real social-media comments (ViLexNorm train).
+- **Loss.** 0.5 * T^2 * KL(teacher ‖ student) + 0.5 * cross-entropy on labelled text; the KL term alone
+  on unlabeled text. 4 epochs, lr 2e-5, batch 32; the epoch selected on validation macro-F1.
+- **Storage.** Weights rounded to FP16 in the file and cast to FP32 in the graph, so every
+  multiplication is FP32 and nothing depends on the batch.
+
+The student passed a rule declared before it was trained (`configs/experiments/cycle5.yaml`, H11):
+five seeds against the teacher's five, pooled UIT-VSFC + NEU-ESC validation drop
+{rules["2_pooled_drop_bound"]["observed_drop"]:.4f} with a one-sided 95% bound of
+{rules["2_pooled_drop_bound"]["upper_95_one_sided"]:.4f} (limit 0.01); UIT-VSFC drop
+{rules["3a_uit_validation_macro_f1_drop"]["drop"]:.4f}; neutral F1 {-rules["3b_uit_validation_neutral_f1_drop"]["drop"]:+.4f} for the student.
+
+## Evaluation
+
+Macro-F1 is the headline because `neutral` is 4% of the data and carries a third of the average.
+
+| Split | Macro-F1 | Negative F1 | Neutral F1 | Positive F1 |
+|---|---:|---:|---:|---:|
+| Validation (1,583) | {v["macro_f1"]:.4f} | {pc["negative"]["f1"]:.3f} | {pc["neutral"]["f1"]:.3f} | {pc["positive"]["f1"]:.3f} |
+| Test (3,166), evaluated once | {t["test"]["macro_f1"]:.4f} | {t["test"]["per_class_f1"]["negative"]:.3f} | {t["test"]["per_class_f1"]["neutral"]:.3f} | {t["test"]["per_class_f1"]["positive"]:.3f} |
+
+Test macro-F1 over the five student seeds: {student5}; against the teacher's five seeds
+{paired["mean_delta"]:+.4f} on average.
+
+{_agreement(manifest)}
+{_latency_line(ev.get("h11_latency"))}
+**Robustness** (test, macro-F1): no diacritics {rob["nodiacritic"]["macro_f1"]:.3f}; half the diacritics
+{rob["nodiacritic-50"]["macro_f1"]:.3f}; teencode {rob["teencode-100"]["macro_f1"]:.3f}; 5% character
+noise {rob["charnoise-5"]["macro_f1"]:.3f}. With the restorer in front, validation with every diacritic
+stripped scores {manifest["restorer"]["acceptance"]["stripped_validation_macro_f1_with"]:.3f}.
+
+**Calibration** (test): temperature scaling cuts NLL {cal["uncalibrated"]["nll"]:.3f} →
+{cal["calibrated"]["nll"]:.3f} and ECE {cal["uncalibrated"]["ece_equal_width"]:.3f} →
+{cal["calibrated"]["ece_equal_width"]:.3f}.
+
+**Challenge set** (305 constructed sentences, not from UIT-VSFC; accuracy per category):
+
+| Category | n | Accuracy |
+|---|---:|---:|
+{cats}
+
+## Limitations
+
+- **Neutral is weak** (F1 about 0.6 to 0.69). Neutral errors are confident, so thresholds do not fix them.
+- **Real informal typing is unstable.** Between a real social-media comment and its human
+  normalization, {flips:.0%} of this model's labels change on the ViLexNorm development pairs
+  (the teacher: {t_flips:.0%}).
+- **Real student text from another university is much harder.** On NEU-ESC validation (3,305 forum
+  posts) macro-F1 is {sd["neu_validation_all"]["macro_f1"]:.3f} (the teacher: {td["neu_validation_all"]["macro_f1"]:.3f}). Forum posts are mostly
+  non-evaluative; the model was trained on course surveys.
+- **Input is lowercased** before scoring, as the training data is.
+- **Off-topic input still gets a label**; `in_scope` (above) is the signal to act on. It judges topic
+  from words, so a short or unusual course comment can be flagged.
+- **One training domain.** Student feedback from one Vietnamese university.
+- The suggestion convention is the corpus's: a request for change (*thầy nên…*) is `negative`.
+
+## Files and checksums (SHA-256)
+
+| File | SHA-256 |
+|---|---|
+{files}
+
+Release manifest: `manifest.json` (acceptance on the full validation set). Training run:
+`{ev["run_id"]}`.
+
+## Intended use
+
+Research and experiments on Vietnamese student feedback about courses: aggregate sentiment over
+many comments, error analysis, robustness studies. It is not meant for decisions about an individual
+student or lecturer, and its labels follow UIT-VSFC's annotation guide (a request for change is
+`negative`), which other institutions' annotators may not share.
+
+## Licence
+
+Weights: **CC BY-NC-SA 4.0**, for research and other non-commercial use, shared alike. The student
+learned from UIT-VSFC (released by its authors for research), from NEU-ESC posts and from ViLexNorm
+comments (CC BY-NC-SA 4.0), and derives from PhoBERT (MIT). The code that produced it is MIT-licensed
+in the GitHub repository.
+
+## Citation
+
+UIT-VSFC: Nguyen et al., 2018. NEU-ESC: Mai et al., 2025. ViLexNorm: Nguyen et al., 2024 (EACL).
+PhoBERT: Nguyen and Nguyen, 2020. Distillation: Hinton et al., 2015.
 """
 
 

@@ -1,0 +1,81 @@
+{
+  "declared_in": "configs/experiments/cycle5.yaml v3 H11_release.latency",
+  "machine": "the reference laptop as it was (the owner waived the idle-machine condition, 2026-09-30)",
+  "metric": "S1 (raw text through the served pipeline) p95, ms; two passes per session, a pass reportable only if steady",
+  "sessions": 3,
+  "per_session": [
+    {
+      "session": 1,
+      "served": {
+        "p95_ms": 21.97,
+        "reportable": true,
+        "basis": "pass 2 only (the other was not steady)",
+        "p95_by_pass": [
+          23.561,
+          21.967
+        ]
+      },
+      "candidate": {
+        "p95_ms": 11.63,
+        "reportable": true,
+        "basis": "mean of both steady passes",
+        "p95_by_pass": [
+          11.516,
+          11.75
+        ]
+      }
+    },
+    {
+      "session": 2,
+      "served": {
+        "p95_ms": 24.79,
+        "reportable": true,
+        "basis": "mean of both steady passes",
+        "p95_by_pass": [
+          24.891,
+          24.686
+        ]
+      },
+      "candidate": {
+        "p95_ms": 12.93,
+        "reportable": true,
+        "basis": "pass 1 only (the other was not steady)",
+        "p95_by_pass": [
+          12.925,
+          11.804
+        ]
+      }
+    },
+    {
+      "session": 3,
+      "served": {
+        "p95_ms": 22.06,
+        "reportable": true,
+        "basis": "pass 1 only (the other was not steady)",
+        "p95_by_pass": [
+          22.061,
+          22.045
+        ]
+      },
+      "candidate": {
+        "p95_ms": null,
+        "reportable": false,
+        "basis": "no steady pass",
+        "p95_by_pass": [
+          11.713,
+          11.495
+        ]
+      }
+    }
+  ],
+  "candidate_p95_median_ms": 12.28,
+  "served_p95_median_ms": 22.06,
+  "reportable_sessions": {
+    "candidate": 2,
+    "served": 3
+  },
+  "candidate_worst_pass_any_session_ms": 12.925,
+  "limit_ms": 30,
+  "note": "Session 3 of the candidate had no steady pass (its passes read 11.71 and 11.50 ms); as in C4 (Cycle 2), the median is over the reportable sessions, and every pass of every session is below the limit.",
+  "passed": true
+}

@@ -800,6 +800,8 @@ __all__ = [
     "SoftLabelCache",
     "apply_rule",
     "cache_path",
+    "challenge_report",
+    "closing_gate",
     "config",
     "confirm",
     "distill_loss",
@@ -815,3 +817,89 @@ __all__ = [
     "tempered_probs",
     "train_student",
 ]
+
+
+def closing_gate() -> dict[str, Any]:
+    """cycle5.yaml v3 H11_release.closing_gate: the students on UIT-VSFC test, once, each touch logged.
+
+    Reported for the card and S1; nothing is selected on it. Refuses to run a second time.
+    """
+    import json
+
+    from vifeedback.constants import SEEDS
+    from vifeedback.evaluation import closing_gate as CG
+    from vifeedback.evaluation import decisions as D
+    from vifeedback.evaluation import error_analysis as EA
+    from vifeedback.evaluation import metrics as M
+    from vifeedback.evaluation.report import yaml_safe
+
+    dst = OUT / "closing_gate" / "summary.json"
+    if dst.exists():
+        raise FileExistsError(f"the H11 closing gate has run already: {dst}")
+    teacher, _, _ = resolve_teacher()
+    init = json.loads((OUT / "selection.json").read_text(encoding="utf-8"))["chosen"]
+    reason = "Cycle 5 H11 closing gate (cycle5.yaml v3): the students on test, once"
+    gi = CG.inputs()
+    five: dict[int, float] = {}
+    row42: dict[str, Any] = {}
+    for s in SEEDS:
+        ck = paths.MODELS / config(init, s, teacher).run_id("ckpt")
+        if s == 42:
+            row42 = CG.row(ck, gi)
+            five[s] = row42["test"]["macro_f1"]
+        else:
+            five[s] = M.macro_f1(gi["y_te"], EA.predict_proba(ck, gi["x_te"]).argmax(1), 3)
+        CG.log_test_use(ck, f"P{PHASE_NUM}", reason)
+    cycle1 = json.loads(
+        (paths.RESULTS / "studies" / "closing_gate" / "summary.json").read_text(encoding="utf-8")
+    )
+    teacher5 = {int(k): float(v) for k, v in cycle1["five_seed_test"]["augmented"].items()}
+    out = {
+        "declared_in": "configs/experiments/cycle5.yaml v3 H11_release.closing_gate",
+        "reason": reason,
+        "slice_version": gi["slice_version"],
+        "student": init,
+        "teacher": teacher,
+        "checkpoints": {"h11_student": row42},
+        "five_seed_test": {
+            "student": five,
+            "teacher_cycle1": teacher5,
+            "paired_student_minus_teacher": D.paired(teacher5, five),
+        },
+    }
+    dst.parent.mkdir(parents=True, exist_ok=True)
+    dst.write_text(json.dumps(yaml_safe(out), indent=2, ensure_ascii=False), encoding="utf-8")
+    return out
+
+
+def challenge_report() -> dict[str, Any]:
+    """The seed-42 student on challenge v1 (development data since Cycle 3), for its model card.
+
+    Same code and hash check as `study challenge`; written next to the H11 results so the H6 record
+    stays as it was. Reported, not a decision.
+    """
+    import json
+
+    from vifeedback.evaluation import challenge as CH
+    from vifeedback.evaluation import error_analysis as EA
+    from vifeedback.evaluation.report import yaml_safe
+
+    teacher, _, _ = resolve_teacher()
+    init = json.loads((OUT / "selection.json").read_text(encoding="utf-8"))["chosen"]
+    ck = paths.MODELS / config(init, 42, teacher).run_id("ckpt")
+    df = CH.load()  # raises if the file differs from the hash frozen in cycle2.yaml
+    probs = EA.predict_proba(ck, CH.pipeline("seg_pyvi")(df.text.tolist()))
+    pred = probs.argmax(1)
+    out = {
+        "challenge_sha256": CH.declared_sha256(),
+        "checkpoints": {"h11_student": str(ck)},
+        "h11_student": {
+            **CH.category_report(df, pred),
+            "negation_pairs": CH.negation_pairs(df, pred),
+            "out_of_scope_confidence": CH.out_of_scope_confidence(df, probs),
+        },
+    }
+    (OUT / "challenge_summary.json").write_text(
+        json.dumps(yaml_safe(out), indent=2, ensure_ascii=False), encoding="utf-8"
+    )
+    return out

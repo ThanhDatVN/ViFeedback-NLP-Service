@@ -195,8 +195,14 @@ def release(
     from vifeedback.constants import label_names
     from vifeedback.inference import onnx_export as OX
 
-    if quantize not in ("none", "dynamic", "static", "careful"):
-        raise ValueError(f"quantize must be none | dynamic | static | careful, got {quantize!r}")
+    if quantize not in ("none", "dynamic", "static", "careful", "fp16-storage"):
+        raise ValueError(
+            f"quantize must be none | dynamic | static | careful | fp16-storage, got {quantize!r}"
+        )
+    if quantize == "fp16-storage" and with_features:
+        raise ValueError(
+            "fp16-storage graphs carry logits only; the scope detector needs no features"
+        )
 
     stamp = time.strftime("%Y%m%d-%H%M%S")
     staging = out_dir.parent / f".staging-{out_dir.name}-{stamp}"
@@ -212,6 +218,21 @@ def release(
             if f.is_file() and (f == src or f.suffix in (".txt", ".json", ".codes")):
                 shutil.copy2(f, staging / f.name)
         served = staging / src.name
+    elif quantize == "fp16-storage":
+        # ADR-039: weights stored in FP16, computed in FP32; not passed through `optimize_graph`,
+        # which would fold the casts back into FP32 initializers.
+        staging.mkdir(parents=True)
+        dummy = tok(
+            ["giảng_viên nhiệt_tình với sinh_viên .", "môn học bổ_ích"],
+            return_tensors="pt",
+            padding=True,
+            truncation=True,
+            max_length=max_length,
+        )
+        served = OX.export_fp16_storage(
+            model, (dummy["input_ids"], dummy["attention_mask"]), staging / "model.fp16.onnx"
+        )
+        tok.save_pretrained(staging)
     else:
         fp32 = OX.export_fp32(model, tok, staging, max_length, with_features=with_features)
         try:
@@ -264,9 +285,13 @@ def release(
     clf = OX.OnnxClassifier(staging, max_length=max_length, model_file=served.name)
     got = np.concatenate([clf.logits(accept[i : i + 32]) for i in range(0, len(accept), 32)])
     single = np.concatenate([clf.logits([t]) for t in accept[:32]])
-    ref = _torch_logits(model, tok, accept, max_length)
+    # An FP16-storage graph is checked like FP32 against the PyTorch model with the same FP16-rounded
+    # weights: the rounding is the artifact's definition, not an error of the export.
+    ref_model = OX.fp16_rounded(model) if quantize == "fp16-storage" else model
+    ref = _torch_logits(ref_model, tok, accept, max_length)
     k = len(label_names(task))
-    verdict = acceptance(ref, got, np.asarray(accept_y), k, quantize != "none", single)
+    quantized = quantize not in ("none", "fp16-storage")
+    verdict = acceptance(ref, got, np.asarray(accept_y), k, quantized, single)
     log(
         f"  acceptance on {verdict['n']} validation sentences: macro-F1 torch "
         f"{verdict['macro_f1_torch']:.4f} / onnx {verdict['macro_f1_onnx']:.4f}, label agreement "

@@ -8,6 +8,9 @@ under `models/serve/<task>/` (see `vifeedback serve export`) and skip otherwise,
 
 from __future__ import annotations
 
+import os
+from pathlib import Path
+
 import pytest
 
 pytest.importorskip("fastapi")
@@ -17,7 +20,8 @@ from fastapi.testclient import TestClient
 
 from vifeedback import paths
 
-SERVE = paths.MODELS / "serve"
+# SERVE_DIR_UNDER_TEST points the suite at another release folder, e.g. a candidate (models/candidate).
+SERVE = Path(os.getenv("SERVE_DIR_UNDER_TEST", str(paths.MODELS / "serve")))
 
 pytestmark = pytest.mark.skipif(
     not (SERVE / "sentiment" / "manifest.json").exists(),

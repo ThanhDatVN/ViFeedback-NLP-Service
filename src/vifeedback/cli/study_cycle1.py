@@ -681,84 +681,30 @@ def study_closing_gate(
     temperature fitted on validation and applied to test, and the robustness suites on test. Plus the
     5-seed paired test comparison from the registry. Every test touch is logged.
     """
-    from datetime import UTC, datetime
     from pathlib import Path
 
-    import numpy as np
     import pandas as pd
 
-    from vifeedback.data.loader import load
-    from vifeedback.evaluation import calibration as C
+    from vifeedback.evaluation import closing_gate as CG
     from vifeedback.evaluation import decisions as D
-    from vifeedback.evaluation import error_analysis as EA
-    from vifeedback.evaluation import metrics as M
-    from vifeedback.evaluation import robustness as R
     from vifeedback.evaluation.report import yaml_safe
-    from vifeedback.preprocess.segment import get_segmenter
-    from vifeedback.preprocess.variants import load_variant
 
     aug = sorted(paths.MODELS.glob(aug_glob))
     if not aug:
         raise typer.BadParameter(f"no augmented checkpoint matching {aug_glob} under models/")
     checkpoints = {"ce_deployed": Path(ce_checkpoint), "h2_augmented": aug[-1]}
 
-    seg = get_segmenter("pyvi")
-    te, dv = load_variant("seg_pyvi", "test"), load_variant("seg_pyvi", "validation")
-    y_te, y_dv = te.sentiment.to_numpy(), dv.sentiment.to_numpy()
-    raw_te = load("test")["sentence"].tolist()
-    slices = json.loads(
-        (paths.CONFIGS / "data" / "eval_slices_v1.json").read_text(encoding="utf-8")
-    )
-    keep = np.setdiff1d(np.arange(len(y_te)), slices["test"]["overlapping_train_indices"])
-
-    out: dict = {"reason": reason, "slice_version": slices["version"], "checkpoints": {}}
+    gi = CG.inputs()
+    out: dict = {"reason": reason, "slice_version": gi["slice_version"], "checkpoints": {}}
     for name, ck in checkpoints.items():
-        p_te = EA.predict_proba(ck, te.sentence.tolist())
-        p_dv = EA.predict_proba(ck, dv.sentence.tolist())
-        t = C.fit_temperature(C.probs_to_logits(p_dv), y_dv)  # fitted on validation only
-        cal_te = C.apply_temperature(C.probs_to_logits(p_te), t)
-        full = M.evaluate(y_te, p_te.argmax(1), "sentiment", y_prob=p_te)
-        sl = M.evaluate(y_te[keep], p_te[keep].argmax(1), "sentiment")
-        rob = {}
-        for suite in ("nodiacritic", "nodiacritic-50", "teencode-100", "charnoise-5"):
-            pert, _ = R.perturb(raw_te, suite, seed=42)
-            pred = EA.predict_proba(ck, seg(pert)).argmax(1)
-            rob[suite] = {
-                "macro_f1": M.macro_f1(y_te, pred, 3),
-                "pred_share_neutral": float((pred == 1).mean()),
-            }
-        out["checkpoints"][name] = {
-            "checkpoint": str(ck),
-            "test": {
-                "macro_f1": full["macro_f1"],
-                "weighted_f1": full["weighted_f1"],
-                "per_class_f1": {c: v["f1"] for c, v in full["per_class"].items()},
-            },
-            "test_excluding_train_overlap": {
-                "n": len(keep),
-                "macro_f1": sl["macro_f1"],
-                "neutral_f1": sl["per_class"]["neutral"]["f1"],
-            },
-            "calibration": {
-                "temperature_fit_on_validation": t,
-                "uncalibrated": {
-                    k: v
-                    for k, v in C.summary(p_te, y_te).items()
-                    if k in ("nll", "brier", "ece_equal_width", "ece_equal_mass")
-                },
-                "calibrated": {
-                    k: v
-                    for k, v in C.summary(cal_te, y_te).items()
-                    if k in ("nll", "brier", "ece_equal_width", "ece_equal_mass")
-                },
-            },
-            "robustness_test": rob,
-        }
-        with open(paths.TEST_EVAL_LOG, "a", encoding="utf-8") as f:
-            f.write(f"{datetime.now(UTC).strftime('%Y-%m-%d %H:%M')}\t{ck.name}\tP9\t{reason}\n")
+        r = CG.row(ck, gi)
+        out["checkpoints"][name] = r
+        CG.log_test_use(ck, "P9", reason)
         typer.echo(
-            f"  {name:13s} test macro-F1 {full['macro_f1']:.4f}  (excl. overlap {sl['macro_f1']:.4f})  "
-            f"T={t:.2f}  no-diacritic {rob['nodiacritic']['macro_f1']:.3f}"
+            f"  {name:13s} test macro-F1 {r['test']['macro_f1']:.4f}  (excl. overlap "
+            f"{r['test_excluding_train_overlap']['macro_f1']:.4f})  "
+            f"T={r['calibration']['temperature_fit_on_validation']:.2f}  no-diacritic "
+            f"{r['robustness_test']['nodiacritic']['macro_f1']:.3f}"
         )
 
     reg = pd.read_csv(paths.REGISTRY)

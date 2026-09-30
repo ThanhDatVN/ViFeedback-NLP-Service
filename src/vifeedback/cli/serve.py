@@ -18,7 +18,10 @@ def serve_export(
         "", help="the checkpoint's training preprocessing; inferred from its name if omitted"
     ),
     max_length: int = typer.Option(96),
-    quantize: str = typer.Option("dynamic", help="none | dynamic | static | careful (S5')"),
+    quantize: str = typer.Option(
+        "dynamic",
+        help="none | dynamic | static | careful (S5') | fp16-storage (FP16 weights, FP32 compute; H11)",
+    ),
     acceptance_set: str = typer.Option(
         "validation",
         help="validation (UIT-VSFC) | pooled: UIT-VSFC + NEU-ESC validation (S5', cycle4.yaml v4)",
@@ -98,7 +101,15 @@ def serve_export(
 
 
 @serve_app.command("add-restorer")
-def serve_add_restorer(task: str = typer.Option("sentiment")) -> None:
+def serve_add_restorer(
+    task: str = typer.Option("sentiment"),
+    serve_dir: str = typer.Option(
+        "", help="the release's parent folder; default models/serve (a candidate: models/candidate)"
+    ),
+    record: str = typer.Option(
+        "", help="results/studies/export/<record>.json; default: the served release's record name"
+    ),
+) -> None:
     """Attach the diacritic restorer to the released artifact (cycle3.yaml v5 S2b passed, ADR-031).
 
     Built from UIT-VSFC train only. Accepted only if every validation label of the served ONNX graph
@@ -107,6 +118,7 @@ def serve_add_restorer(task: str = typer.Option("sentiment")) -> None:
     """
     import hashlib
     import shutil
+    from pathlib import Path
 
     import numpy as np
 
@@ -117,10 +129,12 @@ def serve_add_restorer(task: str = typer.Option("sentiment")) -> None:
     from vifeedback.preprocess.normalize import model_text, strip_diacritics
     from vifeedback.preprocess.segment import get_segmenter
 
-    d = paths.MODELS / "serve" / task
+    d = (Path(serve_dir) if serve_dir else paths.MODELS / "serve") / task
     mpath = d / "manifest.json"
     manifest = json.loads(mpath.read_text(encoding="utf-8"))
-    clf = OnnxClassifier(d, max_length=manifest.get("max_length", 96))
+    clf = OnnxClassifier(
+        d, max_length=manifest.get("max_length", 96), model_file=manifest.get("model_file")
+    )
     segment = get_segmenter("pyvi")
     restorer = Restorer.fit(load("train").sentence.tolist())
 
@@ -158,8 +172,9 @@ def serve_add_restorer(task: str = typer.Option("sentiment")) -> None:
         "acceptance": acceptance,
     }
     mpath.write_text(json.dumps(manifest, indent=2, ensure_ascii=False), encoding="utf-8")
-    record = paths.RESULTS / "studies" / "export" / "laptop_fp32_augmented_restorer_manifest.json"
-    record.write_text(json.dumps(manifest, indent=2, ensure_ascii=False), encoding="utf-8")
+    name = record or "laptop_fp32_augmented_restorer_manifest"
+    record_path = paths.RESULTS / "studies" / "export" / f"{name}.json"
+    record_path.write_text(json.dumps(manifest, indent=2, ensure_ascii=False), encoding="utf-8")
     typer.echo(f"  restorer attached: {out.name} sha256={manifest['restorer']['sha256'][:12]}")
 
 
@@ -245,7 +260,15 @@ def serve_add_ood(task: str = typer.Option("sentiment")) -> None:
 
 
 @serve_app.command("add-scope")
-def serve_add_scope(task: str = typer.Option("sentiment")) -> None:
+def serve_add_scope(
+    task: str = typer.Option("sentiment"),
+    serve_dir: str = typer.Option(
+        "", help="the release's parent folder; default models/serve (a candidate: models/candidate)"
+    ),
+    record: str = typer.Option(
+        "", help="results/studies/export/<record>.json; default: the served release's record name"
+    ),
+) -> None:
     """Replace the Mahalanobis score behind `in_scope` with B4's topic-aware detector (ADR-034).
 
     Exports the fitted TF-IDF logistic regression to scope.npz (no pickle at serving time), checks
@@ -256,13 +279,14 @@ def serve_add_scope(task: str = typer.Option("sentiment")) -> None:
     import hashlib
     import pickle
     import shutil
+    from pathlib import Path
 
     import numpy as np
 
     from vifeedback.evaluation import scope as SC
     from vifeedback.serving.scope_tfidf import TfidfScope
 
-    d = paths.MODELS / "serve" / task
+    d = (Path(serve_dir) if serve_dir else paths.MODELS / "serve") / task
     mpath = d / "manifest.json"
     manifest = json.loads(mpath.read_text(encoding="utf-8"))
     src = paths.MODELS / "scope" / "b4prime_tfidf_logistic.pkl"
@@ -308,10 +332,9 @@ def serve_add_scope(task: str = typer.Option("sentiment")) -> None:
         },
     }
     mpath.write_text(json.dumps(manifest, indent=2, ensure_ascii=False), encoding="utf-8")
-    record = (
-        paths.RESULTS / "studies" / "export" / "laptop_fp32_augmented_restorer_scope_manifest.json"
-    )
-    record.write_text(json.dumps(manifest, indent=2, ensure_ascii=False), encoding="utf-8")
+    name = record or "laptop_fp32_augmented_restorer_scope_manifest"
+    record_path = paths.RESULTS / "studies" / "export" / f"{name}.json"
+    record_path.write_text(json.dumps(manifest, indent=2, ensure_ascii=False), encoding="utf-8")
     typer.echo(f"  scope detector attached: {out.name} sha256={manifest['scope']['sha256'][:12]}")
 
 
