@@ -458,3 +458,65 @@ def serve_run(
     import uvicorn
 
     uvicorn.run("vifeedback.serving.app:app", host=host, port=port, reload=reload)
+
+
+@serve_app.command("add-temperature")
+def serve_add_temperature(
+    task: str = typer.Option("sentiment"),
+    serve_dir: str = typer.Option("", help="the release's parent folder; default models/serve"),
+    record: str = typer.Option("", help="results/studies/export/<record>.json; default: none"),
+) -> None:
+    """Attach a temperature so the service reports calibrated confidence (ADR-041).
+
+    T is fitted on UIT-VSFC validation logits of the released graph itself. Dividing logits by one
+    positive number changes no label. The test evidence is the closing gates' (T fitted on
+    validation, applied to test): NLL and ECE fall for both the 12-layer model and the student.
+    """
+    from pathlib import Path
+
+    import numpy as np
+
+    from vifeedback.evaluation import calibration as C
+    from vifeedback.inference.onnx_export import OnnxClassifier
+    from vifeedback.preprocess.variants import load_variant
+
+    d = (Path(serve_dir) if serve_dir else paths.MODELS / "serve") / task
+    mpath = d / "manifest.json"
+    manifest = json.loads(mpath.read_text(encoding="utf-8"))
+    clf = OnnxClassifier(
+        d, max_length=manifest.get("max_length", 96), model_file=manifest.get("model_file")
+    )
+    dv = load_variant(manifest["preprocessing"], "validation")
+    x, y = dv.sentence.tolist(), dv[manifest["task"]].to_numpy()
+    logits = np.concatenate([clf.logits(x[i : i + 64]) for i in range(0, len(x), 64)])
+    t = C.fit_temperature(logits, y)
+
+    def probs(z: np.ndarray) -> np.ndarray:
+        e = np.exp(z - z.max(axis=1, keepdims=True))
+        return e / e.sum(axis=1, keepdims=True)
+
+    keys = ("nll", "brier", "ece_equal_width")
+    before = {k: v for k, v in C.summary(probs(logits), y).items() if k in keys}
+    after = {k: v for k, v in C.summary(probs(logits / t), y).items() if k in keys}
+    labels_changed = int((logits.argmax(1) != (logits / t).argmax(1)).sum())
+    if labels_changed or not t > 0:
+        raise typer.Exit(1)
+    manifest["temperature"] = {
+        "value": t,
+        "fitted_on": f"UIT-VSFC validation ({len(y):,}), logits of {manifest['model_file']}",
+        "decided_by": "ADR-041: Cycle 0 calibration study; confirmed on test at the closing gates",
+        "validation_before": before,
+        "validation_after": after,
+        "labels_changed": labels_changed,
+    }
+    (d / "manifest.before-temperature.json").write_text(
+        mpath.read_text(encoding="utf-8"), encoding="utf-8"
+    )
+    mpath.write_text(json.dumps(manifest, indent=2, ensure_ascii=False), encoding="utf-8")
+    if record:
+        dst = paths.RESULTS / "studies" / "export" / f"{record}.json"
+        dst.write_text(json.dumps(manifest, indent=2, ensure_ascii=False), encoding="utf-8")
+    typer.echo(
+        f"  T = {t:.3f}; validation NLL {before['nll']:.3f} -> {after['nll']:.3f}, "
+        f"ECE {before['ece_equal_width']:.3f} -> {after['ece_equal_width']:.3f}; labels changed 0"
+    )

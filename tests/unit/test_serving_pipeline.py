@@ -59,3 +59,25 @@ def test_loaders_refuse_a_file_that_does_not_match_its_hash(tmp_path):
     no_features.has_features = False
     with pytest.raises(ValueError, match="features"):
         SP.load_ood(tmp_path, {"file": "ood.npz", "sha256": good}, no_features)
+
+
+class _Logits:
+    def logits(self, texts):
+        return np.tile([0.0, 1.0, 4.0], (len(texts), 1))
+
+    def predict(self, texts):
+        z = self.logits(texts)
+        e = np.exp(z - z.max(axis=1, keepdims=True))
+        p = e / e.sum(axis=1, keepdims=True)
+        return p.argmax(axis=1), p
+
+
+def test_temperature_softens_probabilities_without_changing_labels():
+    """ADR-041: calibrated confidence; softmax(logits / T) keeps every argmax."""
+    ids1, p1, _ = SP.score(_Logits(), ["a", "b"])
+    ids2, p2, _ = SP.score(_Logits(), ["a", "b"], temperature=2.0)
+    assert (ids1 == ids2).all() and p2[:, 2].max() < p1[:, 2].min()
+    z = np.array([0.0, 0.5, 2.0])
+    assert np.allclose(p2[0], np.exp(z) / np.exp(z).sum())
+    _, p3, _ = SP.score(_Logits(), ["a"], temperature=None)
+    assert np.allclose(p3, p1[:1])

@@ -1,0 +1,85 @@
+{
+  "task": "sentiment",
+  "model_file": "model.fp16.onnx",
+  "sha256": "46dc62a7a91737c61ea002c5df262ef94c00675b645ac3a47aa34049781bac07",
+  "quantization": "fp16-storage",
+  "preprocessing": "seg_pyvi",
+  "max_length": 96,
+  "labels": [
+    "negative",
+    "neutral",
+    "positive"
+  ],
+  "outputs": [
+    "logits"
+  ],
+  "checkpoint": "models/p14-sent-phobert-base-seg_pyvi-h11-pretrained-first6-from-served-s42-6b169fb7-ckp",
+  "calibration": null,
+  "acceptance": {
+    "n": 1583,
+    "max_abs_logit_diff": 1.0877847671508789e-05,
+    "logits_close": true,
+    "label_agreement": 1.0,
+    "macro_f1_torch": 0.8730112345882822,
+    "macro_f1_onnx": 0.8730112345882822,
+    "macro_f1_drop": 0.0,
+    "batch_vs_single_max_diff": 0.0,
+    "batch_vs_single_label_agreement": 1.0,
+    "failures": [],
+    "passed": true
+  },
+  "acceptance_set": "validation",
+  "prebuilt_from": null,
+  "created": "20260930-183431",
+  "software": {
+    "onnxruntime": "1.30.0",
+    "transformers": "5.17.0"
+  },
+  "restorer": {
+    "file": "restorer.json",
+    "sha256": "7ed4a90368905eb6d532d795ced2f138c3a03434200e47d7b31cdf4b4f63c018",
+    "threshold": 0.09090909090909091,
+    "fitted_on": "UIT-VSFC train (syllable forms and word bigrams)",
+    "decided_by": "cycle3.yaml v5 S2b (NEU-ESC confirmation), ADR-031",
+    "acceptance": {
+      "validation_labels_changed": 0,
+      "validation_macro_f1": 0.8730112345882822,
+      "stripped_validation_macro_f1_without": 0.6630927702465576,
+      "stripped_validation_macro_f1_with": 0.8510606143546404,
+      "passed": true
+    }
+  },
+  "scope": {
+    "file": "scope.npz",
+    "sha256": "d3c62672b10fb47cfcf3ff0830dc64199a6a59a7614513f9849169d59f22ca82",
+    "method": "logistic regression on TF-IDF word unigrams and bigrams of the model input",
+    "threshold": -0.17707026030102108,
+    "terms": 70377,
+    "decided_by": "cycle4.yaml v3 B4', ADR-034",
+    "acceptance": {
+      "1_within_source_auroc": 0.9219447176430868,
+      "2_in_scope_flagged": 0.07338842975206611,
+      "3_off_topic_caught": 0.7229129662522202,
+      "4_uit_validation_flagged": 0.0018951358180669614,
+      "passed": true,
+      "numpy_vs_sklearn_max_abs_diff": 7.993605777301127e-15,
+      "texts_checked": 12032
+    }
+  },
+  "temperature": {
+    "value": 1.4908407444408298,
+    "fitted_on": "UIT-VSFC validation (1,583), logits of model.fp16.onnx",
+    "decided_by": "ADR-041: Cycle 0 calibration study; confirmed on test at the closing gates",
+    "validation_before": {
+      "nll": 0.19730204343795776,
+      "brier": 0.08280815827920071,
+      "ece_equal_width": 0.03215827890309967
+    },
+    "validation_after": {
+      "nll": 0.16844935715198517,
+      "brier": 0.07948782261367847,
+      "ece_equal_width": 0.012804894340392194
+    },
+    "labels_changed": 0
+  }
+}

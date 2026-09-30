@@ -1392,3 +1392,30 @@ The limit is 30 ms. Every pass of every session is below it, and the student is 
 - **Lesson for size and speed rules.** Non-inferiority on 1,583 validation sentences is too weak a
   check. A future rule needs a larger acceptance set, for example a held-out part of train kept out
   of both training and selection, next to NEU-ESC.
+
+---
+
+## ADR-041 · 2026-09-30 · The service reports calibrated confidence (temperature scaling) · Accepted
+
+**Context.** Cycle 0 found the model overconfident (T ≈ 1.5 in four independent fits). Both closing
+gates confirmed on test that a temperature fitted on validation transfers:
+- the 12-layer model: NLL 0.262 → 0.207, ECE 0.043 → 0.015 (Cycle 1);
+- the student: NLL 0.251 → 0.208, ECE 0.043 → 0.016 (ADR-040).
+
+The service still reported the raw softmax, so `confidence` overstated how often the label is right.
+Temperature scaling was recommended as worth shipping and never shipped.
+
+**Decision.**
+- `serve add-temperature` fits T on UIT-VSFC validation logits of the released graph itself and
+  records it in the manifest. The service divides the logits by T before the softmax.
+- Labels cannot change: dividing by one positive number keeps every argmax, and the command refuses
+  a release where any validation label moved.
+- Both releases carry their temperature:
+  - the served student: T = 1.491, validation ECE 0.032 → 0.013;
+  - the 12-layer release kept for a swap back: T = 1.551, validation ECE 0.034 → 0.017.
+
+**Consequences.**
+- `confidence` and `probabilities` in the API are calibrated. For example, a short factual sentence
+  the model calls negative now reports 0.55 rather than a near-certain value.
+- The logits the ONNX graph outputs are unchanged. Users of the published files divide by the
+  card's T themselves, as the card already says.

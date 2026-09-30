@@ -134,6 +134,13 @@ def _load() -> None:
             )
             log.error(_state["preprocessing_error"] + " — /readyz will report not ready")
 
+    # Calibrated confidence (ADR-041): the release's temperature, fitted on validation.
+    _state["temperature"] = {
+        task: float(m["temperature"]["value"])
+        for task, m in manifests.items()
+        if m.get("temperature")
+    }
+
     vf = MODEL_DIR / "VERSION"
     if vf.exists():
         _state["version"] = vf.read_text(encoding="utf-8").strip()
@@ -277,7 +284,8 @@ def classify(req: ClassifyRequest) -> ClassifyResponse:
     )
     detector = _state.get("scope", {}).get(req.task)
     ood = None if detector is not None else _state.get("ood", {}).get(req.task)
-    ids, probs, scope = pipeline.score(clf, model_input, ood, detector)
+    temperature = _state.get("temperature", {}).get(req.task)
+    ids, probs, scope = pipeline.score(clf, model_input, ood, detector, temperature)
     threshold = (
         detector.threshold if detector is not None else ood["threshold"] if ood is not None else 0.0
     )

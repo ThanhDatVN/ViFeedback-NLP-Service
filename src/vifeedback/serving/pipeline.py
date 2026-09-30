@@ -64,25 +64,37 @@ def prepare(
     return segmenter(normalized) if segmenter is not None else normalized
 
 
+def _softmax(logits: np.ndarray, temperature: float | None) -> np.ndarray:
+    z = logits / temperature if temperature else logits
+    e = np.exp(z - z.max(axis=1, keepdims=True))
+    return e / e.sum(axis=1, keepdims=True)
+
+
 def score(
     clf: Any,
     model_input: list[str],
     ood: dict[str, Any] | None = None,
     scope: Any = None,
+    temperature: float | None = None,
 ) -> tuple[np.ndarray, np.ndarray, np.ndarray | None]:
     """Label ids, probabilities, and the scope score (None without one); higher = more in scope.
 
     With `scope` (ADR-034) the score is the topic-aware detector's decision value, compared with
     `scope.threshold`. Otherwise, with `ood` (ADR-031), it is the negative Mahalanobis distance of
     the sentence feature to the nearest class mean, compared with `ood["threshold"]`.
+
+    With `temperature` (ADR-041) the probabilities are softmax(logits / T), T fitted on validation;
+    the labels are unchanged, only the confidence is calibrated.
     """
-    if scope is not None:
-        ids, probs = clf.predict(model_input)
-        return ids, probs, scope.decision(model_input)
     if ood is None:
-        ids, probs = clf.predict(model_input)
-        return ids, probs, None
+        if temperature:
+            probs = _softmax(clf.logits(model_input), temperature)
+            ids = probs.argmax(axis=1)
+        else:
+            ids, probs = clf.predict(model_input)
+        return ids, probs, (scope.decision(model_input) if scope is not None else None)
     logits, feats = clf.logits_and_features(model_input)
+    logits = logits / temperature if temperature else logits
     e = np.exp(logits - logits.max(axis=1, keepdims=True))
     probs = e / e.sum(axis=1, keepdims=True)
     dist = np.stack(
