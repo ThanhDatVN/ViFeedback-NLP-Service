@@ -2,8 +2,7 @@
 #
 # The owner chose the order (b) -> (a) -> (c):
 #   H10 (b) robustness to real typing: consistency training on ViLexNorm pairs. Declared below.
-#   H11 (a) a distilled student for S7 (<= 200 MB). Planned; its rule is declared in a later version,
-#           before its first run, once H10 has decided which model is the teacher.
+#   H11 (a) a distilled student for S7 (<= 200 MB). Declared in version 2, below.
 #   H12 (c) other institutions. Planned; needs the owner's label-policy decision (NEXT_PLAN v6 § 8,
 #           decision 2) and new labelled data, because NEU-ESC test is spent (ADR-033, ADR-034).
 #
@@ -12,9 +11,14 @@
 # from ViLexNorm train: 0.169 -> 0.177, p = 0.13). Not seen: any model trained with a consistency
 # loss, any number on the ViLexNorm development split defined below. Changing a rule after its
 # results are seen needs a new version and an ADR.
+#
+# Version 2 (2026-09-30), while H10's runs were in progress and before any H11 run or any H10
+# decision: H11 declared. Its teacher is fixed by a rule written here, not by looking at H10's
+# numbers: H10's recipe if H10 passes, otherwise the served recipe. No H10 rule changes.
 
-version: 1
+version: 2
 declared: 2026-09-29
+revised: 2026-09-30  # v2 H11 declared (the distilled student)
 
 data:
   vilexnorm_train: >
@@ -90,14 +94,66 @@ H10_real_typing_consistency:
     restorer and the scope detector re-accepted, three latency sessions, an ADR and a new card. The
     Hub update needs the owner's approval and the licence decision above.
 
+H11_distilled_student:   # v2
+  question: >
+    Can a 6-layer student with its weights stored in FP16 serve at <= 200 MB and lose at most 0.01
+    macro-F1 against its teacher on UIT-VSFC and NEU-ESC validation, with no batch dependence?
+  why: >
+    The FP32 graph is 540 MB. INT8 passed non-inferiority but changed 8.6% of labels and depended on
+    the batch (ADR-036). Neither 6 layers (370 MB) nor FP16 storage (270 MB) alone reaches 200 MB;
+    together they give about 185 MB, every multiplication in FP32 (NEXT_PLAN v6 § 3).
+  teacher: >
+    If H10 passes (results/studies/cycle5/h10/confirm-<recipe>/decision.json), H10's chosen recipe
+    at the five seeds; otherwise the served recipe at the five seeds (p9 s42, p10 others).
+  soft_labels: >
+    The mean over the five teacher seeds of softmax(logits / 2), computed once per distinct input
+    text (training/distill.py, cached by the SHA-1 of the text).
+  transfer_set: >
+    UIT-VSFC train with gold labels and the served recipe's diac-teen augmentation (p = 0.3, keyed on
+    the student's seed), plus unlabeled in-scope NEU-ESC train (21,113 posts) and the ViLexNorm
+    consistency-training originals (7,535), all through the serving transform. No validation or test
+    text.
+  loss: >
+    Labelled rows: 0.5 * T^2 * KL(teacher || student at T) + 0.5 * cross-entropy. Unlabeled rows:
+    T^2 * KL alone. T = 2.
+  students:
+    teacher_alternate: >
+      The same-seed teacher's embeddings, its layers 1, 3, 5, 7, 9, 11 (the last is the one its
+      head reads) and its head.
+    pretrained_first6: >
+      Pretrained PhoBERT-base at the pinned revision, its first six layers, a new 3-class head.
+  training: >
+    The served recipe's optimizer and schedule (lr 2e-5, 4 epochs, batch 32, warmup 0.1, AMP,
+    clipping 1.0); the epoch by UIT-VSFC validation macro-F1.
+  selection: >
+    Each student at seed 42. The one with the higher mean of UIT-VSFC validation macro-F1 and NEU-ESC
+    validation macro-F1 (all 3,305 posts) goes to confirmation.
+  confirmation: the chosen student at the four other seeds, against the teacher's five seeds
+  artifact: >
+    The seed-42 student exported with its weights stored in FP16 and computed in FP32
+    (inference.onnx_export.export_fp16_storage; not passed through the offline optimizer, which
+    would fold the casts back to FP32).
+  rule: >
+    All must hold:
+    (1) the FP16-storage graph is <= 200 MB;
+    (2) pooled UIT-VSFC validation + NEU-ESC validation (4,888 rows, every topic, the S5' set): the
+        seed-averaged macro-F1 drop (teacher minus student) has a one-sided 95% paired-bootstrap
+        upper bound <= 0.01 (rows resampled, 10,000 resamples);
+    (3) UIT-VSFC validation, 5-seed means: macro-F1 drop <= 0.01, neutral F1 drop <= 0.03, and with
+        diacritics stripped, through the restorer, macro-F1 drop <= 0.015;
+    (4) the seed-42 graph against the PyTorch student with the same FP16-rounded weights, on UIT-VSFC
+        validation: max |logit difference| <= 1e-4 and 100% label agreement; each of 32 rows scored
+        alone and inside one padded batch differs by <= 1e-4.
+  reported_not_tested: >
+    Label agreement between the FP32 student and its FP16-rounded copy; per-class F1; NEU-ESC
+    validation in scope; ViLexNorm dev flips; parameter count; model-only latency (indicative).
+  serving: >
+    If the rule holds, the student is released through the gate with the restorer and the scope
+    detector re-accepted and an ADR; three latency sessions on an idle machine must show served p95
+    <= 30 ms before it replaces the teacher. Its transfer set holds ViLexNorm text (CC BY-NC-SA 4.0),
+    so a Hub upload needs the owner's licence decision (HUONG_DAN_THU_CONG.md § 4) and approval.
+
 planned:   # outlines only; nothing here is a rule until a later version declares it
-  H11_distilled_student: >
-    A 6-layer student distilled from the teacher (H10's model if released, else the served model),
-    with soft labels from the teacher recipe's 5-seed ensemble and an unlabeled transfer set
-    (in-scope NEU-ESC train text, ViLexNorm consistency-training originals). Weights stored in FP16
-    and computed in FP32 (about 185 MB; no per-batch activation scales, the failure of ADR-036).
-    Candidate rule: <= 200 MB; pooled UIT-VSFC + NEU-ESC validation non-inferior to the teacher at
-    0.01 with per-source guards; the release gate's parity and batch-independence checks.
   H12_other_institutions: >
     The two-heads design of ADR-033 with H10's objective, confirmed on a new human-labelled sample
     from another institution (>= 600 in-scope posts, two annotators).
@@ -106,6 +162,6 @@ planned:   # outlines only; nothing here is a rule until a later version declare
     results/test_evaluations.log, as Cycle 1's closing gate (S1 is re-measured there, not chased).
 
 budget:
-  weight_updating_runs: 6        # H10: 2 selection + 4 confirmation
-  gpu_hours_estimate: {laptop_rtx3050: 2}
+  weight_updating_runs: 12       # H10: 2 selection + 4 confirmation; H11: 2 + 4 (v2)
+  gpu_hours_estimate: {laptop_rtx3050: 4}  # plus H11's five teacher inference passes
   api_usd: 0

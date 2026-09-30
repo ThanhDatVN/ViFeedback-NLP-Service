@@ -352,6 +352,32 @@ trình nằm trong [EVALUATION_DATA.md](EVALUATION_DATA.md).
 
 ---
 
+## 9. Khi Windows chặn thư viện (Application Control)
+
+**Chuyện gì đã xảy ra.**
+- Laptop dùng Windows Application Control (Smart App Control), cơ chế chặn các file DLL chưa đủ
+  "uy tín".
+- Từ lâu, DLL của gói `onnx` đã bị chặn, nên máy này không dựng được đồ thị INT8 (ADR-036).
+- Sáng 2026-09-30, sau khi Windows cập nhật (bản 26200 → 26300), DLL của `pyarrow` cũng bị chặn
+  trong vài phút. Kéo theo đó, scikit-learn và transformers không nạp được, và dữ liệu UIT-VSFC
+  (dạng parquet) không đọc được.
+- Vài phút sau, Windows tự cho phép lại: nhiều khả năng nó đang tra cứu uy tín của file mới. Dự án
+  **không bao giờ** vượt qua cơ chế này.
+
+**Nếu gặp lại** (lỗi `DLL load failed ... An Application Control policy has blocked this file`):
+1. Đợi vài phút rồi thử lại lệnh. Lần 2026-09-30 tự hết.
+2. Nếu vẫn bị chặn, mở *Windows Security → App & browser control → Smart App Control* để xem trạng
+   thái.
+   - Tắt Smart App Control là quyết định về bảo mật máy của bạn.
+   - Lưu ý: sau khi tắt thì không bật lại được nếu không cài lại Windows.
+3. Nếu không muốn đổi cài đặt, việc huấn luyện có thể chuyển sang Kaggle. Báo tôi để chuẩn bị
+   notebook.
+
+Service (ONNX Runtime, pyvi, bộ phát hiện chủ đề bằng numpy) không cần `pyarrow` hay `onnx`, nên
+vẫn chạy được ngay cả khi hai gói này bị chặn.
+
+---
+
 ## Những việc bạn *không* cần làm
 
 - Chạy huấn luyện, đánh giá, commit, cập nhật tài liệu: tôi làm, mỗi lần một job nặng, có thời gian
