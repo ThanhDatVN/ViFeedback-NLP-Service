@@ -1,0 +1,98 @@
+{
+  "declared_in": "configs/experiments/cycle5.yaml v3 H11_release.closing_gate",
+  "reason": "Cycle 5 H11 closing gate (cycle5.yaml v3): the students on test, once",
+  "slice_version": 1,
+  "student": "pretrained-first6",
+  "teacher": "served",
+  "checkpoints": {
+    "h11_student": {
+      "checkpoint": "D:\\GitHub\\ViFeedback NLP Service\\models\\p14-sent-phobert-base-seg_pyvi-h11-pretrained-first6-from-served-s42-6b169fb7-ckp",
+      "test": {
+        "macro_f1": 0.8175162268596453,
+        "weighted_f1": 0.9320002409063928,
+        "per_class_f1": {
+          "negative": 0.9539106145251396,
+          "neutral": 0.5454545454545454,
+          "positive": 0.9531835205992509
+        }
+      },
+      "test_excluding_train_overlap": {
+        "n": 3111,
+        "macro_f1": 0.8166194800272795,
+        "neutral_f1": 0.5440613026819923
+      },
+      "calibration": {
+        "temperature_fit_on_validation": 1.4908100722308986,
+        "uncalibrated": {
+          "nll": 0.2513769567012787,
+          "brier": 0.10844590655602888,
+          "ece_equal_width": 0.04301469237911349,
+          "ece_equal_mass": 0.04174428700045251
+        },
+        "calibrated": {
+          "nll": 0.2077081948518753,
+          "brier": 0.10229963283194476,
+          "ece_equal_width": 0.0164881738788782,
+          "ece_equal_mass": 0.0214959506324327
+        }
+      },
+      "robustness_test": {
+        "nodiacritic": {
+          "macro_f1": 0.6090088385433002,
+          "pred_share_neutral": 0.017056222362602652
+        },
+        "nodiacritic-50": {
+          "macro_f1": 0.7173478816246845,
+          "pred_share_neutral": 0.026216045483259634
+        },
+        "teencode-100": {
+          "macro_f1": 0.802559876888183,
+          "pred_share_neutral": 0.03158559696778269
+        },
+        "charnoise-5": {
+          "macro_f1": 0.7611768717679425,
+          "pred_share_neutral": 0.025268477574226154
+        }
+      }
+    }
+  },
+  "five_seed_test": {
+    "student": {
+      "42": 0.8175162268596453,
+      "1337": 0.8192473296893755,
+      "2024": 0.8080286977864045,
+      "7": 0.8252697598259419,
+      "31337": 0.8137645431139905
+    },
+    "teacher_cycle1": {
+      "42": 0.8371,
+      "1337": 0.8298,
+      "2024": 0.8179,
+      "7": 0.8309,
+      "31337": 0.8325
+    },
+    "paired_student_minus_teacher": {
+      "seeds": [
+        7,
+        42,
+        1337,
+        2024,
+        31337
+      ],
+      "n": 5,
+      "per_seed_delta": [
+        -0.0056,
+        -0.0196,
+        -0.0106,
+        -0.0099,
+        -0.0187
+      ],
+      "mean_delta": -0.012874688544928436,
+      "wins": 0,
+      "ci95": [
+        -0.02038276677834326,
+        -0.005366610311513612
+      ]
+    }
+  }
+}

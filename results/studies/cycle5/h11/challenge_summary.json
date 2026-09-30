@@ -1,0 +1,83 @@
+{
+  "challenge_sha256": "c4879de4ea7a6a23007358f12657cd0feaab4b499fec5834eafb2d18ab5b4a39",
+  "checkpoints": {
+    "h11_student": "D:\\GitHub\\ViFeedback NLP Service\\models\\p14-sent-phobert-base-seg_pyvi-h11-pretrained-first6-from-served-s42-6b169fb7-ckp"
+  },
+  "h11_student": {
+    "scored_rows": 285,
+    "accuracy": 0.8421052631578947,
+    "macro_f1": 0.8177371984575373,
+    "per_class_f1": {
+      "negative": 0.8819444444444444,
+      "neutral": 0.7238095238095238,
+      "positive": 0.847457627118644
+    },
+    "by_category": {
+      "code_switch": {
+        "n": 25,
+        "accuracy": 0.88
+      },
+      "long_context": {
+        "n": 20,
+        "accuracy": 0.9
+      },
+      "mixed_aspect": {
+        "n": 40,
+        "accuracy": 0.85
+      },
+      "negation_pair": {
+        "n": 30,
+        "accuracy": 0.8333333333333334
+      },
+      "objective_neutral": {
+        "n": 30,
+        "accuracy": 0.7
+      },
+      "suggestion_cue": {
+        "n": 25,
+        "accuracy": 1.0
+      },
+      "suggestion_implicit": {
+        "n": 25,
+        "accuracy": 0.88
+      },
+      "teencode_typed": {
+        "n": 40,
+        "accuracy": 0.95
+      },
+      "unaccented_typed": {
+        "n": 50,
+        "accuracy": 0.7
+      }
+    },
+    "negation_pairs": {
+      "pairs": 15,
+      "both_correct": 0.6666666666666666,
+      "prediction_flips": 0.8666666666666667
+    },
+    "out_of_scope_confidence": {
+      "out_of_scope": {
+        "n": 20,
+        "max_prob_mean": 0.8182522654533386,
+        "max_prob_median": 0.8788822889328003,
+        "share_above_0_9": 0.45,
+        "predicted": {
+          "negative": 9,
+          "neutral": 6,
+          "positive": 5
+        }
+      },
+      "objective_neutral": {
+        "n": 30,
+        "max_prob_mean": 0.7574196457862854,
+        "max_prob_median": 0.7364638447761536,
+        "share_above_0_9": 0.26666666666666666,
+        "predicted": {
+          "negative": 7,
+          "neutral": 21,
+          "positive": 2
+        }
+      }
+    }
+  }
+}

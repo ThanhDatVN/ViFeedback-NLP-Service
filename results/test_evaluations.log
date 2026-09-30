@@ -26,3 +26,8 @@
 2026-09-27 08:02	p9-sent-phobert-base-seg_pyvi-aug-diac-teen-s31337-023d9372-tes	P9	Cycle 1 closing gate: H2 finalist on test (cycle1.yaml)
 2026-09-27 08:03	p6-sent-phobert-base-seg_pyvi-base-s42-ckp	P9	Cycle 1 closing gate (cycle1.yaml): finalists on test, once
 2026-09-27 08:03	p9-sent-phobert-base-seg_pyvi-aug-diac-teen-s42-599cf21f-ckp	P9	Cycle 1 closing gate (cycle1.yaml): finalists on test, once
+2026-09-30 14:48	p14-sent-phobert-base-seg_pyvi-h11-pretrained-first6-from-served-s42-6b169fb7-ckp	P14	Cycle 5 H11 closing gate (cycle5.yaml v3): the students on test, once
+2026-09-30 14:48	p14-sent-phobert-base-seg_pyvi-h11-pretrained-first6-from-served-s1337-41eff3bb-ckp	P14	Cycle 5 H11 closing gate (cycle5.yaml v3): the students on test, once
+2026-09-30 14:48	p14-sent-phobert-base-seg_pyvi-h11-pretrained-first6-from-served-s2024-7586a001-ckp	P14	Cycle 5 H11 closing gate (cycle5.yaml v3): the students on test, once
+2026-09-30 14:48	p14-sent-phobert-base-seg_pyvi-h11-pretrained-first6-from-served-s7-f0f9c2e8-ckp	P14	Cycle 5 H11 closing gate (cycle5.yaml v3): the students on test, once
+2026-09-30 14:48	p14-sent-phobert-base-seg_pyvi-h11-pretrained-first6-from-served-s31337-636f4cee-ckp	P14	Cycle 5 H11 closing gate (cycle5.yaml v3): the students on test, once
