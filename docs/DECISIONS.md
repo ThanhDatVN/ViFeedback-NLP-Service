@@ -1449,7 +1449,7 @@ choice.
 
 | Rule | Result | |
 |---|---|---|
-| (1) agreement with the teacher's label | +0.062 [+0.048, +0.075] | pass |
+| (1) agreement with the teacher's label | +0.061 [+0.048, +0.075] | pass |
 | (2) flip rate | −0.061 [−0.073, −0.049] (per seed: 11.3–13.0% against 13.5–20.7%) | pass |
 | (3) label_tv, 5-seed mean | 0.013 (limit 0.10; the control's is 0.108) | pass |
 | (4) UIT-VSFC validation | +0.0014 | pass |
@@ -1470,3 +1470,43 @@ text drifts (label_tv 0.108); H10b's does not.
 - Which model the service runs stays the owner's decision 9, now with three options: the student,
   the 12-layer model, or H10b's 12-layer model.
 - A closing gate on test for H10b is declared separately (`cycle5.yaml` v5) before it runs.
+
+---
+
+## ADR-043 · 2026-10-01 · Decision 9: the service runs the H10b model · Accepted
+
+**Context.** Three releases were ready:
+- the 12-layer served recipe (p9 s42);
+- the 6-layer student, served since ADR-040;
+- the 12-layer H10b candidate (ADR-042).
+
+| | 12-layer (p9) | Student | H10b |
+|---|---|---|---|
+| Size / served p95 | 540 MB / 22.1 ms | 185 MB / 12.3 ms | 540 MB / same architecture as p9 |
+| Test macro-F1, 5 seeds | 0.830 | 0.817 | 0.824 (−0.006 [−0.019, +0.007] vs p9's recipe) |
+| Test neutral F1, seed 42 | 0.592 | 0.545 | 0.550 |
+| Real-typing flips | about 18% | about 11% (dev) | about 12% (confirmed) |
+| Challenge v1, served pipeline | 0.851 | 0.860 | 0.916 |
+
+The recommendation was H10b. Its real-typing gain was confirmed by a declared rule on fresh pairs,
+it leads on the constructed hard cases, and on test it cannot be told apart from the served recipe
+at five seeds. The owner approved it on 2026-10-01.
+
+**Decision.**
+- **Served.** `models/serve/sentiment` holds the H10b release: FP32, restorer, scope detector,
+  T = 1.349. The student is kept in `models/serve/.student-sentiment` and the 12-layer p9 release in
+  `models/serve/.previous-sentiment`.
+- **Rebuild.** `make export` rebuilds H10b.
+- **API.** All 40 contract tests pass on the served release.
+
+**Consequences.**
+- **S7** (≤ 200 MB) is met by a released, tested artifact (the student) but not by the served one.
+  Size was traded for accuracy and robustness.
+- **S4's minimum** is met at seed 42 by the smallest margin (neutral F1 0.550).
+- **Latency.** The served pipeline is the p9 architecture, 22.1 ms in the Cycle 5 sessions. Its own
+  session waits for a free GPU: `study latency` refuses to run while another process is on the GPU.
+- **Hub.** The dry-run bundle for `Datk4/vifeedback-sentiment-phobert` now holds H10b and its card,
+  licensed CC BY-NC-SA 4.0 because of the ViLexNorm training text. The Hub keeps the p9 model
+  (CC BY-NC 4.0) until the owner approves the upload and the licence.
+- **Erratum to ADR-042.** The agreement gain is +0.061 (0.0615), not +0.062; corrected in place.
+

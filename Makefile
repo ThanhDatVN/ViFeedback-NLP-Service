@@ -11,10 +11,10 @@ TASK ?= sentiment
 MODEL ?= phobert-base
 PREP ?= seg_pyvi
 SEEDS ?= all
-# The served checkpoint (ADR-040: the 6-layer H11 student, seed 42, FP16 weight storage). For the
-# 12-layer release: CKPT=models/p9-sent-phobert-base-seg_pyvi-aug-diac-teen-s42-599cf21f-ckp QUANT=none
-CKPT ?= $(lastword $(sort $(wildcard models/p14-sent-phobert-base-seg_pyvi-h11-pretrained-first6-from-served-s42*ckp)))
-QUANT ?= fp16-storage
+# The served checkpoint (ADR-043: the 12-layer H10b model, seed 42). The 6-layer student:
+# CKPT=models/p14-sent-phobert-base-seg_pyvi-h11-pretrained-first6-from-served-s42-6b169fb7-ckp QUANT=fp16-storage
+CKPT ?= $(lastword $(sort $(wildcard models/p15-sent-phobert-base-seg_pyvi-h10b-anchored_orig-s42*ckp)))
+QUANT ?= none
 # The published release (Hugging Face Hub).
 REPO ?= Datk4/vifeedback-sentiment-phobert
 

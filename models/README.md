@@ -10,7 +10,7 @@ so a fresh clone holds only this README.
 | Size | A PhoBERT-base checkpoint is about 540 MB, and a 5-seed sweep is 2.7 GB. Git would store every version forever |
 | Reproducibility | A checkpoint without its `config.yaml`, `env.json` and seed is not reproducible, and those *are* committed under `results/runs/` |
 | Provenance | `results/registry.csv` records what produced every number. The weights are a cache of that record, not the record itself |
-| Distribution | The served model is published on the Hugging Face Hub: <https://huggingface.co/Datk4/vifeedback-sentiment-phobert> |
+| Distribution | Releases are published on the Hugging Face Hub: <https://huggingface.co/Datk4/vifeedback-sentiment-phobert> (the 12-layer p9 model until the owner approves the H10b upload) |
 
 > This folder's *name* once broke the repository. `.gitignore` held the bare pattern `models/`,
 > which git matches at any depth, so it silently excluded the `src/vifeedback/models/` **package**
@@ -29,15 +29,15 @@ vifeedback train run --task sentiment --model phobert-base --preprocessing seg_p
 make export        # ONNX through the release gate, then the restorer and the scope detector
 ```
 
-## Layout on the owner's machine (2026-09-30)
+## Layout on the owner's machine (2026-10-01)
 
 ```text
 models/
-├── serve/sentiment/        # what the API serves (ADR-040): the 6-layer student, model.fp16.onnx
-│                           #   (185 MB, FP16 weights computed in FP32), tokenizer files, restorer.json
-│                           #   (ADR-031), scope.npz (ADR-034), manifest.json with every SHA-256
-├── serve/.previous-sentiment/  # the 12-layer release (model.opt.onnx, 540 MB); swap back to serve it
-├── candidate/sentiment/    # the 12-layer H10b release candidate (ADR-042), waiting for decision 9
+├── serve/sentiment/        # what the API serves (ADR-043): the 12-layer H10b model, model.opt.onnx
+│                           #   (540 MB, FP32), tokenizer files, restorer.json (ADR-031), scope.npz
+│                           #   (ADR-034), manifest.json with T (ADR-041) and every SHA-256
+├── serve/.student-sentiment/   # the 6-layer student release (ADR-040), model.fp16.onnx, 185 MB
+├── serve/.previous-sentiment/  # the 12-layer p9 release; swap either back to serve it
 ├── publish/<name>/         # `serve publish` dry-run bundles: the card, SHA256SUMS, the PyTorch copy
 ├── hub/<owner>__<name>/    # `serve reproduce` download cache
 ├── distill/                # H11: the teachers' soft-label cache (SHA-1 keys, no text) and the
@@ -46,9 +46,9 @@ models/
 ├── int8_candidates/        # fp32_plain + pc-head-last2: the graphs S5′ tested (ADR-035/036)
 ├── p9-…-s42-…-ckp/, p10-…-aug-diac-teen-s*-ckp/   # the 12-layer served recipe, 5 seeds: H11's teacher
 ├── p6-…-base-s42-ckp/, p10-…-base-s*-ckp/         # the CE baseline's 5 seeds (study external, V1)
-├── p14-…-h11-pretrained-first6-…-s*-ckp/          # the H11 students, 5 seeds (seed 42 is served)
+├── p14-…-h11-pretrained-first6-…-s*-ckp/          # the H11 students, 5 seeds (seed 42 is released)
 ├── p14-…-h11-teacher-alternate-…-s42-ckp/         # H11's other selection candidate
-├── p15-…-h10b-anchored_orig-s*-ckp/                # H10b, 5 seeds (passed, ADR-042); seed 42 is the candidate
+├── p15-…-h10b-anchored_orig-s*-ckp/                # H10b, 5 seeds (passed, ADR-042); seed 42 is served
 ├── p15-…-h10b-anchored_both-s42-ckp/              # H10b's other selection candidate
 └── p13-…-h10-*-ckp/        # H10 (not passed, ADR-038): no planned step needs them
 ```

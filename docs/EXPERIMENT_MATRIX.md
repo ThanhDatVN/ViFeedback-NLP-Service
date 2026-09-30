@@ -595,7 +595,7 @@ before any H11 run; H11). Order chosen by the owner: H10 (real typing), H11 (dis
 | H11 latency (idle condition waived) | raw test text, 3 sessions | S1 p95 median 12.3 ms vs 22.1 ms for the 12-layer model | **served** (ADR-040) |
 | H12 other institutions | a new labelled sample (≥ 600 in-scope posts) | — | to declare; needs owner decision 2 and the data |
 | H10b selection (seed 42) | ViLexNorm dev (837); UIT-VSFC validation | control agreement 0.828; anchored_orig 0.8626 (UIT −0.0027); anchored_both 0.8626 (UIT +0.0065); tie, first in declared order kept | anchored_orig |
-| **H10b** confirmation (5 seeds each) | 1,500 fresh ViLexNorm pairs; validation guards | agreement +0.062 [+0.048, +0.075]; flips −0.061 [−0.073, −0.049]; label_tv 0.013; UIT +0.0014, neutral +0.003, stripped +0.0028, NEU-ESC −0.0039 | **passed** (ADR-042) |
+| **H10b** confirmation (5 seeds each) | 1,500 fresh ViLexNorm pairs; validation guards | agreement +0.061 [+0.048, +0.075]; flips −0.061 [−0.073, −0.049]; label_tv 0.013; UIT +0.0014, neutral +0.003, stripped +0.0028, NEU-ESC −0.0039 | **passed** (ADR-042) |
 | H10b closing gate | UIT-VSFC test, once (logged) | 0.8237 (5 seeds) vs 0.8296: −0.0059 [−0.019, +0.007]; seed 42 0.8208, neutral 0.550, no diacritics 0.623 | reported |
 | H11 closing gate | UIT-VSFC test, once (logged) | student 0.8168 (5 seeds) vs 0.8296: −0.0129 [−0.0204, −0.0054], 0/5 seeds higher; seed 42 0.8175, neutral 0.545, no diacritics 0.609 | reported (ADR-040) |
 

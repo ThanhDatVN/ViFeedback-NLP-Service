@@ -1,6 +1,6 @@
 # Status, Open Problems and Next Experiments
 
-**Updated:** 2026-09-29, after research Cycle 4, with Cycle 5 declared. Living document. Results live in
+**Updated:** 2026-10-01, after Cycle 5's H10, H10b and H11 and decision 9 (ADR-043). Living document. Results live in
 [EXPERIMENT_MATRIX.md](EXPERIMENT_MATRIX.md) and [results/studies/](../results/studies/README.md);
 decisions in [DECISIONS.md](DECISIONS.md); the work plan in [NEXT_PLAN.md](NEXT_PLAN.md) (v6); the
 owner's manual tasks, in Vietnamese, in [HUONG_DAN_THU_CONG.md](HUONG_DAN_THU_CONG.md). The external
@@ -33,7 +33,7 @@ says **where the project stands, what is wrong with it, and what runs next.**
 | **2** | Track A: confirmation on a frozen challenge set, the serving model, topic stacking, an LLM reference ([cycle2.yaml](../configs/experiments/cycle2.yaml) v2) | ✅ H5 not supported; H6 switched the served model; H7 decided: both LLM arms better on neutral on challenge v1 (construction caveat); on real posts only gpt-4o-mini is ahead |
 | **3** | Reliability of the served model on real input ([cycle3.yaml](../configs/experiments/cycle3.yaml) v6) | ✅ closed 2026-09-28. Confirmed on NEU-ESC real student text (ADR-030): the service lowercases, restores diacritics and reports an out-of-scope score (ADR-031); CE + restoration, the real-typing lexicon and careful INT8 fail their rules; H7 decided ([§ 5](#5-cycle-3--reliability-on-real-input)) |
 | **4** | Student text from other institutions ([cycle4.yaml](../configs/experiments/cycle4.yaml) v4) | ✅ closed 2026-09-29. H8 **not passed** (ADR-033); `in_scope` now comes from a topic detector (ADR-032, ADR-034); careful INT8 passed S5′ but the release gate held it back (ADR-035, ADR-036); S8 and S10 met; Hub release updated to ADR-034 ([§ 6](#6-cycle-4--student-text-from-other-institutions)) |
-| **5** | Real typing, then a distilled student, then other institutions ([cycle5.yaml](../configs/experiments/cycle5.yaml) v2) | ⏳ H10 **not passed** (ADR-038): flips 16.6% → 0.3%, but by labelling informal text negative (NEU-ESC −0.087). H11 (6-layer student, FP16 storage, teacher = the served recipe) running. H12 waits for the owner ([§ 6b](#6b-cycle-5--real-typing-a-smaller-model-other-institutions)) |
+| **5** | Real typing, then a distilled student, then other institutions ([cycle5.yaml](../configs/experiments/cycle5.yaml) v5) | ⏳ H10 **not passed** (ADR-038): flips 16.6% → 0.3%, but by labelling informal text negative. **H11 passed** (ADR-039/040): a 6-layer student, 185 MB, 0.013 below on test, released. **H10b passed** (ADR-042): flips about 18% → 12%, test not distinguishable; **served** by the owner's decision 9 (ADR-043). H12 waits for data ([§ 6b](#6b-cycle-5--real-typing-a-smaller-model-other-institutions)) |
 
 **Compute to date** ([ledger](../configs/experiments/ledger.csv)): 144 weight-updating runs, about 12.9 GPU-hours including 12 GPU-minutes of LLM inference on the laptop; 19 of the runs regenerated results lost in Cycle 1 (ADR-023). The Qwen3-4B H7 run used two Kaggle T4s for inference only. The registry holds 173 rows.
 
@@ -209,8 +209,9 @@ rule, every use logged in `results/studies/cycle4/neu_esc_test_uses.log`.
 
 ## 6b. Cycle 5 — real typing, a smaller model, other institutions
 
-**In progress.** Declared in [cycle5.yaml](../configs/experiments/cycle5.yaml): v1 H10 before any run,
-v2 H11 before any H11 run and before H10 decided. The owner's order is b → a → c (ADR-037).
+**H10, H11 and H10b decided; H12 waits for data.** Declared in [cycle5.yaml](../configs/experiments/cycle5.yaml):
+v1 H10 before any run, v2 H11 before any H11 run and before H10 decided, v3 H11's release and closing
+gate, v4 H10b, v5 H10b's release candidate and closing gate. The owner's order is b → a → c (ADR-037).
 
 | Step | Result | Decision |
 |---|---|---|
@@ -222,17 +223,18 @@ v2 H11 before any H11 run and before H10 decided. The owner's order is b → a �
 | H11 selection (seed 42, teacher: the served recipe) | teacher-alternate: UIT-VSFC 0.8614, NEU-ESC 0.4160; **pretrained-first6: 0.8730, 0.4360** | pretrained-first6 chosen |
 | **H11 confirmation** (5 seeds each) | 185.1 MB; pooled drop 0.0024, bound 0.0078 (limit 0.01); UIT-VSFC drop 0.00001; neutral +0.0045; stripped 0.0032; graph parity 1.1e-5, no batch dependence | **Passed** (ADR-039) |
 | Candidate release | FP16-storage graph through the gate (parity 1.09e-5, 100% agreement); restorer re-accepted (0 labels changed); scope detector re-attached; 12 API tests pass | — |
-| Latency (idle condition waived by the owner) | S1 p95 median 12.3 ms (sessions 11.6, 12.9; one session without a steady pass at 11.5–11.7); the 12-layer model 22.1 ms in the same sessions | **Served** (ADR-040), the 12-layer model kept as `.previous-sentiment` |
+| Latency (idle condition waived by the owner) | S1 p95 median 12.3 ms (sessions 11.6, 12.9; one session without a steady pass at 11.5–11.7); the 12-layer model 22.1 ms in the same sessions | Served (ADR-040) until decision 9; kept as `.student-sentiment` |
 | H11 closing gate (test, once) | Student 0.8168 over 5 seeds vs 0.8296: **−0.0129 [−0.0204, −0.0054]**, lower in 5/5; seed 42 neutral F1 0.545 (0.592) | Reported; stated in the card and README |
 | Calibrated confidence | T fitted on validation logits of each release (student 1.491, 12-layer 1.551); test evidence from both closing gates | **Served** (ADR-041) |
 | H10b selection (seed 42) | anchored_orig and anchored_both tie on dev agreement (0.8626; control 0.828); anchored_orig kept (declared order; no tie-break was declared) | — |
-| **H10b confirmation** (5 seeds each, 1,500 fresh pairs) | Agreement +0.062 [+0.048, +0.075]; flips −0.061 [−0.073, −0.049] (about 18% → 12%); label_tv 0.013 (the control's 0.108); UIT-VSFC +0.0014; neutral +0.003; stripped +0.0028; NEU-ESC −0.0039 | **Passed** (ADR-042) |
+| **H10b confirmation** (5 seeds each, 1,500 fresh pairs) | Agreement +0.061 [+0.048, +0.075]; flips −0.061 [−0.073, −0.049] (about 18% → 12%); label_tv 0.013 (the control's 0.108); UIT-VSFC +0.0014; neutral +0.003; stripped +0.0028; NEU-ESC −0.0039 | **Passed** (ADR-042) |
 | H10b closing gate (test, once) | 0.8237 over 5 seeds vs 0.8296 for the served recipe: −0.0059 [−0.019, +0.007]; seed 42 0.8208, neutral 0.550 | Reported |
-| H10b release candidate | FP32 graph through the gate (parity 1.85e-5), restorer re-accepted, scope detector and T = 1.349 attached, 12 API tests pass | Waits for decision 9 |
+| H10b release candidate | FP32 graph through the gate (parity 1.85e-5), restorer re-accepted, scope detector and T = 1.349 attached, 12 API tests pass; 40 API tests pass once served | **Served** (ADR-043, 2026-10-01) |
 
-**Decision 9: which model the service runs** (the owner's call; the student is served now, as `cycle5.yaml` v3 declared):
+**Decision 9: which model the service runs.** The owner approved H10b on 2026-10-01 (ADR-043).
+The options as they were put:
 
-| | 12-layer served recipe (p9 s42) | 6-layer student (served now) | 12-layer H10b (candidate) |
+| | 12-layer recipe (p9 s42) | 6-layer student (released) | 12-layer H10b (**served**) |
 |---|---|---|---|
 | Size / served p95 | 540 MB / 22.1 ms | **185 MB / 12.3 ms** | 540 MB / about 22 ms |
 | Test macro-F1, 5 seeds | **0.830** | 0.817 (−0.013, significant) | 0.824 (−0.006 [−0.019, +0.007]) |
@@ -241,9 +243,12 @@ v2 H11 before any H11 run and before H10 decided. The owner's order is b → a �
 | Challenge v1 through the served pipeline | 0.851, neutral 0.771 | 0.860, neutral 0.779 | **0.916, neutral 0.885** |
 | Weights licence | CC BY-NC 4.0 | CC BY-NC-SA 4.0 | CC BY-NC-SA 4.0 |
 
-The recommendation is H10b. Its real-typing gain was confirmed by a rule declared in advance, on
+The recommendation was H10b. Its real-typing gain was confirmed by a rule declared in advance, on
 fresh pairs. It leads on the constructed hard cases (development data, one author). On test it cannot
-be told apart from the served recipe at five seeds.
+be told apart from the served recipe at five seeds. What it costs: the served artifact is 540 MB,
+so S7 is met only by the released student, and neutral F1 at seed 42 (0.550) meets S4's minimum by
+the smallest margin. Its own latency session waits for a free GPU; the architecture is the one
+measured at 22.1 ms.
 
 **What H10 establishes.** A consistency loss on unlabeled, off-domain pairs has a cheap solution:
 one class for the whole register. An invariance metric that a constant prediction satisfies needs
@@ -284,22 +289,23 @@ the weak class. Cycle 3's review (`results/studies/topic_others.json`): recall 0
 missed `others` rows go to `lecturer` (27) and `training_program` (17), the neutral pattern again: a
 residual minority class absorbed by the majority. *Open:* include `others` in the audit design.
 
-### P5 — Real typing flips fewer labels with H10b (not yet served)
+### P5 — Real typing flips fewer labels with H10b (served)
 Missing diacritics are largely handled: H2's augmentation is served (ADR-027), and the diacritic
 restorer (ADR-031) lifts unaccented NEU-ESC posts from 0.270 to 0.374 and stripped validation from
 0.686 to 0.857. What remains is real informal typing: **17% of labels flip** between a ViLexNorm
 comment and its human normalization, and neither a spelling lexicon (S2a) nor augmentation reduces
 it. H10's consistency training removed the flips only by labelling informal text negative
 (ADR-038). H10b anchored the consistency on a frozen teacher and cut flips to about 12% with no
-collapse and no measurable cost (ADR-042). It is a release candidate, and serving it is decision 9.
+collapse and no measurable cost (ADR-042); the service runs it (ADR-043). About 12% still flip.
 
-### P6 — Latency and size are met; the smaller model costs 0.013 on test
+### P6 — Latency is met; size is met by the released student, not the served model
 *Update (Cycle 4).* The served pipeline, raw text in, has p95 26.9 ms (A1); the scope detector adds
 less than the score it replaced; careful INT8 passed S5′ but agrees with PyTorch on only 91.4% of
 labels and depends on the batch, so the release gate blocked it (ADR-036). *Update (Cycle 5).*
-The served model is now a 6-layer student stored in FP16: 185 MB, served p95 12.3 ms against
-22.1 ms for the 12-layer model in the same sessions (ADR-040). It matched its teacher on validation,
-but on test it is 0.013 lower in every seed, a gap validation could not resolve. The Cycle 2
+A 6-layer student stored in FP16 is released: 185 MB, served p95 12.3 ms against 22.1 ms for the
+12-layer model in the same sessions (ADR-040). It matched its teacher on validation, but on test it
+is 0.013 lower in every seed, a gap validation could not resolve. Decision 9 (ADR-043) serves the
+12-layer H10b model instead: 540 MB, the 12-layer architecture's 22.1 ms. The Cycle 2
 measurements below are unchanged.
 Reference CPU (Ryzen 5 6600H, AVX2, no AVX512-VNNI), single sentence, model-only on pre-segmented
 input, two steady passes in rotated order agreeing within 1% (`results/studies/latency/reference_cpu.json`):
@@ -375,24 +381,24 @@ Full traceability, including the study designs, catalog and backlog:
 ## 9. Next
 
 Every open target, problem and unrun experiment, with where it is handled:
-**[NEXT_PLAN.md](NEXT_PLAN.md) v6**. Cycle 5 runs in the owner's order:
-1. **H10**, real typing (declared in `cycle5.yaml` v1);
-2. **H11**, a distilled student for S7;
-3. **H12**, other institutions.
+**[NEXT_PLAN.md](NEXT_PLAN.md) v6**. Cycle 5 ran in the owner's order: H10 (not passed), H11
+(passed, released), H10b (passed, served). H12 waits for data; NEXT_PLAN § 5 has a substitute
+(H12′) that needs no new labels.
 
 Needs the owner (step by step, in Vietnamese: [HUONG_DAN_THU_CONG.md](HUONG_DAN_THU_CONG.md)):
 
 1. **The neutral audit** (P2/P3), which gates D2 and S9. `study audit-report` analyses the filled
    sheet.
-2. **An idle machine** for three latency sessions.
+2. **A free GPU** for the served H10b model's own latency session (the owner waived the idle condition).
 3. **Decisions:**
-   - the weights licence if H10 is released (ViLexNorm is CC BY-NC-SA);
+   - uploading H10b to the Hub and its licence (CC BY-NC-SA, because of ViLexNorm);
    - the label policy for other institutions' text;
    - each Hub upload.
 4. **For H12:** a new labelled sample from another institution.
 
-The model is published at <https://huggingface.co/Datk4/vifeedback-sentiment-phobert> (CC BY-NC 4.0,
-ONNX + PyTorch, restorer and scope detector, every file checked against `SHA256SUMS`).
+The Hub still holds the 12-layer p9 model: <https://huggingface.co/Datk4/vifeedback-sentiment-phobert>
+(CC BY-NC 4.0, ONNX + PyTorch, restorer and scope detector, every file checked against `SHA256SUMS`).
+The H10b bundle is built as a dry run and waits for the owner's approval.
 
 ---
 

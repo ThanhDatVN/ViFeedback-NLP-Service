@@ -384,13 +384,15 @@ rate alone cannot certify invariance: a constant classifier scores zero.
 - **The method.** Each real comment is trained towards the label distribution that the frozen 5-seed
   ensemble of the served recipe gives its normalized form. A constant prediction cannot match that
   target.
-- **Results.** On 1,500 fresh pairs, five seeds each side: agreement with the teacher rose 0.062 and
+- **Results.** On 1,500 fresh pairs, five seeds each side: agreement with the teacher rose 0.061 and
   flips fell from about 18% to 12%. The label distribution on informal text stayed where the teacher
   puts it (0.013), while the served recipe's own drifts (0.108). UIT-VSFC, neutral, stripped text and
   NEU-ESC all held.
 - **Test.** It cannot be told apart from the served recipe at five seeds (−0.006 [−0.019, +0.007]).
 - **Challenge v1** (constructed, through the served pipeline): macro-F1 0.916 against 0.851, neutral
   F1 0.885 against 0.771, mostly from short factual sentences and typed teencode.
+- **Serving.** The owner chose it for the service (decision 9, ADR-043); the student stays released
+  for size-first uses.
 
 **A route to S7 without per-batch scales (F4, H11).** Weights stored in FP16 and cast to FP32 inside
 the graph halve the file while computing in FP32. On the served 12-layer model the graph is 270 MB,
@@ -409,8 +411,8 @@ alone and in a batch.
   seed** ([−0.020, −0.005]), with neutral F1 losing most. Validation, with 73 neutral sentences and
   used for epoch selection, could not resolve that gap. A non-inferiority check for size and speed
   therefore needs a larger acceptance set than validation.
-- **Serving.** The student is served, as declared, and the 12-layer model stays published for
-  accuracy-first uses.
+- **Serving.** The student was served as declared (ADR-040) until decision 9 chose H10b (ADR-043);
+  it stays released for size-first uses.
 
 ## 6. Negative and inconclusive results
 
@@ -497,10 +499,13 @@ Cycle 5 ran in the owner's order; H12 waits for the owner:
    labelled negative. **H10b** anchored the consistency on a frozen teacher and passed (ADR-042):
    flips about 18% → 12% on fresh pairs, no collapse, every guard held, and test not distinguishable
    from the served recipe.
-2. **H11, a distilled student (Q6, S7).** Passed and served (ADR-039, ADR-040): 185 MB, 1.8x faster,
-   equal on validation, 0.013 lower on test.
+2. **H11, a distilled student (Q6, S7).** Passed and released (ADR-039, ADR-040): 185 MB, 1.8x faster,
+   equal on validation, 0.013 lower on test. The service runs H10b by the owner's decision (ADR-043).
 3. **H12, other institutions (Q9).** The two-heads design with H10's objective. It is confirmed on a
    new human-labelled sample from a third institution, after the owner decides the label policy.
+   Until then, H12′ (NEXT_PLAN § 4) can test the same recipe on a held-out slice of NEU-ESC train,
+   scoped to that one institution.
 
 The human neutral audit remains the only way to separate label ambiguity from representation (Q1),
-and it gates the neutral work (S4) and the error coding (S9).
+and it gates the neutral work (S4) and the error coding (S9). A1′ (NEXT_PLAN § 5) would cut the
+owner's share to 70 rows, using an open LLM for the rest only if it agrees with the owner on those.

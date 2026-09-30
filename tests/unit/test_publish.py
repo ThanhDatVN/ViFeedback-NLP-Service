@@ -63,3 +63,22 @@ def test_student_card_reads_the_h11_record_and_states_the_test_gap():
     assert "lower in 5 of 5 seeds" in card  # the test gap is stated, not hidden
     assert "as accurate as its teacher" not in card
     assert "{" not in card.split("```")[0]
+
+
+def test_h10b_card_reads_the_h10b_record_and_the_five_seed_test_gap():
+    """ADR-042/043: the served H10b model's card, from committed results only."""
+    import json
+
+    from vifeedback import paths
+
+    record = paths.RESULTS / "studies" / "export" / "laptop_fp32_h10b_temperature_manifest.json"
+    manifest = json.loads(record.read_text(encoding="utf-8"))
+    manifest["_files"] = {"model.opt.onnx": "e" * 64}
+    ev = P.evidence(manifest)
+    card = P.model_card("someone/vifeedback-sentiment", manifest, ev)
+    assert "license: cc-by-nc-sa-4.0" in card  # ViLexNorm pairs in training
+    assert "0.8617" in card and "0.8208" in card  # validation; the single seed-42 test
+    assert "-0.0059" in card and "not distinguishable" in card  # five seeds, stated
+    assert "T = 1.35" in card
+    assert "0.916" in card  # challenge v1 through the served pipeline
+    assert "{" not in card.split("```")[0]

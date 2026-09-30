@@ -1,6 +1,6 @@
 # Hướng dẫn các việc chủ dự án làm tay
 
-**Cập nhật:** 2026-09-29, sau Cycle 4. Tài liệu này dành cho chủ dự án. Nó liệt kê những việc máy
+**Cập nhật:** 2026-10-01, sau quyết định 9 (service chạy H10b, ADR-043). Tài liệu này dành cho chủ dự án. Nó liệt kê những việc máy
 không làm thay được, giải thích vì sao cần làm, và hướng dẫn từng bước. Mọi tài liệu khác của dự án
 viết bằng tiếng Anh; kế hoạch tổng thể nằm ở [NEXT_PLAN.md](NEXT_PLAN.md).
 
@@ -18,15 +18,15 @@ $PY = ".venv\Scripts\python.exe"
 
 | # | Việc | Thời gian | Khi nào | Nó mở khoá việc gì |
 |---|---|---|---|---|
-| 1 | [Neutral audit](#1-neutral-audit-gán-nhãn-kiểm-tra-lớp-neutral) | 6–8 giờ, chia nhiều buổi | Càng sớm càng tốt | S9 (≥ 30 lỗi được mã hoá), nhánh D2 cho lớp neutral (S4) |
+| 1 | [Neutral audit](#1-neutral-audit-gán-nhãn-kiểm-tra-lớp-neutral) | 6–8 giờ, chia nhiều buổi; hoặc 2–2,5 giờ với [phương án A1′](#phương-án-rút-gọn-a1-đề-xuất-chờ-bạn-đồng-ý) | Càng sớm càng tốt | S9 (≥ 30 lỗi được mã hoá), nhánh D2 cho lớp neutral (S4) |
 | 2 | [Duyệt 15 nhãn của challenge v1 (U2)](#2-duyệt-15-nhãn-của-challenge-v1-u2) | 20 phút | Bất kỳ lúc nào | Báo cáo challenge v1 kèm nhãn đã được người kiểm |
 | 3 | ~~Chuẩn bị máy rảnh để đo độ trễ~~ | — | ✅ Xong 2026-09-30 (bạn cho phép không cần máy rảnh) | p95 12,3 ms (mô hình nhỏ) |
-| 4 | [Quyết định giấy phép nếu mô hình nhỏ (H11) được phát hành](#4-quyết-định-giấy-phép-khi-mô-hình-học-từ-vilexnorm) | 5 phút | Trước khi H11 được phát hành | Bản phát hành mô hình nhỏ |
+| 4 | [Quyết định giấy phép cho H10b và mô hình nhỏ](#4-quyết-định-giấy-phép-khi-mô-hình-học-từ-vilexnorm) | 5 phút | Trước khi upload | Bản trên Hub khớp với service |
 | 5 | [Duyệt upload lên Hugging Face](#5-duyệt-upload-lên-hugging-face) | 10 phút mỗi lần | Mỗi khi có bản phát hành mới | Bản trên Hub khớp với service |
 | 6 | [Quyết định chính sách nhãn cho trường khác](#6-quyết-định-chính-sách-nhãn-cho-văn-bản-của-trường-khác-quyết-định-số-2) | 15 phút đọc | Trước Cycle 5 (c) | Hướng (c) |
-| 7 | [Dữ liệu có nhãn mới cho hướng (c)](#7-dữ-liệu-có-nhãn-mới-cho-hướng-c) | 20–25 giờ (hai người) | Trước Cycle 5 (c) | Mọi kết luận mới về văn bản của trường khác |
+| 7 | [Dữ liệu có nhãn mới cho hướng (c)](#7-dữ-liệu-có-nhãn-mới-cho-hướng-c), hoặc đồng ý chạy [H12′](#phương-án-thay-thế-h12-không-cần-dữ-liệu-mới) | 20–25 giờ (hai người); H12′ chỉ cần một câu trả lời | Trước Cycle 5 (c) | Kết luận về văn bản của trường khác (H12′: chỉ về diễn đàn NEU) |
 | 8 | [Challenge v2](#8-tuỳ-chọn-challenge-v2) | 4–6 giờ | Tuỳ chọn | Kiểm tra teencode do người thật gõ |
-| 10 | [Chọn mô hình cho service](#10-chọn-mô-hình-cho-service-ba-lựa-chọn) | 5 phút | Khi tiện | Service dùng mô hình nào (khuyến nghị: H10b); công bố bản nào |
+| 10 | ~~[Chọn mô hình cho service](#10-chọn-mô-hình-cho-service-ba-lựa-chọn)~~ | — | ✅ Xong 2026-10-01: bạn chọn H10b | Service chạy H10b (ADR-043) |
 
 Việc 1 quan trọng nhất: đó là con đường duy nhất để biết lớp `neutral` yếu vì **nhãn gốc mơ hồ**
 hay vì **mô hình biểu diễn kém**. Hai nguyên nhân đòi hỏi hai cách sửa khác nhau, và không thí
@@ -215,6 +215,32 @@ Wilson trên tầng `random`, và hệ số κ (Cohen's kappa).
 **Sau đó:** báo cho tôi. Tôi commit `audit_report.json`, ghi ADR, và chạy nhánh D2 mà cây quyết định
 chỉ ra. Bảng tính không bao giờ được commit.
 
+### Phương án rút gọn A1′ (đề xuất, chờ bạn đồng ý)
+
+**Có tự động hoá hoàn toàn được không?** Không, nếu muốn đảm bảo chất lượng. Audit hỏi đúng câu mà
+người đọc cẩn thận còn bất đồng: nhãn gốc sai, mơ hồ, hay đúng. Một LLM đồng ý với nhãn gốc không
+chứng minh nhãn gốc đúng, và không có cách nào tự kiểm tra LLM nếu không có nhãn của người. Nghiên
+cứu về gán nhãn bằng LLM (Pangakis và cộng sự, 2023) khuyên làm ngược lại: **kiểm định LLM trên một
+phần do người gán, rồi mới dùng nó cho phần còn lại**, và chỉ khi nó đủ khớp.
+
+**Cách làm đề xuất:**
+
+| Bước | Ai | Việc |
+|---|---|---|
+| 1 | Bạn | Gán nhãn mù **70 trên 160 dòng**: 40 dòng tầng `random` và 30 dòng lỗi chọn theo seed cố định. Khoảng 2–2,5 giờ thay vì 6–8 giờ. 30 dòng lỗi do bạn mã hoá đủ cho S9 |
+| 2 | LLM mã nguồn mở chạy trên Kaggle | Gán nhãn mù cả 160 dòng, với hướng dẫn gán nhãn làm prompt. Câu UIT-VSFC **không bao giờ gửi qua API** (OpenAI hay bất kỳ dịch vụ nào) |
+| 3 | Mã | Đo độ khớp trên 70 dòng của bạn: Cohen's κ ≥ 0,6 (cận dưới ≥ 0,4) cho nhãn, và ≥ 70% khớp ở `gold_assessment` trên 30 dòng lỗi |
+| 4 | Mã | Nếu bước 3 đạt: cây quyết định chạy trên nhãn của bạn cho 70 dòng và nhãn LLM cho 90 dòng còn lại, và nhánh chỉ được nhận nếu tỷ lệ vượt ngưỡng rõ ràng (cả khoảng tin cậy). Nếu không đạt: bạn làm tiếp 90 dòng, công sức 70 dòng đầu không mất |
+
+**Nên kỳ vọng thế nào.** LLM nhỏ từng kém trên văn bản sinh viên thật (Qwen3-4B 0,475 so với
+gpt-4o-mini 0,604 trên NEU-ESC, H7), và lớp neutral là chỗ LLM và người lệch nhau nhiều nhất. Nhiều
+khả năng bước 3 không đạt. Khi đó bạn vẫn tiết kiệm được việc đọc lại, và nhãn LLM không được dùng.
+
+LLM không bao giờ quyết định nhãn huấn luyện: nó chỉ góp phần chọn nhánh của cây quyết định. Đổi quy
+trình cần một phiên bản mới của `cycle2.yaml` và một ADR **trước khi** xem bất kỳ nhãn LLM nào.
+**Bạn chỉ cần trả lời: "đồng ý A1′"** (quyết định 11). Khi đó tôi khai báo quy trình, chọn 30 dòng
+lỗi, và chuẩn bị notebook Kaggle.
+
 ---
 
 ## 2. Duyệt 15 nhãn của challenge v1 (U2)
@@ -277,14 +303,16 @@ Không dùng máy trong lúc đo. Chỉ một tab trình duyệt đang mở cũn
   tại mang **CC BY-NC 4.0**.
 - Mô hình H10 (b) học từ các cặp câu ViLexNorm, nhưng **không đạt** (ADR-038), nên không phát hành.
 - Mô hình nhỏ H11 (a) cũng đọc câu chữ ViLexNorm khi học: câu gốc nằm trong tập chuyển giao
-  (transfer set), và mô hình thầy gán nhãn mềm cho chúng. Vì vậy câu hỏi dưới đây áp dụng cho H11.
+  (transfer set), và mô hình thầy gán nhãn mềm cho chúng.
+- Mô hình **H10b**, mà service đang chạy, học trực tiếp từ các cặp câu ViLexNorm.
+- Vì vậy câu hỏi dưới đây áp dụng cho cả H10b và H11.
 
 Việc trọng số học từ dữ liệu SA có phải là "tác phẩm phái sinh" hay không chưa được pháp lý làm rõ.
-Cách an toàn là: **nếu mô hình H11 được phát hành, trọng số mang CC BY-NC-SA 4.0**. Thay đổi này không
+Cách an toàn là: **khi H10b hoặc H11 được đưa lên Hub, trọng số mang CC BY-NC-SA 4.0**. Thay đổi này không
 ảnh hưởng mục đích nghiên cứu phi thương mại của bạn.
 
-**Bạn cần trả lời một câu** trước khi phát hành H11: đồng ý đổi giấy phép trọng số sang
-CC BY-NC-SA 4.0 (khuyến nghị), hay giữ CC BY-NC 4.0 và **không** đưa H11 lên Hub (service vẫn dùng
+**Bạn cần trả lời một câu** trước khi upload: đồng ý đổi giấy phép trọng số sang
+CC BY-NC-SA 4.0 (khuyến nghị), hay giữ CC BY-NC 4.0 và **không** đưa H10b/H11 lên Hub (service vẫn dùng
 được ở máy bạn).
 
 ---
@@ -345,6 +373,25 @@ kết luận mới về "văn bản của trường khác" cần một mẫu có
 Khi bạn có nguồn dữ liệu, tôi sẽ viết quy trình chi tiết (mẫu bảng tính, lệnh kiểm tra độ đồng thuận)
 và khai báo quy tắc trong `cycle5.yaml` **trước khi** mở dữ liệu.
 
+### Phương án thay thế H12 (không cần dữ liệu mới)
+
+**H12′** (đề xuất, chờ bạn đồng ý) dùng phần dữ liệu đã có:
+- Tách một lần, cố định, **3.000 bài in-scope** từ tập train NEU-ESC (21.113 bài). Không mô hình nào
+  được so sánh từng được chấm trên phần này.
+- Huấn luyện mô hình hai đầu ra (đầu UIT-VSFC được phục vụ, nên **không cần quyết định 2**) trên
+  phần train còn lại, thêm phần huấn luyện nhất quán của H10b, rồi so với 5 seed của H10b trên 3.000
+  bài đó.
+- Quy tắc khai báo trước: điểm trên 3.000 bài phải cao hơn, và không được kém trên UIT-VSFC, lớp
+  neutral, câu mất dấu (điểm H8 từng trượt) và câu gõ tắt.
+- Khoảng 3 giờ GPU laptop, mỗi lần một job.
+
+**Giới hạn cần hiểu rõ.** 3.000 bài này cùng trường (NEU), cùng diễn đàn, cùng người gán nhãn với
+phần huấn luyện. H12′ trả lời "service có tốt hơn trên văn bản kiểu diễn đàn NEU không", **không**
+trả lời "có tốt hơn ở trường thứ ba không". Câu hỏi thứ hai vẫn cần dữ liệu mới như mô tả ở trên.
+
+**Bạn chỉ cần trả lời: "đồng ý H12′"** (quyết định 10). Tôi khai báo trong `cycle5.yaml` v6 trước khi
+tách dữ liệu, rồi chạy.
+
 ---
 
 ## 8. (Tuỳ chọn) Challenge v2
@@ -358,50 +405,40 @@ trình nằm trong [EVALUATION_DATA.md](EVALUATION_DATA.md).
 
 ## 10. Chọn mô hình cho service: ba lựa chọn
 
-**Hiện trạng (2026-10-01).**
-- Service đang chạy **mô hình nhỏ 6 lớp** (H11), đúng theo quy tắc đã khai báo.
-- Mô hình 12 lớp cũ nằm ở `models/serve/.previous-sentiment`.
-- Mô hình 12 lớp mới **H10b** (ADR-042) đã qua cổng phát hành và nằm ở `models/candidate/sentiment`.
-  Nó được huấn luyện thêm để câu gõ tắt nhận cùng nhãn với câu chuẩn hoá.
+**✅ Xong 2026-10-01.** Bạn chọn **H10b** (ADR-043). Service đang chạy nó; 40 bài kiểm thử API đạt.
 
-| | Mô hình 12 lớp cũ (p9) | Mô hình nhỏ (đang phục vụ) | **Mô hình 12 lớp H10b (ứng viên)** |
+| Thư mục | Mô hình |
+|---|---|
+| `models/serve/sentiment` | **H10b** (đang phục vụ), 540 MB, T = 1,349 |
+| `models/serve/.student-sentiment` | Mô hình nhỏ 6 lớp (H11), 185 MB |
+| `models/serve/.previous-sentiment` | Mô hình 12 lớp cũ (p9) |
+
+Kết quả so sánh lúc chọn:
+
+| | Mô hình 12 lớp cũ (p9) | Mô hình nhỏ | **H10b (đang phục vụ)** |
 |---|---|---|---|
-| Kích thước / độ trễ p95 | 540 MB / 22,1 ms | **185 MB / 12,3 ms** | 540 MB / khoảng 22 ms |
+| Kích thước / độ trễ p95 | 540 MB / 22,1 ms | **185 MB / 12,3 ms** | 540 MB / cùng kiến trúc với p9 |
 | Macro-F1 trên test (5 seed) | **0,830** | 0,817 (kém rõ rệt) | 0,824 (chênh −0,006, không có ý nghĩa thống kê) |
 | Neutral F1 trên test (seed 42) | **0,592** | 0,545 | 0,550 |
 | Nhãn đổi khi gõ tắt (ViLexNorm) | khoảng 18% | khoảng 11% | **khoảng 12%** (đã xác nhận theo quy tắc) |
 | Challenge set, qua đúng pipeline của service | 0,851, neutral 0,771 | 0,860, neutral 0,779 | **0,916, neutral 0,885** |
-| Giấy phép trọng số | CC BY-NC 4.0 | CC BY-NC-SA 4.0 | CC BY-NC-SA 4.0 |
 
-Điểm challenge set là dữ liệu tự viết (một người viết), chỉ để tham khảo. Điểm test và tỷ lệ đổi
-nhãn là bằng chứng theo quy tắc đã khai báo trước.
-
-**Khuyến nghị của tôi: chọn H10b.**
-- Nó giải quyết vấn đề gõ tắt (đã xác nhận).
-- Nó mạnh nhất ở các câu khó, nhất là câu trung tính ngắn.
-- Trên test, nó ngang mô hình cũ ở mức 5 seed.
-
-Nếu bạn ưu tiên tuyệt đối điểm UIT-VSFC thì chọn mô hình 12 lớp cũ. Nếu ưu tiên dung lượng và tốc
-độ thì giữ mô hình nhỏ.
-
-**Lệnh đổi** (PowerShell, tại thư mục repo; không xoá gì):
+**Nếu muốn đổi lại** (PowerShell, tại thư mục repo; không xoá gì), rồi báo tôi để cập nhật tài liệu:
 ```powershell
-# Chọn H10b:
-Move-Item models\serve\sentiment models\serve\sentiment-student
-Move-Item models\candidate\sentiment models\serve\sentiment
-# Hoặc chọn mô hình 12 lớp cũ:
-Move-Item models\serve\sentiment models\serve\sentiment-student
+# Phục vụ mô hình nhỏ:
+Move-Item models\serve\sentiment models\serve\.h10b-sentiment
+Move-Item models\serve\.student-sentiment models\serve\sentiment
+# Hoặc mô hình 12 lớp cũ:
+Move-Item models\serve\sentiment models\serve\.h10b-sentiment
 Move-Item models\serve\.previous-sentiment models\serve\sentiment
 ```
 
-Sau khi đổi, báo tôi để cập nhật tài liệu, model card và bản đóng gói Hugging Face cho mô hình được
-chọn.
-
-**Công bố lên Hugging Face** (tuỳ chọn, cần bạn duyệt):
-- Bản chạy thử của mô hình nhỏ đã có ở `models/publish/vifeedback-sentiment-phobert-6l/`, dành cho
-  repo riêng.
-- Nếu chọn H10b, tôi sẽ dựng card và bản đóng gói cho nó.
-- Cả hai đều mang giấy phép CC BY-NC-SA 4.0 (mục 4).
+**Công bố lên Hugging Face** (cần bạn duyệt, mục 4 và 5):
+- Bản chạy thử của H10b đã có ở `models/publish/vifeedback-sentiment-phobert/`, cho repo chính
+  (thay mô hình p9 đang ở trên Hub). Card nêu rõ test 0,8208 ở seed 42 và −0,006 ở mức 5 seed.
+- Bản chạy thử của mô hình nhỏ ở `models/publish/vifeedback-sentiment-phobert-6l/`, cho repo riêng.
+- Cả hai mang giấy phép CC BY-NC-SA 4.0. Hãy trả lời, ví dụ: "duyệt upload H10b, giấy phép
+  CC BY-NC-SA 4.0".
 
 ---
 

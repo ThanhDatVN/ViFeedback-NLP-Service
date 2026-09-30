@@ -23,12 +23,12 @@ for the sentiment model.
 
 | | |
 |---|---|
-| **Served model** | A 6-layer PhoBERT student distilled from five seeds of the 12-layer model (ADR-039, ADR-040); weights stored in FP16, computed in FP32: **185 MB** (the 12-layer model: 540 MB) |
-| **Sentiment, test, 5 seeds** | Served student **0.817**; the 12-layer model 0.830 ± 0.007 (−0.013 [−0.020, −0.005]: the price of the size and speed); research best 0.837 with VnCoreNLP |
+| **Served model** | PhoBERT-base (12 layers) trained with diacritic/teencode augmentation and consistency anchored on a frozen teacher (ADR-042, ADR-043); FP32 ONNX, 540 MB. A 6-layer student (185 MB, 1.8x faster) is released beside it (ADR-039) |
+| **Sentiment, test, 5 seeds** | Served H10b **0.824** (the recipe without the consistency training 0.830 ± 0.007: −0.006 [−0.019, +0.007], not distinguishable); the student 0.817; research best 0.837 with VnCoreNLP |
 | **Robustness** | Diacritics restored before the model: stripped validation 0.686 → **0.857** (ADR-031). Out-of-scope input flagged by a topic detector: AUROC **0.922** within another university's forum (ADR-034) |
-| **Latency** | Raw text in, served pipeline p95 **12.3 ms** on a laptop CPU (the 12-layer model 22.1 ms in the same sessions; target 30 ms) |
+| **Latency** | Raw text in, served pipeline p95 about **22 ms** on a laptop CPU (the 12-layer architecture, 22.1 ms in the Cycle 5 sessions; the student 12.3 ms; target 30 ms) |
 | **Reproducible** | A clean clone reproduces the published model's validation macro-F1 (0.8644) in **2.3 min** in CI, every file checked against `SHA256SUMS` |
-| **Research** | Cycles 0–4 closed, Cycle 5 run; 42 ADRs, 163 weight-updating runs in [the ledger](configs/experiments/ledger.csv); Cycle 5 declared ([cycle5.yaml](configs/experiments/cycle5.yaml)) |
+| **Research** | Cycles 0–4 closed, Cycle 5 run; 43 ADRs, 163 weight-updating runs in [the ledger](configs/experiments/ledger.csv); Cycle 5 declared ([cycle5.yaml](configs/experiments/cycle5.yaml)) |
 
 ---
 
@@ -44,8 +44,9 @@ configuration are not the same artifact.
 |---|---|---|---|
 | PhoBERT-base + **VnCoreNLP** (best measured) | **0.8373 ± 0.0031** | 0.9391 ± 0.0020 | 0.5955 ± 0.0070 |
 | PhoBERT-base + **pyvi** | **0.8288 ± 0.0108** | 0.9369 | 0.5714 |
-| PhoBERT-base + pyvi + diacritic/teencode augmentation (the 12-layer release, [ADR-027](docs/DECISIONS.md)) | **0.8296 ± 0.0071** | 0.9365 | 0.5757 |
-| 6-layer student distilled from it (**what the service runs**, [ADR-040](docs/DECISIONS.md)) | **0.8168** (5 seeds) | 0.9320 (seed 42) | 0.5455 (seed 42) |
+| PhoBERT-base + pyvi + diacritic/teencode augmentation (the 12-layer release until 2026-09-30, [ADR-027](docs/DECISIONS.md)) | **0.8296 ± 0.0071** | 0.9365 | 0.5757 |
+| The same + anchored consistency on real typing (**what the service runs**, [ADR-043](docs/DECISIONS.md)) | **0.8237** (5 seeds) | 0.9345 (seed 42) | 0.5504 (seed 42) |
+| 6-layer student distilled from the 12-layer model ([ADR-040](docs/DECISIONS.md)) | **0.8168** (5 seeds) | 0.9320 (seed 42) | 0.5455 (seed 42) |
 | TF-IDF B3 + dev-fitted priors | 0.7450 | 0.8817 | 0.4207 |
 
 | Topic, test, 5 seeds | Macro-F1 | Weighted F1 | Others F1 |
@@ -75,7 +76,7 @@ report the other two. *(Pinned by `tests/unit/test_metrics.py`.)*
 ## What the service does
 
 ```text
-raw text ─► lowercase, NFC ─► diacritic restorer* ─► pyvi segmentation ─► 6-layer PhoBERT (ONNX) ─► label, probabilities
+raw text ─► lowercase, NFC ─► diacritic restorer* ─► pyvi segmentation ─► PhoBERT (ONNX, FP32) ─► label, probabilities
                                                                     └──► TF-IDF topic detector ─► in_scope, scope_score
 * only when the input is essentially unaccented (ADR-031)
 ```
@@ -98,8 +99,8 @@ The limits are stated in the [model card](https://huggingface.co/Datk4/vifeedbac
 - The labels follow UIT-VSFC's policy, where a suggestion counts as negative.
 - The detector judges topic from words.
 - Other universities' posts score far lower (0.44 macro-F1 on NEU-ESC validation).
-- The served student is 0.013 macro-F1 below the 12-layer model on test; that model stays published
-  for uses where accuracy matters more than size and speed.
+- Real informal typing changes about 12% of labels between a comment and its normalization (18%
+  before ADR-042).
 
 ---
 
@@ -117,7 +118,7 @@ rules are committed before its first run ([configs/experiments/](configs/experim
 | **2** | Confirmation on a frozen, SHA-256-pinned challenge set | Topic stacking fails. The service switched to the augmented model. An instruction LLM beats the encoder on neutral, but only on constructed text (H7) |
 | **3** | The served model on real input (NEU-ESC forum posts, ViLexNorm comments) | **The service lowercases and restores diacritics** (NEU-ESC unaccented posts 0.270 → 0.374). 17% of labels flip on real typing. A lexicon and careful INT8 fail their rules |
 | **4** | Student text from other institutions | In-domain data helps only with one head per label policy (+0.111 on NEU-ESC), but it failed two declared conditions, so it was not released. **`in_scope` now comes from a topic detector.** INT8 passed non-inferiority but not fidelity (91.4% label agreement, batch-dependent), so it was not released |
-| **5** | Real typing, then a smaller model (the owner's order) | **H10 not passed**: its consistency training removed flips by calling informal text negative (ADR-038). **H10b passed**: anchored on a frozen teacher, flips fell from about 18% to 12% with no collapse and test unchanged at five seeds (ADR-042). **H11 passed and served**: a 6-layer student, 185 MB and 1.8x faster, 0.013 below on test (ADR-039, ADR-040). Calibrated confidence served (ADR-041). H12 waits for new labelled data |
+| **5** | Real typing, then a smaller model (the owner's order) | **H10 not passed**: its consistency training removed flips by calling informal text negative (ADR-038). **H10b passed**: anchored on a frozen teacher, flips fell from about 18% to 12% with no collapse and test unchanged at five seeds (ADR-042). **H11 passed**: a 6-layer student, 185 MB and 1.8x faster, 0.013 below on test (ADR-039, ADR-040), released. Calibrated confidence served (ADR-041). **The owner chose H10b for the service** (ADR-043). H12 waits for new labelled data |
 
 Per-cycle tables: [STATUS](docs/STATUS.md) and [EXPERIMENT_MATRIX § 5](docs/EXPERIMENT_MATRIX.md).
 Technical report: [RESEARCH_REPORT](docs/RESEARCH_REPORT.md).
@@ -230,7 +231,7 @@ The Kaggle notebooks are for models that exceed a 4.29 GB GPU ([KAGGLE_GUIDE](do
 | **[STATUS](docs/STATUS.md)** | Progress by gate and cycle, open problems, what runs next |
 | **[NEXT_PLAN](docs/NEXT_PLAN.md)** | Cycle 5 and the open targets, with research sources |
 | [RESEARCH_REPORT](docs/RESEARCH_REPORT.md) | Technical report: questions, method, findings, negative results, limitations |
-| [DECISIONS](docs/DECISIONS.md) | 42 ADRs: every plan correction forced by measurement or review |
+| [DECISIONS](docs/DECISIONS.md) | 43 ADRs: every plan correction forced by measurement or review |
 | [EXPERIMENT_MATRIX](docs/EXPERIMENT_MATRIX.md) | Run-ID scheme and every result table |
 | [EVALUATION_PROTOCOL](docs/EVALUATION_PROTOCOL.md) · [EVALUATION_DATA](docs/EVALUATION_DATA.md) | What every number is held to; what counts as evidence |
 | [DATA_CARD](docs/DATA_CARD.md) | UIT-VSFC measured from the files, and what is never committed |
@@ -296,7 +297,7 @@ machine will re-measure the pipeline with the scope detector.
 - [x] Model card and Hub release — [Datk4/vifeedback-sentiment-phobert](https://huggingface.co/Datk4/vifeedback-sentiment-phobert), every file verified against `SHA256SUMS`
 - [ ] ≥ 30 error cases coded by linguistic feature — *G5 / S9*: tooling, a 160-row audit sheet and
   its analysis are done; the human audit is not
-- [x] Serving artifact ≤ 200 MB — *S7*: a 6-layer student in FP16 storage, 185 MB (ADR-039, ADR-040)
+- [x] Serving artifact ≤ 200 MB — *S7*: a 6-layer student in FP16 storage, 185 MB, released and tested (ADR-039, ADR-040); the service runs the 12-layer H10b model by the owner's choice (ADR-043)
 
 Every external-review item (R1–R12) is closed ([STATUS § 8](docs/STATUS.md#8-external-review--item-status)).
 

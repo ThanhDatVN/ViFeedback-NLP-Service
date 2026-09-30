@@ -9,6 +9,11 @@
   institutions.
 - **The open targets were researched again** (sources S11–S21, § 10).
 
+**Update, 2026-10-01.** H10 was not passed (ADR-038); H11 passed and is released (ADR-039, ADR-040);
+H10b passed (ADR-042) and, by the owner's decision 9, **the service runs it** (ADR-043). Two
+proposals wait for the owner: H12′, a substitute for H12 that needs no new labels (§ 4), and A1′,
+an LLM-assisted neutral audit validated on a human subset (§ 5).
+
 The manual work that only the owner can do is written up step by step, in Vietnamese, in
 [HUONG_DAN_THU_CONG.md](HUONG_DAN_THU_CONG.md). Per-cycle results and open problems are in
 [STATUS.md](STATUS.md).
@@ -21,40 +26,41 @@ reason · ✖ dropped, with the reason.
 ## 0. Where things stand
 
 **The service.**
-- **Model:** the H2-augmented PhoBERT-base (seed 42), FP32 ONNX, 540 MB.
+- **Model:** PhoBERT-base trained with H2's augmentation and H10b's anchored consistency (seed 42),
+  FP32 ONNX, 540 MB, T = 1.349 (ADR-043).
 - **Input handling:** it lowercases input and restores diacritics on unaccented input (ADR-031).
 - **Scope:** it reports `in_scope` / `scope_score` from a TF-IDF topic detector (ADR-034).
 - **Checks:**
   - the restorer and the detector are refused unless their SHA-256 matches the manifest;
   - `docker-e2e` checks the served model's hash inside the image;
   - CI and the Hub reproduction workflow are green.
-- **Where to get it:** <https://huggingface.co/Datk4/vifeedback-sentiment-phobert> (CC BY-NC 4.0).
+- **Where to get it:** <https://huggingface.co/Datk4/vifeedback-sentiment-phobert> still holds the
+  12-layer p9 model (CC BY-NC 4.0). The H10b bundle is built and waits for the owner's approval.
 
-**Targets** (ROADMAP, revised in ADR-015). The 12-layer model meets every committed minimum. The
-served 6-layer student (since 2026-09-30) meets S7 and the latency target, but its test neutral F1
-(0.545 at seed 42) falls just under S4's minimum of 0.55 (ADR-040). Which model to serve is
-decision 9 (§ 8):
+**Targets** (ROADMAP, revised in ADR-015). The served H10b model meets every committed minimum,
+S4's by the smallest margin (neutral F1 0.550 at seed 42). S7 is met by the released 6-layer
+student, not by the served model (ADR-043):
 
 | Target | Minimum | Stretch | Now | Route in v6 |
 |---|---|---|---|---|
-| S1 sentiment test macro-F1 | ≥ 0.80 ✅ | ≥ 0.84 | Served student 0.817 (5 seeds); the 12-layer model 0.830 | Not chased; measured once at H11's closing gate (ADR-040) |
+| S1 sentiment test macro-F1 | ≥ 0.80 ✅ | ≥ 0.84 | Served H10b 0.824 (5 seeds); the p9 recipe 0.830; the student 0.817 | Not chased; measured once at each closing gate (ADR-040, ADR-042) |
 | S2 topic test macro-F1 | ≥ 0.79 ✅ | ≥ 0.83 | 0.804 | Not pursued (§ 5) |
-| S4 neutral F1 | ≥ 0.55 | ≥ 0.65 | Served student 0.545 at seed 42 (below the minimum); the 12-layer model 0.576 (5 seeds, test) | D1 audit → D2 branch (§ 5); the student's neutral loss is in ADR-040 |
-| S7 serving artifact | — | ≤ 200 MB | ✅ **185 MB** (was 540 MB) | H11 passed and served (ADR-039, ADR-040) |
+| S4 neutral F1 | ≥ 0.55 | ≥ 0.65 | Served H10b 0.550 at seed 42; the p9 recipe 0.576 (5 seeds, test); the student 0.545 | D1 audit (or A1′) → D2 branch (§ 5) |
+| S7 serving artifact | — | ≤ 200 MB | ✅ **185 MB**, the released student; the served H10b is 540 MB | H11 passed and released (ADR-039, ADR-040); decision 9 (ADR-043) |
 | S8 image | — | ≤ 700 MB | ✅ 519 MB | done |
 | S9 coded errors | — | ≥ 30 | 0 | D1 audit (👤) |
 | S10 clean-clone evaluation | — | < 15 min | ✅ 2.3 min | done |
-| Latency, served p95 | ≤ 60 ms ✅ | ≤ 30 ms | ✅ **12.3 ms** (median of the reportable sessions; the 12-layer model 22.1 ms in the same sessions) | Measured 2026-09-30, idle-machine condition waived by the owner |
+| Latency, served p95 | ≤ 60 ms ✅ | ≤ 30 ms | ✅ the 12-layer architecture **22.1 ms** in the Cycle 5 sessions (the student 12.3 ms) | Measured 2026-09-30; the served H10b's own session waits for a free GPU |
 
 **Open problems** (IDs from v4 where they still apply):
 
 | ID | Problem | Evidence | Where handled |
 |---|---|---|---|
-| G8 | Real typing flips 17% of labels | A lexicon (S2a), augmentation and own-prediction consistency (H10, degenerate: ADR-038) did not help; **H10b cut flips to about 12% with no collapse** (ADR-042) | Reduced; the H10b model is a release candidate (decision 9) |
-| — | The served student is 0.013 below the 12-layer model on test, while equal on validation | ADR-040: 5/5 seeds lower; 73 neutral validation sentences cannot resolve it | Owner's choice of served model (§ 8); a larger acceptance set for any future size rule |
-| — | Other institutions' text: 0.444 in-scope NEU-ESC test | Two heads reach +0.111, but failed two conditions (ADR-033); NEU-ESC test is spent | **H12**, Cycle 5 (c) |
+| G8 | Real typing flips 17% of labels | A lexicon (S2a), augmentation and own-prediction consistency (H10, degenerate: ADR-038) did not help; **H10b cut flips to about 12% with no collapse** (ADR-042) | Reduced; the H10b model is served (ADR-043) |
+| — | The student is 0.013 below the 12-layer model on test, while equal on validation | ADR-040: 5/5 seeds lower; 73 neutral validation sentences cannot resolve it | Released, not served (ADR-043); a larger acceptance set for any future size rule |
+| — | Other institutions' text: 0.444 in-scope NEU-ESC test | Two heads reach +0.111, but failed two conditions (ADR-033); NEU-ESC test is spent | **H12**, Cycle 5 (c); **H12′** now (§ 4) |
 | G6 | NEU-ESC's `neutral` differs from UIT-VSFC's | 67% of NEU-ESC gold-neutral posts are called polar (ADR-032) | Owner decision 2 (§ 8) |
-| P2 | Neutral errors: label ambiguity or representation? | Confident errors; boundary and head already ruled out (Cycle 1) | D1 audit (👤) → D2 |
+| P2 | Neutral errors: label ambiguity or representation? | Confident errors; boundary and head already ruled out (Cycle 1) | D1 audit (👤) or A1′ → D2 |
 | — | The scope detector judges topic from words | Short or unusual course comments can be flagged; off-topic text with course words passes (ADR-034) | Reported in the card; revisited with H12's data |
 | G9 | The contrast-sentence drop is shown on challenge v1 only | V1, 4/5 seeds, p = 0.004 | Challenge v2, optional |
 
@@ -71,10 +77,14 @@ decision 9 (§ 8):
 | 5 | ✖ Release H10: not passed, nothing released | — | — | — |
 | 6 | ✅ Declare H11 (`cycle5.yaml` v2, 2026-09-30): the teacher follows a written condition on H10's decision | — | — | committed before any H11 run and before H10 decided |
 | 7 | ✅ F4: FP16-storage export. ✅ **H11 passed** (ADR-039): pretrained-first6, 185.1 MB, pooled bound 0.0078, UIT-VSFC drop 0.00001 on validation | — | 6 GPU runs | the H11 rule |
-| 8 | ✅ Release H11 (ADR-040): candidate through the gate, restorer and detector re-accepted, three latency sessions (median p95 12.3 ms), **served since 2026-09-30**. 👤 Hub upload to a separate repository (CC BY-NC-SA 4.0) | 👤 licence, upload | CPU | release gate, `cycle5.yaml` v3 |
+| 8 | ✅ Release H11 (ADR-040): candidate through the gate, restorer and detector re-accepted, three latency sessions (median p95 12.3 ms), served 2026-09-30 to 2026-10-01, now kept beside the served model. 👤 Hub upload to a separate repository (CC BY-NC-SA 4.0) | 👤 licence, upload | CPU | release gate, `cycle5.yaml` v3 |
 | 9 | ✅ H11 closing gate (test, once): student 0.8168 (5 seeds) vs 0.8296, −0.0129 [−0.0204, −0.0054] | — | CPU | logged; reported, not a decision |
+| 9b | ✅ H10b (ADR-042): passed; closing gate 0.8237 (−0.0059, n.s.); release candidate built (`cycle5.yaml` v5) | — | 12 GPU runs | the H10b rule |
+| 9c | ✅ Decision 9 (ADR-043): **the service runs H10b** (2026-10-01); 40 API tests pass. 👤 Hub upload and licence | 👤 upload | CPU | release gate |
+| 9d | Latency session of the served H10b | a free GPU | CPU | reported next to the 22.1 ms of the same architecture |
 | 10 | H12: declare, then run, when decision 2 and the new labelled sample exist | 👤 decision 2, 👤 data | ≈ 6 GPU runs | declared later |
-| any time | D1 neutral audit → D2 branch | 👤 6–8 h | D2: ≤ 12 runs | the tree frozen in `cycle2.yaml` |
+| 10′ | H12′ (§ 4): declare in `cycle5.yaml` v6, then run | 👤 decision 10 | ≈ 6 GPU runs, 3 h | declared before the split is drawn |
+| any time | D1 neutral audit → D2 branch; or A1′ (§ 5), 70 rows by the owner plus a validated LLM | 👤 6–8 h, or 2–2.5 h with A1′ | D2: ≤ 12 runs | the tree frozen in `cycle2.yaml` |
 | ✅ | Three latency sessions (owner waived the idle condition) | — | CPU | p95 ≤ 30 ms: 12.3 ms |
 
 One heavy job at a time, with a cool-down and a temperature check between runs (GPU < 70 °C).
@@ -250,13 +260,42 @@ Each run is shorter than a teacher run (half the layers).
 - The scope condition is restated for the served detector: its flag rate on the new sample's
   in-scope posts ≤ 10%.
 
+### H12′: a substitute that needs no new labels (proposed 2026-10-01, not declared)
+
+The data for H12 does not exist yet. What can be tested now, honestly scoped, is whether the service
+gets better on **NEU-ESC-style forum posts** without losing anything H8 lost. The held-out data comes
+from NEU-ESC train, which no compared model has been scored on.
+
+| | |
+|---|---|
+| Question | Does the two-heads recipe (ADR-033, UIT-VSFC head served) trained with H10b's anchored consistency raise the served head's macro-F1 on in-scope NEU-ESC posts no model trained on, with no loss on UIT-VSFC, neutral, stripped text or real typing? |
+| Data | In-scope NEU-ESC train (21,113 posts) split once by a declared, label-stratified permutation: **3,000 held-out posts** for confirmation, 18,113 for training. NEU-ESC validation (3,026 in-scope) for selection. NEU-ESC test stays spent |
+| Control | The served H10b recipe, its five existing seeds (they never saw NEU-ESC) |
+| Recipes | `two_heads_anchored` (H10b's loss with the two-heads model) and `two_heads` (H8's recipe on the reduced training set) |
+| Selection | Seed 42, highest NEU-ESC validation macro-F1 among recipes within 0.005 of the control on UIT-VSFC validation |
+| Rule, five seeds each | (1) held-out in-scope macro-F1 higher, seed-paired bootstrap CI above 0; guards: (2) UIT-VSFC validation −0.005 at most; (3) neutral F1 −0.02 at most; (4) stripped text through the restorer −0.01 at most (H8's failure); (5) agreement with the teacher on ViLexNorm dev −0.02 at most (keeps H10b's gain) |
+| Budget | About 6 GPU runs, about 3 GPU-hours on the laptop, one job at a time |
+
+**What it cannot claim.**
+- **Same institution.** The held-out posts come from the same forum and annotation as the training
+  posts. H12′ measures in-distribution gain on NEU's forum, not transfer to a third institution; P8
+  stays open for that.
+- **No scope condition.** The served scope detector was trained on NEU-ESC train, including the
+  held-out slice. Scope is reported only.
+- **Label policy.** The served head keeps UIT-VSFC's policy (decision 2's default) and is scored
+  against NEU-ESC's labels, as in H8. Part of the remaining gap is policy (G6), which no model fixes.
+- **Unlabeled overlap.** H11's transfer set held NEU-ESC train text without labels. The student is not
+  compared in H12′.
+
+It needs `cycle5.yaml` v6, committed before the split is drawn, and the owner's go-ahead (decision 10).
+
 ---
 
 ## 5. The other open targets
 
 ### S4 neutral F1 (0.576 → 0.65) and S9 coded errors (0 → 30)
 
-The audit is the gate, and nothing automated replaces it:
+The audit is the gate, and nothing fully automatic replaces it:
 - Cycle 1 ruled out the decision boundary and the classifier head.
 - What remains is **label ambiguity** or **representation**, and only a person reading the sentences
   can separate them.
@@ -283,6 +322,27 @@ frozen in `cycle2.yaml`:
 - **H11's ensemble soft labels** may raise the student's neutral F1. This is reported, not claimed in
   advance.
 
+**A1′: an LLM-assisted audit, validated on a human subset (proposed 2026-10-01, not declared).**
+A fully automatic audit cannot guarantee its own quality: the question is exactly where careful
+readers disagree, and an LLM's agreement with gold says nothing about whether gold is right. Studies
+of LLM annotation recommend the opposite order: validate the model against human labels on a subset,
+and use it for the rest only if it agrees well enough [S22]. The protocol:
+
+| Step | Who | Work |
+|---|---|---|
+| 1 | The owner | Blind-labels **70 of the 160 rows**: the 40 `random` rows and 30 error rows drawn by a declared seed (about 2–2.5 h, against 6–8 h). Codes ≥ 30 errors by hand, so S9 is met by a person |
+| 2 | A local LLM on Kaggle | Labels all 160 rows blind, with the annotation guide as its prompt: `annotator_label`, `neutral_subtype`, then `gold_assessment` with gold shown. Open weights (Qwen3-14B or larger); **UIT-VSFC text is never sent to an API** |
+| 3 | The code | Agreement on the 70 rows: Cohen's κ on `annotator_label` ≥ 0.6 with its bootstrap lower bound ≥ 0.4, and ≥ 70% agreement on `gold_assessment` over the 30 error rows |
+| 4 | The code | If step 3 holds, the tree runs on the LLM's labels for the 90 rows the owner did not label, and on the owner's for the rest. The branch is accepted only if its proportion clears the threshold by its bootstrap interval; otherwise, or if step 3 fails, the owner audits the remaining 90 rows |
+
+- **The LLM decides no training label.** Its output decides a branch of the frozen tree; E04's label
+  correction keeps its own method. "No LLM output as a gold label" (§ 7) stands.
+- **Honest expectation.** On NEU-ESC, Qwen3-4B scored 0.475 against 0.604 for gpt-4o-mini (H7), and
+  neutral is where LLMs and people disagree most. The agreement gate may well fail. If it does, the
+  owner's 70 rows still count, and the audit continues by hand from there.
+- Changing the protocol needs `cycle2.yaml`'s audit section amended by a new version and an ADR before
+  any LLM output is seen, and the owner's go-ahead (decision 11).
+
 ### S1 and S2 (stretch)
 
 The test split is spent for selection: 28 logged test evaluations, and every Cycle 1–4 decision was
@@ -295,11 +355,9 @@ carry a third of the macro average and one example moves it by about 0.004.
 
 ### Latency (≤ 30 ms, stretch)
 
-The last absolute p95 (26.9 ms) predates ADR-034. The detector is lighter than the score it replaced
-(+0.5–0.8 ms against +1.3–3.1 ms, measured within sessions). The absolute number needs three sessions
-on an idle machine; the owner prepares the machine
-([HUONG_DAN_THU_CONG.md § 3](HUONG_DAN_THU_CONG.md#3-chuẩn-bị-máy-rảnh-để-đo-độ-trễ)). H11 would
-make the target robust to machine state.
+Met. In the Cycle 5 sessions (idle condition waived by the owner) the 12-layer served pipeline
+measured p95 22.1 ms and the student 12.3 ms. The served H10b model has the 12-layer architecture;
+its own session runs when the GPU is free (`study latency` refuses while another process uses it).
 
 ---
 
@@ -314,16 +372,16 @@ make the target robust to machine state.
 | F7 | ✅ `cli.py` (3,371 lines) split into `vifeedback/cli/` by group and by cycle; same 59 commands and options, checked command by command | done 2026-09-29 |
 | F8 | ✅ `make export` rebuilt the retired Mahalanobis configuration; it now attaches the scope detector. `make publish` and `make reproduce` were added | done 2026-09-29 |
 | F9 | ✅ Calibrated confidence in the service (ADR-041): `serve add-temperature`, T in the manifest; student T = 1.491, 12-layer T = 1.551; labels unchanged | done 2026-09-30 |
-| H10b | ✅ **Passed** (ADR-042): consistency anchored on the frozen 5-seed teacher; flips −0.061, agreement +0.062, label_tv 0.013, all guards held. Closing gate: test 0.824 over 5 seeds (−0.006, n.s.). Release candidate built in `models/candidate/sentiment` (`cycle5.yaml` v5) | done 2026-10-01 |
+| H10b | ✅ **Passed** (ADR-042): consistency anchored on the frozen 5-seed teacher; flips −0.061, agreement +0.061, label_tv 0.013, all guards held. Closing gate: test 0.824 over 5 seeds (−0.006, n.s.). Release candidate built (`cycle5.yaml` v5) and **served** by decision 9 (ADR-043); card written (`publish.h10b_card`) | done 2026-10-01 |
 
 ## 7. Budget and what not to do
 
 | Resource | Cycle 5 estimate |
 |---|---|
-| Weight-updating runs | H10 6, H11 about 7, H12 about 6, D2 ≤ 12 |
+| Weight-updating runs | H10 6, H11 about 7, H10b 12, H12′ about 6, H12 about 6, D2 ≤ 12 |
 | Laptop GPU (RTX 3050, 4.29 GB) | H10 about 2 h, H11 about 1.5 h; one job at a time |
 | Kaggle | not needed; optional for F4 if the export cannot run locally |
-| API | none |
+| API | none; A1′ uses open weights on Kaggle, never an API, for UIT-VSFC text |
 
 **What not to do.**
 - No selection on any test split. ViLexNorm test and the Cycle 5 closing gate are used once per
@@ -343,11 +401,13 @@ The step-by-step versions, in Vietnamese: [HUONG_DAN_THU_CONG.md](HUONG_DAN_THU_
 |---|---|---|---|
 | 1 | Neutral audit, 160 rows, plus a second pass on ≥ 50 | D2 waits | S4, S9 |
 | 2 | Label policy for other institutions' text | Keep UIT-VSFC's | H12 |
-| 3 | Weights licence of the student (its transfer set holds ViLexNorm text, so CC BY-NC-SA 4.0) and its separate Hub repository `Datk4/vifeedback-sentiment-phobert-6l` (bundle built) | Not uploaded | student upload |
+| 3 | Weights licence CC BY-NC-SA 4.0 (ViLexNorm text in training) for the served H10b (bundle built for the main repository) and the student (repository `Datk4/vifeedback-sentiment-phobert-6l`, bundle built) | Not uploaded; the Hub keeps p9 | uploads |
 | 4 | Approve each Hub upload | No upload | every release |
 | 5 | A new labelled sample from another institution | H12 not declared | H12 |
 | 6 | ✅ Latency sessions: the owner waived the idle-machine condition (2026-09-30) | — | — |
-| 9 | Which model the service runs: the 12-layer served recipe, the student (served now, as declared), or the 12-layer H10b candidate. Recommendation: **H10b** (see STATUS § 6b for the comparison) | The student | — |
+| 9 | ✅ Which model the service runs: **H10b**, approved 2026-10-01 (ADR-043) | — | — |
+| 10 | Go-ahead for H12′ (§ 4): same-institution held-out data, about 3 GPU-hours | Not declared | H12′ |
+| 11 | Go-ahead for A1′ (§ 5): label 70 rows, and let a validated open LLM label the rest | The full audit (decision 1) | A1′ |
 | 7 | U2: 15 challenge v1 labels | v1 stays as frozen | F6 |
 | 8 | Challenge v2 | Not written | optional |
 
@@ -388,6 +448,7 @@ the FP16-storage graph locally.
 | S19 | Inoshita, 2026. *Class-Structure Preservation Beats Diversity: A Comprehensive Benchmark of Text Augmentation Methods for Imbalanced Text Classification*. [arXiv:2608.12340](https://arxiv.org/abs/2608.12340). EmbSMOTE ≥ every LLM generator; gap up to 0.063 macro-F1 at high imbalance | S4: why not LLM oversampling |
 | S20 | Neshaei et al., 2025. *Bridging the Data Gap: Using LLMs to Augment Datasets for Text Classification*. [EDM 2025](https://educationaldatamining.org/EDM2025/proceedings/2025.EDM.long-papers.54/index.html). Minority-class gains with GPT-4o; open models (Llama 3.1 8B) subpar | S4: why not LLM oversampling here |
 | S21 | Tran et al., 2023. *ViDeBERTa: A powerful pre-trained language model for Vietnamese*. [Findings of EACL 2023](https://aclanthology.org/2023.findings-eacl.79/). xsmall: 12 × 384, 128,000-token vocabulary, 241 MB checkpoint (checked 2026-09-29) | H11 alternative student, deferred |
+| S22 | Pangakis, Wolken and Fasching, 2023. *Automated Annotation with Generative AI Requires Validation*. [arXiv:2306.00176](https://arxiv.org/abs/2306.00176). LLM annotation quality varies by task and dataset; validate against human labels on a subset before using it | A1′ |
 
 ---
 
