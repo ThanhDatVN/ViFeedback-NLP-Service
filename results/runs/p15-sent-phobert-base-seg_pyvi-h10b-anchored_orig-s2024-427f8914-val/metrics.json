@@ -1,0 +1,126 @@
+{
+  "n": 1583,
+  "macro_f1": 0.8617026709295228,
+  "weighted_f1": 0.9528476428892918,
+  "micro_f1": 0.9551484523057486,
+  "accuracy": 0.9551484523057486,
+  "balanced_accuracy": 0.8325228566963135,
+  "mcc": 0.9164607157493444,
+  "g_mean": 0.8045002360909024,
+  "cohen_kappa": 0.9161229994014809,
+  "per_class": {
+    "negative": {
+      "precision": 0.9568245125348189,
+      "recall": 0.9744680851063829,
+      "f1": 0.9655657062543921,
+      "support": 705,
+      "predicted": 718,
+      "average_precision": 0.9815130819584341
+    },
+    "neutral": {
+      "precision": 0.8,
+      "recall": 0.547945205479452,
+      "f1": 0.6504065040650406,
+      "support": 73,
+      "predicted": 50,
+      "average_precision": 0.7281712862894436
+    },
+    "positive": {
+      "precision": 0.9631901840490797,
+      "recall": 0.9751552795031055,
+      "f1": 0.9691358024691358,
+      "support": 805,
+      "predicted": 815,
+      "average_precision": 0.990023324629134
+    }
+  },
+  "confusion": [
+    [
+      687,
+      5,
+      13
+    ],
+    [
+      16,
+      40,
+      17
+    ],
+    [
+      15,
+      5,
+      785
+    ]
+  ],
+  "confusion_normalized": [
+    [
+      0.9745,
+      0.0071,
+      0.0184
+    ],
+    [
+      0.2192,
+      0.5479,
+      0.2329
+    ],
+    [
+      0.0186,
+      0.0062,
+      0.9752
+    ]
+  ],
+  "labels": [
+    "negative",
+    "neutral",
+    "positive"
+  ],
+  "ordinal_mae": 0.06253948199620973,
+  "qwk": 0.9488574555685272,
+  "adjacent_accuracy": 0.9823120656980417,
+  "log_loss": 0.18415003386004403,
+  "ece_10bin": 0.029199313987862033,
+  "history": [
+    {
+      "epoch": 1,
+      "train_ce": 0.41404183417059187,
+      "train_consistency": 0.24647005272810685,
+      "dev_macro_f1": 0.8463790120204645,
+      "dev_neutral_f1": 0.6206896551724138,
+      "seconds": 102.2,
+      "vilexnorm_dev_flip_rate": 0.12186379928315412
+    },
+    {
+      "epoch": 2,
+      "train_ce": 0.17651770026657168,
+      "train_consistency": 0.10342053691310256,
+      "dev_macro_f1": 0.8507147043639125,
+      "dev_neutral_f1": 0.6240000000000001,
+      "seconds": 206.7,
+      "vilexnorm_dev_flip_rate": 0.12066905615292713
+    },
+    {
+      "epoch": 3,
+      "train_ce": 0.13161999420080772,
+      "train_consistency": 0.0733851491676529,
+      "dev_macro_f1": 0.8569395105540458,
+      "dev_neutral_f1": 0.6393442622950819,
+      "seconds": 311.6,
+      "vilexnorm_dev_flip_rate": 0.12664277180406214
+    },
+    {
+      "epoch": 4,
+      "train_ce": 0.1041672058278622,
+      "train_consistency": 0.06025805957511317,
+      "dev_macro_f1": 0.8617026709295228,
+      "dev_neutral_f1": 0.6504065040650406,
+      "seconds": 416.0,
+      "vilexnorm_dev_flip_rate": 0.12305854241338113
+    }
+  ],
+  "best_epoch": 4,
+  "augmentation": {
+    "recipe": "diac-teen",
+    "p": 0.3,
+    "changed": 2611,
+    "changed_share": 0.2285
+  }
+}

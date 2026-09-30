@@ -1419,3 +1419,54 @@ Temperature scaling was recommended as worth shipping and never shipped.
   the model calls negative now reports 0.55 rather than a near-certain value.
 - The logits the ONNX graph outputs are unchanged. Users of the published files divide by the
   card's T themselves, as the card already says.
+
+---
+
+## ADR-042 · 2026-10-01 · H10b passed: anchoring consistency on a frozen teacher cuts real-typing flips without collapse · Accepted
+
+**Context.** H10 failed because its own-prediction consistency let the model call all informal
+text negative (ADR-038). `cycle5.yaml` v4, declared before any H10b run, made three changes:
+- **the target** is the frozen 5-seed teacher's probabilities on the normalized form;
+- **the metrics** are agreement with the teacher's label and the label-distribution distance
+  (`label_tv`), which a constant prediction cannot game;
+- **the confirmation data** are 1,500 fresh ViLexNorm training pairs that no model in the
+  comparison has seen.
+
+**Selection (seed 42, dev 837 pairs).**
+
+| | UIT-VSFC | Agreement | Flips | label_tv |
+|---|---:|---:|---:|---:|
+| Control | 0.8644 | 0.828 | 0.135 | 0.031 |
+| anchored_orig | 0.8617 | **0.8626** | 0.109 | 0.019 |
+| anchored_both | 0.8709 | **0.8626** | 0.105 | 0.008 |
+
+Both recipes were eligible and tied on dev agreement (the declared criterion). The declaration had
+no tie-break, and the selection code kept the first recipe in declared order, `anchored_orig`. That
+is recorded here as a gap in the declaration; `anchored_both` would also have been a legitimate
+choice.
+
+**Confirmation** (anchored_orig, five seeds each side, 1,500 confirmation pairs):
+
+| Rule | Result | |
+|---|---|---|
+| (1) agreement with the teacher's label | +0.062 [+0.048, +0.075] | pass |
+| (2) flip rate | −0.061 [−0.073, −0.049] (per seed: 11.3–13.0% against 13.5–20.7%) | pass |
+| (3) label_tv, 5-seed mean | 0.013 (limit 0.10; the control's is 0.108) | pass |
+| (4) UIT-VSFC validation | +0.0014 | pass |
+| (5) neutral F1 | +0.003 | pass |
+| (6) stripped text through the restorer | +0.0028 | pass |
+| (7) NEU-ESC validation | −0.0039 (limit −0.01) | pass |
+
+**H10b is passed.** This is the first intervention in the project that reduces real-typing
+instability. The 12-layer model now changes about 12% of labels between a comment and its
+normalization, against about 18% for the served recipe. It keeps its label distribution on
+informal text, and it varies less across seeds. The served recipe's own distribution on informal
+text drifts (label_tv 0.108); H10b's does not.
+
+**Decision.**
+- As declared, the seed-42 model is a 12-layer release candidate and a candidate teacher for a later
+  student.
+- Its weights would carry CC BY-NC-SA 4.0 (ViLexNorm).
+- Which model the service runs stays the owner's decision 9, now with three options: the student,
+  the 12-layer model, or H10b's 12-layer model.
+- A closing gate on test for H10b is declared separately (`cycle5.yaml` v5) before it runs.

@@ -1,0 +1,29 @@
+{
+  "declared_in": "configs/experiments/cycle5.yaml v4 H10b recipe_selection",
+  "control_s42": {
+    "uit_validation": 0.8644104907582961,
+    "dev_agreement": 0.8279569892473119,
+    "dev_flip_rate": 0.13500597371565112,
+    "dev_label_tv": 0.03106332138590201
+  },
+  "recipes": {
+    "anchored_orig": {
+      "uit_validation": 0.8616759239790208,
+      "uit_minus_control": -0.0027345667792753048,
+      "dev_agreement": 0.8626045400238949,
+      "dev_flip_rate": 0.1087216248506571,
+      "dev_label_tv": 0.019115890083632014,
+      "eligible": true
+    },
+    "anchored_both": {
+      "uit_validation": 0.8709101198744662,
+      "uit_minus_control": 0.00649962911617008,
+      "dev_agreement": 0.8626045400238949,
+      "dev_flip_rate": 0.10513739545997611,
+      "dev_label_tv": 0.008363201911589006,
+      "eligible": true
+    }
+  },
+  "chosen": "anchored_orig",
+  "outcome": "confirm"
+}
