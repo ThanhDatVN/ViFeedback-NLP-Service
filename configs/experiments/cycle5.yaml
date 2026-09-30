@@ -15,10 +15,14 @@
 # Version 2 (2026-09-30), while H10's runs were in progress and before any H11 run or any H10
 # decision: H11 declared. Its teacher is fixed by a rule written here, not by looking at H10's
 # numbers: H10's recipe if H10 passes, otherwise the served recipe. No H10 rule changes.
+#
+# Version 3 (2026-09-30), after H11 passed (ADR-039) and before any latency number of the candidate
+# or any UIT-VSFC test evaluation of a student: how the candidate replaces the served model, and its
+# closing gate. The owner waived the idle-machine condition of the latency sessions.
 
-version: 2
+version: 3
 declared: 2026-09-29
-revised: 2026-09-30  # v2 H11 declared (the distilled student)
+revised: 2026-09-30  # v2 H11 declared; v3 H11 release condition and closing gate
 
 data:
   vilexnorm_train: >
@@ -152,6 +156,24 @@ H11_distilled_student:   # v2
     detector re-accepted and an ADR; three latency sessions on an idle machine must show served p95
     <= 30 ms before it replaces the teacher. Its transfer set holds ViLexNorm text (CC BY-NC-SA 4.0),
     so a Hub upload needs the owner's licence decision (HUONG_DAN_THU_CONG.md § 4) and approval.
+
+H11_release:   # v3
+  candidate: >
+    The seed-42 student released through the gate as an FP16-storage graph (185.1 MB) with the
+    restorer and the scope detector re-accepted, in models/candidate/sentiment.
+  latency: >
+    The owner waived the idle-machine condition (2026-09-30). Three sessions of
+    `study latency --no-torch` on the machine as it is, each timing the served release and then the
+    candidate. The candidate replaces the served model if the median over the three sessions of its
+    served-pipeline p95 (S1) is <= 30 ms, the C4 protocol. A busy machine only slows the pipeline, so
+    the condition is conservative; the range and the within-session ratio to the served release are
+    reported.
+  closing_gate: >
+    Once: the five H11 students (PyTorch) on UIT-VSFC test, and the seed-42 student through the Cycle 1
+    closing-gate procedure (test, the overlap-excluded slice, temperature fitted on validation, the four
+    robustness suites on test). Every evaluation is appended to results/test_evaluations.log. Reported
+    for the model card and S1; no decision depends on it. The teacher's figures are Cycle 1's (5-seed
+    mean 0.8296, seed 42 0.8371).
 
 planned:   # outlines only; nothing here is a rule until a later version declares it
   H12_other_institutions: >
