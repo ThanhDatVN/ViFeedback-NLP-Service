@@ -31,3 +31,8 @@
 2026-09-30 14:48	p14-sent-phobert-base-seg_pyvi-h11-pretrained-first6-from-served-s2024-7586a001-ckp	P14	Cycle 5 H11 closing gate (cycle5.yaml v3): the students on test, once
 2026-09-30 14:48	p14-sent-phobert-base-seg_pyvi-h11-pretrained-first6-from-served-s7-f0f9c2e8-ckp	P14	Cycle 5 H11 closing gate (cycle5.yaml v3): the students on test, once
 2026-09-30 14:48	p14-sent-phobert-base-seg_pyvi-h11-pretrained-first6-from-served-s31337-636f4cee-ckp	P14	Cycle 5 H11 closing gate (cycle5.yaml v3): the students on test, once
+2026-09-30 19:02	p15-sent-phobert-base-seg_pyvi-h10b-anchored_orig-s42-063770c8-ckp	P15	Cycle 5 H10b closing gate (cycle5.yaml v5): the models on test, once
+2026-09-30 19:02	p15-sent-phobert-base-seg_pyvi-h10b-anchored_orig-s1337-1c36ec66-ckp	P15	Cycle 5 H10b closing gate (cycle5.yaml v5): the models on test, once
+2026-09-30 19:02	p15-sent-phobert-base-seg_pyvi-h10b-anchored_orig-s2024-427f8914-ckp	P15	Cycle 5 H10b closing gate (cycle5.yaml v5): the models on test, once
+2026-09-30 19:03	p15-sent-phobert-base-seg_pyvi-h10b-anchored_orig-s7-9f62879c-ckp	P15	Cycle 5 H10b closing gate (cycle5.yaml v5): the models on test, once
+2026-09-30 19:03	p15-sent-phobert-base-seg_pyvi-h10b-anchored_orig-s31337-093a2205-ckp	P15	Cycle 5 H10b closing gate (cycle5.yaml v5): the models on test, once

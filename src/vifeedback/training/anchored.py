@@ -406,6 +406,7 @@ __all__ = [
     "CONFIRM_INDEX",
     "OUT",
     "apply_rule",
+    "closing_gate",
     "confirm",
     "confirm_split",
     "evaluate_control",
@@ -417,3 +418,47 @@ __all__ = [
     "teacher_q",
     "write_confirm_index",
 ]
+
+
+def closing_gate(recipe: str = "anchored_orig") -> dict[str, Any]:
+    """cycle5.yaml v5 H10b_release.closing_gate: the five models on UIT-VSFC test, once, logged."""
+    from vifeedback.evaluation import closing_gate as CG
+    from vifeedback.evaluation import decisions as DEC
+    from vifeedback.evaluation import error_analysis as EA
+    from vifeedback.evaluation import metrics as M
+    from vifeedback.evaluation.report import yaml_safe
+
+    dst = OUT / "closing_gate" / "summary.json"
+    if dst.exists():
+        raise FileExistsError(f"the H10b closing gate has run already: {dst}")
+    reason = "Cycle 5 H10b closing gate (cycle5.yaml v5): the models on test, once"
+    gi = CG.inputs()
+    five: dict[int, float] = {}
+    row42: dict[str, Any] = {}
+    for s in SEEDS:
+        ck = paths.MODELS / C.config(recipe, s).run_id("ckpt")
+        if s == 42:
+            row42 = CG.row(ck, gi)
+            five[s] = row42["test"]["macro_f1"]
+        else:
+            five[s] = M.macro_f1(gi["y_te"], EA.predict_proba(ck, gi["x_te"]).argmax(1), 3)
+        CG.log_test_use(ck, f"P{C.PHASE_NUM_B}", reason)
+    cycle1 = json.loads(
+        (paths.RESULTS / "studies" / "closing_gate" / "summary.json").read_text(encoding="utf-8")
+    )
+    served5 = {int(k): float(v) for k, v in cycle1["five_seed_test"]["augmented"].items()}
+    out = {
+        "declared_in": "configs/experiments/cycle5.yaml v5 H10b_release.closing_gate",
+        "reason": reason,
+        "recipe": recipe,
+        "slice_version": gi["slice_version"],
+        "checkpoints": {"h10b": row42},
+        "five_seed_test": {
+            "h10b": five,
+            "served_recipe_cycle1": served5,
+            "paired_h10b_minus_served_recipe": DEC.paired(served5, five),
+        },
+    }
+    dst.parent.mkdir(parents=True, exist_ok=True)
+    dst.write_text(json.dumps(yaml_safe(out), indent=2, ensure_ascii=False), encoding="utf-8")
+    return out

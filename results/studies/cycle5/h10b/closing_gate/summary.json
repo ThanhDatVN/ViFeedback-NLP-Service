@@ -1,0 +1,97 @@
+{
+  "declared_in": "configs/experiments/cycle5.yaml v5 H10b_release.closing_gate",
+  "reason": "Cycle 5 H10b closing gate (cycle5.yaml v5): the models on test, once",
+  "recipe": "anchored_orig",
+  "slice_version": 1,
+  "checkpoints": {
+    "h10b": {
+      "checkpoint": "D:\\GitHub\\ViFeedback NLP Service\\models\\p15-sent-phobert-base-seg_pyvi-h10b-anchored_orig-s42-063770c8-ckp",
+      "test": {
+        "macro_f1": 0.8208054322046716,
+        "weighted_f1": 0.9344933255781729,
+        "per_class_f1": {
+          "negative": 0.9582016157358623,
+          "neutral": 0.5503875968992248,
+          "positive": 0.9538270839789278
+        }
+      },
+      "test_excluding_train_overlap": {
+        "n": 3111,
+        "macro_f1": 0.8199290848953488,
+        "neutral_f1": 0.5490196078431372
+      },
+      "calibration": {
+        "temperature_fit_on_validation": 1.3492655112625154,
+        "uncalibrated": {
+          "nll": 0.2335977703332901,
+          "brier": 0.10353615274238308,
+          "ece_equal_width": 0.036344984363922216,
+          "ece_equal_mass": 0.03570170665721089
+        },
+        "calibrated": {
+          "nll": 0.206889346241951,
+          "brier": 0.0995100800713161,
+          "ece_equal_width": 0.012745098550336263,
+          "ece_equal_mass": 0.018259187721407874
+        }
+      },
+      "robustness_test": {
+        "nodiacritic": {
+          "macro_f1": 0.6227163723882427,
+          "pred_share_neutral": 0.024952621604548326
+        },
+        "nodiacritic-50": {
+          "macro_f1": 0.7217639813826521,
+          "pred_share_neutral": 0.03126974099810487
+        },
+        "teencode-100": {
+          "macro_f1": 0.8102172908630262,
+          "pred_share_neutral": 0.03095388502842704
+        },
+        "charnoise-5": {
+          "macro_f1": 0.7814284294879937,
+          "pred_share_neutral": 0.03063802905874921
+        }
+      }
+    }
+  },
+  "five_seed_test": {
+    "h10b": {
+      "42": 0.8208054322046716,
+      "1337": 0.8275387789604335,
+      "2024": 0.8267285120749106,
+      "7": 0.814189043640006,
+      "31337": 0.8293873890014242
+    },
+    "served_recipe_cycle1": {
+      "42": 0.8371,
+      "1337": 0.8298,
+      "2024": 0.8179,
+      "7": 0.8309,
+      "31337": 0.8325
+    },
+    "paired_h10b_minus_served_recipe": {
+      "seeds": [
+        7,
+        42,
+        1337,
+        2024,
+        31337
+      ],
+      "n": 5,
+      "per_seed_delta": [
+        -0.0167,
+        -0.0163,
+        -0.0023,
+        0.0088,
+        -0.0031
+      ],
+      "mean_delta": -0.005910168823710804,
+      "wins": 1,
+      "ci95": [
+        -0.019266898822417486,
+        0.007446561174995879
+      ]
+    }
+  }
+}

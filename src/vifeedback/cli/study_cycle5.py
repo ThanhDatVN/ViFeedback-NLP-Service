@@ -238,3 +238,21 @@ def study_h10b_confirm(
         detail = {k: round(v, 4) for k, v in r.items() if isinstance(v, float)}
         typer.echo(f"  {name:36s} {'PASS' if r['passed'] else 'FAIL'}  {detail}")
     typer.echo(f"  H10b {recipe}: {'passed' if out['passed'] else 'not passed'}")
+
+
+@study_app.command("h10b-closing-gate")
+def study_h10b_closing_gate() -> None:
+    """Cycle 5 H10b closing gate (cycle5.yaml v5): the five models on UIT-VSFC test, once, logged."""
+    from vifeedback.training import anchored as A
+
+    out = A.closing_gate()
+    r = out["checkpoints"]["h10b"]
+    typer.echo(
+        f"  seed 42: test macro-F1 {r['test']['macro_f1']:.4f}, neutral F1 "
+        f"{r['test']['per_class_f1']['neutral']:.3f}, no-diacritic "
+        f"{r['robustness_test']['nodiacritic']['macro_f1']:.3f}"
+    )
+    f = out["five_seed_test"]
+    p = f["paired_h10b_minus_served_recipe"]
+    typer.echo(f"  5 seeds: {f['h10b']}")
+    typer.echo(f"  H10b - served recipe (Cycle 1 test): {p['mean_delta']:+.4f} {p.get('ci95')}")
