@@ -1,0 +1,16 @@
+{
+  "declared_in": "configs/experiments/cycle5.yaml v2 H11 selection",
+  "students": {
+    "teacher-alternate": {
+      "uit_validation": 0.8613939811788723,
+      "neu_validation_all": 0.4159958256748995,
+      "mean": 0.638694903426886
+    },
+    "pretrained-first6": {
+      "uit_validation": 0.8730112345882822,
+      "neu_validation_all": 0.4359607615379429,
+      "mean": 0.6544859980631126
+    }
+  },
+  "chosen": "pretrained-first6"
+}
