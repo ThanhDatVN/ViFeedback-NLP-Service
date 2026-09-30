@@ -32,6 +32,8 @@ from vifeedback.constants import SEEDS, label_names
 from vifeedback.training import domain as D
 
 RECIPES = ("onesided", "symmetric")
+ANCHORED = ("anchored_orig", "anchored_both")  # H10b (cycle5.yaml v4), a frozen teacher target
+PHASE_NUM_B = 15
 WEIGHT = 1.0
 PHASE_NUM = 13
 N_VILEXNORM_TRAIN = 8372
@@ -89,11 +91,25 @@ def flip_rate(pred_orig: np.ndarray, pred_norm: np.ndarray) -> float:
 # --- loss and training --------------------------------------------------------------------------
 
 
-def consistency_loss(logits_orig, logits_norm, recipe: str):
-    """The H10 consistency term for one batch of pairs (batch-mean KL, in float32)."""
+def consistency_loss(logits_orig, logits_norm, recipe: str, q=None):
+    """The consistency term for one batch of pairs (batch-mean KL, in float32).
+
+    H10: `onesided`, `symmetric`. H10b: `anchored_orig` / `anchored_both`, KL(q || p) with q the
+    frozen teacher's probabilities on the normalized form (on the original; also on the normalized).
+    """
     import torch.nn.functional as F
 
     from vifeedback.training.losses import rdrop_kl
+
+    if recipe in ANCHORED:
+        target = q.float()
+
+        def kl(logits):
+            return F.kl_div(F.log_softmax(logits.float(), dim=-1), target, reduction="batchmean")
+
+        if recipe == "anchored_orig":
+            return kl(logits_orig)
+        return 0.5 * (kl(logits_orig) + kl(logits_norm))
 
     if recipe == "onesided":  # KL(p_norm || p_orig), the normalized form as a fixed target
         target = F.log_softmax(logits_norm.detach().float(), dim=-1)
@@ -105,25 +121,26 @@ def consistency_loss(logits_orig, logits_norm, recipe: str):
         )
     if recipe == "symmetric":
         return rdrop_kl(logits_orig.float(), logits_norm.float())
-    raise ValueError(f"recipe must be one of {RECIPES}")
+    raise ValueError(f"recipe must be one of {RECIPES + ANCHORED}")
 
 
 def config(recipe: str, seed: int):
     """The served recipe's TrainConfig; only the recipe name (and so the run id) changes."""
     from vifeedback.training.trainer import TrainConfig
 
-    if recipe not in RECIPES:
-        raise ValueError(f"recipe must be one of {RECIPES}")
+    if recipe not in RECIPES + ANCHORED:
+        raise ValueError(f"recipe must be one of {RECIPES + ANCHORED}")
+    b = recipe in ANCHORED
     return TrainConfig(
         task="sentiment",
         model_key="phobert-base",
         preprocessing="seg_pyvi",
-        recipe=f"h10-{recipe}",
+        recipe=f"h10b-{recipe}" if b else f"h10-{recipe}",
         augment="diac-teen",
         augment_p=0.3,
         seed=seed,
-        extra={"phase_num": PHASE_NUM, "consistency_weight": WEIGHT},
-        notes=f"cycle5.yaml H10 consistency_{recipe}, weight {WEIGHT}",
+        extra={"phase_num": PHASE_NUM_B if b else PHASE_NUM, "consistency_weight": WEIGHT},
+        notes=f"cycle5.yaml {'v4 H10b' if b else 'H10'} {recipe}, weight {WEIGHT}",
     )
 
 
@@ -178,6 +195,8 @@ def train_consistency(
     ).to(device)
     pad = DataCollatorWithPadding(tok, padding="longest", return_tensors="pt")
 
+    q_all = pairs.get("q")  # H10b: the frozen teacher's probabilities on the normalized form
+
     class _Pairs(Dataset):
         def __init__(self, orig: list[str], norm: list[str]) -> None:
             kw = {"truncation": True, "max_length": cfg.max_length, "padding": False}
@@ -186,11 +205,12 @@ def train_consistency(
         def __len__(self) -> int:
             return len(self.o["input_ids"])
 
-        def __getitem__(self, i: int) -> tuple[dict[str, Any], dict[str, Any]]:
-            return {k: v[i] for k, v in self.o.items()}, {k: v[i] for k, v in self.n.items()}
+        def __getitem__(self, i: int) -> tuple[dict[str, Any], dict[str, Any], int]:
+            return {k: v[i] for k, v in self.o.items()}, {k: v[i] for k, v in self.n.items()}, i
 
     def collate_pairs(items):
-        return pad([a for a, _ in items]), pad([b for _, b in items])
+        q = None if q_all is None else torch.as_tensor(q_all[[i for _, _, i in items]])
+        return pad([a for a, _, _ in items]), pad([b for _, b, _ in items]), q
 
     g = torch.Generator()
     g.manual_seed(cfg.seed)
@@ -254,17 +274,20 @@ def train_consistency(
                 loss_ce = ce(model(**batch).logits, y)
             scaler.scale(loss_ce).backward()
 
-            orig, norm = next(pair_iter)
+            orig, norm, q = next(pair_iter)
             orig = {k: v.to(device, non_blocking=True) for k, v in orig.items()}
             norm = {k: v.to(device, non_blocking=True) for k, v in norm.items()}
+            q = None if q is None else q.to(device, non_blocking=True)
             with torch.autocast(**ac):
                 logits_o = model(**orig).logits
-                if recipe == "onesided":
+                if recipe == "anchored_orig":
+                    logits_n = None  # the normalized form enters only through the teacher's q
+                elif recipe == "onesided":
                     with torch.no_grad():
                         logits_n = model(**norm).logits
                 else:
                     logits_n = model(**norm).logits
-            loss_cons = WEIGHT * consistency_loss(logits_o, logits_n, recipe)
+            loss_cons = WEIGHT * consistency_loss(logits_o, logits_n, recipe, q)
             scaler.scale(loss_cons).backward()
 
             scaler.unscale_(opt)
@@ -724,6 +747,7 @@ def confirm(recipe: str) -> dict[str, Any]:
 
 
 __all__ = [
+    "ANCHORED",
     "N_DEV",
     "OUT",
     "PHASE_NUM",
