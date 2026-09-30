@@ -23,10 +23,13 @@
 # Version 4 (2026-09-30), after H10 failed (ADR-038) and before any H10b run: H10b, consistency
 # anchored on a frozen teacher, with the three changes ADR-038 named: a target a constant prediction
 # cannot match, a guard on the predicted class distribution, and fresh confirmation pairs.
+#
+# Version 5 (2026-10-01), after H10b passed (ADR-042) and before any H10b model saw UIT-VSFC test:
+# its release candidate and its closing gate. Which model the service runs stays the owner's call.
 
-version: 4
+version: 5
 declared: 2026-09-29
-revised: 2026-09-30  # v2 H11; v3 H11 release and closing gate; v4 H10b declared
+revised: 2026-10-01  # v2 H11; v3 H11 release; v4 H10b; v5 H10b release candidate and closing gate
 
 data:
   vilexnorm_train: >
@@ -222,6 +225,17 @@ H10b_anchored_consistency:   # v4, before any H10b run
     If the rule holds, the seed-42 model is a 12-layer release candidate and a candidate teacher for
     a later student; any release goes through the gate with an ADR. Its weights would carry
     CC BY-NC-SA 4.0 (ViLexNorm).
+
+H10b_release:   # v5
+  candidate: >
+    The seed-42 anchored_orig model through the release gate as an FP32 graph (the 12-layer
+    procedure), with the restorer, the scope detector and a temperature re-accepted, in
+    models/candidate/sentiment. It does not replace the served model by itself: decision 9 (the
+    student, the 12-layer model, or this one) is the owner's.
+  closing_gate: >
+    Once: the five H10b models (PyTorch) on UIT-VSFC test, and the seed-42 model through the Cycle 1
+    closing-gate procedure. Every evaluation is appended to results/test_evaluations.log. Reported for
+    decision 9 and the card, against Cycle 1's figures for the served recipe; no selection uses it.
 
 planned:   # outlines only; nothing here is a rule until a later version declares it
   H12_other_institutions: >
