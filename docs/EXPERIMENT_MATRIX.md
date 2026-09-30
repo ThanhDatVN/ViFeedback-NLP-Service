@@ -582,15 +582,15 @@ v4 S5′, ADR-035). Selection on NEU-ESC validation; NEU-ESC test once per rule,
 
 ### 5.11 Research Cycle 5 — declared, to fill
 
-Declared in `configs/experiments/cycle5.yaml` v1 (2026-09-29, before any run). Order chosen by the
-owner: H10 (real typing), H11 (distilled student), H12 (other institutions); H11 and H12 are declared
-in later versions before their first run. Rows are filled from `results/studies/cycle5/`.
+Declared in `configs/experiments/cycle5.yaml` v1 (2026-09-29, before any run; H10) and v2 (2026-09-30,
+before any H11 run; H11). Order chosen by the owner: H10 (real typing), H11 (distilled student), H12
+(other institutions, declared once its data exists). Rows are filled from `results/studies/cycle5/`.
 
 | Step | Data | Result | Decision |
 |---|---|---|---|
-| H10 selection (seed 42): one-sided vs symmetric consistency | ViLexNorm dev (837 pairs); UIT-VSFC validation | — | — |
-| H10 confirmation (5 seeds) | ViLexNorm test (1,045 pairs, logged); UIT-VSFC, stripped, NEU-ESC validation | — | — |
-| H11 distilled student (6 layers, FP16 storage) | UIT-VSFC + NEU-ESC validation (4,888) | — | to declare (v2) |
+| H10 selection (seed 42): one-sided vs symmetric consistency | ViLexNorm dev (837 pairs); UIT-VSFC validation | control 0.8644 / flips 0.135; one-sided 0.8541 (−0.0103) / 0.007; symmetric 0.8689 / 0.002 | symmetric chosen (one-sided not eligible) |
+| **H10** confirmation (5 seeds) | ViLexNorm test (1,045 pairs, logged); UIT-VSFC, stripped, NEU-ESC validation | flips 16.6% → 0.3% (−0.164 [−0.180, −0.149]); UIT-VSFC −0.0016, neutral −0.0029, stripped −0.0065; **NEU-ESC −0.087**. Degenerate: 99.4% of ViLexNorm comments labelled negative in both forms; NEU-ESC predicted negative 58% → 76% | **not passed** (ADR-038) |
+| H11 distilled student (6 layers, FP16 storage), teacher: the served recipe (H10 not passed) | UIT-VSFC + NEU-ESC validation (4,888) | running | declared (v2) |
 | H12 other institutions | a new labelled sample (≥ 600 in-scope posts) | — | to declare; needs owner decision 2 and the data |
 | Cycle 5 closing gate | UIT-VSFC test, once | — | — |
 

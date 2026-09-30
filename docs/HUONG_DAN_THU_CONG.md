@@ -21,7 +21,7 @@ $PY = ".venv\Scripts\python.exe"
 | 1 | [Neutral audit](#1-neutral-audit-gán-nhãn-kiểm-tra-lớp-neutral) | 6–8 giờ, chia nhiều buổi | Càng sớm càng tốt | S9 (≥ 30 lỗi được mã hoá), nhánh D2 cho lớp neutral (S4) |
 | 2 | [Duyệt 15 nhãn của challenge v1 (U2)](#2-duyệt-15-nhãn-của-challenge-v1-u2) | 20 phút | Bất kỳ lúc nào | Báo cáo challenge v1 kèm nhãn đã được người kiểm |
 | 3 | [Chuẩn bị máy rảnh để đo độ trễ](#3-chuẩn-bị-máy-rảnh-để-đo-độ-trễ) | 30 phút | Trước khi phát hành bản Cycle 5 đầu tiên | Con số p95 chính thức sau ADR-034 |
-| 4 | [Quyết định giấy phép nếu Cycle 5 (b) được phát hành](#4-quyết-định-giấy-phép-khi-mô-hình-học-từ-vilexnorm) | 5 phút | Trước khi (b) được phát hành | Bản phát hành mô hình (b) |
+| 4 | [Quyết định giấy phép nếu mô hình nhỏ (H11) được phát hành](#4-quyết-định-giấy-phép-khi-mô-hình-học-từ-vilexnorm) | 5 phút | Trước khi H11 được phát hành | Bản phát hành mô hình nhỏ |
 | 5 | [Duyệt upload lên Hugging Face](#5-duyệt-upload-lên-hugging-face) | 10 phút mỗi lần | Mỗi khi có bản phát hành mới | Bản trên Hub khớp với service |
 | 6 | [Quyết định chính sách nhãn cho trường khác](#6-quyết-định-chính-sách-nhãn-cho-văn-bản-của-trường-khác-quyết-định-số-2) | 15 phút đọc | Trước Cycle 5 (c) | Hướng (c) |
 | 7 | [Dữ liệu có nhãn mới cho hướng (c)](#7-dữ-liệu-có-nhãn-mới-cho-hướng-c) | 20–25 giờ (hai người) | Trước Cycle 5 (c) | Mọi kết luận mới về văn bản của trường khác |
@@ -271,17 +271,20 @@ Không dùng máy trong lúc đo. Chỉ một tab trình duyệt đang mở cũn
 
 ## 4. Quyết định giấy phép khi mô hình học từ ViLexNorm
 
-**Bối cảnh.** Cycle 5 (b) huấn luyện mô hình ổn định với cách gõ thật, bằng các cặp câu (câu gốc ↔
-câu đã chuẩn hoá) của ViLexNorm. ViLexNorm dùng giấy phép **CC BY-NC-SA 4.0** (phi thương mại, *chia
-sẻ tương tự*). Trọng số hiện tại mang **CC BY-NC 4.0**.
+**Bối cảnh.**
+- ViLexNorm dùng giấy phép **CC BY-NC-SA 4.0** (phi thương mại, *chia sẻ tương tự*). Trọng số hiện
+  tại mang **CC BY-NC 4.0**.
+- Mô hình H10 (b) học từ các cặp câu ViLexNorm, nhưng **không đạt** (ADR-038), nên không phát hành.
+- Mô hình nhỏ H11 (a) cũng đọc câu chữ ViLexNorm khi học: câu gốc nằm trong tập chuyển giao
+  (transfer set), và mô hình thầy gán nhãn mềm cho chúng. Vì vậy câu hỏi dưới đây áp dụng cho H11.
 
 Việc trọng số học từ dữ liệu SA có phải là "tác phẩm phái sinh" hay không chưa được pháp lý làm rõ.
-Cách an toàn là: **nếu mô hình (b) được phát hành, trọng số mang CC BY-NC-SA 4.0**. Thay đổi này không
+Cách an toàn là: **nếu mô hình H11 được phát hành, trọng số mang CC BY-NC-SA 4.0**. Thay đổi này không
 ảnh hưởng mục đích nghiên cứu phi thương mại của bạn.
 
-**Bạn cần trả lời một câu** trước khi phát hành (b): đồng ý đổi giấy phép trọng số sang
-CC BY-NC-SA 4.0 (khuyến nghị), hay giữ CC BY-NC 4.0 và **không** phát hành (b) lên Hub (service vẫn
-dùng được ở máy bạn).
+**Bạn cần trả lời một câu** trước khi phát hành H11: đồng ý đổi giấy phép trọng số sang
+CC BY-NC-SA 4.0 (khuyến nghị), hay giữ CC BY-NC 4.0 và **không** đưa H11 lên Hub (service vẫn dùng
+được ở máy bạn).
 
 ---
 

@@ -48,7 +48,7 @@ stretch values, are open:
 
 | ID | Problem | Evidence | Where handled |
 |---|---|---|---|
-| G8 | Real typing flips 17% of labels | ViLexNorm test, 5 seeds; a lexicon (S2a) and augmentation did not help | **H10**, Cycle 5 (b) |
+| G8 | Real typing flips 17% of labels | ViLexNorm test, 5 seeds; a lexicon (S2a), augmentation and consistency training (H10, degenerate: ADR-038) did not help | Open; a next attempt needs new confirmation data (§ 2, outcome) |
 | — | The serving artifact is 540 MB; INT8 is not releasable | ADR-036: 91.4% label agreement, batch-dependent output | **H11**, Cycle 5 (a) |
 | — | Other institutions' text: 0.444 in-scope NEU-ESC test | Two heads reach +0.111, but failed two conditions (ADR-033); NEU-ESC test is spent | **H12**, Cycle 5 (c) |
 | G6 | NEU-ESC's `neutral` differs from UIT-VSFC's | 67% of NEU-ESC gold-neutral posts are called polar (ADR-032) | Owner decision 2 (§ 8) |
@@ -64,11 +64,11 @@ stretch values, are open:
 |---|---|---|---|---|
 | 1 | ✅ Declare H10 in [`cycle5.yaml`](../configs/experiments/cycle5.yaml) v1 | — | — | committed before any run |
 | 2 | ✅ F5: consistency training code, the ViLexNorm dev split, the flip-rate evaluation, tests (2026-09-30) | — | CPU | unit tests; one smoke run |
-| 3 | ⏳ **H10 selection**: two recipes at seed 42 (running; the five controls are scored) | — | 2 GPU runs | `cycle5.yaml` recipe selection |
-| 4 | ⏳ **H10 confirmation**: 4 more seeds; ViLexNorm test once, logged | — | 4 GPU runs | the H10 rule |
-| 5 | Release H10 (if passed): gate, three latency sessions, ADR, card | 👤 licence (§ 8, 3); 👤 upload | CPU | release gate |
+| 3 | ✅ **H10 selection**: symmetric chosen (one-sided −0.0103 on UIT-VSFC, not eligible) | — | 2 GPU runs | `cycle5.yaml` recipe selection |
+| 4 | ✅ **H10 confirmation**: **not passed** (ADR-038): flips 16.6% → 0.3%, but NEU-ESC −0.087; the model labels informal text negative | — | 4 GPU runs | the H10 rule |
+| 5 | ✖ Release H10: not passed, nothing released | — | — | — |
 | 6 | ✅ Declare H11 (`cycle5.yaml` v2, 2026-09-30): the teacher follows a written condition on H10's decision | — | — | committed before any H11 run and before H10 decided |
-| 7 | ✅ F4: FP16-storage export without the `onnx` package. ⏳ H11 selection and confirmation (code and tests ready) | — | ≈ 7 GPU runs | the H11 rule |
+| 7 | ✅ F4: FP16-storage export (on the served 12-layer model: 270 MB, parity 1.5e-5, no batch dependence). ⏳ **H11** running, teacher = the served recipe (H10 not passed) | — | ≈ 7 GPU runs | the H11 rule |
 | 8 | Release H11 (if passed) | 👤 upload | CPU | release gate |
 | 9 | Cycle 5 closing gate: the released model on UIT-VSFC test, once | — | CPU | logged |
 | 10 | H12: declare, then run, when decision 2 and the new labelled sample exist | 👤 decision 2, 👤 data | ≈ 6 GPU runs | declared later |
@@ -116,6 +116,23 @@ The pairs carry no sentiment label and need none. The loss asks only that both f
 
 **Licence.** ViLexNorm is CC BY-NC-SA 4.0. A released H10 model would carry CC BY-NC-SA 4.0 weights
 (owner decision 3, § 8).
+
+**Outcome (2026-09-30, ADR-038): not passed.**
+- **Selection.** Symmetric KL was chosen. One-sided cost UIT-VSFC 0.0103 at seed 42, just past
+  eligibility.
+- **Confirmation at five seeds.** Flips fell from 16.6% to 0.3% (−0.164 [−0.180, −0.149]) with
+  UIT-VSFC, neutral and stripped text all within their limits. NEU-ESC validation fell 0.087
+  against a 0.01 limit.
+- **Why.** The invariance is degenerate: the models label 99.4% of ViLexNorm comments *negative*,
+  in both forms. On NEU-ESC, predicted negative rose from 58% to 76%. The unlabeled, off-domain
+  pairs had one cheap solution, a single class, and nothing in the loss ruled it out. The guard
+  declared for this case caught it.
+- **What a next attempt needs** (not declared; ViLexNorm test has now served three rules):
+  - a flip metric that a constant prediction cannot game (agreement with the control's label on the
+    normalized form, next to each form's label distribution);
+  - a guard on the predicted class distribution of the unlabeled text;
+  - in-domain unlabeled pairs, or UDA's confidence mask;
+  - new confirmation data.
 
 **Not in H10, and why.**
 - **A normalizer front-end (C2):** a BARTpho normalizer reaches 57.7% error reduction [S6, S7]. A
@@ -322,7 +339,7 @@ The step-by-step versions, in Vietnamese: [HUONG_DAN_THU_CONG.md](HUONG_DAN_THU_
 |---|---|---|---|
 | 1 | Neutral audit, 160 rows, plus a second pass on ≥ 50 | D2 waits | S4, S9 |
 | 2 | Label policy for other institutions' text | Keep UIT-VSFC's | H12 |
-| 3 | Weights licence if H10 is released (CC BY-NC-SA 4.0, inherited from ViLexNorm) | H10 not uploaded | H10 upload |
+| 3 | Weights licence if H11 is released: its transfer set holds ViLexNorm text, so CC BY-NC-SA 4.0 (H10 is not released) | H11 not uploaded | H11 upload |
 | 4 | Approve each Hub upload | No upload | every release |
 | 5 | A new labelled sample from another institution | H12 not declared | H12 |
 | 6 | Prepare an idle machine for three latency sessions | Last figure stands, with its caveat | latency claim |

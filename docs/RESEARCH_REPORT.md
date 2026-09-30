@@ -360,6 +360,32 @@ sentences.
 - **Publication.** The model was published on 2026-09-28 and updated to the scope detector on
   2026-09-29.
 
+### 5.11 Cycle 5: real typing and a smaller model (Q2, Q6)
+
+Declared in `configs/experiments/cycle5.yaml` (v1 before any run, v2 before any H11 run).
+
+**Consistency training removes flips by collapsing the informal register (H10, ADR-038).** The
+recipe trains the served model with a KL term on 7,535 ViLexNorm pairs, a real comment and its human
+normalization, so that both forms get the same prediction.
+- **Selection (seed 42).** The symmetric (R-Drop) variant was chosen. The one-sided variant cost
+  0.010 on UIT-VSFC.
+- **Five seeds.** Label flips on ViLexNorm test fell from 16.6% to 0.3%, and UIT-VSFC, its neutral
+  class and stripped text all stayed within their limits.
+- **The guard on real student posts failed.** NEU-ESC validation macro-F1 fell 0.087. The models
+  label 99.4% of ViLexNorm comments negative in both forms, and NEU-ESC's predicted-negative share
+  rose from 58% to 76%.
+
+The unlabeled pairs came from another register and carried no label. Nothing in the loss ruled out
+the cheap solution, one class for all of them, and the model found it. UDA's confidence masking,
+sharpening and in-domain unlabeled data exist for this reason. The result also shows that a flip
+rate alone cannot certify invariance: a constant classifier scores zero.
+
+**A route to S7 without per-batch scales (F4, H11).** Weights stored in FP16 and cast to FP32 inside
+the graph halve the file while computing in FP32. On the served 12-layer model the graph is 270 MB,
+its logits match the FP16-rounded PyTorch model within 1.5e-5, and a sentence scores identically
+alone and in a batch. A 6-layer student would be about 185 MB. H11 tests whether such a student keeps
+the teacher's quality.
+
 ## 6. Negative and inconclusive results
 
 | Result | What it weakens | Still untested |
@@ -380,6 +406,7 @@ sentences.
 | H8 two heads: NEU-ESC test +0.111, but stripped text −0.0107 and the refitted score failed (ADR-033) | Releasing in-domain training without a robustness check | H12 with H10's objective, on a new labelled sample (Cycle 5) |
 | H8 one head on both corpora: UIT-VSFC −0.033 (mixed), −0.269 (sequential) | Pooling corpora with different label policies | — |
 | Careful INT8 (S5′): passed non-inferiority, 91.4% label agreement, batch-dependent (ADR-036) | Macro-F1 non-inferiority as sufficient for a serving transform | A distilled student in FP16 storage (H11) |
+| Consistency training on ViLexNorm pairs (H10): flips 16.6% → 0.3%, but 99.4% of informal text labelled negative; NEU-ESC −0.087 (ADR-038) | A flip rate as evidence of invariance; off-domain unlabeled pairs as the perturbation | A non-gameable invariance metric, a class-distribution guard, in-domain pairs, new confirmation data |
 
 ## 7. Limitations
 

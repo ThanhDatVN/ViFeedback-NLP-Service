@@ -33,7 +33,7 @@ says **where the project stands, what is wrong with it, and what runs next.**
 | **2** | Track A: confirmation on a frozen challenge set, the serving model, topic stacking, an LLM reference ([cycle2.yaml](../configs/experiments/cycle2.yaml) v2) | ✅ H5 not supported; H6 switched the served model; H7 decided: both LLM arms better on neutral on challenge v1 (construction caveat); on real posts only gpt-4o-mini is ahead |
 | **3** | Reliability of the served model on real input ([cycle3.yaml](../configs/experiments/cycle3.yaml) v6) | ✅ closed 2026-09-28. Confirmed on NEU-ESC real student text (ADR-030): the service lowercases, restores diacritics and reports an out-of-scope score (ADR-031); CE + restoration, the real-typing lexicon and careful INT8 fail their rules; H7 decided ([§ 5](#5-cycle-3--reliability-on-real-input)) |
 | **4** | Student text from other institutions ([cycle4.yaml](../configs/experiments/cycle4.yaml) v4) | ✅ closed 2026-09-29. H8 **not passed** (ADR-033); `in_scope` now comes from a topic detector (ADR-032, ADR-034); careful INT8 passed S5′ but the release gate held it back (ADR-035, ADR-036); S8 and S10 met; Hub release updated to ADR-034 ([§ 6](#6-cycle-4--student-text-from-other-institutions)) |
-| **5** | Real typing, then a distilled student, then other institutions ([cycle5.yaml](../configs/experiments/cycle5.yaml) v1) | ⏳ declared 2026-09-29: H10 (consistency training on ViLexNorm pairs) before any run; H11 and H12 planned ([NEXT_PLAN v6](NEXT_PLAN.md)) |
+| **5** | Real typing, then a distilled student, then other institutions ([cycle5.yaml](../configs/experiments/cycle5.yaml) v2) | ⏳ H10 **not passed** (ADR-038): flips 16.6% → 0.3%, but by labelling informal text negative (NEU-ESC −0.087). H11 (6-layer student, FP16 storage, teacher = the served recipe) running. H12 waits for the owner ([§ 6b](#6b-cycle-5--real-typing-a-smaller-model-other-institutions)) |
 
 **Compute to date** ([ledger](../configs/experiments/ledger.csv)): 144 weight-updating runs, about 12.9 GPU-hours including 12 GPU-minutes of LLM inference on the laptop; 19 of the runs regenerated results lost in Cycle 1 (ADR-023). The Qwen3-4B H7 run used two Kaggle T4s for inference only. The registry holds 173 rows.
 
@@ -207,6 +207,27 @@ rule, every use logged in `results/studies/cycle4/neu_esc_test_uses.log`.
 
 ---
 
+## 6b. Cycle 5 — real typing, a smaller model, other institutions
+
+**In progress.** Declared in [cycle5.yaml](../configs/experiments/cycle5.yaml): v1 H10 before any run,
+v2 H11 before any H11 run and before H10 decided. The owner's order is b → a → c (ADR-037).
+
+| Step | Result | Decision |
+|---|---|---|
+| H10 controls (served recipe, 5 seeds) | UIT-VSFC validation 0.861–0.880 (seed 42: 0.8644, reproduced); ViLexNorm dev flips 0.12–0.19 | — |
+| H10 selection (seed 42) | One-sided KL: UIT-VSFC 0.8541 (−0.0103), flips 0.007. Symmetric KL: 0.8689 (+0.0045), flips 0.002 | Symmetric chosen |
+| **H10 confirmation** (5 seeds) | ViLexNorm test flips 16.6% → 0.3% (−0.164 [−0.180, −0.149]); UIT-VSFC −0.0016; neutral −0.0029; stripped −0.0065; **NEU-ESC validation −0.087** | **Not passed** (ADR-038) |
+| Why | The models label 99.4% of ViLexNorm comments negative in both forms; NEU-ESC predicted negative 58% → 76%, neutral F1 0.47 → 0.30 at seed 42 | Degenerate invariance, caught by guard (5) |
+| F4 FP16-storage export | Served 12-layer model: 270 MB, parity 1.5e-5, 100% agreement, no batch dependence | Route verified for H11 |
+| H11 (teacher: the served recipe) | running | — |
+
+**What H10 establishes.** A consistency loss on unlabeled, off-domain pairs has a cheap solution:
+one class for the whole register. An invariance metric that a constant prediction satisfies needs
+a guard on labelled data from the target register, and the guard on real student posts (NEU-ESC) was
+the one that caught it.
+
+---
+
 ## 7. Open problems
 
 Ordered by how much they threaten the conclusions.
@@ -239,12 +260,14 @@ the weak class. Cycle 3's review (`results/studies/topic_others.json`): recall 0
 missed `others` rows go to `lecturer` (27) and `training_program` (17), the neutral pattern again: a
 residual minority class absorbed by the majority. *Open:* include `others` in the audit design.
 
-### P5 — Real typing still flips labels
+### P5 — Real typing still flips labels (H10 did not fix it)
 Missing diacritics are largely handled: H2's augmentation is served (ADR-027), and the diacritic
 restorer (ADR-031) lifts unaccented NEU-ESC posts from 0.270 to 0.374 and stripped validation from
 0.686 to 0.857. What remains is real informal typing: **17% of labels flip** between a ViLexNorm
 comment and its human normalization, and neither a spelling lexicon (S2a) nor augmentation reduces
-it. *Next:* H10, consistency training on real noisy/clean pairs ([NEXT_PLAN v6 § 2](NEXT_PLAN.md#2-cycle-5-b-robustness-to-real-typing--h10)).
+it. H10's consistency training removed the flips only by labelling informal text negative
+(ADR-038). *Next:* a non-degenerate invariance metric, a guard on the predicted class distribution,
+in-domain unlabeled pairs and new confirmation data ([NEXT_PLAN v6 § 2](NEXT_PLAN.md#2-cycle-5-b-robustness-to-real-typing--h10)).
 
 ### P6 — Latency is met; the artifact is still 540 MB
 *Update (Cycle 4).* The served pipeline, raw text in, has p95 26.9 ms (A1); the scope detector adds
