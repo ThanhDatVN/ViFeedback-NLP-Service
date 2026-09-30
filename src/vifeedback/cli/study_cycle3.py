@@ -805,3 +805,35 @@ def study_neu_esc_confirm() -> None:
         f"S3: Mahalanobis AUROC {s3['neg_mahalanobis']['auroc']:.3f} "
         f"(max-prob {s3['max_probability']['auroc']:.3f}) -> passed {result['S3_out_of_scope']['passed']}"
     )
+
+
+@study_app.command("challenge-review")
+def study_challenge_review() -> None:
+    """U2: challenge v1 on the owner-reviewed labels next to the frozen ones (a sensitivity view).
+
+    Reads owner_decision in results/studies/challenge/label_review_v1.csv (keep | negative | neutral |
+    positive | ambiguous). Challenge v1 itself stays frozen. Writes label_review_v1_sensitivity.json.
+    """
+    from vifeedback.evaluation import challenge_review as CR
+    from vifeedback.evaluation.report import yaml_safe
+
+    decisions = CR.read_decisions()
+    if not decisions:
+        typer.echo(
+            "  not reviewed yet: fill owner_decision in results/studies/challenge/label_review_v1.csv "
+            "(docs/HUONG_DAN_THU_CONG.md § 2)"
+        )
+        return
+    out = CR.sensitivity(decisions)
+    dst = paths.RESULTS / "studies" / "challenge" / "label_review_v1_sensitivity.json"
+    dst.write_text(json.dumps(yaml_safe(out), indent=2, ensure_ascii=False), encoding="utf-8")
+    d = out["decisions"]
+    typer.echo(
+        f"  {d['filled']} decisions: keep {d['keep']}, relabelled {d['relabelled']}, ambiguous {d['ambiguous']}"
+    )
+    for name, v in out["systems"].items():
+        typer.echo(
+            f"  {name:20s} accuracy {v['frozen']['accuracy']:.3f} -> {v['reviewed']['accuracy']:.3f}  "
+            f"neutral F1 {v['frozen']['neutral_f1']:.3f} -> {v['reviewed']['neutral_f1']:.3f}"
+        )
+    typer.echo(f"  -> {dst}")
