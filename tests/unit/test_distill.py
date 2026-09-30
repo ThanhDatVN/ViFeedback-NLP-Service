@@ -125,3 +125,100 @@ def test_config_carries_the_init_and_teacher_in_the_run_id():
     assert a.config_hash() != b.config_hash()
     with pytest.raises(ValueError):
         K.config("random", 42, "served")
+
+
+# --- orchestration (cycle5.yaml v2 H11) -----------------------------------------------------------
+
+
+def test_drop_bound_is_zero_for_identical_predictions_and_positive_for_a_worse_student():
+    rng = np.random.default_rng(0)
+    y = rng.integers(0, 3, 800)
+    teach = [np.where(rng.random(800) < 0.2, rng.integers(0, 3, 800), y) for _ in range(3)]
+    same = K.seed_averaged_drop_bound(y, teach, teach, n_resamples=400)
+    assert same["observed_drop"] == 0 and same["upper_95_one_sided"] == 0
+    worse = [np.where(rng.random(800) < 0.3, rng.integers(0, 3, 800), t) for t in teach]
+    got = K.seed_averaged_drop_bound(y, teach, worse, n_resamples=400)
+    assert got["observed_drop"] > 0.05 and got["upper_95_one_sided"] > got["observed_drop"]
+
+
+PARITY = {"max_abs_logit_diff": 1e-4, "label_agreement": 1.0, "batch_vs_single_max_diff": 1e-4}
+DROPS = {"uit": 0.01, "neutral": 0.03, "stripped": 0.015}
+POOLED = {"observed_drop": 0.004, "upper_95_one_sided": 0.01}
+
+
+def test_h11_rule_passes_at_its_limits():
+    out = K.apply_rule(200 * 10**6, POOLED, DROPS, PARITY)
+    assert out["passed"]
+
+
+@pytest.mark.parametrize(
+    "change",
+    [
+        {"size": 200 * 10**6 + 1},
+        {"pooled": {**POOLED, "upper_95_one_sided": 0.0101}},
+        {"drops": {**DROPS, "uit": 0.0101}},
+        {"drops": {**DROPS, "neutral": 0.0301}},
+        {"drops": {**DROPS, "stripped": 0.0151}},
+        {"parity": {**PARITY, "label_agreement": 0.9994}},
+        {"parity": {**PARITY, "batch_vs_single_max_diff": 2e-4}},
+    ],
+)
+def test_h11_rule_fails_past_any_limit(change):
+    out = K.apply_rule(
+        change.get("size", 185 * 10**6),
+        change.get("pooled", POOLED),
+        change.get("drops", DROPS),
+        change.get("parity", PARITY),
+    )
+    assert not out["passed"]
+
+
+def _h10(tmp, monkeypatch, selection=None, confirm=None):
+    import json
+
+    from vifeedback.training import consistency as C
+
+    monkeypatch.setattr(C, "OUT", tmp)
+    if selection is not None:
+        (tmp / "selection.json").write_text(json.dumps({"outcome": selection}), encoding="utf-8")
+    if confirm is not None:
+        d = tmp / "confirm-onesided"
+        d.mkdir(parents=True)
+        (d / "decision.json").write_text(json.dumps({"passed": confirm}), encoding="utf-8")
+
+
+def test_teacher_waits_for_h10(tmp_path, monkeypatch):
+    _h10(tmp_path, monkeypatch, selection="confirm")
+    with pytest.raises(RuntimeError, match="H10 has not decided"):
+        K.resolve_teacher()
+
+
+def test_teacher_is_h10_recipe_only_if_h10_passed(tmp_path, monkeypatch):
+    _h10(tmp_path, monkeypatch, selection="confirm", confirm=True)
+    name, ckpts, _ = K.resolve_teacher()
+    assert name == "h10-onesided" and sorted(ckpts) == sorted([42, 1337, 2024, 7, 31337])
+    assert ckpts[42].name.startswith("p13-sent-phobert-base-seg_pyvi-h10-onesided-s42-")
+
+
+def test_teacher_is_the_served_recipe_when_h10_fails(tmp_path, monkeypatch):
+    from vifeedback.training import domain as D
+
+    monkeypatch.setattr(D, "control_checkpoint", lambda s: tmp_path / f"served-{s}")
+    _h10(tmp_path, monkeypatch, selection="confirm", confirm=False)
+    assert K.resolve_teacher()[0] == "served"
+    other = tmp_path / "stopped"
+    other.mkdir()
+    _h10(other, monkeypatch, selection="not supported: no recipe is eligible")
+    assert K.resolve_teacher()[0] == "served"
+
+
+def test_selection_takes_the_higher_mean(tmp_path, monkeypatch):
+    import json
+
+    monkeypatch.setattr(K, "OUT", tmp_path)
+    for init, uit, neu in (("teacher-alternate", 0.86, 0.45), ("pretrained-first6", 0.84, 0.49)):
+        d = tmp_path / f"{init}-s42"
+        d.mkdir()
+        sets = {"uit_validation": {"macro_f1": uit}, "neu_validation_all": {"macro_f1": neu}}
+        (d / "summary.json").write_text(json.dumps({"sets": sets}), encoding="utf-8")
+    assert K.select()["chosen"] == "pretrained-first6"  # 0.665 > 0.655

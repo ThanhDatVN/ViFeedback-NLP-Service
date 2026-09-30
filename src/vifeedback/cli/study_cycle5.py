@@ -83,3 +83,52 @@ def study_h10_confirm(recipe: str = typer.Option(..., help="the recipe h10-selec
         detail = {k: round(v, 4) for k, v in r.items() if isinstance(v, float)}
         typer.echo(f"  {name:36s} {'PASS' if r['passed'] else 'FAIL'}  {detail}")
     typer.echo(f"  H10 {recipe}: {'passed' if out['passed'] else 'not passed'}")
+
+
+@study_app.command("h11-run")
+def study_h11_run(
+    init: str = typer.Option(..., help="teacher-alternate | pretrained-first6"),
+    seed: int = typer.Option(42),
+    smoke: bool = typer.Option(False, help="a wiring check; writes nothing but the teacher cache"),
+) -> None:
+    """Cycle 5 H11 (cycle5.yaml v2): distil one 6-layer student at one seed; score it.
+
+    The teacher follows H10's decision (H10's recipe if it passed, else the served recipe). Writes
+    the checkpoint to models/, a registry row, and results/studies/cycle5/h11/<init>-s<seed>/.
+    """
+    from vifeedback.training import distill as K
+
+    r = K.run(init, seed, smoke=smoke)
+    _print_scored(r["scored"], r["flips"])
+    s = r["summary"]
+    typer.echo(
+        f"  teacher {s['teacher']}; {s['parameters'] / 1e6:.1f} M parameters, FP16 {s['fp16_weight_bytes'] / 1e6:.0f} MB"
+    )
+
+
+@study_app.command("h11-select")
+def study_h11_select() -> None:
+    """Cycle 5 H11 selection at seed 42 (cycle5.yaml v2)."""
+    from vifeedback.training import distill as K
+
+    out = K.select()
+    for init, v in out["students"].items():
+        typer.echo(
+            f"  {init:18s} UIT-VSFC {v['uit_validation']:.4f}  NEU-ESC {v['neu_validation_all']:.4f}  "
+            f"mean {v['mean']:.4f}"
+        )
+    typer.echo(f"  -> {out['chosen']}")
+
+
+@study_app.command("h11-confirm")
+def study_h11_confirm(init: str = typer.Option(..., help="the student h11-select chose")) -> None:
+    """Cycle 5 H11 rule (cycle5.yaml v2): 5 seeds each side; the seed-42 FP16-storage graph checked."""
+    from vifeedback.training import distill as K
+
+    out = K.confirm(init)
+    for name, r in out["rules"].items():
+        detail = {
+            k: round(v, 6) if isinstance(v, float) else v for k, v in r.items() if k != "passed"
+        }
+        typer.echo(f"  {name:40s} {'PASS' if r['passed'] else 'FAIL'}  {detail}")
+    typer.echo(f"  H11 {init}: {'passed' if out['passed'] else 'not passed'}")
