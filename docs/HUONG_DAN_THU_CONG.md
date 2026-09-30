@@ -20,12 +20,13 @@ $PY = ".venv\Scripts\python.exe"
 |---|---|---|---|---|
 | 1 | [Neutral audit](#1-neutral-audit-gán-nhãn-kiểm-tra-lớp-neutral) | 6–8 giờ, chia nhiều buổi | Càng sớm càng tốt | S9 (≥ 30 lỗi được mã hoá), nhánh D2 cho lớp neutral (S4) |
 | 2 | [Duyệt 15 nhãn của challenge v1 (U2)](#2-duyệt-15-nhãn-của-challenge-v1-u2) | 20 phút | Bất kỳ lúc nào | Báo cáo challenge v1 kèm nhãn đã được người kiểm |
-| 3 | [Chuẩn bị máy rảnh để đo độ trễ](#3-chuẩn-bị-máy-rảnh-để-đo-độ-trễ) | 30 phút | Trước khi phát hành bản Cycle 5 đầu tiên | Con số p95 chính thức sau ADR-034 |
+| 3 | ~~Chuẩn bị máy rảnh để đo độ trễ~~ | — | ✅ Xong 2026-09-30 (bạn cho phép không cần máy rảnh) | p95 12,3 ms (mô hình nhỏ) |
 | 4 | [Quyết định giấy phép nếu mô hình nhỏ (H11) được phát hành](#4-quyết-định-giấy-phép-khi-mô-hình-học-từ-vilexnorm) | 5 phút | Trước khi H11 được phát hành | Bản phát hành mô hình nhỏ |
 | 5 | [Duyệt upload lên Hugging Face](#5-duyệt-upload-lên-hugging-face) | 10 phút mỗi lần | Mỗi khi có bản phát hành mới | Bản trên Hub khớp với service |
 | 6 | [Quyết định chính sách nhãn cho trường khác](#6-quyết-định-chính-sách-nhãn-cho-văn-bản-của-trường-khác-quyết-định-số-2) | 15 phút đọc | Trước Cycle 5 (c) | Hướng (c) |
 | 7 | [Dữ liệu có nhãn mới cho hướng (c)](#7-dữ-liệu-có-nhãn-mới-cho-hướng-c) | 20–25 giờ (hai người) | Trước Cycle 5 (c) | Mọi kết luận mới về văn bản của trường khác |
 | 8 | [Challenge v2](#8-tuỳ-chọn-challenge-v2) | 4–6 giờ | Tuỳ chọn | Kiểm tra teencode do người thật gõ |
+| 10 | [Chọn mô hình cho service](#10-chọn-mô-hình-cho-service-mô-hình-nhỏ-hay-mô-hình-12-lớp) | 5 phút | Khi tiện | Service dùng mô hình nào; có công bố bản nhỏ hay không |
 
 Việc 1 quan trọng nhất: đó là con đường duy nhất để biết lớp `neutral` yếu vì **nhãn gốc mơ hồ**
 hay vì **mô hình biểu diễn kém**. Hai nguyên nhân đòi hỏi hai cách sửa khác nhau, và không thí
@@ -352,6 +353,46 @@ Challenge v2 là một bộ câu do **người thật gõ** (teencode, không d�
 để kiểm tra điều NEU-ESC không kiểm được: teencode tự nhiên trong đúng văn phong khảo sát môn học.
 Nó không chặn việc nào; NEU-ESC đã thay nó làm tập xác nhận (ADR-030). Nếu sau này có người giúp, quy
 trình nằm trong [EVALUATION_DATA.md](EVALUATION_DATA.md).
+
+---
+
+## 10. Chọn mô hình cho service: mô hình nhỏ hay mô hình 12 lớp
+
+**Hiện trạng (2026-09-30).**
+- Theo quy tắc đã khai báo trước (`cycle5.yaml` v3), service đã chuyển sang **mô hình nhỏ 6 lớp**
+  (H11, ADR-039/040).
+- Mô hình 12 lớp vẫn còn nguyên ở `models/serve/.previous-sentiment`, và vẫn đang có trên Hugging
+  Face.
+
+| | Mô hình nhỏ (đang phục vụ) | Mô hình 12 lớp |
+|---|---|---|
+| Kích thước | **185 MB** | 540 MB |
+| Độ trễ p95 (laptop) | **12,3 ms** | 22,1 ms |
+| Macro-F1 trên test (5 seed) | 0,817 | **0,830** |
+| Neutral F1 trên test (seed 42) | 0,545 (dưới mức tối thiểu S4 là 0,55) | **0,592** |
+
+Trên validation hai mô hình ngang nhau. Trên test, mô hình nhỏ kém ở cả 5 seed. Tập validation chỉ
+có 73 câu neutral nên không phát hiện được chênh lệch cỡ này.
+
+**Bạn chọn một trong hai:**
+- **Giữ mô hình nhỏ** nếu ưu tiên kích thước và tốc độ. Mô hình 12 lớp đã đạt mục tiêu 30 ms, nên
+  lợi ích thật chủ yếu là dung lượng (S7).
+- **Quay lại mô hình 12 lớp** nếu ưu tiên độ chính xác và lớp neutral, vốn là trọng tâm của dự án.
+  Chạy trong PowerShell tại thư mục repo:
+  ```powershell
+  Rename-Item models\serve\sentiment sentiment-student
+  Rename-Item models\serve\.previous-sentiment sentiment
+  ```
+  Rồi báo tôi để cập nhật tài liệu. Không có gì bị xoá; đổi ngược lại cũng chỉ cần hai lệnh đổi tên.
+
+**Khuyến nghị của tôi:** quay lại mô hình 12 lớp cho service, vì dự án đặt lớp neutral lên hàng
+đầu và mô hình 12 lớp vẫn nhanh dưới 30 ms. Mô hình nhỏ vẫn có giá trị như một bản rút gọn công bố
+riêng, cho ai cần chạy trên máy yếu.
+
+**Công bố mô hình nhỏ lên Hugging Face** (tuỳ chọn, cần bạn duyệt): bản chạy thử đã có ở
+`models/publish/vifeedback-sentiment-phobert-6l/`. Đọc `README.md` trong đó (model card đã ghi rõ
+khoảng chênh trên test), quyết định giấy phép (mục 4), rồi trả lời "duyệt upload bản nhỏ". Bản này
+đi vào repo riêng `Datk4/vifeedback-sentiment-phobert-6l`, không đụng tới repo 12 lớp.
 
 ---
 

@@ -375,7 +375,7 @@ def student_card(repo_id: str, manifest: dict[str, Any], ev: dict[str, Any]) -> 
     five = ev["h11_gate"]["five_seed_test"]
     paired = five["paired_student_minus_teacher"]
     sd, td = ev["h11_summary"]["sets"], ev["h11_teacher_summary"]["sets"]
-    size_mb = (SERVED / manifest["model_file"]).stat().st_size / 1e6
+    size_mb = ev["h11_decision"]["graph"]["bytes"] / 1e6  # the graph the H11 rule checked
     flips = ev["h11_summary"]["vilexnorm_dev"]["flip_rate"]
     t_flips = ev["h11_teacher_summary"]["vilexnorm_dev"]["flip_rate"]
     cats = "\n".join(
@@ -403,9 +403,11 @@ tags:
 # ViFeedback sentiment: a 6-layer PhoBERT student, {size_mb:.0f} MB
 
 Sentiment (negative / neutral / positive) for Vietnamese student feedback about university courses.
-A 6-layer PhoBERT student distilled from a 5-seed ensemble of the 12-layer ViFeedback model, as
-accurate as its teacher on UIT-VSFC at about half the latency. Shipped as the {_graph_kind(manifest)}
-({size_mb:.1f} MB) the ViFeedback service runs, plus the PyTorch checkpoint it was exported from.
+A 6-layer PhoBERT student distilled from a 5-seed ensemble of the 12-layer ViFeedback model, at a
+third of its size and about half its latency. It matches its teacher on validation; on the test split
+it is {-paired["mean_delta"]:.3f} macro-F1 lower (five seeds each, see Limitations). Shipped as the
+{_graph_kind(manifest)} ({size_mb:.1f} MB) the ViFeedback service runs, plus the PyTorch checkpoint it
+was exported from.
 
 Code, evaluation protocol and every number below: https://github.com/ThanhDatVN/ViFeedback-NLP-Service
 
@@ -459,8 +461,9 @@ Macro-F1 is the headline because `neutral` is 4% of the data and carries a third
 | Validation (1,583) | {v["macro_f1"]:.4f} | {pc["negative"]["f1"]:.3f} | {pc["neutral"]["f1"]:.3f} | {pc["positive"]["f1"]:.3f} |
 | Test (3,166), evaluated once | {t["test"]["macro_f1"]:.4f} | {t["test"]["per_class_f1"]["negative"]:.3f} | {t["test"]["per_class_f1"]["neutral"]:.3f} | {t["test"]["per_class_f1"]["positive"]:.3f} |
 
-Test macro-F1 over the five student seeds: {student5}; against the teacher's five seeds
-{paired["mean_delta"]:+.4f} on average.
+Test macro-F1 over the five student seeds: {student5}. Against the teacher's five seeds (Cycle 1's
+closing gate) the difference is {paired["mean_delta"]:+.4f}, 95% interval [{paired["ci95"][0]:+.4f},
+{paired["ci95"][1]:+.4f}], lower in {paired["n"] - paired["wins"]} of {paired["n"]} seeds.
 
 {_agreement(manifest)}
 {_latency_line(ev.get("h11_latency"))}
@@ -481,7 +484,13 @@ stripped scores {manifest["restorer"]["acceptance"]["stripped_validation_macro_f
 
 ## Limitations
 
-- **Neutral is weak** (F1 about 0.6 to 0.69). Neutral errors are confident, so thresholds do not fix them.
+- **It is a little less accurate than the 12-layer model on test**: {-paired["mean_delta"]:.3f} macro-F1
+  over five seeds each, lower in every seed, although the two were equal on validation, where the
+  student was selected. Validation holds 73 neutral sentences, too few to resolve a difference this
+  small. Use the 12-layer model (`Datk4/vifeedback-sentiment-phobert`) where that matters more than
+  size and speed.
+- **Neutral is weak** (test F1 {t["test"]["per_class_f1"]["neutral"]:.3f}; validation {pc["neutral"]["f1"]:.3f}). Neutral errors are
+  confident, so thresholds do not fix them.
 - **Real informal typing is unstable.** Between a real social-media comment and its human
   normalization, {flips:.0%} of this model's labels change on the ViLexNorm development pairs
   (the teacher: {t_flips:.0%}).

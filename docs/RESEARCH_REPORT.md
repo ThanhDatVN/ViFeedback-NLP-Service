@@ -383,8 +383,22 @@ rate alone cannot certify invariance: a constant classifier scores zero.
 **A route to S7 without per-batch scales (F4, H11).** Weights stored in FP16 and cast to FP32 inside
 the graph halve the file while computing in FP32. On the served 12-layer model the graph is 270 MB,
 its logits match the FP16-rounded PyTorch model within 1.5e-5, and a sentence scores identically
-alone and in a batch. A 6-layer student would be about 185 MB. H11 tests whether such a student keeps
-the teacher's quality.
+alone and in a batch.
+
+**A 6-layer student meets S7 on validation but costs 0.013 on test (H11, ADR-039, ADR-040).**
+- **The student.** PhoBERT's first six pretrained layers, distilled from the 5-seed ensemble of the
+  served recipe at temperature 2. Its transfer set is UIT-VSFC train plus 28,648 unlabeled NEU-ESC
+  and ViLexNorm texts. Initializing from alternate layers of a fine-tuned teacher did worse at
+  selection.
+- **Five seeds against five.** The pooled validation drop was 0.0024 (bound 0.0078), UIT-VSFC
+  validation was equal, the graph is 185.1 MB, and the served pipeline's p95 is 12.3 ms against
+  22.1 ms.
+- **The closing gate on test**, declared as reporting only, found the student **0.013 lower in every
+  seed** ([−0.020, −0.005]), with neutral F1 losing most. Validation, with 73 neutral sentences and
+  used for epoch selection, could not resolve that gap. A non-inferiority check for size and speed
+  therefore needs a larger acceptance set than validation.
+- **Serving.** The student is served, as declared, and the 12-layer model stays published for
+  accuracy-first uses.
 
 ## 6. Negative and inconclusive results
 
@@ -466,14 +480,12 @@ The work plan is [NEXT_PLAN.md](NEXT_PLAN.md) v6; the owner's manual tasks are w
 Vietnamese in [HUONG_DAN_THU_CONG.md](HUONG_DAN_THU_CONG.md). The model is published at
 <https://huggingface.co/Datk4/vifeedback-sentiment-phobert>.
 
-Cycle 5 runs in the owner's order:
-1. **H10, real typing (Q2).** Consistency training on 7,535 ViLexNorm pairs of a real comment and its
-   human normalization, with a KL term that asks both forms for the same prediction [UDA; R-Drop;
-   stability training]. Declared rule: ViLexNorm test flips lower with a paired interval below 0,
-   and UIT-VSFC, neutral, stripped-text and NEU-ESC validation all non-inferior.
-2. **H11, a distilled student (Q6, S7).** Six layers, soft labels from a 5-seed ensemble teacher, and
-   weights stored in FP16 with FP32 compute: about 185 MB, with no per-batch scales. It is judged
-   against the teacher at a 0.01 margin, with the release gate's fidelity checks.
+Cycle 5 ran in the owner's order; H12 waits for the owner:
+1. **H10, real typing (Q2).** Not passed (ADR-038): the flips vanished only because informal text was
+   labelled negative. A next attempt needs a non-gameable invariance metric, a class-distribution
+   guard, in-domain pairs and new confirmation data.
+2. **H11, a distilled student (Q6, S7).** Passed and served (ADR-039, ADR-040): 185 MB, 1.8x faster,
+   equal on validation, 0.013 lower on test.
 3. **H12, other institutions (Q9).** The two-heads design with H10's objective. It is confirmed on a
    new human-labelled sample from a third institution, after the owner decides the label policy.
 

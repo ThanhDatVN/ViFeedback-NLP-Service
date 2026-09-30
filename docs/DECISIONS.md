@@ -1328,3 +1328,67 @@ texts, it matched the teacher. Its seeds also vary less on NEU-ESC than the teac
    licence decision and approval (HUONG_DAN_THU_CONG § 4–5).
 4. **Test.** UIT-VSFC test is evaluated once for the student, for its card and S1, after a
    declaration (`cycle5.yaml` v3). No selection uses it.
+
+---
+
+## ADR-040 · 2026-09-30 · The 6-layer student is served; on test it is 0.013 macro-F1 below the 12-layer model · Accepted
+
+**Context.** H11 passed on validation (ADR-039). `cycle5.yaml` v3, declared before any of the
+numbers below, set how the candidate replaces the served model: three latency sessions, with the
+idle-machine condition waived by the owner. It also declared a closing gate on UIT-VSFC test, run
+once and reported without deciding anything.
+
+**Release** (`serve export --quantize fp16-storage`, into `models/candidate/sentiment`).
+- **Graph.** 185.1 MB. Against the PyTorch student with the same FP16-rounded weights: max logit
+  difference 1.09e-5, 100% of 1,583 validation labels.
+- **Restorer.** Re-accepted: 0 validation labels changed, stripped validation 0.663 → 0.851.
+- **Scope detector.** Re-attached (the same file).
+- **API.** All 12 real-model API tests pass.
+
+**Latency** (S1, raw text through the served pipeline, laptop as it was):
+
+| | Session 1 | Session 2 | Session 3 | Median |
+|---|---:|---:|---:|---:|
+| Student | 11.6 ms | 12.9 ms | no steady pass (11.7, 11.5) | **12.3 ms** |
+| 12-layer, same sessions | 22.0 ms | 24.8 ms | 22.1 ms | 22.1 ms |
+
+The limit is 30 ms. Every pass of every session is below it, and the student is 1.8x faster.
+
+**Decision (as declared).** The student replaces the served model in `models/serve/sentiment`. The
+12-layer release is kept in `models/serve/.previous-sentiment`.
+
+**Closing gate** (test, once, logged; `results/studies/cycle5/h11/closing_gate/`).
+
+| Test macro-F1 | 42 | 1337 | 2024 | 7 | 31337 | Mean |
+|---|---:|---:|---:|---:|---:|---:|
+| Student | 0.8175 | 0.8192 | 0.8080 | 0.8253 | 0.8138 | 0.8168 |
+| 12-layer (Cycle 1 closing gate) | 0.8371 | 0.8298 | 0.8179 | 0.8309 | 0.8325 | 0.8296 |
+
+- **The gap.** Student minus teacher: **−0.0129 [−0.0204, −0.0054]**, lower in 5 of 5 seeds.
+- **Seed 42.** Neutral F1 0.545 against 0.592; no diacritics 0.609 against 0.635; temperature 1.49.
+- **On validation** the two were equal (5-seed mean 0.8685 each).
+
+**Reading.**
+- Validation holds 73 neutral sentences. Selecting epochs on it and comparing on it could not
+  resolve a gap of this size. The pooled rule was dominated by NEU-ESC, where the student is as
+  good as its teacher.
+- The UIT-VSFC drop on test (0.013) is larger than the 0.01 margin the H11 rule applied on
+  validation. By declaration the test figure decides nothing, and it is not used to reverse the
+  release: that would be selection on test.
+- It is stated wherever the student is described: the card (Limitations), the README and STATUS.
+- S1's minimum (≥ 0.80) is still met at 0.817.
+- **S4's minimum (neutral F1 ≥ 0.55) is missed by the student:** 0.545 at seed 42, against 0.576
+  for the 12-layer model. The project's focus is the neutral class, so the served model is the
+  owner's call (decision 9).
+
+**Consequences.**
+- **S7 is met** by the served artifact: 185 MB against 540 MB.
+- **Hub.** The 12-layer model stays on the Hub
+  (`Datk4/vifeedback-sentiment-phobert`, CC BY-NC 4.0). The student's bundle is built for its own
+  repository (`Datk4/vifeedback-sentiment-phobert-6l`) with CC BY-NC-SA 4.0 (ViLexNorm in its
+  transfer set). Uploading it needs the owner's approval.
+- **Going back.** Returning to the 12-layer model is one folder swap, and the owner may choose it
+  where accuracy matters more than size and speed (HUONG_DAN_THU_CONG § 10).
+- **Lesson for size and speed rules.** Non-inferiority on 1,583 validation sentences is too weak a
+  check. A future rule needs a larger acceptance set, for example a held-out part of train kept out
+  of both training and selection, next to NEU-ESC.

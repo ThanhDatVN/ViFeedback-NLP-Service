@@ -38,7 +38,9 @@ validation macro-F1 is **0.8634**, which reproduces the registry row for that se
 | `engineering/` | `scripts/check_pyvi_without_sklearn.py`, `scripts/check_phobert_tokenizer.py`; `serve reproduce` from the Hub | none (CPU) |
 | `export/` | every released manifest (`serve export`, `add-restorer`, `add-ood`, `add-scope`) | — |
 | **Cycle 5** | | |
-| `cycle5/` | H10, declared in `configs/experiments/cycle5.yaml` v1; not run yet | — |
+| `cycle5/h10/` | `vifeedback study h10-control`, `h10-run`, `h10-select`, `h10-confirm` (H10, not passed: ADR-038) | 7 runs |
+| `cycle5/h11/` | `vifeedback study h11-run`, `h11-select`, `h11-confirm`, `h11-closing-gate`, `h11-challenge` (H11 passed and served: ADR-039, ADR-040); `latency.json` | 6 runs |
+| `cycle5/vilexnorm_dev_index.csv`, `vilexnorm_test_uses.log` | `vifeedback study h10-split`; every ViLexNorm test use in Cycle 5 | — |
 
 Files containing corpus text go to `*/local/` and are gitignored ([DATA_CARD § 11](../../docs/DATA_CARD.md)).
 Committed prediction files are keyed by row index and carry no text.
@@ -300,3 +302,12 @@ passed but INT8 was not released (ADR-035, ADR-036). Tables:
   staging manifest; the served FP32 artifact was left unchanged.
 - `engineering/hub_reproduce.json` is the reproduction of the published model from the Hub after the
   ADR-034 update (8 files verified, 0.8644).
+
+## Cycle 5 — real typing and a smaller model
+
+Declared in `configs/experiments/cycle5.yaml` (v1 H10, v2 H11, v3 the H11 release). H10 was not passed:
+the consistency-trained models removed ViLexNorm flips by calling informal text negative (ADR-038).
+H11 passed on validation and is served: a 6-layer student, 185 MB, p95 12.3 ms (ADR-039, ADR-040). Its
+closing gate found it 0.013 below the 12-layer model on test. Tables:
+[EXPERIMENT_MATRIX § 5.11](../../docs/EXPERIMENT_MATRIX.md); discussion:
+[STATUS § 6b](../../docs/STATUS.md#6b-cycle-5--real-typing-a-smaller-model-other-institutions).

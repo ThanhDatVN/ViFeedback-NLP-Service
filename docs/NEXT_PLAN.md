@@ -30,26 +30,28 @@ reason · ✖ dropped, with the reason.
   - CI and the Hub reproduction workflow are green.
 - **Where to get it:** <https://huggingface.co/Datk4/vifeedback-sentiment-phobert> (CC BY-NC 4.0).
 
-**Targets** (ROADMAP, revised in ADR-015). Every committed minimum is met. Four targets, and two
-stretch values, are open:
+**Targets** (ROADMAP, revised in ADR-015). The 12-layer model meets every committed minimum. The
+served 6-layer student (since 2026-09-30) meets S7 and the latency target, but its test neutral F1
+(0.545 at seed 42) falls just under S4's minimum of 0.55 (ADR-040). Which model to serve is
+decision 9 (§ 8):
 
 | Target | Minimum | Stretch | Now | Route in v6 |
 |---|---|---|---|---|
-| S1 sentiment test macro-F1 | ≥ 0.80 ✅ | ≥ 0.84 | 0.830 (5 seeds) | Not chased; re-measured once at Cycle 5's closing gate (§ 5) |
+| S1 sentiment test macro-F1 | ≥ 0.80 ✅ | ≥ 0.84 | Served student 0.817 (5 seeds); the 12-layer model 0.830 | Not chased; measured once at H11's closing gate (ADR-040) |
 | S2 topic test macro-F1 | ≥ 0.79 ✅ | ≥ 0.83 | 0.804 | Not pursued (§ 5) |
-| S4 neutral F1 | ≥ 0.55 ✅ | ≥ 0.65 | 0.576 (UIT-VSFC test), 0.474 (NEU-ESC) | D1 audit → D2 branch (§ 5) |
-| S7 serving artifact | — | ≤ 200 MB | 540 MB | **H11**, a distilled student (§ 3) |
+| S4 neutral F1 | ≥ 0.55 | ≥ 0.65 | Served student 0.545 at seed 42 (below the minimum); the 12-layer model 0.576 (5 seeds, test) | D1 audit → D2 branch (§ 5); the student's neutral loss is in ADR-040 |
+| S7 serving artifact | — | ≤ 200 MB | ✅ **185 MB** (was 540 MB) | H11 passed and served (ADR-039, ADR-040) |
 | S8 image | — | ≤ 700 MB | ✅ 519 MB | done |
 | S9 coded errors | — | ≥ 30 | 0 | D1 audit (👤) |
 | S10 clean-clone evaluation | — | < 15 min | ✅ 2.3 min | done |
-| Latency, served p95 | ≤ 60 ms ✅ | ≤ 30 ms | 26.9 ms before ADR-034 (+0.5–0.8 ms since) | Three idle sessions (👤 prepares the machine) |
+| Latency, served p95 | ≤ 60 ms ✅ | ≤ 30 ms | ✅ **12.3 ms** (median of the reportable sessions; the 12-layer model 22.1 ms in the same sessions) | Measured 2026-09-30, idle-machine condition waived by the owner |
 
 **Open problems** (IDs from v4 where they still apply):
 
 | ID | Problem | Evidence | Where handled |
 |---|---|---|---|
 | G8 | Real typing flips 17% of labels | ViLexNorm test, 5 seeds; a lexicon (S2a), augmentation and consistency training (H10, degenerate: ADR-038) did not help | Open; a next attempt needs new confirmation data (§ 2, outcome) |
-| — | The serving artifact is 540 MB; INT8 is not releasable | ADR-036: 91.4% label agreement, batch-dependent output | **H11**, Cycle 5 (a) |
+| — | The served student is 0.013 below the 12-layer model on test, while equal on validation | ADR-040: 5/5 seeds lower; 73 neutral validation sentences cannot resolve it | Owner's choice of served model (§ 8); a larger acceptance set for any future size rule |
 | — | Other institutions' text: 0.444 in-scope NEU-ESC test | Two heads reach +0.111, but failed two conditions (ADR-033); NEU-ESC test is spent | **H12**, Cycle 5 (c) |
 | G6 | NEU-ESC's `neutral` differs from UIT-VSFC's | 67% of NEU-ESC gold-neutral posts are called polar (ADR-032) | Owner decision 2 (§ 8) |
 | P2 | Neutral errors: label ambiguity or representation? | Confident errors; boundary and head already ruled out (Cycle 1) | D1 audit (👤) → D2 |
@@ -68,12 +70,12 @@ stretch values, are open:
 | 4 | ✅ **H10 confirmation**: **not passed** (ADR-038): flips 16.6% → 0.3%, but NEU-ESC −0.087; the model labels informal text negative | — | 4 GPU runs | the H10 rule |
 | 5 | ✖ Release H10: not passed, nothing released | — | — | — |
 | 6 | ✅ Declare H11 (`cycle5.yaml` v2, 2026-09-30): the teacher follows a written condition on H10's decision | — | — | committed before any H11 run and before H10 decided |
-| 7 | ✅ F4: FP16-storage export (on the served 12-layer model: 270 MB, parity 1.5e-5, no batch dependence). ⏳ **H11** running, teacher = the served recipe (H10 not passed) | — | ≈ 7 GPU runs | the H11 rule |
-| 8 | Release H11 (if passed) | 👤 upload | CPU | release gate |
-| 9 | Cycle 5 closing gate: the released model on UIT-VSFC test, once | — | CPU | logged |
+| 7 | ✅ F4: FP16-storage export. ✅ **H11 passed** (ADR-039): pretrained-first6, 185.1 MB, pooled bound 0.0078, UIT-VSFC drop 0.00001 on validation | — | 6 GPU runs | the H11 rule |
+| 8 | ✅ Release H11 (ADR-040): candidate through the gate, restorer and detector re-accepted, three latency sessions (median p95 12.3 ms), **served since 2026-09-30**. 👤 Hub upload to a separate repository (CC BY-NC-SA 4.0) | 👤 licence, upload | CPU | release gate, `cycle5.yaml` v3 |
+| 9 | ✅ H11 closing gate (test, once): student 0.8168 (5 seeds) vs 0.8296, −0.0129 [−0.0204, −0.0054] | — | CPU | logged; reported, not a decision |
 | 10 | H12: declare, then run, when decision 2 and the new labelled sample exist | 👤 decision 2, 👤 data | ≈ 6 GPU runs | declared later |
 | any time | D1 neutral audit → D2 branch | 👤 6–8 h | D2: ≤ 12 runs | the tree frozen in `cycle2.yaml` |
-| any time | Three idle latency sessions | 👤 an idle machine | CPU | p95 ≤ 30 ms |
+| ✅ | Three latency sessions (owner waived the idle condition) | — | CPU | p95 ≤ 30 ms: 12.3 ms |
 
 One heavy job at a time, with a cool-down and a temperature check between runs (GPU < 70 °C).
 
@@ -339,10 +341,11 @@ The step-by-step versions, in Vietnamese: [HUONG_DAN_THU_CONG.md](HUONG_DAN_THU_
 |---|---|---|---|
 | 1 | Neutral audit, 160 rows, plus a second pass on ≥ 50 | D2 waits | S4, S9 |
 | 2 | Label policy for other institutions' text | Keep UIT-VSFC's | H12 |
-| 3 | Weights licence if H11 is released: its transfer set holds ViLexNorm text, so CC BY-NC-SA 4.0 (H10 is not released) | H11 not uploaded | H11 upload |
+| 3 | Weights licence of the student (its transfer set holds ViLexNorm text, so CC BY-NC-SA 4.0) and its separate Hub repository `Datk4/vifeedback-sentiment-phobert-6l` (bundle built) | Not uploaded | student upload |
 | 4 | Approve each Hub upload | No upload | every release |
 | 5 | A new labelled sample from another institution | H12 not declared | H12 |
-| 6 | Prepare an idle machine for three latency sessions | Last figure stands, with its caveat | latency claim |
+| 6 | ✅ Latency sessions: the owner waived the idle-machine condition (2026-09-30) | — | — |
+| 9 | Which model the service runs: the student (185 MB, 1.8x faster, −0.013 on test; served now, as declared) or the 12-layer model (one folder swap) | The student | — |
 | 7 | U2: 15 challenge v1 labels | v1 stays as frozen | F6 |
 | 8 | Challenge v2 | Not written | optional |
 

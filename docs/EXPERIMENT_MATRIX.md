@@ -590,9 +590,11 @@ before any H11 run; H11). Order chosen by the owner: H10 (real typing), H11 (dis
 |---|---|---|---|
 | H10 selection (seed 42): one-sided vs symmetric consistency | ViLexNorm dev (837 pairs); UIT-VSFC validation | control 0.8644 / flips 0.135; one-sided 0.8541 (−0.0103) / 0.007; symmetric 0.8689 / 0.002 | symmetric chosen (one-sided not eligible) |
 | **H10** confirmation (5 seeds) | ViLexNorm test (1,045 pairs, logged); UIT-VSFC, stripped, NEU-ESC validation | flips 16.6% → 0.3% (−0.164 [−0.180, −0.149]); UIT-VSFC −0.0016, neutral −0.0029, stripped −0.0065; **NEU-ESC −0.087**. Degenerate: 99.4% of ViLexNorm comments labelled negative in both forms; NEU-ESC predicted negative 58% → 76% | **not passed** (ADR-038) |
-| H11 distilled student (6 layers, FP16 storage), teacher: the served recipe (H10 not passed) | UIT-VSFC + NEU-ESC validation (4,888) | running | declared (v2) |
+| H11 selection (seed 42) | UIT-VSFC / NEU-ESC validation | teacher-alternate 0.8614 / 0.4160; pretrained-first6 0.8730 / 0.4360 | pretrained-first6 chosen |
+| **H11** confirmation (5 seeds each, teacher: the served recipe) | UIT-VSFC + NEU-ESC validation (4,888) | 185.1 MB; pooled drop 0.0024, bound 0.0078; UIT-VSFC drop 0.00001; neutral +0.0045; stripped 0.0032; parity 1.1e-5, batch-independent | **passed** (ADR-039) |
+| H11 latency (idle condition waived) | raw test text, 3 sessions | S1 p95 median 12.3 ms vs 22.1 ms for the 12-layer model | **served** (ADR-040) |
 | H12 other institutions | a new labelled sample (≥ 600 in-scope posts) | — | to declare; needs owner decision 2 and the data |
-| Cycle 5 closing gate | UIT-VSFC test, once | — | — |
+| H11 closing gate | UIT-VSFC test, once (logged) | student 0.8168 (5 seeds) vs 0.8296: −0.0129 [−0.0204, −0.0054], 0/5 seeds higher; seed 42 0.8175, neutral 0.545, no diacritics 0.609 | reported (ADR-040) |
 
 ---
 

@@ -43,3 +43,23 @@ def test_basename_splits_windows_paths_on_any_os():
     """The closing gate recorded a Windows path; on Linux, Path().name would not split it."""
     assert P._basename(r"D:\GitHub\repo\models\p9-x-ckp") == "p9-x-ckp"
     assert P._basename("models/p9-x-ckp") == "p9-x-ckp"
+
+
+def test_student_card_reads_the_h11_record_and_states_the_test_gap():
+    """ADR-039/040: the distilled student's card, from committed results only."""
+    import json
+
+    from vifeedback import paths
+
+    record = (
+        paths.RESULTS / "studies" / "export" / "laptop_fp16_student_restorer_scope_manifest.json"
+    )
+    manifest = json.loads(record.read_text(encoding="utf-8"))
+    manifest["_files"] = {"model.fp16.onnx": "d" * 64}
+    ev = P.evidence(manifest)
+    card = P.model_card("someone/vifeedback-student", manifest, ev)
+    assert "license: cc-by-nc-sa-4.0" in card and "185.1 MB" in card
+    assert "0.8175" in card  # seed-42 test macro-F1 (H11 closing gate)
+    assert "lower in 5 of 5 seeds" in card  # the test gap is stated, not hidden
+    assert "as accurate as its teacher" not in card
+    assert "{" not in card.split("```")[0]

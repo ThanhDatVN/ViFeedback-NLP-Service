@@ -219,7 +219,11 @@ v2 H11 before any H11 run and before H10 decided. The owner's order is b → a �
 | **H10 confirmation** (5 seeds) | ViLexNorm test flips 16.6% → 0.3% (−0.164 [−0.180, −0.149]); UIT-VSFC −0.0016; neutral −0.0029; stripped −0.0065; **NEU-ESC validation −0.087** | **Not passed** (ADR-038) |
 | Why | The models label 99.4% of ViLexNorm comments negative in both forms; NEU-ESC predicted negative 58% → 76%, neutral F1 0.47 → 0.30 at seed 42 | Degenerate invariance, caught by guard (5) |
 | F4 FP16-storage export | Served 12-layer model: 270 MB, parity 1.5e-5, 100% agreement, no batch dependence | Route verified for H11 |
-| H11 (teacher: the served recipe) | running | — |
+| H11 selection (seed 42, teacher: the served recipe) | teacher-alternate: UIT-VSFC 0.8614, NEU-ESC 0.4160; **pretrained-first6: 0.8730, 0.4360** | pretrained-first6 chosen |
+| **H11 confirmation** (5 seeds each) | 185.1 MB; pooled drop 0.0024, bound 0.0078 (limit 0.01); UIT-VSFC drop 0.00001; neutral +0.0045; stripped 0.0032; graph parity 1.1e-5, no batch dependence | **Passed** (ADR-039) |
+| Candidate release | FP16-storage graph through the gate (parity 1.09e-5, 100% agreement); restorer re-accepted (0 labels changed); scope detector re-attached; 12 API tests pass | — |
+| Latency (idle condition waived by the owner) | S1 p95 median 12.3 ms (sessions 11.6, 12.9; one session without a steady pass at 11.5–11.7); the 12-layer model 22.1 ms in the same sessions | **Served** (ADR-040), the 12-layer model kept as `.previous-sentiment` |
+| H11 closing gate (test, once) | Student 0.8168 over 5 seeds vs 0.8296: **−0.0129 [−0.0204, −0.0054]**, lower in 5/5; seed 42 neutral F1 0.545 (0.592) | Reported; stated in the card and README |
 
 **What H10 establishes.** A consistency loss on unlabeled, off-domain pairs has a cheap solution:
 one class for the whole register. An invariance metric that a constant prediction satisfies needs
@@ -269,12 +273,14 @@ it. H10's consistency training removed the flips only by labelling informal text
 (ADR-038). *Next:* a non-degenerate invariance metric, a guard on the predicted class distribution,
 in-domain unlabeled pairs and new confirmation data ([NEXT_PLAN v6 § 2](NEXT_PLAN.md#2-cycle-5-b-robustness-to-real-typing--h10)).
 
-### P6 — Latency is met; the artifact is still 540 MB
+### P6 — Latency and size are met; the smaller model costs 0.013 on test
 *Update (Cycle 4).* The served pipeline, raw text in, has p95 26.9 ms (A1); the scope detector adds
 less than the score it replaced; careful INT8 passed S5′ but agrees with PyTorch on only 91.4% of
-labels and depends on the batch, so the release gate blocked it (ADR-036). *Next:* H11, a 6-layer
-student stored in FP16 (about 185 MB), and three idle latency sessions. The Cycle 2 measurements
-below are unchanged.
+labels and depends on the batch, so the release gate blocked it (ADR-036). *Update (Cycle 5).*
+The served model is now a 6-layer student stored in FP16: 185 MB, served p95 12.3 ms against
+22.1 ms for the 12-layer model in the same sessions (ADR-040). It matched its teacher on validation,
+but on test it is 0.013 lower in every seed, a gap validation could not resolve. The Cycle 2
+measurements below are unchanged.
 Reference CPU (Ryzen 5 6600H, AVX2, no AVX512-VNNI), single sentence, model-only on pre-segmented
 input, two steady passes in rotated order agreeing within 1% (`results/studies/latency/reference_cpu.json`):
 

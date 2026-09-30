@@ -29,25 +29,26 @@ vifeedback train run --task sentiment --model phobert-base --preprocessing seg_p
 make export        # ONNX through the release gate, then the restorer and the scope detector
 ```
 
-## Layout on the owner's machine (2026-09-29)
+## Layout on the owner's machine (2026-09-30)
 
 ```text
 models/
-├── serve/sentiment/        # what the API serves: model.opt.onnx (FP32, logits + features), tokenizer
-│                           #   files, restorer.json (ADR-031), scope.npz (ADR-034), manifest.json
-│                           #   with the SHA-256 of every file and the release-gate acceptance
-├── publish/<name>/         # `serve publish` dry-run bundle: the above + model card + SHA256SUMS + PyTorch
+├── serve/sentiment/        # what the API serves (ADR-040): the 6-layer student, model.fp16.onnx
+│                           #   (185 MB, FP16 weights computed in FP32), tokenizer files, restorer.json
+│                           #   (ADR-031), scope.npz (ADR-034), manifest.json with every SHA-256
+├── serve/.previous-sentiment/  # the 12-layer release (model.opt.onnx, 540 MB); swap back to serve it
+├── publish/<name>/         # `serve publish` dry-run bundles: the card, SHA256SUMS, the PyTorch copy
 ├── hub/<owner>__<name>/    # `serve reproduce` download cache
-├── diacritics/restorer.json   # the restorer before it is attached to a release
-├── scope/b4prime_tfidf_logistic.pkl   # the fitted scope detector; `serve add-scope` converts it
-├── int8_candidates/        # fp32_plain + pc-head-last2: the graphs S5′ tested (ADR-035/036).
-│                           #   The onnx DLL is blocked on this machine, so they cannot be rebuilt here
-├── p9-…-s42-…-ckp/         # the served checkpoint (H2-augmented, seed 42)
-├── p10-…-aug-diac-teen-s{7,1337,2024,31337}-…-ckp/   # the served recipe's other seeds: controls
-│                           #   for Cycle 5 H10 and H11's ensemble teacher
-└── p6-…-base-s42-ckp/, p10-…-base-s*-ckp/            # the CE baseline's 5 seeds (study external, V1)
+├── distill/                # H11: the teachers' soft-label cache (SHA-1 keys, no text) and the
+│                           #   seed-42 FP16-storage graph h11-confirm checked
+├── diacritics/restorer.json, scope/b4prime_tfidf_logistic.pkl   # sources of the two release parts
+├── int8_candidates/        # fp32_plain + pc-head-last2: the graphs S5′ tested (ADR-035/036)
+├── p9-…-s42-…-ckp/, p10-…-aug-diac-teen-s*-ckp/   # the 12-layer served recipe, 5 seeds: H11's teacher
+├── p6-…-base-s42-ckp/, p10-…-base-s*-ckp/         # the CE baseline's 5 seeds (study external, V1)
+├── p14-…-h11-pretrained-first6-…-s*-ckp/          # the H11 students, 5 seeds (seed 42 is served)
+├── p14-…-h11-teacher-alternate-…-s42-ckp/         # H11's other selection candidate
+└── p13-…-h10-*-ckp/        # H10 (not passed, ADR-038): no planned step needs them
 ```
 
-Checkpoints of experiments that ended without a release (p11: S2a; p12: H8) are not needed by any
-planned step. Their metrics, configs and validation predictions are committed under
-`results/runs/`, and the runs can be regenerated from them.
+Experiments that ended without a release keep their metrics, configs and validation predictions in
+`results/runs/`; their weights can be regenerated, and the owner deletes them when space is needed.

@@ -11,9 +11,10 @@ TASK ?= sentiment
 MODEL ?= phobert-base
 PREP ?= seg_pyvi
 SEEDS ?= all
-# The served checkpoint (ADR-027: H2-augmented, seed 42); pass CKPT=path to choose another. INT8 needs the `onnx` package (ADR-017/020).
-CKPT ?= $(lastword $(sort $(wildcard models/p9-sent-phobert-base-seg_pyvi-aug-diac-teen-s42*ckp)))
-QUANT ?= none
+# The served checkpoint (ADR-040: the 6-layer H11 student, seed 42, FP16 weight storage). For the
+# 12-layer release: CKPT=models/p9-sent-phobert-base-seg_pyvi-aug-diac-teen-s42-599cf21f-ckp QUANT=none
+CKPT ?= $(lastword $(sort $(wildcard models/p14-sent-phobert-base-seg_pyvi-h11-pretrained-first6-from-served-s42*ckp)))
+QUANT ?= fp16-storage
 # The published release (Hugging Face Hub).
 REPO ?= Datk4/vifeedback-sentiment-phobert
 
@@ -64,7 +65,7 @@ train:  ## Fine-tune MODEL on TASK across SEEDS
 		--preprocessing $(PREP) --seeds $(SEEDS)
 
 export:  ## Rebuild what is served: ONNX (staging -> verify on full dev -> swap), restorer (ADR-031), scope detector (ADR-034)
-	$(PY) -m vifeedback.cli serve export --task $(TASK) --checkpoint $(CKPT) --quantize $(QUANT) --with-features
+	$(PY) -m vifeedback.cli serve export --task $(TASK) --checkpoint $(CKPT) --quantize $(QUANT) $(if $(filter none,$(QUANT)),--with-features,)
 	$(PY) -m vifeedback.cli serve add-restorer --task $(TASK)
 	$(PY) -m vifeedback.cli serve add-scope --task $(TASK)
 
