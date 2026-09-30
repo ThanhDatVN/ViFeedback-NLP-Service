@@ -86,6 +86,8 @@ curl -s localhost:8000/v1/classify -H 'content-type: application/json' \
 ```
 
 Each prediction carries `label`, `confidence`, `probabilities`, `in_scope` and `scope_score`.
+- `confidence` and `probabilities` are calibrated: the logits are divided by a temperature fitted on
+  validation (ADR-041), which changes no label.
 - The service never refuses an input: `in_scope: false` is information for the caller.
 - The restorer and the scope detector are refused unless their SHA-256 matches the release
   manifest. `/version` reports the model file's hash, and `make docker-e2e` checks it inside the

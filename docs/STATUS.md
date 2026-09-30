@@ -224,6 +224,8 @@ v2 H11 before any H11 run and before H10 decided. The owner's order is b → a �
 | Candidate release | FP16-storage graph through the gate (parity 1.09e-5, 100% agreement); restorer re-accepted (0 labels changed); scope detector re-attached; 12 API tests pass | — |
 | Latency (idle condition waived by the owner) | S1 p95 median 12.3 ms (sessions 11.6, 12.9; one session without a steady pass at 11.5–11.7); the 12-layer model 22.1 ms in the same sessions | **Served** (ADR-040), the 12-layer model kept as `.previous-sentiment` |
 | H11 closing gate (test, once) | Student 0.8168 over 5 seeds vs 0.8296: **−0.0129 [−0.0204, −0.0054]**, lower in 5/5; seed 42 neutral F1 0.545 (0.592) | Reported; stated in the card and README |
+| Calibrated confidence | T fitted on validation logits of each release (student 1.491, 12-layer 1.551); test evidence from both closing gates | **Served** (ADR-041) |
+| H10b (`cycle5.yaml` v4) | Consistency anchored on the frozen teacher; fresh confirmation pairs | running |
 
 **What H10 establishes.** A consistency loss on unlabeled, off-domain pairs has a cheap solution:
 one class for the whole register. An invariance metric that a constant prediction satisfies needs

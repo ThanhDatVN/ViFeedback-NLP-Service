@@ -313,6 +313,8 @@ make the target robust to machine state.
 | F6 | U2 sensitivity table: challenge v1 on the owner-reviewed labels next to the frozen ones | ✅ `study challenge-review` (reproduces `study challenge` exactly when every row is kept); waits for the owner's review |
 | F7 | ✅ `cli.py` (3,371 lines) split into `vifeedback/cli/` by group and by cycle; same 59 commands and options, checked command by command | done 2026-09-29 |
 | F8 | ✅ `make export` rebuilt the retired Mahalanobis configuration; it now attaches the scope detector. `make publish` and `make reproduce` were added | done 2026-09-29 |
+| F9 | ✅ Calibrated confidence in the service (ADR-041): `serve add-temperature`, T in the manifest; student T = 1.491, 12-layer T = 1.551; labels unchanged | done 2026-09-30 |
+| H10b | ⏳ A second real-typing attempt (`cycle5.yaml` v4): consistency anchored on the frozen 5-seed teacher, agreement and label-distribution metrics a constant prediction cannot game, 1,500 fresh confirmation pairs | running |
 
 ## 7. Budget and what not to do
 
