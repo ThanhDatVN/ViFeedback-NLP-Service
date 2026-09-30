@@ -63,12 +63,12 @@ stretch values, are open:
 | Step | Work | Needs | Compute | Gate |
 |---|---|---|---|---|
 | 1 | ✅ Declare H10 in [`cycle5.yaml`](../configs/experiments/cycle5.yaml) v1 | — | — | committed before any run |
-| 2 | ⏳ F5: consistency training code, the ViLexNorm dev split, the flip-rate evaluation, tests | — | CPU | unit tests; one smoke run |
-| 3 | ⏳ **H10 selection**: two recipes at seed 42 | — | 2 GPU runs | `cycle5.yaml` recipe selection |
+| 2 | ✅ F5: consistency training code, the ViLexNorm dev split, the flip-rate evaluation, tests (2026-09-30) | — | CPU | unit tests; one smoke run |
+| 3 | ⏳ **H10 selection**: two recipes at seed 42 (running; the five controls are scored) | — | 2 GPU runs | `cycle5.yaml` recipe selection |
 | 4 | ⏳ **H10 confirmation**: 4 more seeds; ViLexNorm test once, logged | — | 4 GPU runs | the H10 rule |
 | 5 | Release H10 (if passed): gate, three latency sessions, ADR, card | 👤 licence (§ 8, 3); 👤 upload | CPU | release gate |
-| 6 | Declare H11 (`cycle5.yaml` v2) with the teacher H10 decided | — | — | committed before any run |
-| 7 | F4: FP16-storage export without the `onnx` package; H11 selection and confirmation | — | ≈ 7 GPU runs | the H11 rule |
+| 6 | ✅ Declare H11 (`cycle5.yaml` v2, 2026-09-30): the teacher follows a written condition on H10's decision | — | — | committed before any H11 run and before H10 decided |
+| 7 | ✅ F4: FP16-storage export without the `onnx` package. ⏳ H11 selection and confirmation (code and tests ready) | — | ≈ 7 GPU runs | the H11 rule |
 | 8 | Release H11 (if passed) | 👤 upload | CPU | release gate |
 | 9 | Cycle 5 closing gate: the released model on UIT-VSFC test, once | — | CPU | logged |
 | 10 | H12: declare, then run, when decision 2 and the new labelled sample exist | 👤 decision 2, 👤 data | ≈ 6 GPU runs | declared later |
@@ -289,9 +289,9 @@ make the target robust to machine state.
 | ID | Task | Status |
 |---|---|---|
 | F3 | Model card after every serving change (`serve publish` dry run) | ongoing |
-| F4 | FP16-storage export without the `onnx` package (H11) | ⏳ with H11 |
-| F5 | `training/consistency.py` (paired KL, both variants); the ViLexNorm dev split; flip rate through the served pipeline; unit tests | ⏳ before H10 |
-| F6 | U2 sensitivity table: challenge v1 on the owner-reviewed labels next to the frozen ones | ⏳ after the owner's review |
+| F4 | FP16-storage export without the `onnx` package (H11) | ✅ `onnx_export.export_fp16_storage`: parametrized casts, constant folding off; on a tiny RoBERTa the file is half the size, logits equal the FP16-rounded model (< 1e-4), no batch dependence |
+| F5 | `training/consistency.py` (paired KL, both variants); the ViLexNorm dev split; flip rate through the served pipeline; unit tests | ✅ `study h10-*`; the smoke run trains and scores end to end |
+| F6 | U2 sensitivity table: challenge v1 on the owner-reviewed labels next to the frozen ones | ✅ `study challenge-review` (reproduces `study challenge` exactly when every row is kept); waits for the owner's review |
 | F7 | ✅ `cli.py` (3,371 lines) split into `vifeedback/cli/` by group and by cycle; same 59 commands and options, checked command by command | done 2026-09-29 |
 | F8 | ✅ `make export` rebuilt the retired Mahalanobis configuration; it now attaches the scope detector. `make publish` and `make reproduce` were added | done 2026-09-29 |
 
