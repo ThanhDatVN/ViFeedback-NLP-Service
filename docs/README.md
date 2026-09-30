@@ -16,7 +16,7 @@ guide to the manual tasks, which is in Vietnamese.
 
 | Document | What it holds |
 |---|---|
-| [DECISIONS.md](DECISIONS.md) | ADR-001 to ADR-038, append-only: every decision, scope cut and failed gate, with context and consequences |
+| [DECISIONS.md](DECISIONS.md) | ADR-001 to ADR-039, append-only: every decision, scope cut and failed gate, with context and consequences |
 | [EXPERIMENT_MATRIX.md](EXPERIMENT_MATRIX.md) | Run-id scheme, matrix axes, and every result table from the baselines to Cycle 5 |
 | [`configs/experiments/`](../configs/experiments/README.md) | The pre-registered cycles (`cycle1.yaml` … `cycle5.yaml`) and the compute ledger |
 | [`results/`](../results/README.md) | Every committed result: registry, per-run metrics, study outputs |

@@ -1,0 +1,118 @@
+{
+  "n": 1583,
+  "macro_f1": 0.8667793390957232,
+  "weighted_f1": 0.9486539569604338,
+  "micro_f1": 0.9500947567909034,
+  "accuracy": 0.9500947567909034,
+  "balanced_accuracy": 0.8454076108328259,
+  "mcc": 0.9071435305175558,
+  "g_mean": 0.8258784070962785,
+  "cohen_kappa": 0.906979183247818,
+  "per_class": {
+    "negative": {
+      "precision": 0.9563994374120957,
+      "recall": 0.9645390070921985,
+      "f1": 0.9604519774011299,
+      "support": 705,
+      "predicted": 711,
+      "average_precision": 0.9844613282685712
+    },
+    "neutral": {
+      "precision": 0.7719298245614035,
+      "recall": 0.6027397260273972,
+      "f1": 0.676923076923077,
+      "support": 73,
+      "predicted": 57,
+      "average_precision": 0.7017886021864479
+    },
+    "positive": {
+      "precision": 0.9570552147239264,
+      "recall": 0.968944099378882,
+      "f1": 0.962962962962963,
+      "support": 805,
+      "predicted": 815,
+      "average_precision": 0.9914778773556876
+    }
+  },
+  "confusion": [
+    [
+      680,
+      8,
+      17
+    ],
+    [
+      11,
+      44,
+      18
+    ],
+    [
+      20,
+      5,
+      780
+    ]
+  ],
+  "confusion_normalized": [
+    [
+      0.9645,
+      0.0113,
+      0.0241
+    ],
+    [
+      0.1507,
+      0.6027,
+      0.2466
+    ],
+    [
+      0.0248,
+      0.0062,
+      0.9689
+    ]
+  ],
+  "labels": [
+    "negative",
+    "neutral",
+    "positive"
+  ],
+  "ordinal_mae": 0.07327858496525584,
+  "qwk": 0.9371456252084558,
+  "adjacent_accuracy": 0.9766266582438408,
+  "log_loss": 0.1975039478318568,
+  "ece_10bin": 0.030006930419006653,
+  "history": [
+    {
+      "epoch": 1,
+      "train_loss": 0.5325588200178892,
+      "dev_macro_f1": 0.832169731984031,
+      "dev_neutral_f1": 0.5818181818181818,
+      "seconds": 169.0
+    },
+    {
+      "epoch": 2,
+      "train_loss": 0.17481930237872925,
+      "dev_macro_f1": 0.8667793390957232,
+      "dev_neutral_f1": 0.676923076923077,
+      "seconds": 337.3
+    },
+    {
+      "epoch": 3,
+      "train_loss": 0.12703098332344392,
+      "dev_macro_f1": 0.8610645079666308,
+      "dev_neutral_f1": 0.6557377049180328,
+      "seconds": 505.9
+    },
+    {
+      "epoch": 4,
+      "train_loss": 0.10507142927322213,
+      "dev_macro_f1": 0.8547778249951262,
+      "dev_neutral_f1": 0.6400000000000001,
+      "seconds": 675.4
+    }
+  ],
+  "best_epoch": 2,
+  "augmentation": {
+    "recipe": "diac-teen",
+    "p": 0.3,
+    "changed": 2616,
+    "changed_share": 0.229
+  }
+}

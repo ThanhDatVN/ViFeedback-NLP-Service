@@ -1281,3 +1281,50 @@ unlabeled data; H10 had none of the three. Guard (5) was declared for exactly th
   label on the normalized form, reported next to each form's label distribution;
 - a guard on the predicted class distribution of the unlabeled text;
 - in-domain unlabeled pairs (student posts and their normalizations), or UDA's confidence mask.
+
+---
+
+## ADR-039 · 2026-09-30 · H11 passed: a 6-layer student stored in FP16 matches the served model at 185 MB · Accepted
+
+**Context.** `cycle5.yaml` v2 H11, run by the declared code (`results/studies/cycle5/h11/`). H10 did
+not pass (ADR-038), so by the written rule the teacher is the served recipe's 5-seed ensemble.
+
+**Selection (seed 42).**
+
+| Student | UIT-VSFC validation | NEU-ESC validation (all) | Mean |
+|---|---:|---:|---:|
+| teacher-alternate (layers 1, 3, …, 11 of the same-seed teacher) | 0.8614 | 0.4160 | 0.6387 |
+| **pretrained-first6** (PhoBERT's first six layers) | **0.8730** | **0.4360** | **0.6545** |
+
+**Confirmation** (pretrained-first6, five seeds against the teacher's five seeds; validation only):
+
+| Rule | Result | Limit |
+|---|---|---|
+| (1) FP16-storage graph | **185.1 MB** | ≤ 200 MB |
+| (2) pooled UIT-VSFC + NEU-ESC validation (4,888), seed-averaged drop | 0.0024, one-sided 95% bound **0.0078** | ≤ 0.01 |
+| (3a) UIT-VSFC validation macro-F1 drop | 0.00001 | ≤ 0.01 |
+| (3b) neutral F1 drop | −0.0045 (the student is better) | ≤ 0.03 |
+| (3c) stripped text through the restorer, drop | 0.0032 | ≤ 0.015 |
+| (4) graph vs the FP16-rounded PyTorch student | max logit diff 1.1e-5, 100% of 1,583 labels, batch vs single 0.0 | ≤ 1e-4, 100%, ≤ 1e-4 |
+
+All hold: **H11 passed.**
+
+5-seed means: UIT-VSFC 0.8685 for both; NEU-ESC in scope 0.4382 against 0.4367. The student has
+92.5 M parameters against 135 M and 6 layers against 12.
+
+**Why pretrained-first6 won.** Copying alternate fine-tuned layers keeps a representation built for
+12 layers and cut in half. Starting from PhoBERT's first six pretrained layers lets distillation
+shape a 6-layer network directly. With a 5-seed ensemble teacher and 28,648 unlabeled transfer
+texts, it matched the teacher. Its seeds also vary less on NEU-ESC than the teacher's single seeds
+(0.416–0.449 against 0.384–0.469).
+
+**Decision.**
+1. **S7 (≤ 200 MB) is met by a model that passed its rule.** The student becomes the release
+   candidate. It goes through the release gate as an FP16-storage graph, with the restorer and the
+   scope detector re-accepted.
+2. **Serving.** As declared, it replaces the served model only after three latency sessions on an
+   idle machine show served p95 ≤ 30 ms. Until then the served model is unchanged.
+3. **Hub.** Its transfer set holds ViLexNorm text (CC BY-NC-SA 4.0). Uploading it needs the owner's
+   licence decision and approval (HUONG_DAN_THU_CONG § 4–5).
+4. **Test.** UIT-VSFC test is evaluated once for the student, for its card and S1, after a
+   declaration (`cycle5.yaml` v3). No selection uses it.

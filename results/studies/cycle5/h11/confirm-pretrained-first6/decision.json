@@ -1,0 +1,58 @@
+{
+  "declared_in": "configs/experiments/cycle5.yaml v2 H11 rule",
+  "init": "pretrained-first6",
+  "teacher": "served",
+  "seeds": [
+    42,
+    1337,
+    2024,
+    7,
+    31337
+  ],
+  "rules": {
+    "1_fp16_graph_at_most_200_mb": {
+      "bytes": 185130874,
+      "passed": true
+    },
+    "2_pooled_drop_bound": {
+      "observed_drop": 0.002393900935850457,
+      "upper_95_one_sided": 0.0078030770591374305,
+      "n_resamples": 10000,
+      "rows": 4888,
+      "seeds": 5,
+      "limit": 0.01,
+      "passed": true
+    },
+    "3a_uit_validation_macro_f1_drop": {
+      "drop": 5.21341364045913e-06,
+      "limit": 0.01,
+      "passed": true
+    },
+    "3b_uit_validation_neutral_f1_drop": {
+      "drop": -0.004472739712984364,
+      "limit": 0.03,
+      "passed": true
+    },
+    "3c_uit_stripped_macro_f1_drop": {
+      "drop": 0.0032433832527308804,
+      "limit": 0.015,
+      "passed": true
+    },
+    "4_graph_parity_and_batch_independence": {
+      "max_abs_logit_diff": 1.0877847671508789e-05,
+      "label_agreement": 1.0,
+      "rows_checked": 1583,
+      "batch_vs_single_max_diff": 0.0,
+      "passed": true
+    }
+  },
+  "passed": true,
+  "graph": {
+    "path": "models\\distill\\pretrained-first6-s42-fp16\\model.fp16.onnx",
+    "bytes": 185130874
+  },
+  "reported": {
+    "neu_validation_in_scope_drop": -0.0015664380916057374,
+    "parameters": 92473347
+  }
+}
