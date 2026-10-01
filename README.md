@@ -27,7 +27,7 @@ for the sentiment model.
 | **Sentiment, test, 5 seeds** | Served H10b **0.824** (the recipe without the consistency training 0.830 ± 0.007: −0.006 [−0.019, +0.007], not distinguishable); the student 0.817; research best 0.837 with VnCoreNLP |
 | **Robustness** | Diacritics restored before the model: stripped validation 0.686 → **0.857** (ADR-031). Out-of-scope input flagged by a topic detector: AUROC **0.922** within another university's forum (ADR-034) |
 | **Latency** | Raw text in, served pipeline p95 about **22 ms** on a laptop CPU (the 12-layer architecture, 22.1 ms in the Cycle 5 sessions; the student 12.3 ms; target 30 ms) |
-| **Reproducible** | A clean clone reproduces the published model's validation macro-F1 (0.8644) in **2.3 min** in CI, every file checked against `SHA256SUMS` |
+| **Reproducible** | A clean clone reproduces the published model's validation macro-F1 (0.8617, H10b) in about **2–3 min**, every file checked against `SHA256SUMS`; CI runs it on every change to the workflow |
 | **Research** | Cycles 0–4 closed, Cycle 5 run; 43 ADRs, 163 weight-updating runs in [the ledger](configs/experiments/ledger.csv); Cycle 5 declared ([cycle5.yaml](configs/experiments/cycle5.yaml)) |
 
 ---
@@ -166,7 +166,7 @@ make train            # fine-tune PhoBERT (needs a GPU; about 5 min per seed on 
 ```bash
 pip install -e ".[serve]"
 vifeedback data fetch
-vifeedback serve reproduce     # Hub download, SHA-256 checks, validation macro-F1 0.8644
+vifeedback serve reproduce     # Hub download, SHA-256 checks, validation macro-F1 0.8617
 ```
 
 [reproduce.yml](.github/workflows/reproduce.yml) runs this from a clean clone in CI (2.3 min,

@@ -10,7 +10,7 @@ so a fresh clone holds only this README.
 | Size | A PhoBERT-base checkpoint is about 540 MB, and a 5-seed sweep is 2.7 GB. Git would store every version forever |
 | Reproducibility | A checkpoint without its `config.yaml`, `env.json` and seed is not reproducible, and those *are* committed under `results/runs/` |
 | Provenance | `results/registry.csv` records what produced every number. The weights are a cache of that record, not the record itself |
-| Distribution | Releases are published on the Hugging Face Hub: <https://huggingface.co/Datk4/vifeedback-sentiment-phobert> (the 12-layer p9 model until the owner approves the H10b upload) |
+| Distribution | Releases are published on the Hugging Face Hub: <https://huggingface.co/Datk4/vifeedback-sentiment-phobert> (H10b since 2026-10-01, CC BY-NC-SA 4.0) |
 
 > This folder's *name* once broke the repository. `.gitignore` held the bare pattern `models/`,
 > which git matches at any depth, so it silently excluded the `src/vifeedback/models/` **package**

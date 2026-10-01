@@ -355,8 +355,8 @@ sentences.
 - **Image size.** The runtime image fell from 1,023 MB to 519 MB. pyvi's CRF loads through
   `python-crfsuite` without scikit-learn or SciPy, and a 138-line PhoBERT BPE tokenizer replaces
   `transformers`, with identical token ids on all 49,141 UIT-VSFC and NEU-ESC texts.
-- **Reproduction.** A clean clone reproduces the published model's validation macro-F1 (0.8644) in
-  2.3 minutes in CI, downloading from the Hub and checking every file against `SHA256SUMS`.
+- **Reproduction.** A clean clone reproduced the then-published model's validation macro-F1 (0.8644) in
+  2.3 minutes in CI (H10b, published 2026-10-01: 0.8617 in 131 s), downloading from the Hub and checking every file against `SHA256SUMS`.
 - **Publication.** The model was published on 2026-09-28 and updated to the scope detector on
   2026-09-29.
 

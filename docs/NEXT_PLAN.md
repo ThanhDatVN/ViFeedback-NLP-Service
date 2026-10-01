@@ -34,8 +34,8 @@ reason · ✖ dropped, with the reason.
   - the restorer and the detector are refused unless their SHA-256 matches the manifest;
   - `docker-e2e` checks the served model's hash inside the image;
   - CI and the Hub reproduction workflow are green.
-- **Where to get it:** <https://huggingface.co/Datk4/vifeedback-sentiment-phobert> still holds the
-  12-layer p9 model (CC BY-NC 4.0). The H10b bundle is built and waits for the owner's approval.
+- **Where to get it:** <https://huggingface.co/Datk4/vifeedback-sentiment-phobert> holds H10b
+  (CC BY-NC-SA 4.0), uploaded by the owner on 2026-10-01; `serve reproduce` gives 0.8617.
 
 **Targets** (ROADMAP, revised in ADR-015). The served H10b model meets every committed minimum,
 S4's by the smallest margin (neutral F1 0.550 at seed 42). S7 is met by the released 6-layer
@@ -80,7 +80,7 @@ student, not by the served model (ADR-043):
 | 8 | ✅ Release H11 (ADR-040): candidate through the gate, restorer and detector re-accepted, three latency sessions (median p95 12.3 ms), served 2026-09-30 to 2026-10-01, now kept beside the served model. 👤 Hub upload to a separate repository (CC BY-NC-SA 4.0) | 👤 licence, upload | CPU | release gate, `cycle5.yaml` v3 |
 | 9 | ✅ H11 closing gate (test, once): student 0.8168 (5 seeds) vs 0.8296, −0.0129 [−0.0204, −0.0054] | — | CPU | logged; reported, not a decision |
 | 9b | ✅ H10b (ADR-042): passed; closing gate 0.8237 (−0.0059, n.s.); release candidate built (`cycle5.yaml` v5) | — | 12 GPU runs | the H10b rule |
-| 9c | ✅ Decision 9 (ADR-043): **the service runs H10b** (2026-10-01); 40 API tests pass. 👤 Hub upload and licence | 👤 upload | CPU | release gate |
+| 9c | ✅ Decision 9 (ADR-043): **the service runs H10b** (2026-10-01); 40 API tests pass. ✅ Uploaded by the owner (Hub commit `037edfb`), 0.8617 reproduced from the Hub | — | CPU | release gate |
 | 9d | Latency session of the served H10b. 2026-10-01: one session, S1 not reportable (no steady pass; model-only p95 34.4 ms against 20.5 ms for the same architecture in Cycle 5, so the machine was loaded); another project's GPU job ran before and after it | a quiet machine | CPU | reported next to the 22.1 ms of the same architecture |
 | 10 | H12: declare, then run, when decision 2 and the new labelled sample exist | 👤 decision 2, 👤 data | ≈ 6 GPU runs | declared later |
 | 10′ | H12′ (§ 4): ✅ declared in `cycle5.yaml` v6; run when the GPU is free | — | 5 GPU runs, about 3 h | the H12′ rule |
@@ -401,7 +401,7 @@ The step-by-step versions, in Vietnamese: [HUONG_DAN_THU_CONG.md](HUONG_DAN_THU_
 |---|---|---|---|
 | 1 | Neutral audit, 160 rows, plus a second pass on ≥ 50 | D2 waits | S4, S9 |
 | 2 | Label policy for other institutions' text | Keep UIT-VSFC's | H12 |
-| 3 | Weights licence CC BY-NC-SA 4.0 (ViLexNorm text in training) for the served H10b (bundle built for the main repository) and the student (repository `Datk4/vifeedback-sentiment-phobert-6l`, bundle built) | Not uploaded; the Hub keeps p9 | uploads |
+| 3 | Weights licence CC BY-NC-SA 4.0 (ViLexNorm text in training): ✅ H10b uploaded with it (2026-10-01); the student's repository `Datk4/vifeedback-sentiment-phobert-6l` (bundle built) is optional | Student not uploaded | student upload |
 | 4 | Approve each Hub upload | No upload | every release |
 | 5 | A new labelled sample from another institution | H12 not declared | H12 |
 | 6 | ✅ Latency sessions: the owner waived the idle-machine condition (2026-09-30) | — | — |

@@ -21,7 +21,7 @@ $PY = ".venv\Scripts\python.exe"
 | 1 | [Neutral audit](#1-neutral-audit-gán-nhãn-kiểm-tra-lớp-neutral) | 6–8 giờ, chia nhiều buổi; hoặc 2–2,5 giờ với [phương án A1′](#phương-án-rút-gọn-a1-đề-xuất-chờ-bạn-đồng-ý) | Càng sớm càng tốt | S9 (≥ 30 lỗi được mã hoá), nhánh D2 cho lớp neutral (S4) |
 | 2 | [Duyệt 15 nhãn của challenge v1 (U2)](#2-duyệt-15-nhãn-của-challenge-v1-u2) | 20 phút | Bất kỳ lúc nào | Báo cáo challenge v1 kèm nhãn đã được người kiểm |
 | 3 | ~~Chuẩn bị máy rảnh để đo độ trễ~~ | — | ✅ Xong 2026-09-30 (bạn cho phép không cần máy rảnh) | p95 12,3 ms (mô hình nhỏ) |
-| 4 | [Quyết định giấy phép cho H10b và mô hình nhỏ](#4-quyết-định-giấy-phép-khi-mô-hình-học-từ-vilexnorm) | 5 phút | Trước khi upload | Bản trên Hub khớp với service |
+| 4 | ~~Quyết định giấy phép cho H10b~~ | — | ✅ Xong 2026-10-01: H10b lên Hub với CC BY-NC-SA 4.0 | Mô hình nhỏ: chỉ khi bạn muốn đưa lên repo riêng |
 | 5 | [Duyệt upload lên Hugging Face](#5-duyệt-upload-lên-hugging-face) | 10 phút mỗi lần | Mỗi khi có bản phát hành mới | Bản trên Hub khớp với service |
 | 6 | [Quyết định chính sách nhãn cho trường khác](#6-quyết-định-chính-sách-nhãn-cho-văn-bản-của-trường-khác-quyết-định-số-2) | 15 phút đọc | Trước Cycle 5 (c) | Hướng (c) |
 | 7 | [Dữ liệu có nhãn mới cho hướng (c)](#7-dữ-liệu-có-nhãn-mới-cho-hướng-c), hoặc đồng ý chạy [H12′](#phương-án-thay-thế-h12-không-cần-dữ-liệu-mới) | 20–25 giờ (hai người); H12′ chỉ cần một câu trả lời | Trước Cycle 5 (c) | Kết luận về văn bản của trường khác (H12′: chỉ về diễn đàn NEU) |
@@ -433,12 +433,11 @@ Move-Item models\serve\sentiment models\serve\.h10b-sentiment
 Move-Item models\serve\.previous-sentiment models\serve\sentiment
 ```
 
-**Công bố lên Hugging Face** (cần bạn duyệt, mục 4 và 5):
-- Bản chạy thử của H10b đã có ở `models/publish/vifeedback-sentiment-phobert/`, cho repo chính
-  (thay mô hình p9 đang ở trên Hub). Card nêu rõ test 0,8208 ở seed 42 và −0,006 ở mức 5 seed.
-- Bản chạy thử của mô hình nhỏ ở `models/publish/vifeedback-sentiment-phobert-6l/`, cho repo riêng.
-- Cả hai mang giấy phép CC BY-NC-SA 4.0. Hãy trả lời, ví dụ: "duyệt upload H10b, giấy phép
-  CC BY-NC-SA 4.0".
+**Công bố lên Hugging Face.**
+- ✅ Bạn đã upload H10b lên repo chính ngày 2026-10-01 (commit trên Hub `037edfb`). Tôi đã tải về,
+  kiểm từng file theo `SHA256SUMS` và chạy lại validation: 0,8617, khớp manifest.
+- Mô hình nhỏ (tuỳ chọn): bản chạy thử ở `models/publish/vifeedback-sentiment-phobert-6l/`, cho repo
+  riêng, giấy phép CC BY-NC-SA 4.0.
 
 ---
 

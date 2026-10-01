@@ -194,7 +194,7 @@ rule, every use logged in `results/studies/cycle4/neu_esc_test_uses.log`.
 | Release gate on the S5′ graph | Label agreement with PyTorch **91.4%** (< 99%); batch-vs-single logits differ by up to 0.93 | **Not released** (ADR-036). S7 goes to distillation (H11) |
 | F1 image size | 1,023 MB → 519 MB: pyvi's CRF without scikit-learn/SciPy; a PhoBERT BPE tokenizer without `transformers`, identical ids on 49,141 texts | S8 met |
 | F2 clean-clone reproduction | Install 45 s, data 3 s, Hub download and evaluation 90 s; 0.8644 reproduced, in CI | S10 met |
-| Publication | 2026-09-28 public (CC BY-NC 4.0); 2026-09-29 updated to ADR-034 (Hub commit `ba58267`): 8 files verified, 0.8644 reproduced from the Hub | ✅ |
+| Publication | 2026-09-28 public (CC BY-NC 4.0); 2026-09-29 updated to ADR-034 (Hub commit `ba58267`): 8 files verified, 0.8644 reproduced from the Hub. 2026-10-01: H10b (CC BY-NC-SA 4.0, Hub commit `037edfb`), 0.8617 reproduced (ADR-043) | ✅ |
 
 **What Cycle 4 establishes.**
 1. **In-domain data closes much of the cross-institution gap, but only if each label policy keeps
@@ -392,14 +392,13 @@ Needs the owner (step by step, in Vietnamese: [HUONG_DAN_THU_CONG.md](HUONG_DAN_
    sheet.
 2. **A free GPU** for the served H10b model's own latency session (the owner waived the idle condition).
 3. **Decisions:**
-   - uploading H10b to the Hub and its licence (CC BY-NC-SA, because of ViLexNorm);
    - the label policy for other institutions' text;
    - each Hub upload.
 4. **For H12:** a new labelled sample from another institution.
 
-The Hub still holds the 12-layer p9 model: <https://huggingface.co/Datk4/vifeedback-sentiment-phobert>
-(CC BY-NC 4.0, ONNX + PyTorch, restorer and scope detector, every file checked against `SHA256SUMS`).
-The H10b bundle is built as a dry run and waits for the owner's approval.
+The Hub holds the served H10b release: <https://huggingface.co/Datk4/vifeedback-sentiment-phobert>
+(CC BY-NC-SA 4.0, ONNX + PyTorch, restorer, scope detector and temperature, every file checked against
+`SHA256SUMS`; uploaded 2026-10-01, 0.8617 reproduced from the Hub).
 
 ---
 

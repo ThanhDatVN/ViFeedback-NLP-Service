@@ -1507,8 +1507,9 @@ at five seeds. The owner approved it on 2026-10-01.
   session waits for a quiet machine: `study latency` refuses to run while another process is on the
   GPU, and the one session run on 2026-10-01 had no steady pass on the served pipeline
   (`cycle5_h10b_session1.json`, model-only p95 34.4 ms against 20.5 ms for the same architecture).
-- **Hub.** The dry-run bundle for `Datk4/vifeedback-sentiment-phobert` now holds H10b and its card,
-  licensed CC BY-NC-SA 4.0 because of the ViLexNorm training text. The Hub keeps the p9 model
-  (CC BY-NC 4.0) until the owner approves the upload and the licence.
+- **Hub.** The owner uploaded the H10b bundle to `Datk4/vifeedback-sentiment-phobert` on
+  2026-10-01 (Hub commit `037edfb`), licensed CC BY-NC-SA 4.0 because of the ViLexNorm training
+  text. `serve reproduce` from the Hub: 8 files verified against `SHA256SUMS`, validation macro-F1
+  0.8617 reproduced (manifest 0.8617) in 131 s. No stale file is left on the Hub.
 - **Erratum to ADR-042.** The agreement gain is +0.061 (0.0615), not +0.062; corrected in place.
 
