@@ -1,0 +1,69 @@
+{
+  "task": "sentiment",
+  "model_file": "model.fp16.onnx",
+  "sha256": "27fda01b71a1d2867fe2d1565c2e87022dcd21966e2c0f333f17948a48d1163a",
+  "quantization": "fp16-storage",
+  "preprocessing": "seg_pyvi",
+  "max_length": 96,
+  "labels": [
+    "negative",
+    "neutral",
+    "positive"
+  ],
+  "outputs": [
+    "logits"
+  ],
+  "checkpoint": "models/trimmed/p15-sent-phobert-base-seg_pyvi-h10b-anchored_orig-s42-063770c8-v17500-ckp",
+  "calibration": null,
+  "acceptance": {
+    "n": 1583,
+    "max_abs_logit_diff": 1.7881393432617188e-05,
+    "logits_close": true,
+    "label_agreement": 1.0,
+    "macro_f1_torch": 0.8616759239790208,
+    "macro_f1_onnx": 0.8616759239790208,
+    "macro_f1_drop": 0.0,
+    "batch_vs_single_max_diff": 0.0,
+    "batch_vs_single_label_agreement": 1.0,
+    "failures": [],
+    "passed": true
+  },
+  "acceptance_set": "validation",
+  "prebuilt_from": null,
+  "created": "20261001-142522",
+  "software": {
+    "onnxruntime": "1.30.0",
+    "transformers": "5.17.0"
+  },
+  "restorer": {
+    "file": "restorer.json",
+    "sha256": "7ed4a90368905eb6d532d795ced2f138c3a03434200e47d7b31cdf4b4f63c018",
+    "threshold": 0.09090909090909091,
+    "fitted_on": "UIT-VSFC train (syllable forms and word bigrams)",
+    "decided_by": "cycle3.yaml v5 S2b (NEU-ESC confirmation), ADR-031",
+    "acceptance": {
+      "validation_labels_changed": 0,
+      "validation_macro_f1": 0.8616759239790208,
+      "stripped_validation_macro_f1_without": 0.6578550283168334,
+      "stripped_validation_macro_f1_with": 0.8457042145597139,
+      "passed": true
+    }
+  },
+  "scope": {
+    "file": "scope.npz",
+    "sha256": "d3c62672b10fb47cfcf3ff0830dc64199a6a59a7614513f9849169d59f22ca82",
+    "method": "logistic regression on TF-IDF word unigrams and bigrams of the model input",
+    "threshold": -0.17707026030102108,
+    "terms": 70377,
+    "decided_by": "cycle4.yaml v3 B4', ADR-034",
+    "acceptance": {
+      "1_within_source_auroc": 0.9219447176430868,
+      "2_in_scope_flagged": 0.07338842975206611,
+      "3_off_topic_caught": 0.7229129662522202,
+      "4_uit_validation_flagged": 0.0018951358180669614,
+      "passed": true,
+      "numpy_vs_sklearn_max_abs_diff": 7.993605777301127e-15,
+      "texts_checked": 12032
+    }
+  }
+}

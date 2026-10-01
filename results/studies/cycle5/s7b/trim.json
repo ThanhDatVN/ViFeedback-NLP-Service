@@ -1,0 +1,34 @@
+{
+  "source": "p15-sent-phobert-base-seg_pyvi-h10b-anchored_orig-s42-063770c8-ckp",
+  "entries": 17500,
+  "kept_pieces": 17495,
+  "kept_sha256": "df650f4d272b81762ac42ccf4c5d409385edc47355c916207a814e81d7a25ba2",
+  "sources": {
+    "uit_train": {
+      "texts": 11426,
+      "pieces_in_vocab": 3865
+    },
+    "uit_train_stripped": {
+      "texts": 11426,
+      "pieces_in_vocab": 1660
+    },
+    "uit_train_teencode": {
+      "texts": 11426,
+      "pieces_in_vocab": 3867
+    },
+    "neu_esc_train": {
+      "texts": 23048,
+      "pieces_in_vocab": 13608
+    },
+    "vilexnorm_training_original": {
+      "texts": 6035,
+      "pieces_in_vocab": 6305
+    },
+    "vilexnorm_training_normalized": {
+      "texts": 6035,
+      "pieces_in_vocab": 5841
+    }
+  },
+  "used_pieces": 15318,
+  "checkpoint": "p15-sent-phobert-base-seg_pyvi-h10b-anchored_orig-s42-063770c8-v17500-ckp"
+}

@@ -264,3 +264,135 @@ def study_h10b_closing_gate() -> None:
     p = f["paired_h10b_minus_served_recipe"]
     typer.echo(f"  5 seeds: {f['h10b']}")
     typer.echo(f"  H10b - served recipe (Cycle 1 test): {p['mean_delta']:+.4f} {p.get('ci95')}")
+
+
+H10B_S42 = "models/p15-sent-phobert-base-seg_pyvi-h10b-anchored_orig-s42-063770c8-ckp"
+
+
+@study_app.command("s7b-trim")
+def study_s7b_trim(checkpoint: str = typer.Option(H10B_S42)) -> None:
+    """S7b (cycle5.yaml v7): the served H10b checkpoint with its vocabulary cut to 17,500 entries."""
+    import json
+    from pathlib import Path
+
+    from vifeedback import paths
+    from vifeedback.inference import vocab_trim as V
+    from vifeedback.inference.phobert_tokenizer import PhobertBPE
+    from vifeedback.training.domain import serving_transform
+
+    src = Path(checkpoint)
+    tok = PhobertBPE(src)
+    used: set[str] = set()
+    sources = {}
+    for name, texts in V.coverage_texts(serving_transform()).items():
+        pieces = V.used_pieces(tok, texts) & set(tok.encoder)
+        sources[name] = {"texts": len(texts), "pieces_in_vocab": len(pieces)}
+        used |= pieces
+    keep = V.choose(V.read_vocab(src), used)
+    dst = paths.MODELS / "trimmed" / src.name.replace("-ckp", f"-v{V.N_ENTRIES}-ckp")
+    record = V.write_trimmed(src, dst, keep)
+    record.update(sources=sources, used_pieces=len(used), checkpoint=dst.name)
+    V.OUT.mkdir(parents=True, exist_ok=True)
+    (V.OUT / "trim.json").write_text(json.dumps(record, indent=2), encoding="utf-8")
+    typer.echo(f"  {len(used)} used pieces, {record['entries']} entries -> {dst}")
+
+
+@study_app.command("s7b-fidelity")
+def study_s7b_fidelity(
+    candidate: str = typer.Option("models/candidate/sentiment"),
+    served: str = typer.Option("models/serve/sentiment"),
+) -> None:
+    """S7b (cycle5.yaml v7): the trimmed graph against the served FP32 graph on held-out text."""
+    import json
+    from pathlib import Path
+    from typing import Any
+
+    import numpy as np
+    import pandas as pd
+
+    from vifeedback import paths
+    from vifeedback.data.loader import load
+    from vifeedback.evaluation import challenge as C
+    from vifeedback.evaluation import external as X
+    from vifeedback.evaluation import metrics as M
+    from vifeedback.inference import vocab_trim as V
+    from vifeedback.inference.onnx_export import OnnxClassifier
+    from vifeedback.inference.phobert_tokenizer import PhobertBPE
+    from vifeedback.preprocess.normalize import strip_diacritics
+    from vifeedback.preprocess.segment import get_segmenter
+    from vifeedback.preprocess.variants import load_variant
+    from vifeedback.serving import pipeline as SP
+    from vifeedback.training.domain import neu_esc, serving_transform
+
+    cdir, sdir = Path(candidate), Path(served)
+    mc = json.loads((cdir / "manifest.json").read_text(encoding="utf-8"))
+    ms = json.loads((sdir / "manifest.json").read_text(encoding="utf-8"))
+    clf_c = OnnxClassifier(cdir, max_length=mc["max_length"], model_file=mc["model_file"])
+    clf_s = OnnxClassifier(sdir, max_length=ms["max_length"], model_file=ms["model_file"])
+    labels = ms["labels"]
+    restorer = SP.load_restorer(sdir, ms["restorer"])
+    seg = get_segmenter("pyvi")
+    transform = serving_transform()
+
+    sets: dict[str, tuple[list[str], np.ndarray | None]] = {}
+    val = load_variant("seg_pyvi", "validation")
+    y_val = val["sentiment"].to_numpy()
+    sets["uit_validation"] = (val.sentence.tolist(), y_val)
+    stripped = [strip_diacritics(t) for t in load("validation").sentence]
+    sets["uit_validation_stripped"] = (SP.prepare(stripped, restorer, seg), y_val)
+    neu = neu_esc("validation", transform, in_scope=False)
+    sets["neu_esc_validation"] = (neu["x"], neu["y"])
+    vl = X.load_vilexnorm("train")
+    for name, index in (("dev", "vilexnorm_dev_index.csv"), ("confirm", "h10b_confirm_index.csv")):
+        rows = pd.read_csv(paths.RESULTS / "studies" / "cycle5" / index).row.to_numpy()
+        for form in ("original", "normalized"):
+            sets[f"vilexnorm_{name}_{form}"] = (transform(vl[form].iloc[rows].tolist()), None)
+    ch = C.load()
+    ch = ch[ch.sentiment.isin(labels)]
+    y_ch = ch.sentiment.map({c: i for i, c in enumerate(labels)}).to_numpy()
+    sets["challenge_v1"] = (SP.prepare(ch.text.tolist(), restorer, seg), y_ch)
+
+    full_tok = PhobertBPE(sdir)
+    kept = set(PhobertBPE(cdir).encoder)
+    results: dict[str, Any] = {}
+    for name, (x, y) in sets.items():
+        pc = V.logits(clf_c, x).argmax(1)
+        ps = V.logits(clf_s, x).argmax(1)
+        r: dict[str, Any] = {"n": len(x), "agreement": float((pc == ps).mean())}
+        r.update(V.removed_share(full_tok, kept, x))
+        if y is not None:
+            r["macro_f1_candidate"] = M.macro_f1(y, pc, 3)
+            r["macro_f1_served"] = M.macro_f1(y, ps, 3)
+        results[name] = r
+        typer.echo(
+            f"  {name:34s} n={len(x):5d} agreement {r['agreement']:.4f} "
+            f"pieces removed {r['pieces_removed']:.4f}"
+            + (
+                f"  F1 {r['macro_f1_candidate']:.4f} vs {r['macro_f1_served']:.4f}"
+                if y is not None
+                else ""
+            )
+        )
+
+    size_mb = (cdir / mc["model_file"]).stat().st_size / 1e6
+    rules = {
+        "1_size_mb_le_200": {"value": size_mb, "passed": size_mb <= 200},
+        "2_release_gate": {"passed": bool(mc.get("acceptance", {}).get("passed", False))},
+        "3_agreement_ge_0.99": {
+            "min": min(r["agreement"] for r in results.values()),
+            "passed": all(r["agreement"] >= 0.99 for r in results.values()),
+        },
+        "4_macro_f1_within_0.005": {
+            k: results[k]["macro_f1_candidate"] - results[k]["macro_f1_served"]
+            for k in ("uit_validation", "neu_esc_validation")
+        },
+    }
+    rules["4_macro_f1_within_0.005"]["passed"] = all(
+        abs(v) <= 0.005 for k, v in rules["4_macro_f1_within_0.005"].items() if k != "passed"
+    )
+    passed = all(v["passed"] for v in rules.values())
+    out = {"candidate": mc["model_file"], "sha256": mc["sha256"], "sets": results, "rules": rules}
+    out["passed"] = passed
+    V.OUT.mkdir(parents=True, exist_ok=True)
+    (V.OUT / "fidelity.json").write_text(json.dumps(out, indent=2), encoding="utf-8")
+    typer.echo(f"  size {size_mb:.1f} MB; S7b {'PASSED' if passed else 'NOT passed'} -> {V.OUT}")

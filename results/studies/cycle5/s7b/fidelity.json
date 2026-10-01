@@ -1,0 +1,81 @@
+{
+  "candidate": "model.fp16.onnx",
+  "sha256": "27fda01b71a1d2867fe2d1565c2e87022dcd21966e2c0f333f17948a48d1163a",
+  "sets": {
+    "uit_validation": {
+      "n": 1583,
+      "agreement": 1.0,
+      "pieces_removed": 0.0014443353168871686,
+      "texts_with_a_removed_piece": 0.014529374605180037,
+      "macro_f1_candidate": 0.8616759239790208,
+      "macro_f1_served": 0.8616759239790208
+    },
+    "uit_validation_stripped": {
+      "n": 1583,
+      "agreement": 1.0,
+      "pieces_removed": 0.0010368663594470047,
+      "texts_with_a_removed_piece": 0.010739102969046115,
+      "macro_f1_candidate": 0.8457042145597139,
+      "macro_f1_served": 0.8457042145597139
+    },
+    "neu_esc_validation": {
+      "n": 3305,
+      "agreement": 0.9951588502269288,
+      "pieces_removed": 0.0052379957155546265,
+      "texts_with_a_removed_piece": 0.08260211800302572,
+      "macro_f1_candidate": 0.4247303267947711,
+      "macro_f1_served": 0.4224776091785558
+    },
+    "vilexnorm_dev_original": {
+      "n": 837,
+      "agreement": 0.9904420549581839,
+      "pieces_removed": 0.008050314465408805,
+      "texts_with_a_removed_piece": 0.0967741935483871
+    },
+    "vilexnorm_dev_normalized": {
+      "n": 837,
+      "agreement": 0.996415770609319,
+      "pieces_removed": 0.008473064573671066,
+      "texts_with_a_removed_piece": 0.0979689366786141
+    },
+    "vilexnorm_confirm_original": {
+      "n": 1500,
+      "agreement": 0.9953333333333333,
+      "pieces_removed": 0.006208167620525755,
+      "texts_with_a_removed_piece": 0.07666666666666666
+    },
+    "vilexnorm_confirm_normalized": {
+      "n": 1500,
+      "agreement": 0.996,
+      "pieces_removed": 0.005605730302086578,
+      "texts_with_a_removed_piece": 0.064
+    },
+    "challenge_v1": {
+      "n": 285,
+      "agreement": 1.0,
+      "pieces_removed": 0.0026869682042095834,
+      "texts_with_a_removed_piece": 0.021052631578947368,
+      "macro_f1_candidate": 0.9162297083608558,
+      "macro_f1_served": 0.9162297083608558
+    }
+  },
+  "rules": {
+    "1_size_mb_le_200": {
+      "value": 198.921178,
+      "passed": true
+    },
+    "2_release_gate": {
+      "passed": true
+    },
+    "3_agreement_ge_0.99": {
+      "min": 0.9904420549581839,
+      "passed": true
+    },
+    "4_macro_f1_within_0.005": {
+      "uit_validation": 0.0,
+      "neu_esc_validation": 0.0022527176162152607,
+      "passed": true
+    }
+  },
+  "passed": true
+}
