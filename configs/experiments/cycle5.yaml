@@ -33,10 +33,16 @@
 # train; H11's soft labels, which are the served recipe's predictions on NEU-ESC train text, cached by
 # the SHA-1 of the text and never compared with its labels. Not seen: any model's score on any part
 # of NEU-ESC train.
+#
+# Version 7 (2026-10-01), after decision 9 served the 540 MB H10b graph and before any trimmed graph
+# exists: S7b, the served model under 200 MB by FP16 storage and a vocabulary cut to the pieces of
+# its training and coverage texts. Seen before this was written: the count of distinct PhoBERT pieces
+# in those texts (15,566 of 64,000; no held-out text was tokenized). Not seen: anything on the
+# held-out sets below.
 
-version: 6
+version: 7
 declared: 2026-09-29
-revised: 2026-10-01  # v2 H11; v3 H11 release; v4 H10b; v5 H10b release candidate and closing gate; v6 H12'
+revised: 2026-10-01  # v2 H11; v3 H11 release; v4 H10b; v5 H10b release candidate and closing gate; v6 H12'; v7 S7b
 
 data:
   vilexnorm_train: >
@@ -307,6 +313,48 @@ H12prime_held_out_forum_posts:   # v6, before the split is drawn and before any 
     Its weights would carry CC BY-NC-SA 4.0 (ViLexNorm); NEU-ESC is used with attribution (owner,
     2026-09-28).
 
+S7b_trimmed_vocabulary:   # v7, before any trimmed graph exists
+  question: >
+    Can the served H10b model (seed 42) serve under 200 MB, with no retraining, by storing its weights
+    in FP16 (computed in FP32) and keeping only the vocabulary pieces its input is expected to use,
+    while agreeing with the served FP32 graph on at least 99% of labels on every held-out set?
+  why: >
+    S7 is met by the released student (ADR-040) but not by the served model (540 MB, ADR-043). FP16
+    storage alone gives 270 MB with 100% agreement (F4). The word-embedding matrix is 64,001 x 768,
+    about 98 MB in FP16; the training texts use 15,566 of its pieces.
+  vocabulary: >
+    The four special tokens, <mask>, and every vocab.txt piece that the PhoBERT tokenizer produces on:
+    UIT-VSFC train as materialized (seg_pyvi), its fully stripped form (strip_diacritics) and its
+    teencode-100 form (evaluation.robustness, seed 42); NEU-ESC train, all 23,048 posts, through the
+    serving transform; and H10b's 6,035 ViLexNorm training pairs, both forms, through the serving
+    transform. Then the most frequent remaining pieces by vocab.txt's pretraining counts, until the
+    vocabulary holds 17,500 entries. Pieces keep their vocab.txt order; a piece outside the vocabulary
+    becomes <unk>, as any unknown piece does today.
+  artifact: >
+    The seed-42 H10b checkpoint with its word-embedding rows sliced to the vocabulary (no other weight
+    changes), exported as an FP16-storage graph through the release gate (`--quantize fp16-storage`),
+    with the restorer, the scope detector and a temperature fitted on validation re-accepted, in
+    models/candidate/sentiment.
+  held_out: >
+    None of these texts is in the vocabulary source: UIT-VSFC validation (as segmented) and the same
+    with diacritics stripped, through the restorer; NEU-ESC validation, all 3,305 posts, through the
+    serving transform; ViLexNorm dev (837) and H10b's confirmation pairs (1,500), each form; the 285
+    labelled rows of challenge v1, through the served pipeline.
+  rule: >
+    All must hold: (1) the graph file is <= 200 MB (10^6 bytes); (2) the release gate passes in
+    fp16-storage mode (logits against the FP16-rounded trimmed model, label agreement, batch
+    independence); (3) label agreement with the served FP32 H10b graph >= 99% on each held-out set;
+    (4) UIT-VSFC validation macro-F1 and NEU-ESC validation macro-F1 each within 0.005 of the FP32
+    graph's.
+  reported_not_tested: >
+    The share of pieces and of texts that meet a removed piece, per held-out set; per-class F1; flip
+    rate on the ViLexNorm pairs; graph size.
+  serving: >
+    If the rule holds, the candidate replaces the FP32 graph once one latency session has a steady
+    served-pipeline pass with p95 <= 30 ms (the owner waived the idle condition); the FP32 graph is
+    kept as models/serve/.fp32-sentiment. Then the trimmed graph is scored on UIT-VSFC test once,
+    logged, for the model card; no decision depends on it. A Hub update needs the owner's approval.
+
 planned:   # outlines only; nothing here is a rule until a later version declares it
   H12_other_institutions: >
     The two-heads design of ADR-033 with H10's objective, confirmed on a new human-labelled sample
@@ -316,6 +364,6 @@ planned:   # outlines only; nothing here is a rule until a later version declare
     results/test_evaluations.log, as Cycle 1's closing gate (S1 is re-measured there, not chased).
 
 budget:
-  weight_updating_runs: 23       # H10: 2 + 4; H11: 2 + 4 (v2); H10b: 2 + 4 (v4); H12': 1 + 4 (v6)
+  weight_updating_runs: 23       # H10: 2 + 4; H11: 2 + 4 (v2); H10b: 2 + 4 (v4); H12': 1 + 4 (v6); S7b: none
   gpu_hours_estimate: {laptop_rtx3050: 7}  # plus H11's five teacher inference passes; H12' about 3
   api_usd: 0
