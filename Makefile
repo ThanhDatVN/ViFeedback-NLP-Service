@@ -82,7 +82,7 @@ serve:  ## Run the API locally on :8000
 	uvicorn vifeedback.serving.app:app --host 0.0.0.0 --port 8000
 
 docker:  ## Build the runtime image
-	docker build -t vifeedback:latest .
+	docker build --build-arg GIT_SHA=$$(git rev-parse HEAD) -t vifeedback:latest .
 
 docker-run:  ## Run the container on :8000
 	docker run --rm -p 8000:8000 -v "$(PWD)/models:/app/models:ro" vifeedback:latest

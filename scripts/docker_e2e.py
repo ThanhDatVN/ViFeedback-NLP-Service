@@ -64,7 +64,13 @@ def main() -> int:
     )
     if not args.no_build:
         print("building", IMAGE)
-        subprocess.run(["docker", "build", "-q", "-t", IMAGE, str(ROOT)], check=True)
+        sha = subprocess.run(
+            ["git", "rev-parse", "HEAD"], cwd=ROOT, capture_output=True, text=True
+        ).stdout.strip()
+        subprocess.run(
+            ["docker", "build", "-q", "--build-arg", f"GIT_SHA={sha}", "-t", IMAGE, str(ROOT)],
+            check=True,
+        )
     docker("rm", "-f", NAME, check=False)
     docker(
         "run",

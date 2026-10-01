@@ -1638,3 +1638,27 @@ circumvent it. The owner chose to run the remaining training on Kaggle.
   folders, `p16` run folders and registry rows, and refuses path traversal and any file that would
   replace different content.
 
+---
+
+## ADR-047 · 2026-10-01 · Service hardening: cheap requests no longer buy expensive work · Accepted
+
+**Context.** A review of the API for abuse found four gaps. The input schema, the non-root
+container, the SHA-256 checks on every release file and the text-free logs were already sound.
+
+| Gap | Effect | Fix |
+|---|---|---|
+| `GET /version` captured the whole environment on every call: three `git` processes, `nvidia-smi`, a CPU probe and a hash of the source tree | An unauthenticated request bought hundreds of milliseconds of work and process spawns | The commit is resolved once at start-up: `GIT_SHA` from the image build, else `git rev-parse` |
+| The request body was read in full before the schema rejected it | A large body (or a chunked one without a length) grew memory before any check | `BodySizeLimit`: over `MAX_BODY_BYTES` (1 MiB; a legal request is at most about 0.8 MB of JSON) is HTTP 413, a declared length checked up front and a chunked body read only up to the limit |
+| `x-request-id` was echoed and written into the JSON log line as given | Quotes could forge log fields; a long id flooded the log | Echoed only if it matches `[A-Za-z0-9._-]{1,64}`; otherwise a fresh id |
+| `/readyz` named the absolute model directory | Layout disclosure | The path stays in the server log |
+
+**Decision.** The four fixes above, with contract tests for each. `np.load` of the out-of-scope
+parameters now states `allow_pickle=False` explicitly. The image takes `--build-arg GIT_SHA` in
+`make docker`, `docker_e2e.py` and CI, so a container's `/version` names its commit.
+
+**Consequences.**
+- Callers see two new statuses: 413 for an oversized body, and a replaced request id when theirs is
+  not plain.
+- There is still no authentication or rate limit in the service. A deployment puts it behind a
+  gateway that provides both, as the README says for the container.
+

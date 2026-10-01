@@ -41,6 +41,9 @@ RUN useradd --create-home --uid 10001 app
 WORKDIR /app
 
 COPY --from=builder /opt/venv /opt/venv
+# The commit /version reports (the image has no git): docker build --build-arg GIT_SHA=$(git rev-parse HEAD)
+ARG GIT_SHA=""
+ENV GIT_SHA=${GIT_SHA}
 ENV PATH="/opt/venv/bin:$PATH" \
     PYTHONUNBUFFERED=1 \
     PYTHONDONTWRITEBYTECODE=1 \

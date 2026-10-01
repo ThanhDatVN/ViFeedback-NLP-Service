@@ -28,7 +28,7 @@ for the sentiment model.
 | **Robustness** | Diacritics restored before the model: stripped validation 0.686 → **0.857** (ADR-031). Out-of-scope input flagged by a topic detector: AUROC **0.922** within another university's forum (ADR-034) |
 | **Latency** | Raw text in, served pipeline p95 **24.9 ms** on a laptop CPU (the full FP32 graph 26.9 ms in the same session; the student 12.3 ms; target 30 ms) |
 | **Reproducible** | A clean clone reproduces the published model's validation macro-F1 (0.8617, H10b) in about **2–3 min**, every file checked against `SHA256SUMS`; CI runs it on every change to the workflow |
-| **Research** | Cycles 0–4 closed, Cycle 5 run; 46 ADRs, 163 weight-updating runs in [the ledger](configs/experiments/ledger.csv); Cycle 5 declared ([cycle5.yaml](configs/experiments/cycle5.yaml)) |
+| **Research** | Cycles 0–4 closed, Cycle 5 run; 47 ADRs, 163 weight-updating runs in [the ledger](configs/experiments/ledger.csv); Cycle 5 declared ([cycle5.yaml](configs/experiments/cycle5.yaml)) |
 
 ---
 
@@ -94,6 +94,9 @@ Each prediction carries `label`, `confidence`, `probabilities`, `in_scope` and `
   manifest. `/version` reports the model file's hash, and `make docker-e2e` checks it inside the
   image.
 - `/healthz`, `/readyz`, `/version` and `/metrics` cover operations.
+- Input is bounded at the edge: at most 64 texts of 2,000 characters (HTTP 422), and a request body
+  over 1 MiB is refused before it is parsed (HTTP 413, `MAX_BODY_BYTES`). A caller's `x-request-id`
+  is echoed only if it is a short plain id (ADR-047).
 
 The limits are stated in the [model card](https://huggingface.co/Datk4/vifeedback-sentiment-phobert):
 - The labels follow UIT-VSFC's policy, where a suggestion counts as negative.
@@ -231,7 +234,7 @@ The Kaggle notebooks are for models that exceed a 4.29 GB GPU ([KAGGLE_GUIDE](do
 | **[STATUS](docs/STATUS.md)** | Progress by gate and cycle, open problems, what runs next |
 | **[NEXT_PLAN](docs/NEXT_PLAN.md)** | Cycle 5 and the open targets, with research sources |
 | [RESEARCH_REPORT](docs/RESEARCH_REPORT.md) | Technical report: questions, method, findings, negative results, limitations |
-| [DECISIONS](docs/DECISIONS.md) | 46 ADRs: every plan correction forced by measurement or review |
+| [DECISIONS](docs/DECISIONS.md) | 47 ADRs: every plan correction forced by measurement or review |
 | [EXPERIMENT_MATRIX](docs/EXPERIMENT_MATRIX.md) | Run-ID scheme and every result table |
 | [EVALUATION_PROTOCOL](docs/EVALUATION_PROTOCOL.md) · [EVALUATION_DATA](docs/EVALUATION_DATA.md) | What every number is held to; what counts as evidence |
 | [DATA_CARD](docs/DATA_CARD.md) | UIT-VSFC measured from the files, and what is never committed |

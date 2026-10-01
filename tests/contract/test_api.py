@@ -122,6 +122,56 @@ class TestObservability:
     def test_response_time_header_is_present(self, client) -> None:
         assert float(client.get("/healthz").headers["x-response-time-ms"]) >= 0
 
+    @pytest.mark.parametrize("given", ['a"},"level":"ERROR', "x" * 65, "a b", "id\\x00"])
+    def test_request_id_that_could_forge_a_log_line_is_replaced(self, client, given) -> None:
+        """The id is written into a JSON log line; quotes, spaces or a long value are not echoed."""
+        rid = client.get("/healthz", headers={"x-request-id": given}).headers["x-request-id"]
+        assert rid != given and len(rid) <= 64 and rid.replace("-", "").isalnum()
+
+
+class TestAbuse:
+    """Cheap requests must not buy expensive work."""
+
+    def test_oversized_body_is_refused_before_parsing(self, client) -> None:
+        from vifeedback.serving.app import MAX_BODY_BYTES
+
+        r = client.post(
+            "/v1/classify",
+            content=b"x" * (MAX_BODY_BYTES + 1),
+            headers={"content-type": "application/json"},
+        )
+        assert r.status_code == 413
+
+    def test_oversized_chunked_body_is_refused(self, client) -> None:
+        from vifeedback.serving.app import MAX_BODY_BYTES
+
+        def chunks():
+            for _ in range(3):
+                yield b"x" * (MAX_BODY_BYTES // 2)
+
+        r = client.post(
+            "/v1/classify", content=chunks(), headers={"content-type": "application/json"}
+        )
+        assert r.status_code == 413
+
+    def test_body_within_the_limit_reaches_validation(self, client) -> None:
+        r = client.post("/v1/classify", json={"texts": ["a" * 2000] * 64})
+        assert r.status_code == 503  # validated, then refused for the missing model, not 413
+
+    def test_version_does_not_capture_the_environment_per_call(self, client, monkeypatch) -> None:
+        from vifeedback import env
+
+        def boom(*a, **k):
+            raise AssertionError("env.capture ran inside a request")
+
+        monkeypatch.setattr(env, "capture", boom)
+        assert client.get("/version").status_code == 200
+
+    def test_readyz_does_not_reveal_the_model_path(self, client) -> None:
+        import vifeedback.serving.app as A
+
+        assert str(A.MODEL_DIR) not in (client.get("/readyz").json()["detail"] or "")
+
 
 class TestOpenAPI:
     def test_schema_is_generated_and_documents_every_route(self, client) -> None:

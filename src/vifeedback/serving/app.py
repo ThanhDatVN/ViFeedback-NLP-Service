@@ -19,6 +19,8 @@ from __future__ import annotations
 
 import logging
 import os
+import re
+import subprocess
 import time
 import uuid
 from collections import deque
@@ -52,6 +54,11 @@ MAX_LENGTH = int(os.getenv("MAX_LENGTH", "96"))
 THREADS = int(os.getenv("ORT_THREADS", "0")) or None
 # Tasks this deployment must serve. Readiness requires every one of them (review R5).
 REQUIRED_TASKS = tuple(t for t in os.getenv("REQUIRED_TASKS", "sentiment").split(",") if t)
+# The schema bounds a parsed request (64 texts x 2,000 characters, at most about 0.8 MB of JSON
+# even with every character escaped); this bounds the bytes read before the JSON parser runs.
+MAX_BODY_BYTES = int(os.getenv("MAX_BODY_BYTES", str(1 << 20)))
+# A caller's request id is echoed and logged only if it is short and plain.
+REQUEST_ID = re.compile(r"[A-Za-z0-9._-]{1,64}")
 
 _state: dict[str, Any] = {
     "models": {},
@@ -59,6 +66,7 @@ _state: dict[str, Any] = {
     "segmenter": None,
     "needs_segmenter": False,
     "segmenter_error": None,
+    "git_sha": None,
 }
 _counters: dict[str, int] = {}
 # Bounded (review R6): percentiles only ever read the most recent window, so older entries were
@@ -67,9 +75,30 @@ _latencies: deque[float] = deque(maxlen=10_000)
 _request_count = 0
 
 
+def _git_sha() -> str | None:
+    """The served code's commit, resolved once: GIT_SHA from the build, else `git rev-parse`.
+
+    /version used to capture the whole environment on every call: three git processes,
+    nvidia-smi, a CPU probe and a hash of the source tree, a cheap unauthenticated request that
+    bought expensive work."""
+    if os.getenv("GIT_SHA"):
+        return os.environ["GIT_SHA"]
+    try:
+        return (
+            subprocess.run(
+                ["git", "rev-parse", "HEAD"], capture_output=True, text=True, timeout=5, check=True
+            ).stdout.strip()
+            or None
+        )
+    except Exception:
+        return None
+
+
 def _load() -> None:
     """Load every task model found under MODEL_DIR/<task>/. Missing models leave /readyz false."""
     import json
+
+    _state["git_sha"] = _git_sha()
 
     from vifeedback.inference.onnx_export import OnnxClassifier
 
@@ -195,17 +224,74 @@ async def lifespan(app: FastAPI):
     _state["models"].clear()
 
 
+class BodySizeLimit:
+    """Refuse a request body over `max_bytes` with HTTP 413 before it is parsed.
+
+    A declared Content-Length is checked up front (the server never delivers more than it
+    declares). A chunked body is read up to the limit and replayed, so memory stays bounded.
+    """
+
+    def __init__(self, app: Any, max_bytes: int) -> None:
+        self.app = app
+        self.max_bytes = max_bytes
+
+    async def _reject(self, send: Any) -> None:
+        body = f'{{"detail":"request body over {self.max_bytes} bytes"}}'.encode()
+        await send(
+            {
+                "type": "http.response.start",
+                "status": 413,
+                "headers": [(b"content-type", b"application/json")],
+            }
+        )
+        await send({"type": "http.response.body", "body": body})
+
+    async def __call__(self, scope: Any, receive: Any, send: Any) -> None:
+        if scope["type"] != "http" or scope["method"] in ("GET", "HEAD", "OPTIONS"):
+            await self.app(scope, receive, send)
+            return
+        length = dict(scope.get("headers") or []).get(b"content-length")
+        if length is not None:
+            if not length.isdigit() or int(length) > self.max_bytes:
+                await self._reject(send)
+                return
+            await self.app(scope, receive, send)
+            return
+        chunks, size = [], 0
+        while True:
+            message = await receive()
+            if message["type"] != "http.request":  # the client went away
+                return
+            chunks.append(message.get("body", b""))
+            size += len(chunks[-1])
+            if size > self.max_bytes:
+                await self._reject(send)
+                return
+            if not message.get("more_body", False):
+                break
+        replay = [{"type": "http.request", "body": b"".join(chunks), "more_body": False}]
+
+        async def again() -> Any:
+            return replay.pop() if replay else await receive()
+
+        await self.app(scope, again, send)
+
+
 app = FastAPI(
     title="ViFeedback",
     description="Vietnamese feedback sentiment and topic classification",
     version=__version__,
     lifespan=lifespan,
 )
+app.add_middleware(BodySizeLimit, max_bytes=MAX_BODY_BYTES)
 
 
 @app.middleware("http")
 async def request_id_and_timing(request: Request, call_next):
-    rid = request.headers.get("x-request-id", str(uuid.uuid4())[:8])
+    # Echoed in a header and written into a JSON log line: anything but a short plain id is
+    # replaced, so a caller cannot forge log fields or flood the log.
+    given = request.headers.get("x-request-id", "")
+    rid = given if REQUEST_ID.fullmatch(given) else str(uuid.uuid4())[:8]
     t0 = time.perf_counter()
     response = await call_next(request)
     dt = (time.perf_counter() - t0) * 1000
@@ -233,7 +319,7 @@ def healthz() -> HealthResponse:
 def _not_ready_reason() -> str | None:
     missing = [t for t in REQUIRED_TASKS if t not in _state["models"]]
     if missing:
-        return f"no ONNX artifact for required task(s) {missing} under {MODEL_DIR}"
+        return f"no ONNX artifact for required task(s) {missing}"  # the path stays in the log
     if _state["needs_segmenter"] and _state["segmenter"] is None:
         return _state["segmenter_error"] or "required segmenter is not loaded"
     if _state.get("preprocessing_error"):
@@ -256,12 +342,10 @@ def readyz() -> JSONResponse:
 
 @app.get("/version", response_model=VersionResponse)
 def version() -> VersionResponse:
-    from vifeedback import env
-
     return VersionResponse(
         service_version=__version__,
         model_version=_state["version"],
-        git_sha=(env.capture().get("git") or {}).get("sha"),
+        git_sha=_state.get("git_sha"),
         runtime="onnxruntime",
         max_length=MAX_LENGTH,
     )

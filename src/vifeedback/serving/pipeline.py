@@ -37,7 +37,7 @@ def load_ood(model_dir: Path, spec: dict[str, Any], clf: Any) -> dict[str, Any]:
     path = _checked(Path(model_dir) / spec["file"], spec["sha256"])
     if not clf.has_features:
         raise ValueError("the graph has no 'features' output")
-    with np.load(path) as z:
+    with np.load(path, allow_pickle=False) as z:
         return {
             "means": z["means"],
             "precision": z["precision"],
