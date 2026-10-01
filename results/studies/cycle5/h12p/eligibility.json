@@ -1,0 +1,15 @@
+{
+  "declared_in": "configs/experiments/cycle5.yaml v6 H12' eligibility",
+  "control_s42": {
+    "uit_validation": 0.8616759239790208,
+    "neu_validation": 0.4270239488641861
+  },
+  "two_heads_anchored": {
+    "uit_validation": 0.8720974238197773,
+    "neu_validation": 0.48809331795803557
+  },
+  "uit_minus_control": 0.010421499840756465,
+  "neu_minus_control": 0.06106936909384947,
+  "eligible": true,
+  "outcome": "confirm at the other four seeds"
+}

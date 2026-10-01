@@ -1,0 +1,143 @@
+{
+  "recipe": "control",
+  "seed": 42,
+  "checkpoint": "models\\p15-sent-phobert-base-seg_pyvi-h10b-anchored_orig-s42-063770c8-ckp",
+  "sets": {
+    "uit_validation": {
+      "macro_f1": 0.8616759239790208,
+      "accuracy": 0.9532533164876816,
+      "per_class": {
+        "negative": {
+          "precision": 0.9579242636746143,
+          "recall": 0.9687943262411347,
+          "f1": 0.9633286318758816,
+          "support": 705,
+          "predicted": 713,
+          "average_precision": 0.9795324832513562
+        },
+        "neutral": {
+          "precision": 0.8478260869565217,
+          "recall": 0.5342465753424658,
+          "f1": 0.6554621848739496,
+          "support": 73,
+          "predicted": 46,
+          "average_precision": 0.6985125935468203
+        },
+        "positive": {
+          "precision": 0.9550970873786407,
+          "recall": 0.977639751552795,
+          "f1": 0.9662369551872314,
+          "support": 805,
+          "predicted": 824,
+          "average_precision": 0.990665101219551
+        }
+      }
+    },
+    "uit_validation_stripped": {
+      "macro_f1": 0.8457042145597139,
+      "accuracy": 0.9444093493367025,
+      "per_class": {
+        "negative": {
+          "precision": 0.9507042253521126,
+          "recall": 0.9574468085106383,
+          "f1": 0.9540636042402827,
+          "support": 705,
+          "predicted": 710,
+          "average_precision": 0.9780671191311174
+        },
+        "neutral": {
+          "precision": 0.7755102040816326,
+          "recall": 0.5205479452054794,
+          "f1": 0.6229508196721312,
+          "support": 73,
+          "predicted": 49,
+          "average_precision": 0.6528171637277408
+        },
+        "positive": {
+          "precision": 0.9490291262135923,
+          "recall": 0.9714285714285714,
+          "f1": 0.960098219766728,
+          "support": 805,
+          "predicted": 824,
+          "average_precision": 0.9892408170339918
+        }
+      }
+    },
+    "neu_validation": {
+      "macro_f1": 0.4270239488641861,
+      "accuracy": 0.4101123595505618,
+      "per_class": {
+        "negative": {
+          "precision": 0.27224855186940494,
+          "recall": 0.8733108108108109,
+          "f1": 0.4150943396226415,
+          "support": 592,
+          "predicted": 1899,
+          "average_precision": 0.3619479363072092
+        },
+        "neutral": {
+          "precision": 0.8397328881469115,
+          "recall": 0.24488802336903603,
+          "f1": 0.3791933660007539,
+          "support": 2054,
+          "predicted": 599,
+          "average_precision": 0.7963344445711639
+        },
+        "positive": {
+          "precision": 0.4185606060606061,
+          "recall": 0.5815789473684211,
+          "f1": 0.486784140969163,
+          "support": 380,
+          "predicted": 528,
+          "average_precision": 0.5022528306387934
+        }
+      }
+    },
+    "neu_validation_all": {
+      "macro_f1": 0.42224413891778667,
+      "accuracy": 0.40574886535552196,
+      "per_class": {
+        "negative": {
+          "precision": 0.2604878048780488,
+          "recall": 0.8768472906403941,
+          "f1": 0.40165475742760437,
+          "support": 609,
+          "predicted": 2050,
+          "average_precision": 0.35304437695884583
+        },
+        "neutral": {
+          "precision": 0.8506787330316742,
+          "recall": 0.24747696358051777,
+          "f1": 0.3834126444595513,
+          "support": 2279,
+          "predicted": 663,
+          "average_precision": 0.8070258188856467
+        },
+        "positive": {
+          "precision": 0.41047297297297297,
+          "recall": 0.5827338129496403,
+          "f1": 0.48166501486620417,
+          "support": 417,
+          "predicted": 592,
+          "average_precision": 0.4947699822667936
+        }
+      }
+    }
+  },
+  "vilexnorm_dev": {
+    "pairs": 837,
+    "agreement": 0.8626045400238949,
+    "flip_rate": 0.1087216248506571,
+    "label_tv": 0.019115890083632014,
+    "label_share_original": {
+      "negative": 0.5531660692951016,
+      "neutral": 0.34050179211469533,
+      "positive": 0.1063321385902031
+    },
+    "teacher_label_share_normalized": {
+      "negative": 0.5686977299880526,
+      "neutral": 0.34408602150537637,
+      "positive": 0.08721624850657109
+    }
+  }
+}
