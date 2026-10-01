@@ -184,6 +184,14 @@ def study_h10b_split() -> None:
     typer.echo(f"  {A.N_CONFIRM} confirmation rows -> {A.write_confirm_index()}")
 
 
+@study_app.command("h12p-split")
+def study_h12p_split() -> None:
+    """Write H12''s 3,000 held-out in-scope NEU-ESC train posts (cycle5.yaml v6) as row indices."""
+    from vifeedback.training import h12p as H
+
+    typer.echo(f"  {H.N_HOLDOUT} held-out rows -> {H.write_holdout_index()}")
+
+
 @study_app.command("h10b-run")
 def study_h10b_run(
     recipe: str = typer.Option(..., help="anchored_orig | anchored_both"),
