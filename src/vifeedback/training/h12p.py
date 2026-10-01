@@ -20,9 +20,7 @@ OUT = paths.RESULTS / "studies" / "cycle5" / "h12p"
 INDEX = paths.RESULTS / "studies" / "cycle5" / "h12p_holdout_index.csv"
 
 
-def holdout_split(
-    frame: pd.DataFrame, off_topic: Collection[str]
-) -> tuple[np.ndarray, np.ndarray]:
+def holdout_split(frame: pd.DataFrame, off_topic: Collection[str]) -> tuple[np.ndarray, np.ndarray]:
     """Row positions (held-out, training) of the in-scope posts, as cycle5.yaml v6 declares.
 
     Within each label, its in-scope rows in loader order are ordered by
