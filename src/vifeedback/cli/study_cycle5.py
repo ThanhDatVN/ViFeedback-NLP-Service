@@ -227,7 +227,8 @@ def study_h12p_control(seed: int = typer.Option(42)) -> None:
     """The H12' control (the served recipe, H10b anchored_orig) at one seed, same code."""
     from vifeedback.training import h12p as H
 
-    s = H.evaluate_control(seed)["scored"]
+    H.evaluate_control(seed)
+    s = H._summary(f"control-s{seed}")["sets"]
     typer.echo(
         f"  control s{seed}: UIT-VSFC validation {s['uit_validation']['macro_f1']:.4f}; "
         f"NEU-ESC validation (in scope) {s['neu_validation']['macro_f1']:.4f}"

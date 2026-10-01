@@ -606,9 +606,15 @@ def evaluate_control(seed: int) -> dict[str, Any]:
     from vifeedback.training import domain as D
 
     ck = control_checkpoint(seed)
-    transform = D.serving_transform()
     tok = AutoTokenizer.from_pretrained(ck)
     model = AutoModelForSequenceClassification.from_pretrained(ck)
+    name = f"control-s{seed}"
+    if (OUT / name / "summary.json").exists():
+        # Recorded already (perhaps on another machine): add only the confirmation labels, so a
+        # record is never rewritten with another GPU's rounding.
+        write_predictions(name, model, tok)
+        return {"summary": _summary(name), "scored": None, "dev": None}
+    transform = D.serving_transform()
     dv = A.pairs("dev", transform)
     scored = D.score_sets(model, tok, C.evaluation_sets(transform))
     dev = A.score_pairs(model, tok, dv, teacher_q_rows("dev"))
