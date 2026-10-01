@@ -26,10 +26,17 @@
 #
 # Version 5 (2026-10-01), after H10b passed (ADR-042) and before any H10b model saw UIT-VSFC test:
 # its release candidate and its closing gate. Which model the service runs stays the owner's call.
+#
+# Version 6 (2026-10-01), after decision 9 served H10b (ADR-043) and before the held-out split below
+# is drawn or any H12' run: H12', a substitute for H12 that needs no new labels, approved by the
+# owner. Seen before this was written: H8's scores (ADR-033), which trained on all of in-scope NEU-ESC
+# train; H11's soft labels, which are the served recipe's predictions on NEU-ESC train text, cached by
+# the SHA-1 of the text and never compared with its labels. Not seen: any model's score on any part
+# of NEU-ESC train.
 
-version: 5
+version: 6
 declared: 2026-09-29
-revised: 2026-10-01  # v2 H11; v3 H11 release; v4 H10b; v5 H10b release candidate and closing gate
+revised: 2026-10-01  # v2 H11; v3 H11 release; v4 H10b; v5 H10b release candidate and closing gate; v6 H12'
 
 data:
   vilexnorm_train: >
@@ -237,6 +244,69 @@ H10b_release:   # v5
     closing-gate procedure. Every evaluation is appended to results/test_evaluations.log. Reported for
     decision 9 and the card, against Cycle 1's figures for the served recipe; no selection uses it.
 
+H12prime_held_out_forum_posts:   # v6, before the split is drawn and before any H12' run
+  question: >
+    Does the two-heads recipe (ADR-033, the UIT-VSFC head served) trained with H10b's anchored
+    consistency raise the served head's macro-F1 on in-scope NEU-ESC forum posts that no model in the
+    comparison trained on, with no loss on UIT-VSFC, its neutral class, stripped text or real typing?
+  why: >
+    H12 needs a labelled sample from a third institution, which does not exist yet. H8's two heads
+    lifted in-scope NEU-ESC test by +0.111 but failed on stripped text (-0.0107 against -0.01), and
+    NEU-ESC test is spent. H10b's anchored consistency held stripped text (+0.0028) and is served.
+  scope_of_the_claim: >
+    The held-out posts come from the same forum, institution and annotation as the training posts.
+    H12' measures in-distribution gain on NEU-ESC's forum, not transfer to a third institution; that
+    claim stays with H12.
+  data: >
+    In-scope NEU-ESC train (21,113 posts; the topics of cycle4.yaml). Split once, before any run,
+    stratified by label: within each label, its rows in loader order are ordered by
+    numpy.random.default_rng(44).permutation(n_label), and the first round(3000 * n_label / 21113)
+    go to the held-out set (neutral 2,041, negative 583, positive 376: 3,000 posts); the other
+    18,113 are training posts. Row indices into the train split are written to
+    results/studies/cycle5/h12p_holdout_index.csv (indices only, no text). NEU-ESC validation (3,026
+    in-scope posts) for epoch and recipe checks. NEU-ESC test and UIT-VSFC test are not used. Text
+    through the serving transform, labels as cycle4.yaml (Toxic -> negative).
+  control: >
+    The served recipe, H10b anchored_orig, at its five seeds (42, 1337, 2024, 7, 31337), the existing
+    checkpoints, re-evaluated with the same code as the candidates. None trained on NEU-ESC.
+  recipe:
+    two_heads_anchored: >
+      H10b's anchored_orig recipe (UIT-VSFC train with the diac-teen augmentation, plus at every step
+      a same-size batch of the 6,035 H10b training pairs with 1.0 * KL(q(normalized) || p(original)),
+      q the frozen ensemble's probabilities), with H8's two heads: one shared encoder, the UIT-VSFC
+      head trained on UIT-VSFC, a NEU-ESC head trained by masked cross-entropy on the 18,113 training
+      posts (augmented as in H8); the consistency term on the UIT-VSFC head. The UIT-VSFC head is
+      evaluated and would be served, so the service's labels keep UIT-VSFC's policy.
+  epoch_selection: >
+    The mean of UIT-VSFC validation macro-F1 and in-scope NEU-ESC validation macro-F1, both from the
+    UIT-VSFC head (H8's procedure).
+  eligibility: >
+    The recipe runs once at seed 42. It goes on to the other four seeds only if its UIT-VSFC
+    validation macro-F1 is at least the control's seed-42 value minus 0.01 and its in-scope NEU-ESC
+    validation macro-F1 is higher than the control's seed-42 value; otherwise H12' is not supported
+    and stops.
+  rule: >
+    All must hold, 5 seeds each side:
+    (1) held-out macro-F1 (UIT-VSFC head against NEU-ESC labels) higher: the seed-averaged paired
+        difference has a 95% paired-bootstrap interval above 0 (posts resampled, the 5 seed pairs
+        averaged per resample, 10,000 resamples);
+    (2) UIT-VSFC validation macro-F1, 5-seed mean, not lower by more than 0.005;
+    (3) UIT-VSFC validation neutral F1, 5-seed mean, not lower by more than 0.02;
+    (4) UIT-VSFC validation with diacritics stripped, through the restorer, macro-F1 5-seed mean not
+        lower by more than 0.01;
+    (5) on H10b's 1,500 confirmation pairs (their second use, as a guard): agreement with the frozen
+        teacher, 5-seed mean, not lower by more than 0.02, and label_tv, 5-seed mean, <= 0.10.
+  reported_not_tested: >
+    In-scope NEU-ESC validation; held-out per class and per topic; the NEU-ESC head on the held-out
+    posts; flip rate on the confirmation pairs; the scope detector's flag rate on the held-out posts
+    (it was fitted on NEU-ESC train, these posts included, so no scope condition is set).
+  serving: >
+    If the rule holds, the seed-42 model's UIT-VSFC head goes through the release gate as an FP32
+    graph with the restorer, the scope detector and a temperature re-accepted, and through the closing
+    gate on UIT-VSFC test once (logged), as H10b. Replacing the served model is the owner's decision.
+    Its weights would carry CC BY-NC-SA 4.0 (ViLexNorm); NEU-ESC is used with attribution (owner,
+    2026-09-28).
+
 planned:   # outlines only; nothing here is a rule until a later version declares it
   H12_other_institutions: >
     The two-heads design of ADR-033 with H10's objective, confirmed on a new human-labelled sample
@@ -246,6 +316,6 @@ planned:   # outlines only; nothing here is a rule until a later version declare
     results/test_evaluations.log, as Cycle 1's closing gate (S1 is re-measured there, not chased).
 
 budget:
-  weight_updating_runs: 18       # H10: 2 + 4; H11: 2 + 4 (v2); H10b: 2 + 4 (v4)
-  gpu_hours_estimate: {laptop_rtx3050: 4}  # plus H11's five teacher inference passes
+  weight_updating_runs: 23       # H10: 2 + 4; H11: 2 + 4 (v2); H10b: 2 + 4 (v4); H12': 1 + 4 (v6)
+  gpu_hours_estimate: {laptop_rtx3050: 7}  # plus H11's five teacher inference passes; H12' about 3
   api_usd: 0

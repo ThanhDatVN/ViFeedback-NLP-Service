@@ -83,7 +83,7 @@ student, not by the served model (ADR-043):
 | 9c | ✅ Decision 9 (ADR-043): **the service runs H10b** (2026-10-01); 40 API tests pass. 👤 Hub upload and licence | 👤 upload | CPU | release gate |
 | 9d | Latency session of the served H10b | a free GPU | CPU | reported next to the 22.1 ms of the same architecture |
 | 10 | H12: declare, then run, when decision 2 and the new labelled sample exist | 👤 decision 2, 👤 data | ≈ 6 GPU runs | declared later |
-| 10′ | H12′ (§ 4): declare in `cycle5.yaml` v6, then run | 👤 decision 10 | ≈ 6 GPU runs, 3 h | declared before the split is drawn |
+| 10′ | H12′ (§ 4): ✅ declared in `cycle5.yaml` v6; run when the GPU is free | — | 5 GPU runs, about 3 h | the H12′ rule |
 | any time | D1 neutral audit → D2 branch; or A1′ (§ 5), 70 rows by the owner plus a validated LLM | 👤 6–8 h, or 2–2.5 h with A1′ | D2: ≤ 12 runs | the tree frozen in `cycle2.yaml` |
 | ✅ | Three latency sessions (owner waived the idle condition) | — | CPU | p95 ≤ 30 ms: 12.3 ms |
 
@@ -260,7 +260,7 @@ Each run is shorter than a teacher run (half the layers).
 - The scope condition is restated for the served detector: its flag rate on the new sample's
   in-scope posts ≤ 10%.
 
-### H12′: a substitute that needs no new labels (proposed 2026-10-01, not declared)
+### H12′: a substitute that needs no new labels (declared in `cycle5.yaml` v6, 2026-10-01)
 
 The data for H12 does not exist yet. What can be tested now, honestly scoped, is whether the service
 gets better on **NEU-ESC-style forum posts** without losing anything H8 lost. The held-out data comes
@@ -269,12 +269,12 @@ from NEU-ESC train, which no compared model has been scored on.
 | | |
 |---|---|
 | Question | Does the two-heads recipe (ADR-033, UIT-VSFC head served) trained with H10b's anchored consistency raise the served head's macro-F1 on in-scope NEU-ESC posts no model trained on, with no loss on UIT-VSFC, neutral, stripped text or real typing? |
-| Data | In-scope NEU-ESC train (21,113 posts) split once by a declared, label-stratified permutation: **3,000 held-out posts** for confirmation, 18,113 for training. NEU-ESC validation (3,026 in-scope) for selection. NEU-ESC test stays spent |
+| Data | In-scope NEU-ESC train (21,113 posts) split once, stratified by label (`default_rng(44)`): **3,000 held-out posts** for confirmation (neutral 2,041, negative 583, positive 376), 18,113 for training. NEU-ESC validation (3,026 in-scope) for epochs and eligibility. NEU-ESC test stays spent |
 | Control | The served H10b recipe, its five existing seeds (they never saw NEU-ESC) |
-| Recipes | `two_heads_anchored` (H10b's loss with the two-heads model) and `two_heads` (H8's recipe on the reduced training set) |
-| Selection | Seed 42, highest NEU-ESC validation macro-F1 among recipes within 0.005 of the control on UIT-VSFC validation |
-| Rule, five seeds each | (1) held-out in-scope macro-F1 higher, seed-paired bootstrap CI above 0; guards: (2) UIT-VSFC validation −0.005 at most; (3) neutral F1 −0.02 at most; (4) stripped text through the restorer −0.01 at most (H8's failure); (5) agreement with the teacher on ViLexNorm dev −0.02 at most (keeps H10b's gain) |
-| Budget | About 6 GPU runs, about 3 GPU-hours on the laptop, one job at a time |
+| Recipe | `two_heads_anchored`: H10b's loss with H8's two heads (the UIT-VSFC head served) |
+| Eligibility | Seed 42: UIT-VSFC validation within 0.01 of the control's seed 42, and NEU-ESC validation higher; otherwise H12′ stops |
+| Rule, five seeds each | (1) held-out in-scope macro-F1 higher, seed-paired bootstrap CI above 0; guards: (2) UIT-VSFC validation −0.005 at most; (3) neutral F1 −0.02 at most; (4) stripped text through the restorer −0.01 at most (H8's failure); (5) agreement with the teacher on H10b's 1,500 confirmation pairs −0.02 at most, label_tv ≤ 0.10 (keeps H10b's gain) |
+| Budget | 5 GPU runs, about 3 GPU-hours on the laptop, one job at a time |
 
 **What it cannot claim.**
 - **Same institution.** The held-out posts come from the same forum and annotation as the training
@@ -287,7 +287,7 @@ from NEU-ESC train, which no compared model has been scored on.
 - **Unlabeled overlap.** H11's transfer set held NEU-ESC train text without labels. The student is not
   compared in H12′.
 
-It needs `cycle5.yaml` v6, committed before the split is drawn, and the owner's go-ahead (decision 10).
+The owner approved it on 2026-10-01 (decision 10); `cycle5.yaml` v6 was committed before the split was drawn.
 
 ---
 
@@ -378,7 +378,7 @@ its own session runs when the GPU is free (`study latency` refuses while another
 
 | Resource | Cycle 5 estimate |
 |---|---|
-| Weight-updating runs | H10 6, H11 about 7, H10b 12, H12′ about 6, H12 about 6, D2 ≤ 12 |
+| Weight-updating runs | H10 6, H11 about 7, H10b 12, H12′ 5, H12 about 6, D2 ≤ 12 |
 | Laptop GPU (RTX 3050, 4.29 GB) | H10 about 2 h, H11 about 1.5 h; one job at a time |
 | Kaggle | not needed; optional for F4 if the export cannot run locally |
 | API | none; A1′ uses open weights on Kaggle, never an API, for UIT-VSFC text |
@@ -406,7 +406,7 @@ The step-by-step versions, in Vietnamese: [HUONG_DAN_THU_CONG.md](HUONG_DAN_THU_
 | 5 | A new labelled sample from another institution | H12 not declared | H12 |
 | 6 | ✅ Latency sessions: the owner waived the idle-machine condition (2026-09-30) | — | — |
 | 9 | ✅ Which model the service runs: **H10b**, approved 2026-10-01 (ADR-043) | — | — |
-| 10 | Go-ahead for H12′ (§ 4): same-institution held-out data, about 3 GPU-hours | Not declared | H12′ |
+| 10 | ✅ Go-ahead for H12′ (§ 4), 2026-10-01 | — | — |
 | 11 | Go-ahead for A1′ (§ 5): label 70 rows, and let a validated open LLM label the rest | The full audit (decision 1) | A1′ |
 | 7 | U2: 15 challenge v1 labels | v1 stays as frozen | F6 |
 | 8 | Challenge v2 | Not written | optional |
