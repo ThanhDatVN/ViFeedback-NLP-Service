@@ -46,7 +46,7 @@ student, not by the served model (ADR-043):
 | S1 sentiment test macro-F1 | ≥ 0.80 ✅ | ≥ 0.84 | Served H10b 0.824 (5 seeds); the p9 recipe 0.830; the student 0.817 | Not chased; measured once at each closing gate (ADR-040, ADR-042) |
 | S2 topic test macro-F1 | ≥ 0.79 ✅ | ≥ 0.83 | 0.804 | Not pursued (§ 5) |
 | S4 neutral F1 | ≥ 0.55 | ≥ 0.65 | Served H10b 0.550 at seed 42; the p9 recipe 0.576 (5 seeds, test); the student 0.545 | D1 audit, scope-first route (ADR-044) → D2 branch (§ 5) |
-| S7 serving artifact | — | ≤ 200 MB | ✅ **185 MB**, the released student; the served H10b is 540 MB | H11 passed and released (ADR-039, ADR-040); decision 9 (ADR-043) |
+| S7 serving artifact | — | ≤ 200 MB | ✅ **185 MB**, the released student; **198.9 MB**, the S7b candidate of the served H10b (ADR-045) | S7b replaces the 540 MB FP32 graph after one latency session |
 | S8 image | — | ≤ 700 MB | ✅ 519 MB | done |
 | S9 coded errors | — | ≥ 30 | 0 | D1 audit (👤) |
 | S10 clean-clone evaluation | — | < 15 min | ✅ 2.3 min | done |
@@ -82,6 +82,7 @@ student, not by the served model (ADR-043):
 | 9b | ✅ H10b (ADR-042): passed; closing gate 0.8237 (−0.0059, n.s.); release candidate built (`cycle5.yaml` v5) | — | 12 GPU runs | the H10b rule |
 | 9c | ✅ Decision 9 (ADR-043): **the service runs H10b** (2026-10-01); 40 API tests pass. ✅ Uploaded by the owner (Hub commit `037edfb`), 0.8617 reproduced from the Hub | — | CPU | release gate |
 | 9d | Latency session of the served H10b. 2026-10-01: one session, S1 not reportable (no steady pass; model-only p95 34.4 ms against 20.5 ms for the same architecture in Cycle 5, so the machine was loaded); another project's GPU job ran before and after it | a quiet machine | CPU | reported next to the 22.1 ms of the same architecture |
+| 9e | ✅ S7b (`cycle5.yaml` v7, ADR-045): the served H10b at 198.9 MB by FP16 storage and a 17,500-entry vocabulary, no retraining; passed. Serving waits for one latency session (GPU busy with another project on 2026-10-01) | a quiet machine | CPU | the S7b rule |
 | 10 | H12: declare, then run, when decision 2 and the new labelled sample exist | 👤 decision 2, 👤 data | ≈ 6 GPU runs | declared later |
 | 10′ | H12′ (§ 4): ✅ declared in `cycle5.yaml` v6; run when the GPU is free | — | 5 GPU runs, about 3 h | the H12′ rule |
 | any time | D1 neutral audit → D2 branch: the 58 rows the tree reads (ADR-044; sheet written) | 👤 about 2 h + 30–40 min | D2: ≤ 12 runs | the tree frozen in `cycle2.yaml` |

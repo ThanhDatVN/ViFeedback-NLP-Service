@@ -230,6 +230,7 @@ gate, v4 H10b, v5 H10b's release candidate and closing gate. The owner's order i
 | **H10b confirmation** (5 seeds each, 1,500 fresh pairs) | Agreement +0.061 [+0.048, +0.075]; flips −0.061 [−0.073, −0.049] (about 18% → 12%); label_tv 0.013 (the control's 0.108); UIT-VSFC +0.0014; neutral +0.003; stripped +0.0028; NEU-ESC −0.0039 | **Passed** (ADR-042) |
 | H10b closing gate (test, once) | 0.8237 over 5 seeds vs 0.8296 for the served recipe: −0.0059 [−0.019, +0.007]; seed 42 0.8208, neutral 0.550 | Reported |
 | H10b release candidate | FP32 graph through the gate (parity 1.85e-5), restorer re-accepted, scope detector and T = 1.349 attached, 12 API tests pass; 40 API tests pass once served | **Served** (ADR-043, 2026-10-01) |
+| **S7b** (`cycle5.yaml` v7) | H10b with a 17,500-entry vocabulary in FP16 storage: **198.9 MB**; ≥ 99.04% label agreement with the FP32 graph on every held-out set (100% on UIT-VSFC validation, stripped text, challenge v1); macro-F1 unchanged | **Passed** (ADR-045); replaces the FP32 graph after one latency session |
 
 **Decision 9: which model the service runs.** The owner approved H10b on 2026-10-01 (ADR-043).
 The options as they were put:
@@ -300,14 +301,16 @@ it. H10's consistency training removed the flips only by labelling informal text
 (ADR-038). H10b anchored the consistency on a frozen teacher and cut flips to about 12% with no
 collapse and no measurable cost (ADR-042); the service runs it (ADR-043). About 12% still flip.
 
-### P6 — Latency is met; size is met by the released student, not the served model
+### P6 — Latency is met; size is met by the student and by the S7b candidate of the served model
 *Update (Cycle 4).* The served pipeline, raw text in, has p95 26.9 ms (A1); the scope detector adds
 less than the score it replaced; careful INT8 passed S5′ but agrees with PyTorch on only 91.4% of
 labels and depends on the batch, so the release gate blocked it (ADR-036). *Update (Cycle 5).*
 A 6-layer student stored in FP16 is released: 185 MB, served p95 12.3 ms against 22.1 ms for the
 12-layer model in the same sessions (ADR-040). It matched its teacher on validation, but on test it
 is 0.013 lower in every seed, a gap validation could not resolve. Decision 9 (ADR-043) serves the
-12-layer H10b model instead: 540 MB, the 12-layer architecture's 22.1 ms. The Cycle 2
+12-layer H10b model instead: 540 MB, the 12-layer architecture's 22.1 ms. S7b (ADR-045) cuts the same
+model to 198.9 MB with no retraining and ≥ 99% label agreement on every held-out set; it replaces
+the FP32 graph once a latency session can run. The Cycle 2
 measurements below are unchanged.
 Reference CPU (Ryzen 5 6600H, AVX2, no AVX512-VNNI), single sentence, model-only on pre-segmented
 input, two steady passes in rotated order agreeing within 1% (`results/studies/latency/reference_cpu.json`):

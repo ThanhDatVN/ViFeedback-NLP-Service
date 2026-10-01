@@ -1543,3 +1543,48 @@ it has not been done. The owner asked whether it can be automated without losing
 - An intra-annotator κ is a weaker figure than an inter-annotator one; the report labels it.
 - The full 160-row audit stays valid: the 58 rows are part of it.
 
+---
+
+## ADR-045 · 2026-10-01 · S7b: the served model at 198.9 MB with no retraining · Accepted (serving waits for latency)
+
+**Context.** Decision 9 served the 12-layer H10b graph, 540 MB; S7 (≤ 200 MB) was met only by the
+released student, which costs 0.013 on test (ADR-040, ADR-043). FP16 storage alone gives 270 MB (F4).
+The word-embedding matrix is 64,001 × 768, about 98 MB in FP16, and the texts the service is built
+for use a small part of it.
+
+**What was declared** (`cycle5.yaml` v7, before any trimmed graph existed). Keep the four special
+tokens, `<mask>`, every piece the tokenizer produces on the training and coverage texts (UIT-VSFC
+train with its stripped and teencode forms, NEU-ESC train, H10b's 6,035 ViLexNorm training pairs),
+then the most frequent other pieces up to 17,500 entries. Slice the embedding rows, change no other
+weight, export with FP16 storage. Pass if the graph is ≤ 200 MB, the release gate passes, labels
+agree with the FP32 graph on ≥ 99% of every held-out set, and macro-F1 moves ≤ 0.005.
+
+**Result: passed** (`results/studies/cycle5/s7b/`).
+
+| Held-out set | n | Label agreement | Texts with a removed piece | Macro-F1, trimmed vs FP32 |
+|---|---:|---:|---:|---|
+| UIT-VSFC validation | 1,583 | 100% | 1.5% | 0.8617 vs 0.8617 |
+| The same, stripped, through the restorer | 1,583 | 100% | 1.1% | 0.8457 vs 0.8457 |
+| NEU-ESC validation (all posts) | 3,305 | 99.52% | 8.3% | 0.4247 vs 0.4225 |
+| ViLexNorm dev, original / normalized | 837 | 99.04% / 99.64% | 9.7% / 9.8% | — |
+| H10b's confirmation pairs, original / normalized | 1,500 | 99.53% / 99.60% | 7.7% / 6.4% | — |
+| Challenge v1, served pipeline | 285 | 100% | 2.1% | 0.9162 vs 0.9162 |
+
+- 15,318 of the 64,000 pieces occur in the vocabulary source; 2,177 frequent pieces fill the rest.
+- Graph 198.9 MB. Release gate: parity 1.8e-5 against the FP16-rounded trimmed model, 100% label
+  agreement, no batch dependence. Restorer re-accepted (0 labels changed), scope detector re-attached,
+  T = 1.349 (unchanged).
+- The closest margin is ViLexNorm dev originals (99.04% against 99%): social-media text meets
+  removed pieces most often.
+
+**Decision.** The trimmed graph is the release candidate in `models/candidate/sentiment`. As
+declared, it replaces the FP32 graph once one latency session has a steady served-pipeline pass with
+p95 ≤ 30 ms. Two attempts on 2026-10-01 were refused because another project's job was on the GPU.
+
+**Consequences.**
+- S7 will be met by the served model itself, with the same weights as H10b except for 46,501
+  unused embedding rows, and no accuracy cost on any held-out set.
+- A word whose pieces were all removed reads as `<unk>`. Text far from student feedback and social
+  media (other domains, rare names) meets this more often; the card will state it.
+- The Hub holds the FP32 graph; publishing the trimmed one needs the owner's approval.
+
