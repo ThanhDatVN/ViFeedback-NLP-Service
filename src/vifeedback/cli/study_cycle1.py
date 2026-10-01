@@ -189,6 +189,36 @@ def study_audit_sheet() -> None:
     typer.echo(f"  rebuilt {len(sample)} rows -> {sheet}")
 
 
+@study_app.command("audit-scope-sheet")
+def study_audit_scope_sheet(
+    out: str = typer.Option(
+        "results/studies/study_a/local/audit_scope_pass1.csv", help="the sheet to write"
+    ),
+    order_seed: int = typer.Option(45, help="row order: 45 for the first pass, 46 for the second"),
+) -> None:
+    """The 58 rows the frozen tree reads, in a shuffled order (cycle2.yaml v3). No GPU.
+
+    Refuses to overwrite an existing file, which may hold the owner's annotations.
+    """
+    from pathlib import Path
+
+    import pandas as pd
+
+    from vifeedback.evaluation import audit as AU
+
+    target = Path(out)
+    if target.exists():
+        raise typer.BadParameter(f"{target} exists; it may hold annotations, so it is not replaced")
+    full = paths.RESULTS / "studies" / "study_a" / "local" / "audit_sheet.csv"
+    if not full.exists():
+        study_audit_sheet()
+    sheet = pd.read_csv(full, encoding="utf-8-sig", keep_default_na=False)
+    scope = AU.scope_sheet(sheet, seed=order_seed)
+    target.parent.mkdir(parents=True, exist_ok=True)
+    scope.to_csv(target, index=False, encoding="utf-8-sig")
+    typer.echo(f"  {len(scope)} rows the tree reads -> {target}")
+
+
 @study_app.command("audit-report")
 def study_audit_report(
     sheet: str = typer.Option(
@@ -197,6 +227,9 @@ def study_audit_report(
     second: str = typer.Option("", help="a second pass over >= 50 of the same rows, for kappa"),
     kind: str = typer.Option(
         "intra", help="inter (two people) | intra (one person, >= 24 h apart)"
+    ),
+    scope_only: bool = typer.Option(
+        False, help="only the rows the tree reads, annotated alone (cycle2.yaml v3)"
     ),
 ) -> None:
     """Analyse the filled neutral-audit sheet and apply the decision tree frozen in cycle2.yaml.
@@ -211,17 +244,18 @@ def study_audit_report(
     first = pd.read_csv(sheet, encoding="utf-8-sig", keep_default_na=False)
     other = pd.read_csv(second, encoding="utf-8-sig", keep_default_na=False) if second else None
     try:
-        r = AU.report(first, other, kind)
+        r = AU.report(first, other, kind, scope_only=scope_only)
     except ValueError as e:
         raise typer.BadParameter(str(e)) from None
     out = paths.RESULTS / "studies" / "study_a" / "audit_report.json"
     out.write_text(json.dumps(yaml_safe(r), indent=2), encoding="utf-8")
-    rs = r["random_stratum"]
-    typer.echo(
-        f"  random stratum (n={rs['n']}): incorrect gold {rs['incorrect']['rate']:.2f} "
-        f"{tuple(round(x, 2) for x in rs['incorrect']['wilson_95'])}, "
-        f"ambiguous {rs['ambiguous']['rate']:.2f}"
-    )
+    if "random_stratum" in r:
+        rs = r["random_stratum"]
+        typer.echo(
+            f"  random stratum (n={rs['n']}): incorrect gold {rs['incorrect']['rate']:.2f} "
+            f"{tuple(round(x, 2) for x in rs['incorrect']['wilson_95'])}, "
+            f"ambiguous {rs['ambiguous']['rate']:.2f}"
+        )
     if "agreement" in r:
         a = r["agreement"]
         typer.echo(

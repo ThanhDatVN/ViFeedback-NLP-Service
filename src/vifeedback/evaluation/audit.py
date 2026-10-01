@@ -14,6 +14,7 @@ from __future__ import annotations
 import math
 from typing import Any
 
+import numpy as np
 import pandas as pd
 
 LABEL_VALUES = {"negative", "neutral", "positive", "ambiguous"}
@@ -186,20 +187,49 @@ def decide(sheet: pd.DataFrame) -> dict[str, Any]:
     }
 
 
+SCOPE_ORDER_SEED = 45  # cycle2.yaml v3: the scope sheet's row order (the second pass uses 46)
+
+
+def scope_sheet(sheet: pd.DataFrame, seed: int = SCOPE_ORDER_SEED) -> pd.DataFrame:
+    """The rows the tree reads (cycle2.yaml v3), shuffled so their order reveals no stratum.
+
+    The annotation columns come first and the columns to hide during the blind pass last.
+    """
+    s = sheet[sheet.stratum.isin(SCOPE_STRATA)]
+    s = s.iloc[np.random.default_rng(seed).permutation(len(s))]
+    front = ["example_index", "split", "text", "annotator_label", "neutral_subtype", "notes"]
+    reveal = ["gold", "gold_assessment", "stratum"]
+    rest = [c for c in s.columns if c not in front + reveal]
+    return s[[c for c in front + reveal if c in s.columns] + rest].reset_index(drop=True)
+
+
 def report(
-    first: pd.DataFrame, second: pd.DataFrame | None = None, kind: str = "intra"
+    first: pd.DataFrame,
+    second: pd.DataFrame | None = None,
+    kind: str = "intra",
+    scope_only: bool = False,
 ) -> dict[str, Any]:
-    """The full audit report. Refuses an incomplete first sheet rather than analysing part of it."""
+    """The audit report. Refuses an incomplete first sheet rather than analysing part of it.
+
+    scope_only (cycle2.yaml v3) reads only the rows the tree reads, and measures agreement on them;
+    no corpus-level rate is estimated, because the random stratum is not annotated.
+    """
+    if scope_only:
+        first = first[first.stratum.isin(SCOPE_STRATA)]
+        if second is not None:
+            second = second[second.stratum.isin(SCOPE_STRATA)]
     problems = validate(first)
     if problems:
         raise ValueError("audit sheet is not complete: " + "; ".join(problems))
     a = _clean(first)
     out: dict[str, Any] = {
         "rows": len(a),
+        "scope_only": scope_only,
         "per_stratum": per_stratum(a),
-        "random_stratum": random_stratum_rates(a),
         "decision": decide(a),
     }
+    if not scope_only:
+        out["random_stratum"] = random_stratum_rates(a)
     if second is not None:
         out["agreement"] = agreement(a, _clean(second), kind)
     return out

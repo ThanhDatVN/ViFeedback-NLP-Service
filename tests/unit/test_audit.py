@@ -92,3 +92,26 @@ class TestReport:
         assert r["agreement"]["n"] == 50 and r["agreement"]["kind"] == "intra"
         assert r["agreement"]["raw_agreement"] == pytest.approx(49 / 50)
         assert r["agreement"]["warnings"] == []
+
+
+class TestScopeOnly:
+    """cycle2.yaml v3: the owner annotates only the rows the tree reads."""
+
+    def test_rows_outside_scope_may_stay_empty(self):
+        rows = _scope(2, 2, 50) + [("random", "neutral", "", "", "")] * 40
+        first = _sheet(rows)
+        with pytest.raises(ValueError, match="not complete"):
+            A.report(first)
+        r = A.report(first, first.copy(), kind="intra", scope_only=True)
+        assert r["rows"] == 54 and "random_stratum" not in r
+        assert r["decision"]["branch"] == "representation"
+        assert r["agreement"]["n"] == 54 and r["agreement"]["warnings"] == []
+
+    def test_scope_sheet_is_shuffled_and_puts_the_reveal_columns_after_notes(self):
+        rows = _scope(5, 5, 5) + [("random", "positive", "", "", "")] * 10
+        s = A.scope_sheet(_sheet(rows))
+        assert len(s) == 15 and set(s.stratum) <= set(A.SCOPE_STRATA)
+        cols = list(s.columns)
+        assert cols.index("notes") < cols.index("gold") < cols.index("stratum")
+        assert list(s.example_index) != sorted(s.example_index)  # order reveals no stratum
+        assert s.equals(A.scope_sheet(_sheet(rows)))  # deterministic

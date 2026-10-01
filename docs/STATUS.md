@@ -273,8 +273,9 @@ same-session controls (Cycle 1), OOF predictions over train for anything label-r
 ### P2 — The neutral gap is not a threshold problem
 Cycle 0 shows the errors are confident and the boundary nearly optimal. What remains is whether the
 confident errors are **label policy / ambiguity** or **representation**. Only the human audit can
-separate them ([ANNOTATION_GUIDE.md](ANNOTATION_GUIDE.md) v1.1; 160-row sheet ready; the owner's
-steps, in Vietnamese: [HUONG_DAN_THU_CONG.md § 1](HUONG_DAN_THU_CONG.md)). *Blocking for:* the D2
+separate them ([ANNOTATION_GUIDE.md](ANNOTATION_GUIDE.md) v1.1; the owner's steps, in Vietnamese:
+[HUONG_DAN_THU_CONG.md § 1](HUONG_DAN_THU_CONG.md)). Since ADR-044 the owner can annotate only the 58
+rows the tree reads (about 2 hours; the sheet is written) and get the branch from human labels alone. *Blocking for:* the D2
 branch (E04 label correction, soft labels, or a representation run), S4 and S9.
 
 ### P3 — Measured gold-label noise bounds the ceiling

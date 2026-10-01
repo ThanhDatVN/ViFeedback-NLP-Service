@@ -10,9 +10,9 @@
 - **The open targets were researched again** (sources S11–S21, § 10).
 
 **Update, 2026-10-01.** H10 was not passed (ADR-038); H11 passed and is released (ADR-039, ADR-040);
-H10b passed (ADR-042) and, by the owner's decision 9, **the service runs it** (ADR-043). Two
-proposals wait for the owner: H12′, a substitute for H12 that needs no new labels (§ 4), and A1′,
-an LLM-assisted neutral audit validated on a human subset (§ 5).
+H10b passed (ADR-042) and, by the owner's decision 9, **the service runs it** (ADR-043). H12′, a
+substitute for H12 that needs no new labels, is declared (§ 4). The neutral audit can now be done on
+the 58 rows the tree reads, in about 2 hours (ADR-044, § 5).
 
 The manual work that only the owner can do is written up step by step, in Vietnamese, in
 [HUONG_DAN_THU_CONG.md](HUONG_DAN_THU_CONG.md). Per-cycle results and open problems are in
@@ -45,7 +45,7 @@ student, not by the served model (ADR-043):
 |---|---|---|---|---|
 | S1 sentiment test macro-F1 | ≥ 0.80 ✅ | ≥ 0.84 | Served H10b 0.824 (5 seeds); the p9 recipe 0.830; the student 0.817 | Not chased; measured once at each closing gate (ADR-040, ADR-042) |
 | S2 topic test macro-F1 | ≥ 0.79 ✅ | ≥ 0.83 | 0.804 | Not pursued (§ 5) |
-| S4 neutral F1 | ≥ 0.55 | ≥ 0.65 | Served H10b 0.550 at seed 42; the p9 recipe 0.576 (5 seeds, test); the student 0.545 | D1 audit (or A1′) → D2 branch (§ 5) |
+| S4 neutral F1 | ≥ 0.55 | ≥ 0.65 | Served H10b 0.550 at seed 42; the p9 recipe 0.576 (5 seeds, test); the student 0.545 | D1 audit, scope-first route (ADR-044) → D2 branch (§ 5) |
 | S7 serving artifact | — | ≤ 200 MB | ✅ **185 MB**, the released student; the served H10b is 540 MB | H11 passed and released (ADR-039, ADR-040); decision 9 (ADR-043) |
 | S8 image | — | ≤ 700 MB | ✅ 519 MB | done |
 | S9 coded errors | — | ≥ 30 | 0 | D1 audit (👤) |
@@ -60,7 +60,7 @@ student, not by the served model (ADR-043):
 | — | The student is 0.013 below the 12-layer model on test, while equal on validation | ADR-040: 5/5 seeds lower; 73 neutral validation sentences cannot resolve it | Released, not served (ADR-043); a larger acceptance set for any future size rule |
 | — | Other institutions' text: 0.444 in-scope NEU-ESC test | Two heads reach +0.111, but failed two conditions (ADR-033); NEU-ESC test is spent | **H12**, Cycle 5 (c); **H12′** now (§ 4) |
 | G6 | NEU-ESC's `neutral` differs from UIT-VSFC's | 67% of NEU-ESC gold-neutral posts are called polar (ADR-032) | Owner decision 2 (§ 8) |
-| P2 | Neutral errors: label ambiguity or representation? | Confident errors; boundary and head already ruled out (Cycle 1) | D1 audit (👤) or A1′ → D2 |
+| P2 | Neutral errors: label ambiguity or representation? | Confident errors; boundary and head already ruled out (Cycle 1) | D1 audit (👤), 58 rows (ADR-044) → D2 |
 | — | The scope detector judges topic from words | Short or unusual course comments can be flagged; off-topic text with course words passes (ADR-034) | Reported in the card; revisited with H12's data |
 | G9 | The contrast-sentence drop is shown on challenge v1 only | V1, 4/5 seeds, p = 0.004 | Challenge v2, optional |
 
@@ -84,7 +84,7 @@ student, not by the served model (ADR-043):
 | 9d | Latency session of the served H10b. 2026-10-01: one session, S1 not reportable (no steady pass; model-only p95 34.4 ms against 20.5 ms for the same architecture in Cycle 5, so the machine was loaded); another project's GPU job ran before and after it | a quiet machine | CPU | reported next to the 22.1 ms of the same architecture |
 | 10 | H12: declare, then run, when decision 2 and the new labelled sample exist | 👤 decision 2, 👤 data | ≈ 6 GPU runs | declared later |
 | 10′ | H12′ (§ 4): ✅ declared in `cycle5.yaml` v6; run when the GPU is free | — | 5 GPU runs, about 3 h | the H12′ rule |
-| any time | D1 neutral audit → D2 branch; or A1′ (§ 5), 70 rows by the owner plus a validated LLM | 👤 6–8 h, or 2–2.5 h with A1′ | D2: ≤ 12 runs | the tree frozen in `cycle2.yaml` |
+| any time | D1 neutral audit → D2 branch: the 58 rows the tree reads (ADR-044; sheet written) | 👤 about 2 h + 30–40 min | D2: ≤ 12 runs | the tree frozen in `cycle2.yaml` |
 | ✅ | Three latency sessions (owner waived the idle condition) | — | CPU | p95 ≤ 30 ms: 12.3 ms |
 
 One heavy job at a time, with a cool-down and a temperature check between runs (GPU < 70 °C).
@@ -322,26 +322,19 @@ frozen in `cycle2.yaml`:
 - **H11's ensemble soft labels** may raise the student's neutral F1. This is reported, not claimed in
   advance.
 
-**A1′: an LLM-assisted audit, validated on a human subset (proposed 2026-10-01, not declared).**
-A fully automatic audit cannot guarantee its own quality: the question is exactly where careful
-readers disagree, and an LLM's agreement with gold says nothing about whether gold is right. Studies
-of LLM annotation recommend the opposite order: validate the model against human labels on a subset,
-and use it for the rest only if it agrees well enough [S22]. The protocol:
+**The scope-first audit (ADR-044, `cycle2.yaml` v3).** A fully automatic audit cannot guarantee
+its own quality: the question is exactly where careful readers disagree, and studies of LLM
+annotation require validation against people first [S22]. The proposal A1′ (an LLM for most rows) is
+withdrawn, because the tree reads only 58 rows and an LLM would have decided part of them. Instead:
 
 | Step | Who | Work |
 |---|---|---|
-| 1 | The owner | Blind-labels **70 of the 160 rows**: the 40 `random` rows and 30 error rows drawn by a declared seed (about 2–2.5 h, against 6–8 h). Codes ≥ 30 errors by hand, so S9 is met by a person |
-| 2 | A local LLM on Kaggle | Labels all 160 rows blind, with the annotation guide as its prompt: `annotator_label`, `neutral_subtype`, then `gold_assessment` with gold shown. Open weights (Qwen3-14B or larger); **UIT-VSFC text is never sent to an API** |
-| 3 | The code | Agreement on the 70 rows: Cohen's κ on `annotator_label` ≥ 0.6 with its bootstrap lower bound ≥ 0.4, and ≥ 70% agreement on `gold_assessment` over the 30 error rows |
-| 4 | The code | If step 3 holds, the tree runs on the LLM's labels for the 90 rows the owner did not label, and on the owner's for the rest. The branch is accepted only if its proportion clears the threshold by its bootstrap interval; otherwise, or if step 3 fails, the owner audits the remaining 90 rows |
+| 1 | ✅ The code | `study audit-scope-sheet`: the 58 rows the tree reads, in a seeded order that reveals no stratum (written 2026-10-01, git-ignored) |
+| 2 | 👤 The owner | Blind label and subtype, then the gold assessment, on the 58 rows: about 2 hours. 58 coded errors meet S9 |
+| 3 | 👤 The owner | A second blind pass on the same rows after ≥ 24 h (`--order-seed 46`): 30–40 minutes, for κ |
+| 4 | The code | `study audit-report --scope-only`: the unchanged tree, from human labels alone. Then D2 runs |
 
-- **The LLM decides no training label.** Its output decides a branch of the frozen tree; E04's label
-  correction keeps its own method. "No LLM output as a gold label" (§ 7) stands.
-- **Honest expectation.** On NEU-ESC, Qwen3-4B scored 0.475 against 0.604 for gpt-4o-mini (H7), and
-  neutral is where LLMs and people disagree most. The agreement gate may well fail. If it does, the
-  owner's 70 rows still count, and the audit continues by hand from there.
-- Changing the protocol needs `cycle2.yaml`'s audit section amended by a new version and an ADR before
-  any LLM output is seen, and the owner's go-ahead (decision 11).
+The 40 random rows (corpus-level rates) can be annotated later; nothing in the tree depends on them.
 
 ### S1 and S2 (stretch)
 
@@ -381,7 +374,7 @@ its own session runs when the GPU is free (`study latency` refuses while another
 | Weight-updating runs | H10 6, H11 about 7, H10b 12, H12′ 5, H12 about 6, D2 ≤ 12 |
 | Laptop GPU (RTX 3050, 4.29 GB) | H10 about 2 h, H11 about 1.5 h; one job at a time |
 | Kaggle | not needed; optional for F4 if the export cannot run locally |
-| API | none; A1′ uses open weights on Kaggle, never an API, for UIT-VSFC text |
+| API | none |
 
 **What not to do.**
 - No selection on any test split. ViLexNorm test and the Cycle 5 closing gate are used once per
@@ -399,7 +392,7 @@ The step-by-step versions, in Vietnamese: [HUONG_DAN_THU_CONG.md](HUONG_DAN_THU_
 
 | # | Decision or task | Default until decided | Blocks |
 |---|---|---|---|
-| 1 | Neutral audit, 160 rows, plus a second pass on ≥ 50 | D2 waits | S4, S9 |
+| 1 | Neutral audit: the 58 rows the tree reads (about 2 h) and a second pass on them (ADR-044); the full 160 rows stay optional | D2 waits | S4, S9 |
 | 2 | Label policy for other institutions' text | Keep UIT-VSFC's | H12 |
 | 3 | Weights licence CC BY-NC-SA 4.0 (ViLexNorm text in training): ✅ H10b uploaded with it (2026-10-01); the student's repository `Datk4/vifeedback-sentiment-phobert-6l` (bundle built) is optional | Student not uploaded | student upload |
 | 4 | Approve each Hub upload | No upload | every release |
@@ -407,7 +400,7 @@ The step-by-step versions, in Vietnamese: [HUONG_DAN_THU_CONG.md](HUONG_DAN_THU_
 | 6 | ✅ Latency sessions: the owner waived the idle-machine condition (2026-09-30) | — | — |
 | 9 | ✅ Which model the service runs: **H10b**, approved 2026-10-01 (ADR-043) | — | — |
 | 10 | ✅ Go-ahead for H12′ (§ 4), 2026-10-01 | — | — |
-| 11 | Go-ahead for A1′ (§ 5): label 70 rows, and let a validated open LLM label the rest | The full audit (decision 1) | A1′ |
+| 11 | ✖ A1′ withdrawn (ADR-044): the scope-first route replaces it, with no LLM | — | — |
 | 7 | U2: 15 challenge v1 labels | v1 stays as frozen | F6 |
 | 8 | Challenge v2 | Not written | optional |
 
@@ -448,7 +441,7 @@ the FP16-storage graph locally.
 | S19 | Inoshita, 2026. *Class-Structure Preservation Beats Diversity: A Comprehensive Benchmark of Text Augmentation Methods for Imbalanced Text Classification*. [arXiv:2608.12340](https://arxiv.org/abs/2608.12340). EmbSMOTE ≥ every LLM generator; gap up to 0.063 macro-F1 at high imbalance | S4: why not LLM oversampling |
 | S20 | Neshaei et al., 2025. *Bridging the Data Gap: Using LLMs to Augment Datasets for Text Classification*. [EDM 2025](https://educationaldatamining.org/EDM2025/proceedings/2025.EDM.long-papers.54/index.html). Minority-class gains with GPT-4o; open models (Llama 3.1 8B) subpar | S4: why not LLM oversampling here |
 | S21 | Tran et al., 2023. *ViDeBERTa: A powerful pre-trained language model for Vietnamese*. [Findings of EACL 2023](https://aclanthology.org/2023.findings-eacl.79/). xsmall: 12 × 384, 128,000-token vocabulary, 241 MB checkpoint (checked 2026-09-29) | H11 alternative student, deferred |
-| S22 | Pangakis, Wolken and Fasching, 2023. *Automated Annotation with Generative AI Requires Validation*. [arXiv:2306.00176](https://arxiv.org/abs/2306.00176). LLM annotation quality varies by task and dataset; validate against human labels on a subset before using it | A1′ |
+| S22 | Pangakis, Wolken and Fasching, 2023. *Automated Annotation with Generative AI Requires Validation*. [arXiv:2306.00176](https://arxiv.org/abs/2306.00176). LLM annotation quality varies by task and dataset; validate against human labels on a subset before using it | ADR-044 |
 
 ---
 

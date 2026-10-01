@@ -7,10 +7,13 @@
 # Version 2 (ADR-026), committed before any model is evaluated on the challenge set and before any
 # H7 run: freezes challenge_set_v1 by hash, adds an API reference arm to H7, and adds two descriptive
 # measurements. No v1 rule is changed; H5 is running and its rule is untouched.
+#
+# Version 3 (2026-10-01, ADR-044), before any audit annotation exists: the audit may annotate the
+# rows the tree reads alone (audit_scope_first). The tree, its scope and its thresholds are unchanged.
 
-version: 2
+version: 3
 declared: 2026-09-27
-revised: 2026-09-27
+revised: 2026-10-01  # v3 audit_scope_first
 track: A
 budget:
   weight_updating_runs: 5           # H5: five topic OOF folds. LLM work is inference only.
@@ -117,3 +120,20 @@ audit_decision_tree:   # NEXT_PLAN step 1; frozen here before any annotation is 
     - {if: "share of 'ambiguous' gold >= 0.40", then: "policy ceiling: one soft-label run, then stop optimizing neutral on this benchmark"}
     - {else: "representation: raw-text or social-domain encoder (BamiBERT / ViSoBERT) or TAPT"}
   agreement: Cohen's kappa on >= 50 rows including all 40 random rows (inter-annotator, or intra after >= 24 h, labelled as such)
+
+audit_scope_first:   # v3, ADR-044; before any annotation exists
+  why: >
+    The tree reads only its scope, the confident neutral-error strata: 58 of the 160 rows. Annotating
+    them first gives the branch from human labels alone, in about a third of the time. The other 102
+    rows estimate corpus-level rates; they may be annotated later, and nothing above depends on them.
+  sheet: >
+    `study audit-scope-sheet`: the 58 rows in the order numpy.random.default_rng(45).permutation(58)
+    (a second pass uses 46), the columns to hide during the blind pass placed after `notes`. The same
+    guide and the same two steps: blind label and subtype, then the gold assessment.
+  report: "`study audit-report --scope-only`: per stratum and the tree, on the 58 rows"
+  agreement: >
+    For this route, Cohen's kappa on the 58 rows: a second blind pass by the same person at least
+    24 h later (intra, labelled as such) or by a second person (inter). No corpus-level rate is
+    reported unless the random stratum is annotated too.
+  llm: no LLM output enters the annotation or the decision.
+

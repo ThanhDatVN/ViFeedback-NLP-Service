@@ -28,7 +28,7 @@ for the sentiment model.
 | **Robustness** | Diacritics restored before the model: stripped validation 0.686 → **0.857** (ADR-031). Out-of-scope input flagged by a topic detector: AUROC **0.922** within another university's forum (ADR-034) |
 | **Latency** | Raw text in, served pipeline p95 about **22 ms** on a laptop CPU (the 12-layer architecture, 22.1 ms in the Cycle 5 sessions; the student 12.3 ms; target 30 ms) |
 | **Reproducible** | A clean clone reproduces the published model's validation macro-F1 (0.8617, H10b) in about **2–3 min**, every file checked against `SHA256SUMS`; CI runs it on every change to the workflow |
-| **Research** | Cycles 0–4 closed, Cycle 5 run; 43 ADRs, 163 weight-updating runs in [the ledger](configs/experiments/ledger.csv); Cycle 5 declared ([cycle5.yaml](configs/experiments/cycle5.yaml)) |
+| **Research** | Cycles 0–4 closed, Cycle 5 run; 44 ADRs, 163 weight-updating runs in [the ledger](configs/experiments/ledger.csv); Cycle 5 declared ([cycle5.yaml](configs/experiments/cycle5.yaml)) |
 
 ---
 
@@ -231,7 +231,7 @@ The Kaggle notebooks are for models that exceed a 4.29 GB GPU ([KAGGLE_GUIDE](do
 | **[STATUS](docs/STATUS.md)** | Progress by gate and cycle, open problems, what runs next |
 | **[NEXT_PLAN](docs/NEXT_PLAN.md)** | Cycle 5 and the open targets, with research sources |
 | [RESEARCH_REPORT](docs/RESEARCH_REPORT.md) | Technical report: questions, method, findings, negative results, limitations |
-| [DECISIONS](docs/DECISIONS.md) | 43 ADRs: every plan correction forced by measurement or review |
+| [DECISIONS](docs/DECISIONS.md) | 44 ADRs: every plan correction forced by measurement or review |
 | [EXPERIMENT_MATRIX](docs/EXPERIMENT_MATRIX.md) | Run-ID scheme and every result table |
 | [EVALUATION_PROTOCOL](docs/EVALUATION_PROTOCOL.md) · [EVALUATION_DATA](docs/EVALUATION_DATA.md) | What every number is held to; what counts as evidence |
 | [DATA_CARD](docs/DATA_CARD.md) | UIT-VSFC measured from the files, and what is never committed |

@@ -18,7 +18,7 @@ $PY = ".venv\Scripts\python.exe"
 
 | # | Việc | Thời gian | Khi nào | Nó mở khoá việc gì |
 |---|---|---|---|---|
-| 1 | [Neutral audit](#1-neutral-audit-gán-nhãn-kiểm-tra-lớp-neutral) | 6–8 giờ, chia nhiều buổi; hoặc 2–2,5 giờ với [phương án A1′](#phương-án-rút-gọn-a1-đề-xuất-chờ-bạn-đồng-ý) | Càng sớm càng tốt | S9 (≥ 30 lỗi được mã hoá), nhánh D2 cho lớp neutral (S4) |
+| 1 | [Neutral audit](#1-neutral-audit-gán-nhãn-kiểm-tra-lớp-neutral): [chỉ 58 dòng](#cách-nhanh-chỉ-58-dòng-mà-cây-quyết-định-đọc-adr-044-khuyến-nghị), bảng tính đã sẵn | Khoảng 2 giờ, cộng 30–40 phút sau 24 giờ (bản đầy đủ 160 dòng: 6–8 giờ) | Càng sớm càng tốt | S9 (≥ 30 lỗi được mã hoá), nhánh D2 cho lớp neutral (S4) |
 | 2 | [Duyệt 15 nhãn của challenge v1 (U2)](#2-duyệt-15-nhãn-của-challenge-v1-u2) | 20 phút | Bất kỳ lúc nào | Báo cáo challenge v1 kèm nhãn đã được người kiểm |
 | 3 | ~~Chuẩn bị máy rảnh để đo độ trễ~~ | — | ✅ Xong 2026-09-30 (bạn cho phép không cần máy rảnh) | p95 12,3 ms (mô hình nhỏ) |
 | 4 | ~~Quyết định giấy phép cho H10b~~ | — | ✅ Xong 2026-10-01: H10b lên Hub với CC BY-NC-SA 4.0 | Mô hình nhỏ: chỉ khi bạn muốn đưa lên repo riêng |
@@ -215,31 +215,42 @@ Wilson trên tầng `random`, và hệ số κ (Cohen's kappa).
 **Sau đó:** báo cho tôi. Tôi commit `audit_report.json`, ghi ADR, và chạy nhánh D2 mà cây quyết định
 chỉ ra. Bảng tính không bao giờ được commit.
 
-### Phương án rút gọn A1′ (đề xuất, chờ bạn đồng ý)
+### Cách nhanh: chỉ 58 dòng mà cây quyết định đọc (ADR-044, khuyến nghị)
 
 **Có tự động hoá hoàn toàn được không?** Không, nếu muốn đảm bảo chất lượng. Audit hỏi đúng câu mà
-người đọc cẩn thận còn bất đồng: nhãn gốc sai, mơ hồ, hay đúng. Một LLM đồng ý với nhãn gốc không
-chứng minh nhãn gốc đúng, và không có cách nào tự kiểm tra LLM nếu không có nhãn của người. Nghiên
-cứu về gán nhãn bằng LLM (Pangakis và cộng sự, 2023) khuyên làm ngược lại: **kiểm định LLM trên một
-phần do người gán, rồi mới dùng nó cho phần còn lại**, và chỉ khi nó đủ khớp.
+người đọc cẩn thận còn bất đồng. LLM đồng ý với nhãn gốc không chứng minh nhãn gốc đúng, và không có
+nhãn của người thì không kiểm được LLM (Pangakis và cộng sự, 2023).
 
-**Cách làm đề xuất:**
+**Nhưng có cách giảm hai phần ba công sức mà không mất chất lượng.** Cây quyết định chỉ đọc 58 dòng
+thuộc bốn tầng lỗi quanh lớp neutral, không đọc cả 160 dòng. Bạn chỉ cần gán 58 dòng đó; nhánh D2 được
+quyết hoàn toàn bằng nhãn của người, không có LLM. 58 lỗi được mã hoá cũng đủ cho S9. Phương án A1′
+cũ (LLM gán phần còn lại) bị bỏ, vì nó để LLM quyết một phần nhánh.
 
-| Bước | Ai | Việc |
-|---|---|---|
-| 1 | Bạn | Gán nhãn mù **70 trên 160 dòng**: 40 dòng tầng `random` và 30 dòng lỗi chọn theo seed cố định. Khoảng 2–2,5 giờ thay vì 6–8 giờ. 30 dòng lỗi do bạn mã hoá đủ cho S9 |
-| 2 | LLM mã nguồn mở chạy trên Kaggle | Gán nhãn mù cả 160 dòng, với hướng dẫn gán nhãn làm prompt. Câu UIT-VSFC **không bao giờ gửi qua API** (OpenAI hay bất kỳ dịch vụ nào) |
-| 3 | Mã | Đo độ khớp trên 70 dòng của bạn: Cohen's κ ≥ 0,6 (cận dưới ≥ 0,4) cho nhãn, và ≥ 70% khớp ở `gold_assessment` trên 30 dòng lỗi |
-| 4 | Mã | Nếu bước 3 đạt: cây quyết định chạy trên nhãn của bạn cho 70 dòng và nhãn LLM cho 90 dòng còn lại, và nhánh chỉ được nhận nếu tỷ lệ vượt ngưỡng rõ ràng (cả khoảng tin cậy). Nếu không đạt: bạn làm tiếp 90 dòng, công sức 70 dòng đầu không mất |
+**Các bước:**
 
-**Nên kỳ vọng thế nào.** LLM nhỏ từng kém trên văn bản sinh viên thật (Qwen3-4B 0,475 so với
-gpt-4o-mini 0,604 trên NEU-ESC, H7), và lớp neutral là chỗ LLM và người lệch nhau nhiều nhất. Nhiều
-khả năng bước 3 không đạt. Khi đó bạn vẫn tiết kiệm được việc đọc lại, và nhãn LLM không được dùng.
+1. **Bảng tính đã có sẵn** (tôi đã tạo): `results\studies\study_a\local\audit_scope_pass1.csv`, 58
+   dòng, thứ tự đã xáo nên không đoán được tầng. Mở bằng Excel.
+2. **Lượt mù (khoảng 1,5 giờ).** Ẩn mọi cột **bên phải `notes`** (`gold`, `gold_assessment`,
+   `stratum` và các cột mô hình). Điền `annotator_label`, `neutral_subtype` (hoặc `n/a`), `notes` nếu
+   cần, theo đúng quy tắc ở trên.
+3. **So với nhãn gốc (khoảng 30 phút).** Hiện cột `gold` và `gold_assessment`, điền
+   `gold_assessment`. Không sửa nhãn ở bước 2.
+4. **Lưu** dạng *CSV UTF-8*, giữ tên file.
+5. **Lượt hai sau ít nhất 24 giờ (30–40 phút)**, để đo độ nhất quán. Tạo bảng mới với thứ tự khác,
+   rồi chỉ điền `annotator_label` (và subtype khi cần):
+   ```powershell
+   & $PY -m vifeedback.cli study audit-scope-sheet --out results\studies\study_a\local\audit_scope_pass2.csv --order-seed 46
+   ```
+6. **Báo tôi.** Tôi chạy:
+   ```powershell
+   & $PY -m vifeedback.cli study audit-report --scope-only `
+       --sheet results\studies\study_a\local\audit_scope_pass1.csv `
+       --second results\studies\study_a\local\audit_scope_pass2.csv --kind intra
+   ```
+   rồi commit kết quả (chỉ số đếm, không có câu nào), ghi ADR và chạy nhánh D2.
 
-LLM không bao giờ quyết định nhãn huấn luyện: nó chỉ góp phần chọn nhánh của cây quyết định. Đổi quy
-trình cần một phiên bản mới của `cycle2.yaml` và một ADR **trước khi** xem bất kỳ nhãn LLM nào.
-**Bạn chỉ cần trả lời: "đồng ý A1′"** (quyết định 11). Khi đó tôi khai báo quy trình, chọn 30 dòng
-lỗi, và chuẩn bị notebook Kaggle.
+Lệnh tạo bảng **không bao giờ ghi đè** file đã có, nên công sức của bạn không bị mất. 40 dòng ngẫu
+nhiên (để ước lượng tỷ lệ nhãn sai trên toàn corpus) có thể làm sau; cây quyết định không cần chúng.
 
 ---
 

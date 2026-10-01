@@ -507,5 +507,5 @@ Cycle 5 ran in the owner's order; H12 waits for the owner:
    scoped to that one institution.
 
 The human neutral audit remains the only way to separate label ambiguity from representation (Q1),
-and it gates the neutral work (S4) and the error coding (S9). A1′ (NEXT_PLAN § 5) would cut the
-owner's share to 70 rows, using an open LLM for the rest only if it agrees with the owner on those.
+and it gates the neutral work (S4) and the error coding (S9). Since ADR-044 it can be done on the
+58 rows the decision tree reads, in about 2 hours, with no LLM in the decision.

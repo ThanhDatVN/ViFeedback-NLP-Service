@@ -1513,3 +1513,33 @@ at five seeds. The owner approved it on 2026-10-01.
   0.8617 reproduced (manifest 0.8617) in 131 s. No stale file is left on the Hub.
 - **Erratum to ADR-042.** The agreement gain is +0.061 (0.0615), not +0.062; corrected in place.
 
+---
+
+## ADR-044 · 2026-10-01 · The neutral audit may annotate the rows the tree reads first · Accepted
+
+**Context.** The neutral audit (160 rows, 6–8 hours) gates S4's next step, S9 and the D2 branch, and
+it has not been done. The owner asked whether it can be automated without losing quality.
+- **Fully automatic: no.** The audit asks where careful readers disagree. An LLM's agreement with
+  gold does not show that gold is right, and without human labels nothing checks the LLM.
+  Automated annotation must be validated against people on a subset first [Pangakis et al., 2023,
+  NEXT_PLAN S22].
+- **The proposal A1′ had a flaw.** It asked the owner for 40 random rows and 30 error rows, and an
+  open LLM for the rest. The tree frozen in `cycle2.yaml` reads only its scope: the confident
+  neutral-error strata, 58 rows. Under A1′, LLM labels would have decided part of the branch.
+
+**Decision.** `cycle2.yaml` v3 adds a route, declared before any annotation exists:
+- the owner annotates the **58 rows the tree reads**, shuffled by a fixed seed so their order
+  reveals no stratum (`study audit-scope-sheet`);
+- `study audit-report --scope-only` applies the unchanged tree to them;
+- agreement is Cohen's κ on the same 58 rows from a second blind pass (intra after ≥ 24 h, or a
+  second person);
+- no LLM output enters the annotation or the decision. A1′ is withdrawn.
+
+**Consequences.**
+- **The branch comes from human labels alone**, in about 2 hours plus a 30–40 minute second pass,
+  against 6–8 hours. 58 coded errors meet S9.
+- **No corpus-level rate** (how often gold is wrong overall) until the 40 random rows are
+  annotated. E04's sizing, if that branch is taken, uses the scope rows and says so.
+- An intra-annotator κ is a weaker figure than an inter-annotator one; the report labels it.
+- The full 160-row audit stays valid: the 58 rows are part of it.
+
