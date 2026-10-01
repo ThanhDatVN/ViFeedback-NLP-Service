@@ -389,22 +389,27 @@ Full traceability, including the study designs, catalog and backlog:
 
 Every open target, problem and unrun experiment, with where it is handled:
 **[NEXT_PLAN.md](NEXT_PLAN.md) v6**. Cycle 5 ran in the owner's order: H10 (not passed), H11
-(passed, released), H10b (passed, served). H12 waits for data; NEXT_PLAN § 5 has a substitute
-(H12′) that needs no new labels.
+(passed, released), H10b (passed, served at 198.9 MB since S7b, ADR-045). H12′, the substitute for
+H12 that needs no new labels, passed its seed-42 check; its other seeds run on Kaggle (ADR-046).
 
 Needs the owner (step by step, in Vietnamese: [HUONG_DAN_THU_CONG.md](HUONG_DAN_THU_CONG.md)):
 
-1. **The neutral audit** (P2/P3), which gates D2 and S9. `study audit-report` analyses the filled
-   sheet.
-2. **A free GPU** for the served H10b model's own latency session (the owner waived the idle condition).
+1. **Run `notebooks/kaggle_h12p.ipynb`** (guide § 11) and bring back `h12p_results.zip`. On the
+   laptop, Windows Application Control currently blocks torch, pyarrow and scikit-learn.
+2. **The neutral audit**, now 58 rows (ADR-044; the sheet is written), which gates D2, S4 and S9.
 3. **Decisions:**
-   - the label policy for other institutions' text;
-   - each Hub upload.
+   - uploading the served 198.9 MB graph to the Hub (the Hub holds the 540 MB graph of the same
+     model);
+   - the label policy for other institutions' text.
 4. **For H12:** a new labelled sample from another institution.
 
-The Hub holds the served H10b release: <https://huggingface.co/Datk4/vifeedback-sentiment-phobert>
+The Hub holds the H10b release: <https://huggingface.co/Datk4/vifeedback-sentiment-phobert>
 (CC BY-NC-SA 4.0, ONNX + PyTorch, restorer, scope detector and temperature, every file checked against
 `SHA256SUMS`; uploaded 2026-10-01, 0.8617 reproduced from the Hub).
+
+The service was hardened against cheap requests that buy expensive work (ADR-047). There are no known
+vulnerabilities in the locked dependencies (`pip-audit`, 2026-10-01; torch is a local CUDA build and
+training-only).
 
 ---
 
