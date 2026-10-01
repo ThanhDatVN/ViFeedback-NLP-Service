@@ -1599,3 +1599,42 @@ another project's job was on the GPU.
 - The Hub holds the FP32 graph; the trimmed bundle and its card are built as a dry run and
   publishing them needs the owner's approval.
 
+---
+
+## ADR-046 · 2026-10-01 · H12′'s remaining seeds run on Kaggle; confirmation reads prediction files · Accepted
+
+**Context.** H12′ (`cycle5.yaml` v6) passed its eligibility check at seed 42, on the laptop
+(UIT-VSFC validation +0.0104, in-scope NEU-ESC validation +0.0611). Shortly after, Windows
+Application Control began blocking torch, pyarrow and scikit-learn on the laptop (the same
+mechanism as on 2026-09-30, this time not clearing within 45 minutes). The project does not
+circumvent it. The owner chose to run the remaining training on Kaggle.
+
+**Decision.**
+- **Kaggle trains seeds 1337, 2024, 7 and 31337** with `notebooks/kaggle_h12p.ipynb`, which clones a
+  pinned commit. It stops unless this machine's inputs equal the laptop's:
+  - the pyvi counts per split;
+  - the rebuilt restorer's SHA-256;
+  - the held-out split;
+  - the ViLexNorm splits.
+- **Teacher targets.** They come from a committed table
+  (`results/studies/cycle5/h12p_teacher_q.csv`, row and probabilities), equal to the laptop's cache
+  to the last bit. Kaggle needs none of the teacher's checkpoints.
+- **Prediction files.** Every model writes its labels on the 3,000 held-out posts and the 1,500
+  confirmation pairs. `study h12p-confirm` applies the declared rule to those files alone, loads no
+  model, and stays the only reader of the held-out labels.
+- **The controls' labels** (five H10b seeds) and the seed-42 candidate's are written on Kaggle, if
+  the owner attaches the checkpoints as a private dataset, or on the laptop once torch loads again.
+  A control already recorded keeps its development summary; only its labels are added.
+- **`vifeedback.training`** loads its torch-backed names lazily, so the confirmation runs on the
+  laptop even while torch is blocked.
+
+**Consequences.**
+- **Mixed hardware.** The candidate seeds are trained on two kinds of GPU: seed 42 on the laptop's
+  RTX 3050, the others on a Kaggle T4. Each run's device is in its `results/runs/` record.
+- **The rule is unchanged.** It compares each candidate seed with the control of the same seed, so
+  the hardware enters as seed-level variation and adds no bias between the arms. The decision will
+  state it.
+- **A results zip from Kaggle is merged by `study h12p-import`.** It accepts only H12′ result
+  folders, `p16` run folders and registry rows, and refuses path traversal and any file that would
+  replace different content.
+

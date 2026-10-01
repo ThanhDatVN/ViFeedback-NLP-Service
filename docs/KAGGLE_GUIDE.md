@@ -178,6 +178,27 @@ under `models/`, and run `vifeedback serve bench --model-dir models/serve_int8_d
 
 ---
 
+## Cycle 5 H12′ (`kaggle_h12p.ipynb`)
+
+A self-contained notebook, unlike the dataset-based runner above: it clones the repository at a
+pinned commit (`COMMIT` in its first cell), so no upload of the code is needed.
+
+| Section | What it does |
+|---|---|
+| 1–2 | GPU and Internet checks; `HF_TOKEN` from Kaggle Secrets (NEU-ESC is gated); clone and install with `--no-deps` (Kaggle's torch is kept) and `pyvi==0.1.1` |
+| 3 | `data fetch`, `data variants --name seg_pyvi`, `data fetch-external` for ViLexNorm and NEU-ESC. Stops unless the pyvi counts per split equal the laptop's, the rebuilt restorer is byte-identical to the released one (`study h12p-assets`), and the held-out posts and the ViLexNorm splits equal the committed indices |
+| 4 | Smoke run (256 examples, nothing written) |
+| 5 | Part A: `study h12p-run` for seeds 1337, 2024, 7, 31337. Each writes its development summary and its labels on the 3,000 held-out posts and the 1,500 confirmation pairs (labels only; the held-out labels are read only by `h12p-confirm`) |
+| 6 | Part B, only if a private dataset holds the six checkpoint folders: `study h12p-control` for the five H10b seeds and `study h12p-predict --seed 42` |
+| 7 | `h12p_results.zip`: the files the runs added under `results/studies/cycle5/h12p/` and `results/runs/p16-*`, plus the new registry rows; every CSV is checked to hold labels and numbers only |
+
+Back on the laptop: `vifeedback study h12p-import h12p_results.zip` (refuses unknown entries, path
+traversal and any file that would replace different content), `study h12p-status`, then
+`study h12p-confirm`, which loads no model.
+
+The teacher's targets come from `results/studies/cycle5/h12p_teacher_q.csv` (ViLexNorm row,
+probabilities), equal to the laptop's cache, so Kaggle needs none of the teacher's checkpoints.
+
 ## Troubleshooting
 
 | Symptom | Cause | Fix |

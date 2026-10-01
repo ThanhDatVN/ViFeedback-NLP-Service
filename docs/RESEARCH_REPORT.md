@@ -414,6 +414,19 @@ alone and in a batch.
 - **Serving.** The student was served as declared (ADR-040) until decision 9 chose H10b (ADR-043);
   it stays released for size-first uses.
 
+**The served model under 200 MB with no retraining (S7b, ADR-045).** The training and coverage
+texts use 15,318 of PhoBERT's 64,000 vocabulary pieces. Keeping 17,500 entries and storing the
+weights in FP16 cuts the H10b graph from 540 MB to 198.9 MB. Against the full FP32 graph it gives
+the same label on at least 99.04% of every held-out set and on 99.94% of test; p95 falls from
+26.9 to 24.9 ms in the same session. The cost is two test sentences of neutral F1 (0.548 against
+0.550), and `<unk>` for words far from the training domains. It is served.
+
+**H12′: in-domain forum data with the anchored consistency (running).** Two heads (the UIT-VSFC
+head served) plus H10b's consistency, trained on 18,113 in-scope NEU-ESC posts and confirmed on
+3,000 held out (`cycle5.yaml` v6). Seed 42 passed the eligibility check: UIT-VSFC validation
++0.0104 and in-scope NEU-ESC validation +0.0611 against H10b. The other seeds run on Kaggle
+(ADR-046). The claim it can support is the NEU forum's, not a third institution's.
+
 ## 6. Negative and inconclusive results
 
 | Result | What it weakens | Still untested |

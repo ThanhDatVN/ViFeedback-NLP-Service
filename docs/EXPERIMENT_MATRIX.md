@@ -580,7 +580,7 @@ v4 S5′, ADR-035). Selection on NEU-ESC validation; NEU-ESC test once per rule,
 | F1 runtime image | Docker build | 1,023 → 750 → **519 MB**; token ids identical on 49,141 texts | S8 met |
 | F2 clean-clone reproduction | CI (`reproduce.yml`), Hub download | 2.3 min; validation 0.8644 reproduced | S10 met |
 
-### 5.11 Research Cycle 5 — declared, to fill
+### 5.11 Research Cycle 5 — H10, H11, H10b, S7b decided; H12′ running
 
 Declared in `configs/experiments/cycle5.yaml` v1 (2026-09-29, before any run; H10) and v2 (2026-09-30,
 before any H11 run; H11). Order chosen by the owner: H10 (real typing), H11 (distilled student), H12
@@ -598,6 +598,9 @@ before any H11 run; H11). Order chosen by the owner: H10 (real typing), H11 (dis
 | **H10b** confirmation (5 seeds each) | 1,500 fresh ViLexNorm pairs; validation guards | agreement +0.061 [+0.048, +0.075]; flips −0.061 [−0.073, −0.049]; label_tv 0.013; UIT +0.0014, neutral +0.003, stripped +0.0028, NEU-ESC −0.0039 | **passed** (ADR-042) |
 | H10b closing gate | UIT-VSFC test, once (logged) | 0.8237 (5 seeds) vs 0.8296: −0.0059 [−0.019, +0.007]; seed 42 0.8208, neutral 0.550, no diacritics 0.623 | reported |
 | H11 closing gate | UIT-VSFC test, once (logged) | student 0.8168 (5 seeds) vs 0.8296: −0.0129 [−0.0204, −0.0054], 0/5 seeds higher; seed 42 0.8175, neutral 0.545, no diacritics 0.609 | reported (ADR-040) |
+| **S7b** (v7): H10b with a 17,500-entry vocabulary, FP16 storage | UIT-VSFC val, stripped val, NEU-ESC val, ViLexNorm dev and confirmation pairs, challenge v1 | 198.9 MB; label agreement with the FP32 graph ≥ 99.04% on every set (100% on UIT-VSFC, stripped, challenge); macro-F1 +0.0000 / +0.0022; p95 24.9 ms (FP32 26.9 ms); test once 0.8198 (FP32 0.8208, 99.94% same labels), neutral 0.548 | **passed, served** (ADR-045) |
+| H12′ (v6) eligibility, seed 42 | UIT-VSFC / in-scope NEU-ESC validation | control (H10b s42) 0.8617 / 0.4270; two heads + anchored 0.8721 / 0.4881 (+0.0104 / +0.0611); ViLexNorm dev agreement 0.847 (control 0.863) | eligible; seeds 1337/2024/7/31337 on Kaggle (ADR-046) |
+| H12′ confirmation | 3,000 held-out in-scope NEU-ESC train posts; validation guards; 1,500 ViLexNorm pairs | — | waits for the four seeds |
 
 ---
 

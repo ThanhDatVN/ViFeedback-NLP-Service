@@ -84,7 +84,7 @@ student, not by the served model (ADR-043):
 | 9d | ✅ Latency of H10b: the FP32 graph 26.9 ms p95 in the S7b session (an earlier session on a loaded machine was not reportable) | — | CPU | reported |
 | 9e | ✅ S7b (`cycle5.yaml` v7, ADR-045): the served H10b at 198.9 MB by FP16 storage and a 17,500-entry vocabulary, no retraining; passed; p95 24.9 ms; **served**; test once 0.8198. 👤 Hub upload | 👤 upload | CPU | the S7b rule |
 | 10 | H12: declare, then run, when decision 2 and the new labelled sample exist | 👤 decision 2, 👤 data | ≈ 6 GPU runs | declared later |
-| 10′ | H12′ (§ 4): ✅ declared in `cycle5.yaml` v6; run when the GPU is free | — | 5 GPU runs, about 3 h | the H12′ rule |
+| 10′ | H12′ (§ 4): ✅ declared (v6); ✅ seed 42 eligible (+0.0104 UIT-VSFC, +0.0611 NEU-ESC); seeds 1337/2024/7/31337 on Kaggle (`notebooks/kaggle_h12p.ipynb`, ADR-046), then `study h12p-import` and `h12p-confirm` on the laptop | 👤 run the notebook | 4 GPU runs on a T4 | the H12′ rule |
 | any time | D1 neutral audit → D2 branch: the 58 rows the tree reads (ADR-044; sheet written) | 👤 about 2 h + 30–40 min | D2: ≤ 12 runs | the tree frozen in `cycle2.yaml` |
 | ✅ | Three latency sessions (owner waived the idle condition) | — | CPU | p95 ≤ 30 ms: 12.3 ms |
 

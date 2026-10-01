@@ -230,6 +230,7 @@ gate, v4 H10b, v5 H10b's release candidate and closing gate. The owner's order i
 | **H10b confirmation** (5 seeds each, 1,500 fresh pairs) | Agreement +0.061 [+0.048, +0.075]; flips −0.061 [−0.073, −0.049] (about 18% → 12%); label_tv 0.013 (the control's 0.108); UIT-VSFC +0.0014; neutral +0.003; stripped +0.0028; NEU-ESC −0.0039 | **Passed** (ADR-042) |
 | H10b closing gate (test, once) | 0.8237 over 5 seeds vs 0.8296 for the served recipe: −0.0059 [−0.019, +0.007]; seed 42 0.8208, neutral 0.550 | Reported |
 | H10b release candidate | FP32 graph through the gate (parity 1.85e-5), restorer re-accepted, scope detector and T = 1.349 attached, 12 API tests pass; 40 API tests pass once served | **Served** (ADR-043, 2026-10-01) |
+| H12′ eligibility (`cycle5.yaml` v6, seed 42) | UIT-VSFC 0.8721 (+0.0104 vs H10b s42), in-scope NEU-ESC 0.4881 (+0.0611) | Eligible; the four other seeds on Kaggle (ADR-046), the confirmation on the laptop |
 | **S7b** (`cycle5.yaml` v7) | H10b with a 17,500-entry vocabulary in FP16 storage: **198.9 MB**; ≥ 99.04% label agreement with the FP32 graph on every held-out set (100% on UIT-VSFC validation, stripped text, challenge v1); macro-F1 unchanged. Latency p95 24.9 ms (FP32 26.9 ms, same session); test once 0.8198 (FP32 0.8208, 99.94% same labels), neutral 0.548 | **Passed and served** (ADR-045); FP32 kept as `.fp32-sentiment` |
 
 **Decision 9: which model the service runs.** The owner approved H10b on 2026-10-01 (ADR-043).

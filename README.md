@@ -28,7 +28,7 @@ for the sentiment model.
 | **Robustness** | Diacritics restored before the model: stripped validation 0.686 → **0.857** (ADR-031). Out-of-scope input flagged by a topic detector: AUROC **0.922** within another university's forum (ADR-034) |
 | **Latency** | Raw text in, served pipeline p95 **24.9 ms** on a laptop CPU (the full FP32 graph 26.9 ms in the same session; the student 12.3 ms; target 30 ms) |
 | **Reproducible** | A clean clone reproduces the published model's validation macro-F1 (0.8617, H10b) in about **2–3 min**, every file checked against `SHA256SUMS`; CI runs it on every change to the workflow |
-| **Research** | Cycles 0–4 closed, Cycle 5 run; 45 ADRs, 163 weight-updating runs in [the ledger](configs/experiments/ledger.csv); Cycle 5 declared ([cycle5.yaml](configs/experiments/cycle5.yaml)) |
+| **Research** | Cycles 0–4 closed, Cycle 5 run; 46 ADRs, 163 weight-updating runs in [the ledger](configs/experiments/ledger.csv); Cycle 5 declared ([cycle5.yaml](configs/experiments/cycle5.yaml)) |
 
 ---
 
@@ -118,7 +118,7 @@ rules are committed before its first run ([configs/experiments/](configs/experim
 | **2** | Confirmation on a frozen, SHA-256-pinned challenge set | Topic stacking fails. The service switched to the augmented model. An instruction LLM beats the encoder on neutral, but only on constructed text (H7) |
 | **3** | The served model on real input (NEU-ESC forum posts, ViLexNorm comments) | **The service lowercases and restores diacritics** (NEU-ESC unaccented posts 0.270 → 0.374). 17% of labels flip on real typing. A lexicon and careful INT8 fail their rules |
 | **4** | Student text from other institutions | In-domain data helps only with one head per label policy (+0.111 on NEU-ESC), but it failed two declared conditions, so it was not released. **`in_scope` now comes from a topic detector.** INT8 passed non-inferiority but not fidelity (91.4% label agreement, batch-dependent), so it was not released |
-| **5** | Real typing, then a smaller model (the owner's order) | **H10 not passed**: its consistency training removed flips by calling informal text negative (ADR-038). **H10b passed**: anchored on a frozen teacher, flips fell from about 18% to 12% with no collapse and test unchanged at five seeds (ADR-042). **H11 passed**: a 6-layer student, 185 MB and 1.8x faster, 0.013 below on test (ADR-039, ADR-040), released. Calibrated confidence served (ADR-041). **The owner chose H10b for the service** (ADR-043). H12 waits for new labelled data |
+| **5** | Real typing, then a smaller model (the owner's order) | **H10 not passed**: its consistency training removed flips by calling informal text negative (ADR-038). **H10b passed**: anchored on a frozen teacher, flips fell from about 18% to 12% with no collapse and test unchanged at five seeds (ADR-042). **H11 passed**: a 6-layer student, 185 MB and 1.8x faster, 0.013 below on test (ADR-039, ADR-040), released. Calibrated confidence served (ADR-041). **The owner chose H10b for the service** (ADR-043), served at 198.9 MB (ADR-045). H12′ (forum posts held out of NEU-ESC train) eligible at seed 42, finishing on Kaggle; H12 waits for new labelled data |
 
 Per-cycle tables: [STATUS](docs/STATUS.md) and [EXPERIMENT_MATRIX § 5](docs/EXPERIMENT_MATRIX.md).
 Technical report: [RESEARCH_REPORT](docs/RESEARCH_REPORT.md).
@@ -231,7 +231,7 @@ The Kaggle notebooks are for models that exceed a 4.29 GB GPU ([KAGGLE_GUIDE](do
 | **[STATUS](docs/STATUS.md)** | Progress by gate and cycle, open problems, what runs next |
 | **[NEXT_PLAN](docs/NEXT_PLAN.md)** | Cycle 5 and the open targets, with research sources |
 | [RESEARCH_REPORT](docs/RESEARCH_REPORT.md) | Technical report: questions, method, findings, negative results, limitations |
-| [DECISIONS](docs/DECISIONS.md) | 45 ADRs: every plan correction forced by measurement or review |
+| [DECISIONS](docs/DECISIONS.md) | 46 ADRs: every plan correction forced by measurement or review |
 | [EXPERIMENT_MATRIX](docs/EXPERIMENT_MATRIX.md) | Run-ID scheme and every result table |
 | [EVALUATION_PROTOCOL](docs/EVALUATION_PROTOCOL.md) · [EVALUATION_DATA](docs/EVALUATION_DATA.md) | What every number is held to; what counts as evidence |
 | [DATA_CARD](docs/DATA_CARD.md) | UIT-VSFC measured from the files, and what is never committed |

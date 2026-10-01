@@ -27,6 +27,7 @@ $PY = ".venv\Scripts\python.exe"
 | 7 | [Dữ liệu có nhãn mới cho hướng (c)](#7-dữ-liệu-có-nhãn-mới-cho-hướng-c), hoặc đồng ý chạy [H12′](#phương-án-thay-thế-h12-không-cần-dữ-liệu-mới) | 20–25 giờ (hai người); H12′ chỉ cần một câu trả lời | Trước Cycle 5 (c) | Kết luận về văn bản của trường khác (H12′: chỉ về diễn đàn NEU) |
 | 8 | [Challenge v2](#8-tuỳ-chọn-challenge-v2) | 4–6 giờ | Tuỳ chọn | Kiểm tra teencode do người thật gõ |
 | 10 | ~~[Chọn mô hình cho service](#10-chọn-mô-hình-cho-service-ba-lựa-chọn)~~ | — | ✅ Xong 2026-10-01: bạn chọn H10b | Service chạy H10b (ADR-043) |
+| 11 | [Chạy H12′ trên Kaggle](#11-chạy-h12-trên-kaggle) | 15 phút thao tác, 2–2,5 giờ máy chạy | Bây giờ (laptop đang bị chặn PyTorch) | Kết luận H12′ |
 
 Việc 1 quan trọng nhất: đó là con đường duy nhất để biết lớp `neutral` yếu vì **nhãn gốc mơ hồ**
 hay vì **mô hình biểu diễn kém**. Hai nguyên nhân đòi hỏi hai cách sửa khác nhau, và không thí
@@ -482,6 +483,75 @@ Move-Item models\serve\.student-sentiment models\serve\sentiment
 
 Service (ONNX Runtime, pyvi, bộ phát hiện chủ đề bằng numpy) không cần `pyarrow` hay `onnx`, nên
 vẫn chạy được ngay cả khi hai gói này bị chặn.
+
+---
+
+## 11. Chạy H12′ trên Kaggle
+
+**Vì sao.** Từ chiều 2026-10-01, Windows Application Control chặn PyTorch, pyarrow và scikit-learn
+trên laptop (mục 9), nên laptop không huấn luyện được. Seed 42 của H12′ đã chạy xong trước đó và
+**đủ điều kiện** đi tiếp (UIT-VSFC +0,0104, NEU-ESC +0,0611). Còn lại 4 seed (1337, 2024, 7, 31337)
+và nhãn dự đoán của các mô hình đối chứng trên dữ liệu xác nhận.
+
+Notebook: [`notebooks/kaggle_h12p.ipynb`](../notebooks/kaggle_h12p.ipynb). Nó tự tải mã nguồn ở đúng
+commit đã ghim từ GitHub, tự tải dữ liệu, và **tự dừng** nếu máy Kaggle thấy dữ liệu khác laptop
+(phiên bản pyvi, bộ khôi phục dấu, cách tách tập giữ lại, cách tách ViLexNorm). Bạn không phải sửa
+dòng code nào.
+
+**Phần A (bắt buộc): 4 seed, khoảng 1,5–2 giờ GPU.** Các bước:
+
+1. Vào <https://www.kaggle.com> → *Create* → *New Notebook* → *File* → *Import Notebook* → chọn file
+   `notebooks/kaggle_h12p.ipynb` trong repo.
+2. Thanh bên phải, *Session options*:
+   - *Accelerator*: **GPU T4 x2** (hoặc T4; notebook chỉ dùng một GPU).
+   - *Internet*: **On** (Kaggle có thể yêu cầu xác minh số điện thoại một lần).
+3. *Add-ons* → *Secrets* → *Add a new secret*:
+   - tên **`HF_TOKEN`**;
+   - giá trị là token Hugging Face của bạn, cái đang nằm trong file `.env`, của tài khoản đã bấm
+     đồng ý điều kiện dữ liệu NEU-ESC.
+
+   Bật công tắc gắn secret này vào notebook. **Không dán token vào chat với tôi.**
+4. Để notebook ở chế độ **Private** (mặc định).
+5. *Save Version* → chọn **Save & Run All (Commit)** → *Save*. Notebook chạy nền tối đa 12 giờ, bạn
+   tắt trình duyệt cũng được.
+6. Khi phiên chạy xong (trạng thái *Successful*), mở phiên bản đó → tab *Output* → tải
+   **`h12p_results.zip`**. File này chỉ có số liệu và nhãn dự đoán, không có câu chữ nào.
+7. Chép `h12p_results.zip` vào thư mục repo và báo tôi. Tôi sẽ chạy:
+   ```powershell
+   & $PY -m vifeedback.cli study h12p-import h12p_results.zip
+   & $PY -m vifeedback.cli study h12p-status
+   ```
+
+**Phần B (tuỳ chọn, khuyến nghị nếu laptop vẫn bị chặn): khoảng 15 phút GPU.** Phần này tính nhãn
+dự đoán của 5 mô hình đối chứng (H10b) và của H12′ seed 42 trên dữ liệu xác nhận. Nó cần 6 thư mục
+checkpoint (khoảng 3,1 GB) chỉ có trên laptop. Nếu bạn bỏ qua phần B, tôi làm việc này trên laptop
+ngay khi Windows cho chạy PyTorch lại.
+
+1. Nén 6 thư mục (PowerShell, tại thư mục repo):
+   ```powershell
+   $dirs = Get-ChildItem models -Directory | Where-Object {
+       $_.Name -like 'p15-sent-phobert-base-seg_pyvi-h10b-anchored_orig-s*-ckp' -or
+       $_.Name -eq 'p16-sent-phobert-base-seg_pyvi-h12p-two_heads_anchored-s42-2842e32b-ckp' }
+   $dirs.Name   # phải in ra đúng 6 tên
+   Compress-Archive -Path $dirs.FullName -DestinationPath h12p_checkpoints.zip -CompressionLevel Fastest
+   ```
+2. Kaggle → *Datasets* → *New Dataset*:
+   - tải `h12p_checkpoints.zip` lên (Kaggle tự giải nén);
+   - đặt tên tuỳ ý, để **Private**, bấm *Create*.
+3. Trong notebook: *Add Input* → chọn dataset vừa tạo, rồi làm bước 5 của phần A. Notebook tự tìm
+   6 thư mục theo tên. Thiếu thư mục nào thì nó báo và bỏ qua phần B, không hỏng phần A.
+4. Sau khi xong, xoá `h12p_checkpoints.zip` trên laptop nếu cần chỗ trống. Thư mục `models\` vẫn
+   giữ bản gốc.
+
+**Nếu gặp lỗi:**
+
+| Thông báo | Nghĩa là | Cách xử lý |
+|---|---|---|
+| `... is gated` hoặc 401/403 ở bước NEU-ESC | Thiếu `HF_TOKEN`, hoặc token của tài khoản chưa đồng ý điều kiện | Kiểm tra secret; mở trang NEU-ESC trên Hugging Face bằng đúng tài khoản đó và bấm đồng ý |
+| `pyvi segmentation differs from the laptop` | Kaggle cài được pyvi khác bản 0.1.1 | Báo tôi kèm dòng lỗi |
+| `sha256 does not match the manifest` ở bước restorer | Dữ liệu UIT-VSFC tải về khác bản đã ghim | Báo tôi |
+| `split differs from ...` | Phiên bản numpy của Kaggle sinh hoán vị khác | Báo tôi; notebook dừng trước khi huấn luyện nên không tốn GPU |
+| Hết 12 giờ giữa chừng | Không xảy ra với ước tính 2–2,5 giờ | Chạy lại; seed đã xong sẽ được bỏ qua trong cùng phiên |
 
 ---
 
