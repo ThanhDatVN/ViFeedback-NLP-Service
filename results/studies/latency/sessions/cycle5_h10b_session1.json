@@ -1,0 +1,285 @@
+{
+  "protocol": "L rungs: model-only on pre-segmented test inputs; S rungs: raw test text through serving.pipeline (S2/S3 with diacritics stripped); 200 warmup, median-of-repeats p95, two passes in rotated order; texts/s at batch 32; RSS after each config",
+  "manifest_sha256": "3c80ae301c4d9bffa526edf7bdab0ea9812f20c0d0e4b78dcacb458c610ca3a6",
+  "summary": {
+    "L3 onnx fp32 (model.opt.onnx), dynamic padding": {
+      "p95_ms_by_pass": [
+        39.639,
+        34.428
+      ],
+      "spread_by_pass": [
+        0.3415,
+        0.0955
+      ],
+      "steady_passes": [
+        2
+      ],
+      "basis": "pass 2 only (the other was not steady)",
+      "reportable": true,
+      "p50_ms": 16.38,
+      "p95_ms": 34.43,
+      "p99_ms": 58.58,
+      "texts_per_s_b32": 26.1,
+      "speedup_p95_vs_baseline": 1.0,
+      "speedup_p50_vs_baseline": 1.0
+    },
+    "S0 raw text: lowercase, pyvi, logits (before ADR-031)": {
+      "p95_ms_by_pass": [
+        50.422,
+        57.154
+      ],
+      "spread_by_pass": [
+        0.4144,
+        0.687
+      ],
+      "steady_passes": [],
+      "basis": "no steady pass",
+      "reportable": false
+    },
+    "S1 raw text: served pipeline": {
+      "p95_ms_by_pass": [
+        46.049,
+        57.192
+      ],
+      "spread_by_pass": [
+        0.1608,
+        0.4219
+      ],
+      "steady_passes": [],
+      "basis": "no steady pass",
+      "reportable": false
+    },
+    "S2 unaccented text: before ADR-031": {
+      "p95_ms_by_pass": [
+        61.609,
+        54.454
+      ],
+      "spread_by_pass": [
+        0.0581,
+        0.0711
+      ],
+      "steady_passes": [
+        1,
+        2
+      ],
+      "basis": "steadier pass (passes disagree)",
+      "reportable": true,
+      "p50_ms": 28.12,
+      "p95_ms": 61.61,
+      "p99_ms": 86.65,
+      "texts_per_s_b32": 16.1,
+      "speedup_p95_vs_baseline": 0.56,
+      "speedup_p50_vs_baseline": 0.58
+    },
+    "S3 unaccented text: served pipeline": {
+      "p95_ms_by_pass": [
+        48.62,
+        46.199
+      ],
+      "spread_by_pass": [
+        0.276,
+        0.0472
+      ],
+      "steady_passes": [
+        2
+      ],
+      "basis": "pass 2 only (the other was not steady)",
+      "reportable": true,
+      "p50_ms": 23.58,
+      "p95_ms": 46.2,
+      "p99_ms": 72.07,
+      "texts_per_s_b32": 23.2,
+      "speedup_p95_vs_baseline": 0.75,
+      "speedup_p50_vs_baseline": 0.69
+    }
+  },
+  "passes": [
+    {
+      "L3 onnx fp32 (model.opt.onnx), dynamic padding": {
+        "p50_ms": 19.807,
+        "p95_ms": 39.639,
+        "p99_ms": 65.316,
+        "mean_ms": 22.943,
+        "repeats": 5,
+        "timed_per_repeat": 300,
+        "p95_spread_across_repeats": 0.3415,
+        "throttling_suspected": true,
+        "warning": "p95 varied 34.1% across repeats (>10%). The measurement was not in a steady state (thermal throttling, power management or background load; the spread alone cannot say which). Do not report it; re-run on an idle, cool machine.",
+        "rss_mb_after": 1970.5,
+        "texts_per_s_b32": 25.0
+      },
+      "S0 raw text: lowercase, pyvi, logits (before ADR-031)": {
+        "p50_ms": 24.861,
+        "p95_ms": 50.422,
+        "p99_ms": 85.663,
+        "mean_ms": 28.296,
+        "repeats": 5,
+        "timed_per_repeat": 300,
+        "p95_spread_across_repeats": 0.4144,
+        "throttling_suspected": true,
+        "warning": "p95 varied 41.4% across repeats (>10%). The measurement was not in a steady state (thermal throttling, power management or background load; the spread alone cannot say which). Do not report it; re-run on an idle, cool machine.",
+        "rss_mb_after": 1991.2,
+        "texts_per_s_b32": 24.3
+      },
+      "S1 raw text: served pipeline": {
+        "p50_ms": 22.419,
+        "p95_ms": 46.049,
+        "p99_ms": 65.149,
+        "mean_ms": 25.528,
+        "repeats": 5,
+        "timed_per_repeat": 300,
+        "p95_spread_across_repeats": 0.1608,
+        "throttling_suspected": true,
+        "warning": "p95 varied 16.1% across repeats (>10%). The measurement was not in a steady state (thermal throttling, power management or background load; the spread alone cannot say which). Do not report it; re-run on an idle, cool machine.",
+        "rss_mb_after": 1991.4,
+        "texts_per_s_b32": 23.7
+      },
+      "S2 unaccented text: before ADR-031": {
+        "p50_ms": 28.119,
+        "p95_ms": 61.609,
+        "p99_ms": 86.653,
+        "mean_ms": 31.578,
+        "repeats": 5,
+        "timed_per_repeat": 300,
+        "p95_spread_across_repeats": 0.0581,
+        "throttling_suspected": false,
+        "rss_mb_after": 1991.4,
+        "texts_per_s_b32": 16.1
+      },
+      "S3 unaccented text: served pipeline": {
+        "p50_ms": 23.138,
+        "p95_ms": 48.62,
+        "p99_ms": 76.485,
+        "mean_ms": 26.427,
+        "repeats": 5,
+        "timed_per_repeat": 300,
+        "p95_spread_across_repeats": 0.276,
+        "throttling_suspected": true,
+        "warning": "p95 varied 27.6% across repeats (>10%). The measurement was not in a steady state (thermal throttling, power management or background load; the spread alone cannot say which). Do not report it; re-run on an idle, cool machine.",
+        "rss_mb_after": 1502.7,
+        "texts_per_s_b32": 22.5
+      }
+    },
+    {
+      "S3 unaccented text: served pipeline": {
+        "p50_ms": 23.582,
+        "p95_ms": 46.199,
+        "p99_ms": 72.071,
+        "mean_ms": 26.517,
+        "repeats": 5,
+        "timed_per_repeat": 300,
+        "p95_spread_across_repeats": 0.0472,
+        "throttling_suspected": false,
+        "rss_mb_after": 1503.1,
+        "texts_per_s_b32": 23.2
+      },
+      "S2 unaccented text: before ADR-031": {
+        "p50_ms": 21.909,
+        "p95_ms": 54.454,
+        "p99_ms": 76.033,
+        "mean_ms": 25.954,
+        "repeats": 5,
+        "timed_per_repeat": 300,
+        "p95_spread_across_repeats": 0.0711,
+        "throttling_suspected": false,
+        "rss_mb_after": 1503.2,
+        "texts_per_s_b32": 18.1
+      },
+      "S1 raw text: served pipeline": {
+        "p50_ms": 23.498,
+        "p95_ms": 57.192,
+        "p99_ms": 77.737,
+        "mean_ms": 27.745,
+        "repeats": 5,
+        "timed_per_repeat": 300,
+        "p95_spread_across_repeats": 0.4219,
+        "throttling_suspected": true,
+        "warning": "p95 varied 42.2% across repeats (>10%). The measurement was not in a steady state (thermal throttling, power management or background load; the spread alone cannot say which). Do not report it; re-run on an idle, cool machine.",
+        "rss_mb_after": 1050.9,
+        "texts_per_s_b32": 19.9
+      },
+      "S0 raw text: lowercase, pyvi, logits (before ADR-031)": {
+        "p50_ms": 31.934,
+        "p95_ms": 57.154,
+        "p99_ms": 88.241,
+        "mean_ms": 34.153,
+        "repeats": 5,
+        "timed_per_repeat": 300,
+        "p95_spread_across_repeats": 0.687,
+        "throttling_suspected": true,
+        "warning": "p95 varied 68.7% across repeats (>10%). The measurement was not in a steady state (thermal throttling, power management or background load; the spread alone cannot say which). Do not report it; re-run on an idle, cool machine.",
+        "rss_mb_after": 1046.1,
+        "texts_per_s_b32": 25.3
+      },
+      "L3 onnx fp32 (model.opt.onnx), dynamic padding": {
+        "p50_ms": 16.378,
+        "p95_ms": 34.428,
+        "p99_ms": 58.582,
+        "mean_ms": 19.134,
+        "repeats": 5,
+        "timed_per_repeat": 300,
+        "p95_spread_across_repeats": 0.0955,
+        "throttling_suspected": false,
+        "rss_mb_after": 1048.6,
+        "texts_per_s_b32": 26.1
+      }
+    }
+  ],
+  "peak_rss_mb": 929.4,
+  "environment": {
+    "captured_at": "2026-10-01T02:36:40+00:00",
+    "python": "3.11.9",
+    "executable": "D:\\GitHub\\ViFeedback NLP Service\\.venv\\Scripts\\python.exe",
+    "os": {
+      "system": "Windows",
+      "release": "10",
+      "version": "10.0.26300"
+    },
+    "cpu": {
+      "platform_processor": "AMD64 Family 25 Model 68 Stepping 1, AuthenticAMD",
+      "machine": "AMD64",
+      "logical_cores": 12,
+      "brand": "AMD Ryzen 5 6600H with Radeon Graphics",
+      "physical_cores": 6,
+      "flags": {
+        "avx": true,
+        "avx2": true,
+        "fma": true,
+        "avx512f": false,
+        "avx512_vnni": false,
+        "avx_vnni": false,
+        "sse4_2": true
+      },
+      "flags_source": "py-cpuinfo"
+    },
+    "has_vnni": false,
+    "gpu": {
+      "available": true,
+      "name": "NVIDIA GeForce RTX 3050 Laptop GPU",
+      "count": 1,
+      "capability": [
+        8,
+        6
+      ],
+      "cuda": "12.6"
+    },
+    "packages": {
+      "numpy": "2.4.6",
+      "pandas": "2.3.3",
+      "scikit-learn": "1.7.2",
+      "scipy": "1.17.1",
+      "torch": "2.14.0+cu126",
+      "transformers": "5.17.0",
+      "datasets": "5.0.1",
+      "onnxruntime": "1.30.0",
+      "optimum": null,
+      "fastapi": "0.141.1"
+    },
+    "git": {
+      "sha": "48f7a407e3ee26ff1da53c195ffb28aa6d9d3ebf",
+      "branch": "main",
+      "dirty": false
+    },
+    "source_sha256": "0eb2c99e7992184dcc71d276209729d6145a0686753c58676f1ee1187c5dd4b4"
+  }
+}

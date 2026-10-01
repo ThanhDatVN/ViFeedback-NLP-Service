@@ -1504,7 +1504,9 @@ at five seeds. The owner approved it on 2026-10-01.
   Size was traded for accuracy and robustness.
 - **S4's minimum** is met at seed 42 by the smallest margin (neutral F1 0.550).
 - **Latency.** The served pipeline is the p9 architecture, 22.1 ms in the Cycle 5 sessions. Its own
-  session waits for a free GPU: `study latency` refuses to run while another process is on the GPU.
+  session waits for a quiet machine: `study latency` refuses to run while another process is on the
+  GPU, and the one session run on 2026-10-01 had no steady pass on the served pipeline
+  (`cycle5_h10b_session1.json`, model-only p95 34.4 ms against 20.5 ms for the same architecture).
 - **Hub.** The dry-run bundle for `Datk4/vifeedback-sentiment-phobert` now holds H10b and its card,
   licensed CC BY-NC-SA 4.0 because of the ViLexNorm training text. The Hub keeps the p9 model
   (CC BY-NC 4.0) until the owner approves the upload and the licence.

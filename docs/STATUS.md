@@ -247,7 +247,8 @@ The recommendation was H10b. Its real-typing gain was confirmed by a rule declar
 fresh pairs. It leads on the constructed hard cases (development data, one author). On test it cannot
 be told apart from the served recipe at five seeds. What it costs: the served artifact is 540 MB,
 so S7 is met only by the released student, and neutral F1 at seed 42 (0.550) meets S4's minimum by
-the smallest margin. Its own latency session waits for a free GPU; the architecture is the one
+the smallest margin. Its own latency session is not reportable yet: the one run on 2026-10-01 had no steady pass on the
+served pipeline, on a loaded machine (`cycle5_h10b_session1.json`); the architecture is the one
 measured at 22.1 ms.
 
 **What H10 establishes.** A consistency loss on unlabeled, off-domain pairs has a cheap solution:
