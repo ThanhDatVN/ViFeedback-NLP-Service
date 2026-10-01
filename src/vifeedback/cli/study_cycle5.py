@@ -257,6 +257,44 @@ def study_h12p_confirm() -> None:
     typer.echo(f"  H12' {'PASSED' if out['passed'] else 'NOT passed'}")
 
 
+@study_app.command("h12p-predict")
+def study_h12p_predict(seed: int = typer.Option(42)) -> None:
+    """Write a trained H12' candidate's labels on the confirmation data (labels only)."""
+    from vifeedback.training import h12p as H
+
+    typer.echo(f"  -> {H.predict_candidate(seed)}")
+
+
+@study_app.command("h12p-assets")
+def study_h12p_assets() -> None:
+    """On a machine without the release (Kaggle): rebuild the restorer and check its SHA-256."""
+    from vifeedback.training import h12p as H
+
+    typer.echo(f"  serving transform assets in {H.prepare_serving_assets()}")
+
+
+@study_app.command("h12p-status")
+def study_h12p_status() -> None:
+    """What H12' confirmation still needs (summaries and prediction files of ten models)."""
+    from vifeedback.training import h12p as H
+
+    missing = H.missing_for_confirm()
+    typer.echo("  ready to confirm" if not missing else "  missing:\n    " + "\n    ".join(missing))
+
+
+@study_app.command("h12p-import")
+def study_h12p_import(
+    zip_path: str = typer.Argument(..., help="the results zip from Kaggle"),
+) -> None:
+    """Merge the H12' results zip from notebooks/kaggle_h12p.ipynb into the repository."""
+    from pathlib import Path
+
+    from vifeedback.training import h12p as H
+
+    for n in H.import_results(Path(zip_path)):
+        typer.echo(f"  {n}")
+
+
 @study_app.command("h10b-run")
 def study_h10b_run(
     recipe: str = typer.Option(..., help="anchored_orig | anchored_both"),

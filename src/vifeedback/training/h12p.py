@@ -25,6 +25,8 @@ N_HOLDOUT = 3000
 SEED = 44
 OUT = paths.RESULTS / "studies" / "cycle5" / "h12p"
 INDEX = paths.RESULTS / "studies" / "cycle5" / "h12p_holdout_index.csv"
+TEACHER_Q = paths.RESULTS / "studies" / "cycle5" / "h12p_teacher_q.csv"
+RESTORER_RECORD = paths.RESULTS / "studies" / "export" / "laptop_fp16_h10b_v17500_restorer.json"
 RECIPE = "two_heads_anchored"
 PHASE_NUM = 16
 WEIGHT = 1.0
@@ -69,7 +71,9 @@ def write_holdout_index() -> Path:
 # --- data -----------------------------------------------------------------------------------------
 
 
-def neu_train_and_holdout(transform) -> dict[str, dict[str, Any]]:
+def neu_train_and_holdout(
+    transform, parts: tuple[str, ...] = ("train", "holdout")
+) -> dict[str, dict[str, Any]]:
     """The in-scope NEU-ESC train split as declared: 18,113 training posts and the 3,000 held out,
     through the serving transform, with UIT-VSFC label ids (Toxic -> negative) and topics."""
     from vifeedback.evaluation import external as X
@@ -82,6 +86,8 @@ def neu_train_and_holdout(transform) -> dict[str, dict[str, Any]]:
     ids = {c: i for i, c in enumerate(LABELS)}
     out: dict[str, dict[str, Any]] = {}
     for name, rows in (("train", train), ("holdout", holdout)):
+        if name not in parts:
+            continue
         part = frame.iloc[rows]
         raw = part.text.tolist()
         out[name] = {
@@ -342,6 +348,125 @@ def train_two_heads_anchored(
     }
 
 
+# --- inputs that must be identical on every machine --------------------------------------------
+
+
+def pair_rows(split: str) -> np.ndarray:
+    """ViLexNorm train row indices of `anchored.pairs(split)`, in the order it returns them."""
+    from vifeedback.training import anchored as A
+    from vifeedback.training import consistency as C
+
+    dev, train_pairs = C.split_indices()
+    confirm, train = A.confirm_split(len(train_pairs))
+    # A machine whose numpy draws other permutations would silently train on other pairs.
+    for rows, f in ((dev, C.DEV_INDEX), (train_pairs[confirm], A.CONFIRM_INDEX)):
+        if set(rows.tolist()) != set(pd.read_csv(f)["row"].tolist()):
+            raise RuntimeError(f"this machine's ViLexNorm split differs from {f.name}")
+    if split == "dev":
+        return dev
+    return train_pairs[confirm if split == "confirm" else train]
+
+
+def write_teacher_q() -> Path:
+    """The frozen teacher's probabilities on every ViLexNorm train normalized form, by row.
+
+    Read from the H10b cache (models/distill, keyed by the SHA-1 of the transformed text) so that a
+    machine without the teacher's checkpoints (Kaggle) trains on exactly the same targets. Indices
+    and probabilities only, no text.
+    """
+    from vifeedback.evaluation import external as X
+    from vifeedback.training import domain as D
+    from vifeedback.training.distill import SoftLabelCache
+
+    cache = SoftLabelCache(paths.MODELS / "distill" / "soft_labels_served_T1.npz")
+    norm = D.serving_transform()(X.load_vilexnorm("train").normalized.astype(str).tolist())
+    rows = np.sort(np.concatenate([pair_rows(s) for s in ("train", "confirm", "dev")]))
+    q = cache.get([norm[i] for i in rows])
+    table = pd.DataFrame(q, columns=[f"p_{c}" for c in D.LABELS])
+    table.insert(0, "row", rows)
+    TEACHER_Q.parent.mkdir(parents=True, exist_ok=True)
+    table.to_csv(TEACHER_Q, index=False, float_format="%.9g")
+    return TEACHER_Q
+
+
+def teacher_q_rows(split: str) -> np.ndarray:
+    """The teacher's probabilities for `anchored.pairs(split)`, from the committed table."""
+    table = pd.read_csv(TEACHER_Q).set_index("row")
+    return table.loc[pair_rows(split)].to_numpy(dtype=np.float32)
+
+
+def prepare_serving_assets() -> Path:
+    """On a machine without the release (Kaggle): the restorer rebuilt from UIT-VSFC train and a
+    manifest naming it, refused unless its SHA-256 is the released one. The serving transform reads
+    nothing else."""
+    from vifeedback.data.loader import load
+    from vifeedback.preprocess.diacritics import Restorer
+    from vifeedback.serving.pipeline import _checked
+
+    d = paths.MODELS / "serve" / "sentiment"
+    if (d / "manifest.json").exists():
+        return d
+    spec = json.loads(RESTORER_RECORD.read_text(encoding="utf-8"))["restorer"]
+    d.mkdir(parents=True, exist_ok=True)
+    Restorer.fit(load("train").sentence.tolist()).save(d / spec["file"])
+    _checked(d / spec["file"], spec["sha256"])  # raises unless byte-identical to the release
+    manifest = {"preprocessing": "seg_pyvi", "restorer": spec, "built_for": "H12' on Kaggle"}
+    (d / "manifest.json").write_text(json.dumps(manifest, indent=2), encoding="utf-8")
+    return d
+
+
+# --- predictions on the confirmation data (labels only) -----------------------------------------
+
+
+def write_predictions(name: str, model, tok, neu_head=None) -> Path:
+    """One model's labels on the held-out posts and the confirmation pairs, for `confirm`.
+
+    No label of the held-out posts is read here; `confirm` is the only reader.
+    """
+    from vifeedback.training import anchored as A
+    from vifeedback.training import domain as D
+
+    transform = D.serving_transform()
+    held = neu_train_and_holdout(transform, ("holdout",))["holdout"]
+    cf = A.pairs("confirm", transform)
+    d = OUT / name
+    d.mkdir(parents=True, exist_ok=True)
+    out = {"pred": D.predict_proba(model, tok, held["x"]).argmax(1)}
+    if neu_head is not None:
+        out["pred_neu_head"] = D.predict_proba(neu_head, tok, held["x"]).argmax(1)
+    pd.DataFrame({k: [D.LABELS[i] for i in v] for k, v in out.items()}).to_csv(
+        d / "predictions_holdout.csv", index_label="holdout_position"
+    )
+    pd.DataFrame(
+        {
+            "orig": [D.LABELS[i] for i in D.predict_proba(model, tok, cf["orig"]).argmax(1)],
+            "norm": [D.LABELS[i] for i in D.predict_proba(model, tok, cf["norm"]).argmax(1)],
+        }
+    ).to_csv(d / "predictions_confirm.csv", index_label="confirm_position")
+    return d
+
+
+def _neu_head_model(ck: Path):
+    """The candidate's NEU-ESC head on its encoder (reported only)."""
+    import torch
+    from transformers import AutoModelForSequenceClassification
+
+    model = AutoModelForSequenceClassification.from_pretrained(ck)
+    model.classifier.load_state_dict(torch.load(ck / "neu_head.pt", map_location="cpu"))
+    return model.eval()
+
+
+def predict_candidate(seed: int) -> Path:
+    """Write a trained candidate's confirmation predictions (e.g. seed 42, trained before
+    `run` wrote them)."""
+    from transformers import AutoModelForSequenceClassification, AutoTokenizer
+
+    ck = paths.MODELS / config(seed).run_id("ckpt")
+    tok = AutoTokenizer.from_pretrained(ck)
+    model = AutoModelForSequenceClassification.from_pretrained(ck)
+    return write_predictions(f"{RECIPE}-s{seed}", model, tok, _neu_head_model(ck))
+
+
 # --- orchestration --------------------------------------------------------------------------------
 
 
@@ -369,7 +494,8 @@ def _write(name: str, summary: dict[str, Any], scored: dict[str, Any], dev: dict
 
 
 def run(seed: int, verbose: bool = True, smoke: bool = False) -> dict[str, Any]:
-    """Train H12' at one seed; score it on the development sets (never the held-out posts)."""
+    """Train H12' at one seed, score it on the development sets, and write its labels on the
+    confirmation data (labels only; no held-out label is read)."""
     import dataclasses
 
     import torch
@@ -385,22 +511,22 @@ def run(seed: int, verbose: bool = True, smoke: bool = False) -> dict[str, Any]:
     transform = D.serving_transform()
     (x_tr, y_tr), uit_dv, _ = _splits("sentiment", "seg_pyvi")
     x_tr, augmentation = _augment_train(cfg, x_tr)
-    neu = neu_train_and_holdout(transform)["train"]
+    neu = neu_train_and_holdout(transform, ("train",))["train"]
     neu_x = D.augment_neu(neu["raw"], neu["x"], cfg.augment, cfg.augment_p, seed, transform)
     neu_dv = D.neu_esc("validation", transform)
     tr, dv = A.pairs("train", transform), A.pairs("dev", transform)
+    tr["q"] = teacher_q_rows("train")
+    q_dev = teacher_q_rows("dev")
     sets = C.evaluation_sets(transform)
     if smoke:
         cfg = dataclasses.replace(cfg, epochs=1)
         x_tr, y_tr = list(x_tr)[:256], np.asarray(y_tr)[:256]
         neu_x, neu = neu_x[:256], {**neu, "y": neu["y"][:256]}
         tr = {k: v[:256] for k, v in tr.items()}
-        dv = {k: v[:128] for k, v in dv.items()}
+        dv, q_dev = {k: v[:128] for k, v in dv.items()}, q_dev[:128]
         uit_dv = (list(uit_dv[0])[:128], np.asarray(uit_dv[1])[:128])
         neu_dv = {**neu_dv, "x": neu_dv["x"][:128], "y": neu_dv["y"][:128]}
         sets = {k: (list(x)[:128], np.asarray(y)[:128]) for k, (x, y) in sets.items()}
-    tr["q"] = A.teacher_q(tr["norm"])
-    q_dev = A.teacher_q(dv["norm"])
     if verbose:
         print(
             f"[{cfg.run_id()}] H12' seed {seed}: UIT-VSFC train {len(x_tr)}, NEU-ESC train "
@@ -466,11 +592,13 @@ def run(seed: int, verbose: bool = True, smoke: bool = False) -> dict[str, Any]:
         }
     )
     _write(f"{RECIPE}-s{seed}", summary, scored, dev)
+    write_predictions(f"{RECIPE}-s{seed}", model, tok, out["neu_head"])
     return {"summary": summary, "scored": scored, "dev": dev}
 
 
 def evaluate_control(seed: int) -> dict[str, Any]:
-    """The control (H10b anchored_orig) at one seed, scored with the candidates' code."""
+    """The control (H10b anchored_orig) at one seed, scored with the candidates' code, and its
+    labels on the confirmation data."""
     from transformers import AutoModelForSequenceClassification, AutoTokenizer
 
     from vifeedback.training import anchored as A
@@ -483,9 +611,10 @@ def evaluate_control(seed: int) -> dict[str, Any]:
     model = AutoModelForSequenceClassification.from_pretrained(ck)
     dv = A.pairs("dev", transform)
     scored = D.score_sets(model, tok, C.evaluation_sets(transform))
-    dev = A.score_pairs(model, tok, dv, A.teacher_q(dv["norm"]))
-    summary = {"recipe": "control", "seed": seed, "checkpoint": str(ck.relative_to(paths.ROOT))}
+    dev = A.score_pairs(model, tok, dv, teacher_q_rows("dev"))
+    summary = {"recipe": "control", "seed": seed, "checkpoint": ck.name}
     _write(f"control-s{seed}", summary, scored, dev)
+    write_predictions(f"control-s{seed}", model, tok)
     return {"summary": summary, "scored": scored, "dev": dev}
 
 
@@ -542,48 +671,57 @@ def apply_rule(
     return {"rules": rules, "passed": all(r["passed"] for r in rules.values())}
 
 
-def confirm() -> dict[str, Any]:
-    """cycle5.yaml v6 H12' rule, five seeds each side; the only function that reads the held-out
-    posts' labels."""
-    from transformers import AutoModelForSequenceClassification, AutoTokenizer
+def missing_for_confirm() -> list[str]:
+    """What `confirm` still needs: summaries and prediction files of ten models."""
+    out = []
+    for s in SEEDS:
+        for name in (f"{RECIPE}-s{s}", f"control-s{s}"):
+            for f in ("summary.json", "predictions_holdout.csv", "predictions_confirm.csv"):
+                if not (OUT / name / f).exists():
+                    out.append(f"{name}/{f}")
+    return out
 
+
+def confirm() -> dict[str, Any]:
+    """cycle5.yaml v6 H12' rule, five seeds each side, from the prediction files alone (no model
+    is loaded). The only function that reads the held-out posts' labels."""
+    from vifeedback.evaluation import external as X
     from vifeedback.evaluation import metrics as M
     from vifeedback.evaluation.report import yaml_safe
-    from vifeedback.serving import pipeline as SP
     from vifeedback.training import anchored as A
     from vifeedback.training import domain as D
 
     if not (OUT / "eligibility.json").exists():
         raise FileNotFoundError("run h12p-eligibility after seed 42 first")
-    elig = json.loads((OUT / "eligibility.json").read_text(encoding="utf-8"))
-    if not elig["eligible"]:
+    if not json.loads((OUT / "eligibility.json").read_text(encoding="utf-8"))["eligible"]:
         raise RuntimeError("H12' was not eligible at seed 42; the declared rule stops it")
+    missing = missing_for_confirm()
+    if missing:
+        raise FileNotFoundError(f"missing before confirmation: {missing}")
     seeds = list(SEEDS)
-    cand = {s: paths.MODELS / config(s).run_id("ckpt") for s in seeds}
-    ctrl = {s: control_checkpoint(s) for s in seeds}
-    for s in seeds:
-        _summary(f"{RECIPE}-s{s}")
-        _summary(f"control-s{s}")
-    transform = D.serving_transform()
-    held = neu_train_and_holdout(transform)["holdout"]
-    cf = A.pairs("confirm", transform)
-    teacher = A.teacher_q(cf["norm"]).argmax(1)
+    ids = {c: i for i, c in enumerate(D.LABELS)}
+    frame = X.load_neu_esc("train")
+    holdout, _ = holdout_split(frame, D.OFF_TOPIC)
+    index = pd.read_csv(INDEX)
+    if not np.array_equal(index["row"].to_numpy(), holdout):
+        raise RuntimeError(f"the held-out split differs from {INDEX}")
+    y = index["sentiment"].map(ids).to_numpy()
+    topic = frame.topic.to_numpy()[holdout]
+    teacher = teacher_q_rows("confirm").argmax(1)
     k = len(D.LABELS)
 
-    def preds(ck: Path) -> dict[str, np.ndarray]:
-        tok = AutoTokenizer.from_pretrained(ck)
-        model = AutoModelForSequenceClassification.from_pretrained(ck)
-        return {
-            "held": D.predict_proba(model, tok, held["x"]).argmax(1),
-            "orig": D.predict_proba(model, tok, cf["orig"]).argmax(1),
-            "norm": D.predict_proba(model, tok, cf["norm"]).argmax(1),
-        }
+    def labels(name: str, file: str, col: str) -> np.ndarray:
+        return pd.read_csv(OUT / name / file)[col].map(ids).to_numpy()
 
-    pc = {s: preds(cand[s]) for s in seeds}
-    pb = {s: preds(ctrl[s]) for s in seeds}
-    rule1 = D.seed_paired_bootstrap(
-        held["y"], [pc[s]["held"] for s in seeds], [pb[s]["held"] for s in seeds], 10_000
-    )
+    pc = {s: labels(f"{RECIPE}-s{s}", "predictions_holdout.csv", "pred") for s in seeds}
+    pb = {s: labels(f"control-s{s}", "predictions_holdout.csv", "pred") for s in seeds}
+    co = {s: labels(f"{RECIPE}-s{s}", "predictions_confirm.csv", "orig") for s in seeds}
+    cn = {s: labels(f"{RECIPE}-s{s}", "predictions_confirm.csv", "norm") for s in seeds}
+    bo = {s: labels(f"control-s{s}", "predictions_confirm.csv", "orig") for s in seeds}
+    bn = {s: labels(f"control-s{s}", "predictions_confirm.csv", "norm") for s in seeds}
+    if any(len(v) != len(y) for v in (*pc.values(), *pb.values())):
+        raise ValueError("a prediction file does not cover the 3,000 held-out posts")
+    rule1 = D.seed_paired_bootstrap(y, [pc[s] for s in seeds], [pb[s] for s in seeds], 10_000)
 
     def val(name: str, set_name: str, key: str) -> float:
         r = _summary(name)["sets"][set_name]
@@ -599,9 +737,9 @@ def confirm() -> dict[str, Any]:
             )
         )
 
-    agree_c = [float(np.mean(pc[s]["orig"] == teacher)) for s in seeds]
-    agree_b = [float(np.mean(pb[s]["orig"] == teacher)) for s in seeds]
-    tv = float(np.mean([A.label_tv(pc[s]["orig"], teacher) for s in seeds]))
+    agree_c = [float(np.mean(co[s] == teacher)) for s in seeds]
+    agree_b = [float(np.mean(bo[s] == teacher)) for s in seeds]
+    tv = float(np.mean([A.label_tv(co[s], teacher) for s in seeds]))
     decision = apply_rule(
         rule1,
         {
@@ -614,49 +752,39 @@ def confirm() -> dict[str, Any]:
     )
 
     # Reported, not tested.
-    def per_class(y: np.ndarray, p: np.ndarray) -> dict[str, float]:
-        ev = M.evaluate(y, p, "sentiment")
+    def per_class(p: np.ndarray, mask: np.ndarray | None = None) -> dict[str, float]:
+        m = np.ones(len(y), bool) if mask is None else mask
+        ev = M.evaluate(y[m], p[m], "sentiment")
         return {c: ev["per_class"][c]["f1"] for c in D.LABELS}
 
-    topics = sorted(set(held["topic"]))
-    neu_head = {}
-    import torch
+    head42 = pd.read_csv(OUT / f"{RECIPE}-s42" / "predictions_holdout.csv")
+    neu_head = None
+    if "pred_neu_head" in head42:
+        p_neu = head42["pred_neu_head"].map(ids).to_numpy()
+        neu_head = {"macro_f1": M.macro_f1(y, p_neu, k), "per_class": per_class(p_neu)}
+    scope_flagged = None
+    serve = paths.MODELS / "serve" / "sentiment"
+    mf = serve / "manifest.json"
+    manifest = json.loads(mf.read_text(encoding="utf-8")) if mf.exists() else {}
+    if manifest.get("scope"):  # the released detector; absent on a machine that only trained
+        from vifeedback.serving import pipeline as SP
 
-    tok42 = AutoTokenizer.from_pretrained(cand[42])
-    m42 = AutoModelForSequenceClassification.from_pretrained(cand[42])
-    m42.classifier.load_state_dict(torch.load(cand[42] / "neu_head.pt"))
-    p_neu = D.predict_proba(m42, tok42, held["x"]).argmax(1)
-    neu_head = {
-        "macro_f1": M.macro_f1(held["y"], p_neu, k),
-        "per_class": per_class(held["y"], p_neu),
-    }
-    manifest = json.loads(
-        (paths.MODELS / "serve" / "sentiment" / "manifest.json").read_text(encoding="utf-8")
-    )
-    scope = SP.load_scope(paths.MODELS / "serve" / "sentiment", manifest["scope"])
+        scope = SP.load_scope(serve, manifest["scope"])
+        x = D.serving_transform()(frame.text.to_numpy()[holdout].tolist())
+        scope_flagged = float((scope.decision(x) < scope.threshold).mean())
     reported = {
         "per_seed_holdout_macro_f1": {
-            s: {
-                "candidate": M.macro_f1(held["y"], pc[s]["held"], k),
-                "control": M.macro_f1(held["y"], pb[s]["held"], k),
-            }
+            s: {"candidate": M.macro_f1(y, pc[s], k), "control": M.macro_f1(y, pb[s], k)}
             for s in seeds
         },
-        "holdout_per_class_seed42": {
-            "candidate": per_class(held["y"], pc[42]["held"]),
-            "control": per_class(held["y"], pb[42]["held"]),
-        },
+        "holdout_per_class_seed42": {"candidate": per_class(pc[42]), "control": per_class(pb[42])},
         "holdout_per_topic_seed42": {
             t: {
-                "n": int((held["topic"] == t).sum()),
-                "candidate": M.macro_f1(
-                    held["y"][held["topic"] == t], pc[42]["held"][held["topic"] == t], k
-                ),
-                "control": M.macro_f1(
-                    held["y"][held["topic"] == t], pb[42]["held"][held["topic"] == t], k
-                ),
+                "n": int((topic == t).sum()),
+                "candidate": M.macro_f1(y[topic == t], pc[42][topic == t], k),
+                "control": M.macro_f1(y[topic == t], pb[42][topic == t], k),
             }
-            for t in topics
+            for t in sorted(set(topic))
         },
         "neu_head_seed42_on_holdout": neu_head,
         "neu_validation_macro_f1_mean_diff": mean_diff("neu_validation"),
@@ -664,10 +792,10 @@ def confirm() -> dict[str, Any]:
         "confirm_pairs": {
             "agreement_candidate": agree_c,
             "agreement_control": agree_b,
-            "flip_rate_candidate": [float(np.mean(pc[s]["orig"] != pc[s]["norm"])) for s in seeds],
-            "flip_rate_control": [float(np.mean(pb[s]["orig"] != pb[s]["norm"])) for s in seeds],
+            "flip_rate_candidate": [float(np.mean(co[s] != cn[s])) for s in seeds],
+            "flip_rate_control": [float(np.mean(bo[s] != bn[s])) for s in seeds],
         },
-        "scope_flagged_holdout": float((scope.decision(held["x"]) < scope.threshold).mean()),
+        "scope_flagged_holdout": scope_flagged,
     }
     out = {
         "declared_in": "configs/experiments/cycle5.yaml v6 H12' rule",
@@ -675,16 +803,48 @@ def confirm() -> dict[str, Any]:
         "seeds": seeds,
         **decision,
         "reported": reported,
-        "holdout_posts": len(held["y"]),
+        "holdout_posts": len(y),
     }
     d = OUT / "confirm"
     d.mkdir(parents=True, exist_ok=True)
     (d / "decision.json").write_text(
         json.dumps(yaml_safe(out), indent=2, ensure_ascii=False), encoding="utf-8"
     )
-    cols: dict[str, list[str]] = {}
-    for s in seeds:  # labels only
-        cols[f"candidate-s{s}"] = [D.LABELS[i] for i in pc[s]["held"]]
-        cols[f"control-s{s}"] = [D.LABELS[i] for i in pb[s]["held"]]
-    pd.DataFrame(cols).to_csv(d / "predictions_holdout.csv", index_label="holdout_position")
     return out
+
+
+def import_results(zip_path: Path) -> list[str]:
+    """Merge a Kaggle results zip (made by notebooks/kaggle_h12p.ipynb) into the repository.
+
+    Only H12' result folders, run folders and registry rows are accepted; a file that would
+    replace a different existing file is refused.
+    """
+    import zipfile
+
+    allowed = ("results/studies/cycle5/h12p/", "results/runs/p16-")
+    written = []
+    with zipfile.ZipFile(zip_path) as z:
+        names = [n for n in z.namelist() if not n.endswith("/")]
+        bad = [n for n in names if not n.startswith(allowed) and n != "registry_rows.csv"]
+        if bad or any(".." in n or n.startswith("/") for n in names):
+            raise ValueError(f"unexpected entries in {zip_path}: {bad[:5]}")
+        for n in names:
+            if n == "registry_rows.csv":
+                continue
+            dst = paths.ROOT / n
+            data = z.read(n)
+            if dst.exists() and dst.read_bytes() != data:
+                raise FileExistsError(f"{n} exists with different content")
+            dst.parent.mkdir(parents=True, exist_ok=True)
+            dst.write_bytes(data)
+            written.append(n)
+        if "registry_rows.csv" in names:
+            import io
+
+            rows = pd.read_csv(io.BytesIO(z.read("registry_rows.csv")))
+            reg = pd.read_csv(paths.REGISTRY)
+            new = rows[~rows.run_id.isin(reg.run_id)]
+            if len(new):
+                new[reg.columns].to_csv(paths.REGISTRY, mode="a", header=False, index=False)
+                written.append(f"registry.csv (+{len(new)} rows)")
+    return written
