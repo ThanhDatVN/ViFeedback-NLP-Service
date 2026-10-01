@@ -82,3 +82,21 @@ def test_h10b_card_reads_the_h10b_record_and_the_five_seed_test_gap():
     assert "T = 1.35" in card
     assert "0.916" in card  # challenge v1 through the served pipeline
     assert "{" not in card.split("```")[0]
+
+
+def test_trimmed_graph_card_uses_its_source_and_states_the_cut():
+    """ADR-045: the served graph with a cut vocabulary is the H10b model; the card says so."""
+    import json
+
+    from vifeedback import paths
+
+    record = paths.RESULTS / "studies" / "export" / "laptop_fp16_h10b_v17500_temperature.json"
+    manifest = json.loads(record.read_text(encoding="utf-8"))
+    manifest["_files"] = {"model.fp16.onnx": "f" * 64}
+    ev = P.evidence(manifest)
+    assert ev["run_id"].endswith("-063770c8") and "s7b" in ev
+    card = P.model_card("someone/vifeedback-sentiment", manifest, ev)
+    assert "198.9 MB" in card and "17,500" in card
+    assert "Test, this graph (evaluated once) | 0.8198" in card
+    assert "<unk>" in card
+    assert "{" not in card.split("```")[0]

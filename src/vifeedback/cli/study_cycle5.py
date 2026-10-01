@@ -186,10 +186,75 @@ def study_h10b_split() -> None:
 
 @study_app.command("h12p-split")
 def study_h12p_split() -> None:
-    """Write H12''s 3,000 held-out in-scope NEU-ESC train posts (cycle5.yaml v6) as row indices."""
+    """Write the 3,000 held-out in-scope NEU-ESC train posts of H12' (cycle5.yaml v6) as rows."""
     from vifeedback.training import h12p as H
 
     typer.echo(f"  {H.N_HOLDOUT} held-out rows -> {H.write_holdout_index()}")
+
+
+@study_app.command("s7b-test")
+def study_s7b_test() -> None:
+    """cycle5.yaml v7 S7b: the served trimmed graph on UIT-VSFC test once (logged), for the card."""
+    from vifeedback import paths
+    from vifeedback.inference import vocab_trim as V
+
+    serve = paths.MODELS / "serve"
+    r = V.closing_gate(serve / "sentiment", serve / ".fp32-sentiment")
+    typer.echo(
+        f"  test macro-F1 trimmed {r['trimmed']['macro_f1']:.4f}, FP32 {r['fp32']['macro_f1']:.4f}; "
+        f"label agreement {r['label_agreement']:.4f} on {r['n']} sentences"
+    )
+
+
+@study_app.command("h12p-run")
+def study_h12p_run(
+    seed: int = typer.Option(42),
+    smoke: bool = typer.Option(False, help="a wiring check on 256 examples; writes nothing"),
+) -> None:
+    """Cycle 5 H12' (cycle5.yaml v6): two heads + anchored consistency, one seed."""
+    from vifeedback.training import h12p as H
+
+    r = H.run(seed, smoke=smoke)
+    s = r["scored"]
+    typer.echo(
+        f"  UIT-VSFC validation {s['uit_validation']['macro_f1']:.4f}; NEU-ESC validation (in scope) "
+        f"{s['neu_validation']['macro_f1']:.4f}; ViLexNorm dev agreement {r['dev']['agreement']:.3f}"
+    )
+
+
+@study_app.command("h12p-control")
+def study_h12p_control(seed: int = typer.Option(42)) -> None:
+    """The H12' control (the served recipe, H10b anchored_orig) at one seed, same code."""
+    from vifeedback.training import h12p as H
+
+    s = H.evaluate_control(seed)["scored"]
+    typer.echo(
+        f"  control s{seed}: UIT-VSFC validation {s['uit_validation']['macro_f1']:.4f}; "
+        f"NEU-ESC validation (in scope) {s['neu_validation']['macro_f1']:.4f}"
+    )
+
+
+@study_app.command("h12p-eligibility")
+def study_h12p_eligibility() -> None:
+    """cycle5.yaml v6 H12' eligibility at seed 42."""
+    from vifeedback.training import h12p as H
+
+    e = H.eligibility()
+    typer.echo(
+        f"  UIT-VSFC {e['uit_minus_control']:+.4f}, NEU-ESC {e['neu_minus_control']:+.4f} "
+        f"-> {e['outcome']}"
+    )
+
+
+@study_app.command("h12p-confirm")
+def study_h12p_confirm() -> None:
+    """cycle5.yaml v6 H12' rule on the 3,000 held-out posts, five seeds each side."""
+    from vifeedback.training import h12p as H
+
+    out = H.confirm()
+    for name, r in out["rules"].items():
+        typer.echo(f"  {name}: {'pass' if r['passed'] else 'FAIL'}  {r}")
+    typer.echo(f"  H12' {'PASSED' if out['passed'] else 'NOT passed'}")
 
 
 @study_app.command("h10b-run")

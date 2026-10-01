@@ -33,11 +33,13 @@ make export        # ONNX through the release gate, then the restorer and the sc
 
 ```text
 models/
-├── serve/sentiment/        # what the API serves (ADR-043): the 12-layer H10b model, model.opt.onnx
-│                           #   (540 MB, FP32), tokenizer files, restorer.json (ADR-031), scope.npz
-│                           #   (ADR-034), manifest.json with T (ADR-041) and every SHA-256
+├── serve/sentiment/        # what the API serves (ADR-043, ADR-045): H10b with a 17,500-entry
+│                           #   vocabulary, model.fp16.onnx (198.9 MB), tokenizer files, restorer.json
+│                           #   (ADR-031), scope.npz (ADR-034), manifest.json with T (ADR-041), SHA-256s
+├── serve/.fp32-sentiment/  # the same H10b model, full vocabulary, FP32 (540 MB)
 ├── serve/.student-sentiment/   # the 6-layer student release (ADR-040), model.fp16.onnx, 185 MB
 ├── serve/.previous-sentiment/  # the 12-layer p9 release; swap either back to serve it
+├── trimmed/                # S7b: the H10b checkpoint with its vocabulary cut (trim.json)
 ├── publish/<name>/         # `serve publish` dry-run bundles: the card, SHA256SUMS, the PyTorch copy
 ├── hub/<owner>__<name>/    # `serve reproduce` download cache
 ├── distill/                # H11: the teachers' soft-label cache (SHA-1 keys, no text) and the

@@ -23,10 +23,10 @@ for the sentiment model.
 
 | | |
 |---|---|
-| **Served model** | PhoBERT-base (12 layers) trained with diacritic/teencode augmentation and consistency anchored on a frozen teacher (ADR-042, ADR-043); FP32 ONNX, 540 MB. A 6-layer student (185 MB, 1.8x faster) is released beside it (ADR-039), and the same H10b model cut to 198.9 MB (FP16 storage, 17,500-entry vocabulary, ≥ 99% label agreement) waits for its latency session (ADR-045) |
+| **Served model** | PhoBERT-base (12 layers) trained with diacritic/teencode augmentation and consistency anchored on a frozen teacher (ADR-042, ADR-043); served at **198.9 MB**: FP16 storage and a vocabulary cut to the 17,500 entries its text uses, ≥ 99% label agreement with the full graph on every held-out set (ADR-045). A 6-layer student (185 MB, 1.8x faster) is released beside it (ADR-039) |
 | **Sentiment, test, 5 seeds** | Served H10b **0.824** (the recipe without the consistency training 0.830 ± 0.007: −0.006 [−0.019, +0.007], not distinguishable); the student 0.817; research best 0.837 with VnCoreNLP |
 | **Robustness** | Diacritics restored before the model: stripped validation 0.686 → **0.857** (ADR-031). Out-of-scope input flagged by a topic detector: AUROC **0.922** within another university's forum (ADR-034) |
-| **Latency** | Raw text in, served pipeline p95 about **22 ms** on a laptop CPU (the 12-layer architecture, 22.1 ms in the Cycle 5 sessions; the student 12.3 ms; target 30 ms) |
+| **Latency** | Raw text in, served pipeline p95 **24.9 ms** on a laptop CPU (the full FP32 graph 26.9 ms in the same session; the student 12.3 ms; target 30 ms) |
 | **Reproducible** | A clean clone reproduces the published model's validation macro-F1 (0.8617, H10b) in about **2–3 min**, every file checked against `SHA256SUMS`; CI runs it on every change to the workflow |
 | **Research** | Cycles 0–4 closed, Cycle 5 run; 45 ADRs, 163 weight-updating runs in [the ledger](configs/experiments/ledger.csv); Cycle 5 declared ([cycle5.yaml](configs/experiments/cycle5.yaml)) |
 
@@ -297,7 +297,7 @@ machine will re-measure the pipeline with the scope detector.
 - [x] Model card and Hub release — [Datk4/vifeedback-sentiment-phobert](https://huggingface.co/Datk4/vifeedback-sentiment-phobert), every file verified against `SHA256SUMS`
 - [ ] ≥ 30 error cases coded by linguistic feature — *G5 / S9*: tooling, a 160-row audit sheet and
   its analysis are done; the human audit is not
-- [x] Serving artifact ≤ 200 MB — *S7*: a 6-layer student in FP16 storage, 185 MB, released and tested (ADR-039, ADR-040); the service runs the 12-layer H10b model by the owner's choice (ADR-043)
+- [x] Serving artifact ≤ 200 MB — *S7*: the served H10b graph, 198.9 MB (ADR-045); a 6-layer student, 185 MB, also released (ADR-039, ADR-040)
 
 Every external-review item (R1–R12) is closed ([STATUS § 8](docs/STATUS.md#8-external-review--item-status)).
 

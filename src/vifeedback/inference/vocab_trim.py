@@ -143,3 +143,45 @@ def removed_share(full: PhobertBPE, kept: set[str], texts: list[str]) -> dict[st
 
 def logits(clf: Any, texts: list[str], batch: int = 64) -> np.ndarray:
     return np.concatenate([clf.logits(texts[i : i + batch]) for i in range(0, len(texts), batch)])
+
+
+def closing_gate(served: Path, fp32: Path) -> dict[str, Any]:
+    """cycle5.yaml v7 S7b serving: the served trimmed graph on UIT-VSFC test once, logged, for the
+    card; the FP32 graph of the same model on the same text for label agreement."""
+    from vifeedback.evaluation import closing_gate as CG
+    from vifeedback.evaluation import metrics as M
+    from vifeedback.evaluation.report import yaml_safe
+    from vifeedback.inference.onnx_export import OnnxClassifier
+
+    dst = OUT / "closing_gate.json"
+    if dst.exists():
+        raise FileExistsError(f"the S7b test evaluation has run already: {dst}")
+    ms = json.loads((served / "manifest.json").read_text(encoding="utf-8"))
+    mf = json.loads((fp32 / "manifest.json").read_text(encoding="utf-8"))
+    if f"-v{N_ENTRIES}-" not in ms["checkpoint"]:
+        raise ValueError(f"{served} does not serve the trimmed graph: {ms['checkpoint']}")
+    gi = CG.inputs()
+    preds = {}
+    for name, d, m in (("trimmed", served, ms), ("fp32", fp32, mf)):
+        clf = OnnxClassifier(d, max_length=m["max_length"], model_file=m["model_file"])
+        preds[name] = logits(clf, gi["x_te"]).argmax(1)
+    CG.log_test_use(
+        Path(ms["checkpoint"]),
+        "P15",
+        "S7b (cycle5.yaml v7): the served trimmed graph on test once, for the card; the FP32 "
+        "graph of the same model for label agreement",
+    )
+    y = gi["y_te"]
+    out: dict[str, Any] = {"declared_in": "configs/experiments/cycle5.yaml v7 S7b serving"}
+    for name, p in preds.items():
+        ev = M.evaluate(y, p, "sentiment")
+        out[name] = {
+            "macro_f1": ev["macro_f1"],
+            "weighted_f1": ev.get("weighted_f1"),
+            "per_class_f1": {c: v["f1"] for c, v in ev["per_class"].items()},
+        }
+    out["label_agreement"] = float((preds["trimmed"] == preds["fp32"]).mean())
+    out["n"] = len(y)
+    OUT.mkdir(parents=True, exist_ok=True)
+    dst.write_text(json.dumps(yaml_safe(out), indent=2), encoding="utf-8")
+    return out

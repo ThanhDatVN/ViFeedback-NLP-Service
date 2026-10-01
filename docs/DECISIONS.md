@@ -1545,7 +1545,7 @@ it has not been done. The owner asked whether it can be automated without losing
 
 ---
 
-## ADR-045 · 2026-10-01 · S7b: the served model at 198.9 MB with no retraining · Accepted (serving waits for latency)
+## ADR-045 · 2026-10-01 · S7b: the served model at 198.9 MB with no retraining · Accepted, served
 
 **Context.** Decision 9 served the 12-layer H10b graph, 540 MB; S7 (≤ 200 MB) was met only by the
 released student, which costs 0.013 on test (ADR-040, ADR-043). FP16 storage alone gives 270 MB (F4).
@@ -1577,14 +1577,25 @@ agree with the FP32 graph on ≥ 99% of every held-out set, and macro-F1 moves �
 - The closest margin is ViLexNorm dev originals (99.04% against 99%): social-media text meets
   removed pieces most often.
 
-**Decision.** The trimmed graph is the release candidate in `models/candidate/sentiment`. As
-declared, it replaces the FP32 graph once one latency session has a steady served-pipeline pass with
-p95 ≤ 30 ms. Two attempts on 2026-10-01 were refused because another project's job was on the GPU.
+**Decision.** As declared, the trimmed graph replaced the FP32 graph once a latency session had a
+steady served-pipeline pass with p95 ≤ 30 ms. Two earlier attempts that day were refused because
+another project's job was on the GPU.
+- **Latency** (`cycle5_s7b_session1_*.json`, the same session): trimmed **24.9 ms** p95 (p50 12.9),
+  FP32 26.9 ms (p50 13.5); peak memory 1.09 GB against 1.26 GB.
+- **Served.** `models/serve/sentiment` holds the trimmed graph; the FP32 graph is kept as
+  `models/serve/.fp32-sentiment`. All 40 API tests pass.
+- **Test, once** (logged; `closing_gate.json`): macro-F1 0.8198 against 0.8208 for the FP32 graph;
+  the two give the same label on 99.94% of 3,166 sentences. Neutral F1 is 0.548 against 0.550:
+  two changed labels move it below S4's 0.55 minimum, within the one-sentence noise of about 0.004
+  (P1).
 
 **Consequences.**
-- S7 will be met by the served model itself, with the same weights as H10b except for 46,501
+- S7 is met by the served model itself, with the same weights as H10b except for 46,501
   unused embedding rows, and no accuracy cost on any held-out set.
+- **S4's minimum is now missed by two test sentences** at seed 42 (0.548). If the owner weighs
+  S4's minimum above S7, the FP32 graph is one folder rename away.
 - A word whose pieces were all removed reads as `<unk>`. Text far from student feedback and social
   media (other domains, rare names) meets this more often; the card will state it.
-- The Hub holds the FP32 graph; publishing the trimmed one needs the owner's approval.
+- The Hub holds the FP32 graph; the trimmed bundle and its card are built as a dry run and
+  publishing them needs the owner's approval.
 

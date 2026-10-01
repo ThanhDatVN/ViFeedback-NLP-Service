@@ -1,0 +1,23 @@
+{
+  "declared_in": "configs/experiments/cycle5.yaml v7 S7b serving",
+  "trimmed": {
+    "macro_f1": 0.8197548199926139,
+    "weighted_f1": 0.9339057309306369,
+    "per_class_f1": {
+      "negative": 0.9574991218826835,
+      "neutral": 0.5482625482625483,
+      "positive": 0.95350278983261
+    }
+  },
+  "fp32": {
+    "macro_f1": 0.8208054322046716,
+    "weighted_f1": 0.9344933255781729,
+    "per_class_f1": {
+      "negative": 0.9582016157358623,
+      "neutral": 0.5503875968992248,
+      "positive": 0.9538270839789278
+    }
+  },
+  "label_agreement": 0.9993682880606444,
+  "n": 3166
+}

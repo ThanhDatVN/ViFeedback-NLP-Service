@@ -420,7 +420,8 @@ trình nằm trong [EVALUATION_DATA.md](EVALUATION_DATA.md).
 
 | Thư mục | Mô hình |
 |---|---|
-| `models/serve/sentiment` | **H10b** (đang phục vụ), 540 MB, T = 1,349 |
+| `models/serve/sentiment` | **H10b, bản đã cắt vocabulary** (đang phục vụ từ ADR-045), 198,9 MB, T = 1,349 |
+| `models/serve/.fp32-sentiment` | Cũng mô hình H10b, đầy đủ vocabulary, FP32, 540 MB |
 | `models/serve/.student-sentiment` | Mô hình nhỏ 6 lớp (H11), 185 MB |
 | `models/serve/.previous-sentiment` | Mô hình 12 lớp cũ (p9) |
 
@@ -436,17 +437,23 @@ Kết quả so sánh lúc chọn:
 
 **Nếu muốn đổi lại** (PowerShell, tại thư mục repo; không xoá gì), rồi báo tôi để cập nhật tài liệu:
 ```powershell
+# Phục vụ lại H10b bản đầy đủ 540 MB (nếu bạn coi S4 quan trọng hơn S7, xem dưới):
+Move-Item models\serve\sentiment models\serve\.trimmed-sentiment
+Move-Item models\serve\.fp32-sentiment models\serve\sentiment
 # Phục vụ mô hình nhỏ:
-Move-Item models\serve\sentiment models\serve\.h10b-sentiment
+Move-Item models\serve\sentiment models\serve\.trimmed-sentiment
 Move-Item models\serve\.student-sentiment models\serve\sentiment
-# Hoặc mô hình 12 lớp cũ:
-Move-Item models\serve\sentiment models\serve\.h10b-sentiment
-Move-Item models\serve\.previous-sentiment models\serve\sentiment
 ```
 
 **Công bố lên Hugging Face.**
 - ✅ Bạn đã upload H10b lên repo chính ngày 2026-10-01 (commit trên Hub `037edfb`). Tôi đã tải về,
   kiểm từng file theo `SHA256SUMS` và chạy lại validation: 0,8617, khớp manifest.
+- **Bản 198,9 MB đang phục vụ chưa lên Hub** (Hub vẫn là bản 540 MB của cùng mô hình). Bản chạy
+  thử đã dựng ở `models/publish/vifeedback-sentiment-phobert/`, card nêu rõ phần cắt vocabulary.
+  Nếu muốn Hub khớp service, bạn tự chạy lệnh upload như lần trước (cần bạn duyệt).
+- **Đánh đổi cần biết.** Trên test, bản đã cắt khác bản đầy đủ đúng 2 trên 3.166 câu; neutral F1
+  0,548 thay vì 0,550, tức hụt mức tối thiểu 0,55 của S4 đúng 2 câu (trong độ nhiễu của một câu).
+  Nếu bạn coi mức đó quan trọng hơn dung lượng, dùng lệnh đổi lại ở trên.
 - Mô hình nhỏ (tuỳ chọn): bản chạy thử ở `models/publish/vifeedback-sentiment-phobert-6l/`, cho repo
   riêng, giấy phép CC BY-NC-SA 4.0.
 

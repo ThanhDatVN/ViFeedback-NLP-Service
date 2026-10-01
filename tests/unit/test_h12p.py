@@ -30,6 +30,21 @@ def test_holdout_is_stratified_in_scope_and_disjoint():
     assert (held_share - share).abs().max() < 0.002
 
 
+def test_rule_needs_every_condition():
+    held = {"observed_diff": 0.02, "ci_low": 0.004, "ci_high": 0.03}
+    ok = {
+        "2_uit_validation_macro_f1": -0.004,
+        "3_uit_validation_neutral_f1": -0.01,
+        "4_uit_validation_stripped_macro_f1": 0.0,
+    }
+    assert H.apply_rule(held, ok, -0.01, 0.05)["passed"]
+    assert not H.apply_rule({**held, "ci_low": -0.001}, ok, -0.01, 0.05)["passed"]
+    worse = {**ok, "4_uit_validation_stripped_macro_f1": -0.0107}  # H8's failure
+    assert not H.apply_rule(held, worse, -0.01, 0.05)["passed"]
+    assert not H.apply_rule(held, ok, -0.03, 0.05)["passed"]  # loses H10b's real-typing gain
+    assert not H.apply_rule(held, ok, 0.0, 0.11)["passed"]
+
+
 def test_holdout_is_deterministic():
     frame = _frame()
     assert np.array_equal(H.holdout_split(frame, {"Spam"})[0], H.holdout_split(frame, {"Spam"})[0])

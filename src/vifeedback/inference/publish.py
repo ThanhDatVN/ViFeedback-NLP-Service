@@ -63,8 +63,23 @@ def _student_dir(ckp: str) -> str:
 
 
 def evidence(manifest: dict[str, Any]) -> dict[str, Any]:
-    """Collect the card's numbers from committed results for the manifest's checkpoint."""
+    """Collect the card's numbers from committed results for the manifest's checkpoint.
+
+    A checkpoint with a cut vocabulary (S7b, ADR-045) is the same model as its source, so the
+    source's training records are used and the S7b records are added.
+    """
     ckp = _basename(manifest["checkpoint"])
+    s7b = paths.RESULTS / "studies" / "cycle5" / "s7b"
+    trimmed = None
+    if (s7b / "trim.json").exists() and _json(s7b / "trim.json")["checkpoint"] == ckp:
+        trimmed = {
+            "trim": _json(s7b / "trim.json"),
+            "fidelity": _json(s7b / "fidelity.json"),
+            "test": _json(s7b / "closing_gate.json")
+            if (s7b / "closing_gate.json").exists()
+            else None,
+        }
+        ckp = trimmed["trim"]["source"]
     run_id = ckp.removesuffix("-ckp")
     val = _json(paths.RUNS / f"{run_id}-val" / "metrics.json")
     config = (paths.RUNS / f"{run_id}-val" / "config.yaml").read_text(encoding="utf-8")
@@ -96,6 +111,8 @@ def evidence(manifest: dict[str, Any]) -> dict[str, Any]:
         # ADR-032: what `in_scope` does on another institution's text (NEXT_PLAN v5 A2).
         "scope_check": _json(scope) if scope.exists() else None,
     }
+    if trimmed:
+        out["s7b"] = trimmed
     if "-h11-" in ckp:  # the distilled student (ADR-039): its rule and its five-seed test
         h11 = paths.RESULTS / "studies" / "cycle5" / "h11"
         out["h11_decision"] = _json(next(iter(sorted(h11.glob("confirm-*/decision.json")))))
@@ -578,6 +595,47 @@ def h10b_card(repo_id: str, manifest: dict[str, Any], ev: dict[str, Any]) -> str
         if t_value
         else ""
     )
+    size_section = served_test_row = unk_limit = shipped = ""
+    if ev.get("s7b"):
+        tr, fi, te = ev["s7b"]["trim"], ev["s7b"]["fidelity"], ev["s7b"]["test"]
+        sets = fi["sets"]
+        mb = fi["rules"]["1_size_mb_le_200"]["value"]
+        shipped = (
+            f" Its vocabulary is cut to the {tr['entries']:,} entries the service's text uses, so "
+            f"the graph is {mb:.1f} MB (S7b, ADR-045)."
+        )
+        rows = "\n".join(
+            f"| {name} | {r['n']:,} | {r['agreement']:.2%} | {r['texts_with_a_removed_piece']:.1%} |"
+            for name, r in sets.items()
+        )
+        size_section = (
+            "\n## Size: a vocabulary cut to the text it serves\n\n"
+            f"PhoBERT's vocabulary has 64,001 entries; this release keeps {tr['entries']:,}: the "
+            f"{tr['used_pieces']:,} pieces that UIT-VSFC train (with its unaccented and teencode "
+            "forms), NEU-ESC train and the ViLexNorm training pairs use, then the most frequent "
+            "others. No other weight changes. With the weights stored in FP16 the graph is "
+            f"**{mb:.1f} MB** instead of 540 MB. A piece outside the vocabulary reads as `<unk>`. "
+            "Against the full-vocabulary FP32 graph of the same weights, on text none of the "
+            "vocabulary came from:\n\n"
+            "| Held-out set | n | Same label | Texts with a removed piece |\n|---|---:|---:|---:|\n"
+            f"{rows}\n"
+        )
+        if te:
+            tt = te["trimmed"]
+            served_test_row = (
+                f"\n| Test, this graph (evaluated once) | {tt['macro_f1']:.4f} | "
+                f"{tt['per_class_f1']['negative']:.3f} | {tt['per_class_f1']['neutral']:.3f} | "
+                f"{tt['per_class_f1']['positive']:.3f} |"
+            )
+            size_section += (
+                f"\nOn UIT-VSFC test, scored once, it gives the same label as the full graph on "
+                f"{te['label_agreement']:.2%} of {te['n']:,} sentences.\n"
+            )
+        unk_limit = (
+            "\n- **The vocabulary is cut.** A word made only of pieces outside it reads as `<unk>`; "
+            "text far from student feedback and social media (other domains, rare names) meets "
+            "this more often."
+        )
     return f"""---
 language: vi
 license: cc-by-nc-sa-4.0
@@ -602,7 +660,7 @@ PhoBERT-base fine-tuned on UIT-VSFC with diacritic and teencode augmentation and
 trained to give a real informally typed comment the label a frozen teacher gives its normalized form.
 Real typing changes {100 * sum(flips_c) / len(flips_c):.0f}% of its labels, against
 {100 * sum(flips_b) / len(flips_b):.0f}% for the same model without that training. Shipped as the
-{_graph_kind(manifest)} the ViFeedback service runs, plus the PyTorch checkpoint it was exported from.
+{_graph_kind(manifest)} the ViFeedback service runs, plus the PyTorch checkpoint it was exported from.{shipped}
 
 Code, evaluation protocol and every number below: https://github.com/ThanhDatVN/ViFeedback-NLP-Service
 
@@ -655,7 +713,7 @@ Macro-F1 is the headline because `neutral` is 4% of the data and carries a third
 | Split | Macro-F1 | Negative F1 | Neutral F1 | Positive F1 |
 |---|---:|---:|---:|---:|
 | Validation (1,583) | {v["macro_f1"]:.4f} | {pc["negative"]["f1"]:.3f} | {pc["neutral"]["f1"]:.3f} | {pc["positive"]["f1"]:.3f} |
-| Test (3,166), evaluated once | {t["test"]["macro_f1"]:.4f} | {t["test"]["per_class_f1"]["negative"]:.3f} | {t["test"]["per_class_f1"]["neutral"]:.3f} | {t["test"]["per_class_f1"]["positive"]:.3f} |
+| Test (3,166), evaluated once | {t["test"]["macro_f1"]:.4f} | {t["test"]["per_class_f1"]["negative"]:.3f} | {t["test"]["per_class_f1"]["neutral"]:.3f} | {t["test"]["per_class_f1"]["positive"]:.3f} |{served_test_row}
 
 Test macro-F1 over five seeds of this recipe: {five_str}. Against five seeds of the recipe without the
 consistency training, the difference is {paired["mean_delta"]:+.4f}, 95% interval
@@ -674,7 +732,7 @@ with every diacritic stripped scores {manifest["restorer"]["acceptance"]["stripp
 | Category | n | Accuracy |
 |---|---:|---:|
 {cats}
-{served_pipeline}
+{served_pipeline}{size_section}
 ## Limitations
 
 - **Neutral is weak** (test F1 {t["test"]["per_class_f1"]["neutral"]:.3f}). Neutral errors are confident, so thresholds do not fix them.
@@ -686,7 +744,7 @@ with every diacritic stripped scores {manifest["restorer"]["acceptance"]["stripp
 - **Input is lowercased** before scoring, as the training data is.
 - **Off-topic input still gets a label**; `in_scope` (above) is the signal to act on.
 - **One training domain.** Student feedback from one Vietnamese university.
-- The suggestion convention is the corpus's: a request for change (*thầy nên…*) is `negative`.
+- The suggestion convention is the corpus's: a request for change (*thầy nên…*) is `negative`.{unk_limit}
 
 ## Files and checksums (SHA-256)
 

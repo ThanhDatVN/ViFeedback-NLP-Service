@@ -45,8 +45,8 @@ student, not by the served model (ADR-043):
 |---|---|---|---|---|
 | S1 sentiment test macro-F1 | ≥ 0.80 ✅ | ≥ 0.84 | Served H10b 0.824 (5 seeds); the p9 recipe 0.830; the student 0.817 | Not chased; measured once at each closing gate (ADR-040, ADR-042) |
 | S2 topic test macro-F1 | ≥ 0.79 ✅ | ≥ 0.83 | 0.804 | Not pursued (§ 5) |
-| S4 neutral F1 | ≥ 0.55 | ≥ 0.65 | Served H10b 0.550 at seed 42; the p9 recipe 0.576 (5 seeds, test); the student 0.545 | D1 audit, scope-first route (ADR-044) → D2 branch (§ 5) |
-| S7 serving artifact | — | ≤ 200 MB | ✅ **185 MB**, the released student; **198.9 MB**, the S7b candidate of the served H10b (ADR-045) | S7b replaces the 540 MB FP32 graph after one latency session |
+| S4 neutral F1 | ≥ 0.55 | ≥ 0.65 | Served graph 0.548 at seed 42 (FP32 0.550; two test sentences); the p9 recipe 0.576 (5 seeds, test); the student 0.545 | D1 audit, scope-first route (ADR-044) → D2 branch (§ 5) |
+| S7 serving artifact | — | ≤ 200 MB | ✅ **198.9 MB**, the served H10b graph (S7b, ADR-045); the student 185 MB | Served 2026-10-01 |
 | S8 image | — | ≤ 700 MB | ✅ 519 MB | done |
 | S9 coded errors | — | ≥ 30 | 0 | D1 audit (👤) |
 | S10 clean-clone evaluation | — | < 15 min | ✅ 2.3 min | done |
@@ -81,8 +81,8 @@ student, not by the served model (ADR-043):
 | 9 | ✅ H11 closing gate (test, once): student 0.8168 (5 seeds) vs 0.8296, −0.0129 [−0.0204, −0.0054] | — | CPU | logged; reported, not a decision |
 | 9b | ✅ H10b (ADR-042): passed; closing gate 0.8237 (−0.0059, n.s.); release candidate built (`cycle5.yaml` v5) | — | 12 GPU runs | the H10b rule |
 | 9c | ✅ Decision 9 (ADR-043): **the service runs H10b** (2026-10-01); 40 API tests pass. ✅ Uploaded by the owner (Hub commit `037edfb`), 0.8617 reproduced from the Hub | — | CPU | release gate |
-| 9d | Latency session of the served H10b. 2026-10-01: one session, S1 not reportable (no steady pass; model-only p95 34.4 ms against 20.5 ms for the same architecture in Cycle 5, so the machine was loaded); another project's GPU job ran before and after it | a quiet machine | CPU | reported next to the 22.1 ms of the same architecture |
-| 9e | ✅ S7b (`cycle5.yaml` v7, ADR-045): the served H10b at 198.9 MB by FP16 storage and a 17,500-entry vocabulary, no retraining; passed. Serving waits for one latency session (GPU busy with another project on 2026-10-01) | a quiet machine | CPU | the S7b rule |
+| 9d | ✅ Latency of H10b: the FP32 graph 26.9 ms p95 in the S7b session (an earlier session on a loaded machine was not reportable) | — | CPU | reported |
+| 9e | ✅ S7b (`cycle5.yaml` v7, ADR-045): the served H10b at 198.9 MB by FP16 storage and a 17,500-entry vocabulary, no retraining; passed; p95 24.9 ms; **served**; test once 0.8198. 👤 Hub upload | 👤 upload | CPU | the S7b rule |
 | 10 | H12: declare, then run, when decision 2 and the new labelled sample exist | 👤 decision 2, 👤 data | ≈ 6 GPU runs | declared later |
 | 10′ | H12′ (§ 4): ✅ declared in `cycle5.yaml` v6; run when the GPU is free | — | 5 GPU runs, about 3 h | the H12′ rule |
 | any time | D1 neutral audit → D2 branch: the 58 rows the tree reads (ADR-044; sheet written) | 👤 about 2 h + 30–40 min | D2: ≤ 12 runs | the tree frozen in `cycle2.yaml` |
