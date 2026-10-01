@@ -1,4 +1,4 @@
-"""H12''s held-out split (cycle5.yaml v6) on a synthetic frame: no corpus text needed."""
+"""The H12' held-out split (cycle5.yaml v6) on a synthetic frame: no corpus text needed."""
 
 from __future__ import annotations
 

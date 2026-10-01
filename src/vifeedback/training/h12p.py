@@ -6,6 +6,7 @@ train split (no text), so every later step reads the same 3,000 posts.
 
 from __future__ import annotations
 
+from collections.abc import Collection
 from pathlib import Path
 
 import numpy as np
@@ -20,7 +21,7 @@ INDEX = paths.RESULTS / "studies" / "cycle5" / "h12p_holdout_index.csv"
 
 
 def holdout_split(
-    frame: pd.DataFrame, off_topic: set[str] | frozenset[str]
+    frame: pd.DataFrame, off_topic: Collection[str]
 ) -> tuple[np.ndarray, np.ndarray]:
     """Row positions (held-out, training) of the in-scope posts, as cycle5.yaml v6 declares.
 
