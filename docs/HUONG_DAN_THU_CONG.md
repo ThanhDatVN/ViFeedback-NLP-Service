@@ -1,6 +1,6 @@
 # Hướng dẫn các việc chủ dự án làm tay
 
-**Cập nhật:** 2026-10-01, sau quyết định 9 (service chạy H10b, ADR-043). Tài liệu này dành cho chủ dự án. Nó liệt kê những việc máy
+**Cập nhật:** 2026-10-11. Bắt đầu từ [mục 0: lộ trình hoàn thành dự án](#0-lộ-trình-hoàn-thành-dự-án-cập-nhật-2026-10-11). Tài liệu này dành cho chủ dự án. Nó liệt kê những việc máy
 không làm thay được, giải thích vì sao cần làm, và hướng dẫn từng bước. Mọi tài liệu khác của dự án
 viết bằng tiếng Anh; kế hoạch tổng thể nằm ở [NEXT_PLAN.md](NEXT_PLAN.md).
 
@@ -14,7 +14,174 @@ $PY = ".venv\Scripts\python.exe"
 
 ---
 
-## Tóm tắt
+## 0. Lộ trình hoàn thành dự án (cập nhật 2026-10-11)
+
+### 0.1 Thế nào là "hoàn thành"
+
+Dự án được coi là hoàn thành khi đủ bốn điều sau:
+
+1. **Câu hỏi lớn nhất còn mở có câu trả lời.** Lớp `neutral` yếu vì nhãn gốc mơ hồ hay vì mô hình
+   biểu diễn kém? Audit cho câu trả lời, rồi nhánh D2 tương ứng được chạy và ghi lại.
+2. **Cycle 5 được đóng.** Cụ thể:
+   - H12′ có kết luận theo quy tắc đã khai báo;
+   - H12 (trường thứ ba) hoặc có dữ liệu và được chạy, hoặc được bạn quyết định hoãn, có ghi ADR;
+   - bước chấm test cuối chu kỳ (closing gate) chạy một lần trên mô hình phát hành cuối cùng.
+3. **Bản trên Hugging Face khớp với service**, và tải về chạy lại được.
+4. **Tài liệu cuối khớp với kết quả cuối** (README, báo cáo, model card), có đánh dấu phiên bản v1.0.
+
+### 0.2 Các mục tiêu đo được: hiện trạng
+
+Ngưỡng lấy từ [ROADMAP.md](ROADMAP.md) (§ 2, sửa ở Gate G1). "Tối thiểu" là cam kết, "kỳ vọng" là
+nếu làm được.
+
+| Mục tiêu | Tối thiểu / kỳ vọng | Hiện tại | Đạt? | Còn có thể nhích lên bằng |
+|---|---|---|---|---|
+| S1 macro-F1 cảm xúc, test | ≥ 0,80 / ≥ 0,84 | Mô hình tốt nhất (VnCoreNLP) 0,837; bản phục vụ 0,820 | Tối thiểu ✅, kỳ vọng ✗ | Không theo đuổi: tập test đã dùng cho mọi quyết định trước, tối ưu thêm là chạy theo nhiễu |
+| S2 macro-F1 chủ đề, test | ≥ 0,79 / ≥ 0,83 | 0,804 | Tối thiểu ✅, kỳ vọng ✗ | Không theo đuổi (hai thí nghiệm đã thất bại) |
+| S3 hơn TF-IDF đã tinh chỉnh | ≥ +0,025 / ≥ +0,05 | +0,079 (0,824 so với 0,745) | ✅ cả hai | — |
+| S4 F1 lớp neutral | ≥ 0,55 / ≥ 0,65 | Tốt nhất 0,596; bản phục vụ 0,548 (hụt 2 câu) | Tối thiểu: ✅ ở mô hình tốt nhất, ✗ ở bản phục vụ; kỳ vọng ✗ | **Audit → nhánh D2** (việc B, C) |
+| S5 độ trễ p95 | ≤ 60 ms / ≤ 30 ms | 24,9 ms | ✅ cả hai | — |
+| S6 cái giá của tối ưu hoá | ≤ 0,5 / ≤ 0,2 điểm % | 0,10 điểm % (bản 198,9 MB) | ✅ cả hai | — |
+| S7 dung lượng file phục vụ | ≤ 200 MB / ≤ 120 MB | 198,9 MB | Tối thiểu ✅, kỳ vọng ✗ | Tuỳ chọn H: mô hình nhỏ + cắt vocabulary ≈ 110 MB, nhưng kém 0,013 trên test |
+| S8 Docker image | ≤ 1,2 GB / ≤ 700 MB | 519 MB | ✅ cả hai | — |
+| S9 số lỗi được mã hoá | ≥ 30 / ≥ 60 | 0 | ✗ | **Audit 58 dòng** cho mức tối thiểu; mức kỳ vọng cần thêm 2 dòng lỗi |
+| S10 tái lập từ bản clone mới | chạy được / < 15 phút | 131 giây | ✅ cả hai | — |
+
+Tóm lại: **mọi mục tiêu đo bằng máy đã đạt mức tối thiểu**, trừ S4 ở bản phục vụ (hụt 2 câu) và S9
+(chưa audit). Cả hai đều đi qua đúng một việc của bạn: **audit**.
+
+### 0.3 Các việc còn lại, theo thứ tự
+
+| Bước | Ai | Thời gian | Kết quả cần đạt | Chi tiết |
+|---|---|---|---|---|
+| **A.** Chạy xong H12′: 4 seed cùng nhãn của 5 mô hình đối chứng, rồi áp quy tắc | Tôi (đang chạy trên laptop) | Khoảng 2–2,5 giờ máy | Kết luận theo quy tắc `cycle5.yaml` v6. Nếu đạt: service tốt hơn trên văn bản diễn đàn NEU (seed 42 cho +0,061 trên validation) mà không kém ở UIT-VSFC, lớp neutral, câu mất dấu, câu gõ tắt. Nếu đạt, bạn quyết định có phục vụ nó không | Không cần bạn. Kaggle (mục 11) **không cần nữa**, vì laptop đã chạy lại được PyTorch |
+| **B.** Audit 58 dòng, lượt 1 | **Bạn** | Khoảng 2 giờ | 58 dòng có đủ `annotator_label`, `neutral_subtype`, `gold_assessment`. S9 đạt mức tối thiểu | [Mục 1, cách nhanh](#cách-nhanh-chỉ-58-dòng-mà-cây-quyết-định-đọc-adr-044-khuyến-nghị) và [0.4](#04-hướng-dẫn-chi-tiết-việc-b-audit-58-dòng) |
+| **B′.** Audit lượt 2 (sau ít nhất 24 giờ) | **Bạn** | 30–40 phút | Hệ số κ đo độ nhất quán của chính bạn | Như trên |
+| **C.** Báo cáo audit, chạy nhánh D2 | Tôi | 1 phút; rồi ≤ 12 lần huấn luyện (4–6 giờ GPU) | Một trong ba nhánh, theo cây quyết định đã đóng băng từ trước: sửa nhãn train (E04), học nhãn mềm rồi dừng, hoặc thử biểu diễn khác. Kết luận có số liệu cho S4 | Không cần bạn, trừ khi kết quả đổi mô hình phục vụ |
+| **D.** Duyệt 15 nhãn challenge v1 (U2) | **Bạn** | 20 phút | 15 dòng có `owner_decision`; tôi thêm bảng độ nhạy | [Mục 2](#2-duyệt-15-nhãn-của-challenge-v1-u2) và [0.5](#05-hướng-dẫn-chi-tiết-việc-d-u2) |
+| **E.** Quyết định về H12 (trường thứ ba) | **Bạn** | 10 phút đọc | Một câu trả lời: thu dữ liệu mới, hoặc hoãn H12 và đóng Cycle 5 với H12′ | [0.6](#06-hướng-dẫn-chi-tiết-việc-e-quyết-định-về-h12) |
+| **F.** Upload bản phục vụ cuối cùng lên Hugging Face | **Bạn** chạy lệnh, tôi kiểm | 10 phút | Hub khớp service; tải về chạy lại validation ra đúng số trong manifest | [0.7](#07-hướng-dẫn-chi-tiết-việc-f-upload-lên-hugging-face) |
+| **G.** Đóng chu kỳ: chấm test lần cuối, tài liệu, v1.0 | Tôi | 1–2 giờ | Điểm test cuối có ghi log, README và báo cáo khớp, thẻ v1.0. Đẩy thẻ phiên bản lên GitHub cần bạn đồng ý | Làm sau A–F |
+| *H. (tuỳ chọn)* Mô hình nhỏ + cắt vocabulary | Tôi | Khoảng 1 giờ | Khoảng 110 MB, đạt S7 mức kỳ vọng, phát hành bên cạnh (không thay bản phục vụ) | Chỉ khi bạn muốn |
+| *I. (tuỳ chọn)* Challenge v2 | Bạn và người giúp | 4–6 giờ | Câu do người thật gõ | [Mục 8](#8-tuỳ-chọn-challenge-v2) |
+
+**Thứ tự nên làm:** B ngay hôm nay (lượt 2 sau 24 giờ). D bất kỳ lúc nào. E khi bạn đọc xong 0.6. F
+sau khi A và C xong, vì một trong hai có thể đổi mô hình phục vụ; nếu không đổi, F làm ngay được với
+bản 198,9 MB.
+
+### 0.4 Hướng dẫn chi tiết việc B: audit 58 dòng
+
+Quy tắc gán nhãn nằm ở mục 1 (bảng nhãn, loại neutral, đánh giá nhãn gốc). Phần này là thao tác.
+
+**Chuẩn bị (5 phút).**
+1. Mở File Explorer, vào `D:\GitHub\ViFeedback NLP Service\results\studies\study_a\local\`.
+2. **Sao lưu trước khi làm:** chuột phải `audit_scope_pass1.csv` → *Copy*, rồi *Paste* ra cùng thư mục
+   (thành `audit_scope_pass1 - Copy.csv`). Nếu Excel lỡ làm hỏng file, bạn còn bản gốc.
+3. Mở `audit_scope_pass1.csv` bằng Excel. File có BOM UTF-8 nên tiếng Việt hiện đúng. Nếu chữ bị lỗi
+   font, đóng lại rồi dùng *Data → From Text/CSV*, chọn *65001: Unicode (UTF-8)*.
+4. **Ẩn các cột bên phải `notes`:** bấm vào chữ cái của cột `gold`, giữ Shift, bấm vào cột cuối cùng
+   → chuột phải → *Hide*. Còn lại các cột: `example_index`, `split`, `text`, `annotator_label`,
+   `neutral_subtype`, `notes`.
+5. *View → Freeze Panes → Freeze Top Row* để tiêu đề luôn hiện.
+
+**Lượt mù (khoảng 1,5 giờ, có thể chia 2 buổi).** Với từng dòng, đọc cột `text` rồi điền:
+
+| Cột | Giá trị được phép (gõ đúng, chữ thường) |
+|---|---|
+| `annotator_label` | `negative`, `neutral`, `positive`, `ambiguous` |
+| `neutral_subtype` | Khi nhãn là `neutral` hoặc `ambiguous`: `objective_fact`, `no_opinion`, `request_suggestion`, `mixed`, `insufficient_context`, `other`. Các trường hợp khác: `n/a` |
+| `notes` | Tuỳ ý; **bắt buộc** khi chọn subtype `other` |
+
+Mẹo:
+- Gõ một lần ở dòng đầu, các dòng sau Excel gợi ý tự hoàn thành, đỡ gõ sai.
+- Câu góp ý (*nên…*, *mong…*) theo quy ước corpus là `negative`, subtype `request_suggestion`.
+- Không đoán ngữ cảnh ngoài câu. Không chắc thì dùng `ambiguous` hoặc subtype `insufficient_context`.
+
+**So với nhãn gốc (khoảng 30 phút).**
+1. Hiện lại cột `gold` và `gold_assessment`: chọn hai cột hai bên chỗ bị ẩn → chuột phải → *Unhide*.
+   Chỉ cần hai cột này; `stratum` và các cột mô hình để ẩn tiếp.
+2. Điền `gold_assessment` cho từng dòng: `agree`, `ambiguous` hoặc `incorrect`. Chọn `incorrect` thì
+   **bắt buộc** ghi lý do vào `notes`.
+3. Dòng nào `gold` là `neutral` mà `neutral_subtype` đang là `n/a`, đổi thành subtype phù hợp.
+4. **Không sửa** `annotator_label` đã điền ở lượt mù.
+
+**Lưu.** *File → Save As* → chọn kiểu **CSV UTF-8 (Comma delimited) (*.csv)**, giữ nguyên tên
+`audit_scope_pass1.csv` → *Yes* khi Excel hỏi giữ định dạng. Đóng Excel.
+
+**Tự kiểm trước khi báo tôi (1 phút):**
+```powershell
+& $PY -m vifeedback.cli study audit-report --scope-only --sheet results\studies\study_a\local\audit_scope_pass1.csv
+```
+Nếu lệnh báo `not complete`, nó liệt kê cột nào còn trống hoặc giá trị nào lạ; sửa rồi chạy lại. Khi
+chạy được, nó in ra nhánh của cây quyết định. Bạn chưa cần hiểu kết quả, chỉ cần báo tôi.
+
+**Lượt 2 (sau ít nhất 24 giờ, 30–40 phút):**
+```powershell
+& $PY -m vifeedback.cli study audit-scope-sheet --out results\studies\study_a\local\audit_scope_pass2.csv --order-seed 46
+```
+- Mở `audit_scope_pass2.csv` (thứ tự đã xáo khác) và ẩn các cột bên phải `notes`.
+- **Chỉ điền** `annotator_label` (và `neutral_subtype` khi cần), **không mở lại** file lượt 1.
+- Lưu dạng CSV UTF-8 rồi báo tôi.
+
+**Kết quả cần đạt sau việc B:**
+- 58 lỗi được mã hoá bởi người, nên S9 đạt mức tối thiểu.
+- Một nhánh D2 được xác định bằng nhãn người.
+- Hệ số κ giữa hai lượt của bạn.
+
+File bảng tính chứa câu của UIT-VSFC nên **không bao giờ commit**. Chỉ báo cáo số đếm được commit.
+
+### 0.5 Hướng dẫn chi tiết việc D: U2
+
+1. Mở `results\studies\challenge\label_review_v1.csv` bằng Excel. Có 15 dòng. File này **được phép
+   commit**: câu do dự án tự viết, không phải dữ liệu của ai.
+2. Đọc cột `text` và nhãn đã đóng băng ở cột `sentiment`. Các cột `gpt4o_mini`, `qwen3_1.7b`, `ce`,
+   `augmented` là dự đoán của các mô hình, chỉ để tham khảo.
+3. Điền `owner_decision`:
+   - `keep` nếu nhãn đúng;
+   - `negative`, `neutral` hoặc `positive` nếu nhãn sai (ghi nhãn đúng);
+   - `ambiguous` nếu câu đọc được nhiều cách.
+4. Điền `owner_note` (ngắn) cho mọi dòng không phải `keep`.
+5. Lưu dạng CSV UTF-8, giữ tên file, rồi báo tôi.
+
+**Kết quả:** challenge v1 vẫn đóng băng. Tôi thêm bảng độ nhạy, đặt kết quả trên nhãn đã duyệt cạnh
+nhãn gốc (`study challenge-review`).
+
+### 0.6 Hướng dẫn chi tiết việc E: quyết định về H12
+
+H12 hỏi: mô hình có tốt hơn với phản hồi của **một trường thứ ba** (không phải UIT, không phải NEU)?
+Câu này cần dữ liệu có nhãn mới, vì không có bộ dữ liệu công khai nào khác. H12′ đang chạy chỉ trả
+lời được cho diễn đàn NEU.
+
+| Lựa chọn | Bạn phải làm gì | Hệ quả |
+|---|---|---|
+| **E1. Thu dữ liệu mới** | Theo mục 6 và 7: chọn chính sách nhãn (quyết định 2); thu 600–800 bài của một trường khác, xoá thông tin cá nhân; hai người gán nhãn độc lập (10–12 giờ mỗi người); hoà giải chỗ bất đồng | Kết luận mạnh nhất về "trường khác". Mất vài tuần |
+| **E2. Hoãn H12, đóng Cycle 5 với H12′** (khuyến nghị nếu bạn không có sẵn nguồn dữ liệu) | Trả lời "hoãn H12" | Tôi ghi ADR: H12 hoãn vì thiếu dữ liệu. Tài liệu nói rõ kết luận về trường khác chỉ dựa trên NEU-ESC |
+
+**Bạn cần trả lời một câu:** "E1" (kèm nguồn dữ liệu dự kiến) hoặc "E2".
+
+### 0.7 Hướng dẫn chi tiết việc F: upload lên Hugging Face
+
+Lệnh upload do **bạn tự chạy**: Claude Code chặn tôi tạo nội dung công khai, và việc phát hành là
+quyết định của bạn.
+
+1. Tôi dựng bản chạy thử và báo bạn khi sẵn sàng. Bản cho mô hình 198,9 MB đã có ở
+   `models\publish\vifeedback-sentiment-phobert\`.
+2. Đọc model card: `models\publish\vifeedback-sentiment-phobert\README.md` (số liệu, giới hạn, giấy
+   phép CC BY-NC-SA 4.0).
+3. Chạy (PowerShell, tại thư mục repo; token lấy từ `.env`, không hiện ra):
+   ```powershell
+   & $PY -m vifeedback.cli serve publish --repo-id Datk4/vifeedback-sentiment-phobert --upload
+   ```
+   Lệnh tải khoảng 0,6 GB lên. Các file cũ mà bản mới không còn (ví dụ `model.opt.onnx` 540 MB) bị
+   xoá khỏi Hub trong cùng một commit.
+4. Báo tôi. Tôi chạy `serve reproduce`: tải về, kiểm từng file theo `SHA256SUMS`, chấm lại
+   validation, rồi cập nhật tài liệu.
+
+**Kết quả cần đạt:** `serve reproduce` in `REPRODUCED`, và CI "Reproduce from the Hub" xanh.
+
+---
+
+## Tóm tắt (mọi mục)
 
 | # | Việc | Thời gian | Khi nào | Nó mở khoá việc gì |
 |---|---|---|---|---|
@@ -27,7 +194,7 @@ $PY = ".venv\Scripts\python.exe"
 | 7 | [Dữ liệu có nhãn mới cho hướng (c)](#7-dữ-liệu-có-nhãn-mới-cho-hướng-c), hoặc đồng ý chạy [H12′](#phương-án-thay-thế-h12-không-cần-dữ-liệu-mới) | 20–25 giờ (hai người); H12′ chỉ cần một câu trả lời | Trước Cycle 5 (c) | Kết luận về văn bản của trường khác (H12′: chỉ về diễn đàn NEU) |
 | 8 | [Challenge v2](#8-tuỳ-chọn-challenge-v2) | 4–6 giờ | Tuỳ chọn | Kiểm tra teencode do người thật gõ |
 | 10 | ~~[Chọn mô hình cho service](#10-chọn-mô-hình-cho-service-ba-lựa-chọn)~~ | — | ✅ Xong 2026-10-01: bạn chọn H10b | Service chạy H10b (ADR-043) |
-| 11 | [Chạy H12′ trên Kaggle](#11-chạy-h12-trên-kaggle) | 15 phút thao tác, 2–2,5 giờ máy chạy | Bây giờ (laptop đang bị chặn PyTorch) | Kết luận H12′ |
+| 11 | ~~Chạy H12′ trên Kaggle~~ | — | Không cần nữa: từ 2026-10-11 laptop chạy lại được PyTorch, tôi chạy H12′ trên laptop. Mục 11 giữ làm phương án dự phòng | Kết luận H12′ |
 
 Việc 1 quan trọng nhất: đó là con đường duy nhất để biết lớp `neutral` yếu vì **nhãn gốc mơ hồ**
 hay vì **mô hình biểu diễn kém**. Hai nguyên nhân đòi hỏi hai cách sửa khác nhau, và không thí
@@ -285,6 +452,9 @@ gốc. Lưu file (CSV UTF-8), rồi báo tôi commit, vì file này không chứ
 
 ## 3. Chuẩn bị máy rảnh để đo độ trễ
 
+**✅ Không cần nữa.** Bạn cho phép đo không cần máy rảnh (2026-09-30); bản phục vụ đo được p95
+24,9 ms (ADR-045). Phần dưới giữ lại để tham khảo.
+
 **Vì sao.** Mục tiêu độ trễ là p95 ≤ 30 ms cho một câu, trên CPU của laptop (Ryzen 5 6600H). Con số
 chính thức 26,9 ms được đo khi service còn dùng điểm Mahalanobis. Bộ phát hiện phạm vi mới (ADR-034)
 nhẹ hơn (+0,5–0,8 ms so với +1,3–3,1 ms), nhưng ba lần đo sau ADR-034 chạy khi máy đang bận
@@ -486,6 +656,9 @@ vẫn chạy được ngay cả khi hai gói này bị chặn.
 ---
 
 ## 11. Chạy H12′ trên Kaggle
+
+**Dự phòng, hiện không cần.** Từ 2026-10-11 laptop chạy lại được PyTorch và tôi chạy H12′ trên
+laptop. Chỉ dùng mục này nếu Windows lại chặn PyTorch giữa chừng.
 
 **Vì sao.** Từ chiều 2026-10-01, Windows Application Control chặn PyTorch, pyarrow và scikit-learn
 trên laptop (mục 9), nên laptop không huấn luyện được. Seed 42 của H12′ đã chạy xong trước đó và
