@@ -1,5 +1,8 @@
 # Next Plan — v6: Cycle 5 and the targets still open
 
+This is the declared Cycle 5 plan with updates through 2026-10-01. For the latest outcomes and
+remaining work, start with [STATUS.md](STATUS.md).
+
 **v6, 2026-09-29.** Since v5 (commit 3b8da19, in git history):
 - **Cycle 4 is closed** (ADR-032 to ADR-036). The service now reports scope with a topic-aware
   detector. H8 was not passed. INT8 passed S5′ but was held back by the release gate.
@@ -27,7 +30,7 @@ reason · ✖ dropped, with the reason.
 
 **The service.**
 - **Model:** PhoBERT-base trained with H2's augmentation and H10b's anchored consistency (seed 42),
-  FP32 ONNX, 540 MB, T = 1.349 (ADR-043).
+  FP16-storage ONNX with a trimmed vocabulary, 198.9 MB, T = 1.349 (ADR-043, ADR-045).
 - **Input handling:** it lowercases input and restores diacritics on unaccented input (ADR-031).
 - **Scope:** it reports `in_scope` / `scope_score` from a TF-IDF topic detector (ADR-034).
 - **Checks:**
@@ -412,10 +415,9 @@ Settled:
 
 ## 9. Kaggle
 
-Cycle 5 needs no Kaggle: H10 and H11 train PhoBERT-base-sized models, which fit the laptop. The two
-notebooks stay verified for reruns: `kaggle_h7_llm.ipynb` (H7) and `kaggle_train.ipynb` (clones into
-`/tmp`, a text-free results zip). F4 may use Kaggle for the export if torch's exporter cannot produce
-the FP16-storage graph locally.
+H10 and H11 trained on the laptop. H12′ uses `kaggle_h12p.ipynb` for the remaining seeds and
+confirmation labels. `kaggle_h7_llm.ipynb` (H7) and `kaggle_train.ipynb` remain available for reruns;
+they clone into `/tmp` and return text-free results archives.
 
 ## 10. Research sources
 

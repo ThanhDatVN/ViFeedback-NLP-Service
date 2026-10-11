@@ -13,7 +13,6 @@ from typing import Final
 ROOT: Final[Path] = Path(__file__).resolve().parents[2]
 
 CONFIGS: Final[Path] = ROOT / "configs"
-DOCS: Final[Path] = ROOT / "docs"
 
 DATA: Final[Path] = ROOT / "data"
 DATA_RAW: Final[Path] = DATA / "raw"

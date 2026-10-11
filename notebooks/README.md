@@ -10,6 +10,7 @@ run identical code (docs/ROADMAP.md § 4).
 | [`02_results.ipynb`](02_results.ipynb) | Results read from the registry, the gate aggregates and `results/studies/`: test headline, ladder, seed-paired comparisons, Cycle 0 (neutral errors, calibration, abstention by class, robustness) and Cycle 1's declared decisions. Nothing typed by hand | ✅ outputs + 5 figures |
 | [`kaggle_h12p.ipynb`](kaggle_h12p.ipynb) | Cycle 5 H12′ (`cycle5.yaml` v6): the four remaining seeds and, if the checkpoints are attached, the controls' labels on the confirmation data. Clones a pinned commit, checks that the inputs match the laptop's, and returns a text-free results zip (`study h12p-import`). See [KAGGLE_GUIDE](../docs/KAGGLE_GUIDE.md#cycle-5-h12-kaggle_h12pipynb) | ▢ run on Kaggle |
 | [`kaggle_train.ipynb`](kaggle_train.ipynb) | Logic-free wrapper for what the laptop cannot run: Cycle 1 H3 (§ 4e, XLM-R raw vs pyvi) and the INT8 releases (§ 4d). See [KAGGLE_GUIDE](../docs/KAGGLE_GUIDE.md) | ▢ run on Kaggle |
+| [`kaggle_h7_llm.ipynb`](kaggle_h7_llm.ipynb) | Cycle 2–3 H7 LLM reference, including the declared zero-shot comparison on NEU-ESC. See [KAGGLE_GUIDE](../docs/KAGGLE_GUIDE.md) | ▢ run on Kaggle |
 
 > **Colab notebook removed.** It was a near-duplicate of the Kaggle wrapper and carried both bugs
 > that a real Kaggle run exposed — the namespace shadowing and the post-install `sys.path` refresh —

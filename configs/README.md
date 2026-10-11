@@ -9,7 +9,7 @@ than by trusting discipline.
 | `baseline/tfidf.yaml` | The B0–B5 ladder |
 | `phobert/reference.yaml` | The Gate G2 reference configuration — the anchor every ablation moves one axis away from |
 | `phobert/segmented.yaml` | The Gate G3/G4 champion |
-| `phobert/tier_a_*.yaml` | Phase 4 imbalance recipes |
+| `phobert/tier_a_logit_adjust.yaml` | Phase 4 imbalance recipe |
 | `phobert/large_kaggle.yaml` | Exceeds the 4.29 GB laptop GPU; note the `grad_accum` |
 | `serve/default.yaml` | Serving runtime |
 

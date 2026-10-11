@@ -15,7 +15,7 @@ for the sentiment model.
 [![Reproduce from the Hub](https://github.com/ThanhDatVN/ViFeedback-NLP-Service/actions/workflows/reproduce.yml/badge.svg)](https://github.com/ThanhDatVN/ViFeedback-NLP-Service/actions/workflows/reproduce.yml)
 ![Python](https://img.shields.io/badge/python-3.11-blue)
 ![Code license](https://img.shields.io/badge/code-MIT-green)
-![Weights license](https://img.shields.io/badge/weights-CC%20BY--NC%204.0-lightgrey)
+![Weights license](https://img.shields.io/badge/weights-CC%20BY--NC--SA%204.0-lightgrey)
 
 ---
 
@@ -76,7 +76,7 @@ report the other two. *(Pinned by `tests/unit/test_metrics.py`.)*
 ## What the service does
 
 ```text
-raw text ─► lowercase, NFC ─► diacritic restorer* ─► pyvi segmentation ─► PhoBERT (ONNX, FP32) ─► label, probabilities
+raw text ─► lowercase, NFC ─► diacritic restorer* ─► pyvi segmentation ─► PhoBERT (ONNX, FP16 storage) ─► label, probabilities
                                                                     └──► TF-IDF topic detector ─► in_scope, scope_score
 * only when the input is essentially unaccented (ADR-031)
 ```
@@ -208,7 +208,7 @@ The Kaggle notebooks are for models that exceed a 4.29 GB GPU ([KAGGLE_GUIDE](do
 
 ```text
 ├── src/vifeedback/
-│   ├── cli/           one module per command group; `study` split by research cycle (study_cycle1…4)
+│   ├── cli/           one module per command group; `study` split by research cycle (study_cycle1…5)
 │   ├── data/          loading · integrity · leakage · profiling
 │   ├── preprocess/    normalizers · segmentation backends · diacritic restorer · variants
 │   ├── models/        TF-IDF ladder (B0–B5) · cross-fitted prior tuning
@@ -221,7 +221,7 @@ The Kaggle notebooks are for models that exceed a 4.29 GB GPU ([KAGGLE_GUIDE](do
 ├── data/              challenge set and probes (the project's own); corpora fetched, never committed
 ├── docs/              see docs/README.md
 ├── results/           registry, per-run metrics, studies (see results/README.md)
-├── notebooks/         EDA and results (executed) · two Kaggle notebooks
+├── notebooks/         EDA and results (executed) · three Kaggle notebooks
 ├── scripts/           venv setup · Docker end-to-end · tokenizer and segmenter equivalence checks
 ├── tests/             unit · data · contract · integration · packaging guards
 └── models/            local weights, gitignored (see models/README.md)
@@ -313,15 +313,15 @@ Every external-review item (R1–R12) is closed ([STATUS § 8](docs/STATUS.md#8-
 > for a tuned TF-IDF baseline, with minority-class analysis, preprocessing ablations and
 > per-segmenter latency measured on documented hardware.
 
-The deployed pipeline scores **0.830 ± 0.007** (5 seeds); quote that figure when describing the
-service, not the research best. Rules for quoting: [ROADMAP § 9](docs/ROADMAP.md#9-cv-snippet-and-claim-discipline).
+The served H10b recipe scores **0.8237 macro-F1** on test across five seeds. Its seed-42 checkpoint
+is the deployed artifact. Rules for quoting: [ROADMAP § 9](docs/ROADMAP.md#9-cv-snippet-and-claim-discipline).
 
 ---
 
 ## License and citation
 
 - **Code:** MIT, see [LICENSE](LICENSE).
-- **Published weights:** CC BY-NC 4.0, a non-commercial research artifact, in line with UIT-VSFC's
+- **Published weights:** CC BY-NC-SA 4.0, a non-commercial research artifact, in line with UIT-VSFC's
   research-purpose release.
 - **Data:** no corpus text is included here. UIT-VSFC, NEU-ESC and ViLexNorm are fetched under their
   own terms ([DATA_CARD § 11](docs/DATA_CARD.md#11-licensing-and-citation)).

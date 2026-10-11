@@ -495,7 +495,7 @@ vifeedback results provenance             # each run's source hash -> its commit
 ```
 
 The CLI lives in `src/vifeedback/cli/`: one module per command group, with `study` split by cycle
-(`study_cycle1.py` … `study_cycle4.py`), so the code behind each cycle's numbers is in one file.
+(`study_cycle1.py` … `study_cycle5.py`), so the code behind each cycle's numbers is in one file.
 
 Pinned: dataset commit, pretrained model commits (`constants.MODEL_REVISIONS`), and every run's
 config hash and source SHA-256 (`env.json`). CI runs lint, unit, data-integrity, CPU training

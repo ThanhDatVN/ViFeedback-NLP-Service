@@ -29,7 +29,7 @@ vifeedback train run --task sentiment --model phobert-base --preprocessing seg_p
 make export        # ONNX through the release gate, then the restorer and the scope detector
 ```
 
-## Layout on the owner's machine (2026-10-01)
+## Layout on the owner's machine (2026-10-03)
 
 ```text
 models/
@@ -52,8 +52,10 @@ models/
 ├── p14-…-h11-teacher-alternate-…-s42-ckp/         # H11's other selection candidate
 ├── p15-…-h10b-anchored_orig-s*-ckp/                # H10b, 5 seeds (passed, ADR-042); seed 42 is served
 ├── p15-…-h10b-anchored_both-s42-ckp/              # H10b's other selection candidate
-└── p13-…-h10-*-ckp/        # H10 (not passed, ADR-038): no planned step needs them
+└── p16-…-h12p-…-ckp/      # H12′ seed-42 experiment; later seeds run on Kaggle
 ```
 
 Experiments that ended without a release keep their metrics, configs and validation predictions in
 `results/runs/`; their weights can be regenerated, and the owner deletes them when space is needed.
+The six H10 checkpoints were removed on 2026-10-03 after ADR-038 rejected those recipes; their
+run records remain in `results/`.

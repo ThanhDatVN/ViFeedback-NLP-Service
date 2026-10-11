@@ -8,15 +8,15 @@ guide to the manual tasks, which is in Vietnamese.
 | Document | What it answers |
 |---|---|
 | [STATUS.md](STATUS.md) | Where the project stands: every gate and research cycle with its result, the open problems, the external review's items |
-| [NEXT_PLAN.md](NEXT_PLAN.md) | What runs next and why: Cycle 5 (H10 real typing → H11 distilled student → H12 other institutions), the open targets, research sources |
-| [RESEARCH_REPORT.md](RESEARCH_REPORT.md) | The technical report: questions Q1–Q9, method, findings per cycle, negative results, limitations |
+| [NEXT_PLAN.md](NEXT_PLAN.md) | Cycle 5 plan and updates through 2026-10-01; consult STATUS for the current state and remaining work |
+| [RESEARCH_REPORT.md](RESEARCH_REPORT.md) | Technical report through Cycle 4, with a Cycle 5 update: questions Q1–Q9, methods, findings and limitations |
 | [HUONG_DAN_THU_CONG.md](HUONG_DAN_THU_CONG.md) | *(Tiếng Việt)* The tasks only the owner can do: the neutral audit, label review, idle latency sessions, licence and label-policy decisions, new labelled data |
 
 ## The record
 
 | Document | What it holds |
 |---|---|
-| [DECISIONS.md](DECISIONS.md) | ADR-001 to ADR-042, append-only: every decision, scope cut and failed gate, with context and consequences |
+| [DECISIONS.md](DECISIONS.md) | Append-only decision log: decisions, scope cuts and failed gates, with context and consequences |
 | [EXPERIMENT_MATRIX.md](EXPERIMENT_MATRIX.md) | Run-id scheme, matrix axes, and every result table from the baselines to Cycle 5 |
 | [`configs/experiments/`](../configs/experiments/README.md) | The pre-registered cycles (`cycle1.yaml` … `cycle5.yaml`) and the compute ledger |
 | [`results/`](../results/README.md) | Every committed result: registry, per-run metrics, study outputs |
@@ -29,7 +29,7 @@ guide to the manual tasks, which is in Vietnamese.
 | [EVALUATION_DATA.md](EVALUATION_DATA.md) | What counts as evidence: the evaluation matrix, test data ranked by credibility, sample sizes |
 | [DATA_CARD.md](DATA_CARD.md) | UIT-VSFC measured from the files: splits, labels, overlap, licence, what is never committed |
 | [ANNOTATION_GUIDE.md](ANNOTATION_GUIDE.md) | Labels, neutral subtypes and gold assessment for the neutral audit (v1.1) |
-| [KAGGLE_GUIDE.md](KAGGLE_GUIDE.md) | Running the two Kaggle notebooks, for models that do not fit the laptop |
+| [KAGGLE_GUIDE.md](KAGGLE_GUIDE.md) | Running the three Kaggle notebooks for cloud experiments |
 
 ## Foundations
 

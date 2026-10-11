@@ -311,8 +311,8 @@ Không dùng máy trong lúc đo. Chỉ một tab trình duyệt đang mở cũn
 ## 4. Quyết định giấy phép khi mô hình học từ ViLexNorm
 
 **Bối cảnh.**
-- ViLexNorm dùng giấy phép **CC BY-NC-SA 4.0** (phi thương mại, *chia sẻ tương tự*). Trọng số hiện
-  tại mang **CC BY-NC 4.0**.
+- ViLexNorm dùng giấy phép **CC BY-NC-SA 4.0** (phi thương mại, *chia sẻ tương tự*). Trọng số H10b
+  đã phát hành mang **CC BY-NC-SA 4.0** (2026-10-01).
 - Mô hình H10 (b) học từ các cặp câu ViLexNorm, nhưng **không đạt** (ADR-038), nên không phát hành.
 - Mô hình nhỏ H11 (a) cũng đọc câu chữ ViLexNorm khi học: câu gốc nằm trong tập chuyển giao
   (transfer set), và mô hình thầy gán nhãn mềm cho chúng.
@@ -323,9 +323,8 @@ Việc trọng số học từ dữ liệu SA có phải là "tác phẩm phái 
 Cách an toàn là: **khi H10b hoặc H11 được đưa lên Hub, trọng số mang CC BY-NC-SA 4.0**. Thay đổi này không
 ảnh hưởng mục đích nghiên cứu phi thương mại của bạn.
 
-**Bạn cần trả lời một câu** trước khi upload: đồng ý đổi giấy phép trọng số sang
-CC BY-NC-SA 4.0 (khuyến nghị), hay giữ CC BY-NC 4.0 và **không** đưa H10b/H11 lên Hub (service vẫn dùng
-được ở máy bạn).
+**Quyết định đã hoàn tất cho H10b.** Nếu phát hành H11 ở kho riêng, cần duyệt bản phát hành đó theo
+mục 5. Bản H11 hiện ở máy, chưa upload.
 
 ---
 
