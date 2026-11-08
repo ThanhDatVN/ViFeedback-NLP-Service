@@ -1,6 +1,6 @@
 """Reproduce the published model's headline number from a clean clone (ROADMAP S10, NEXT_PLAN v5 F2).
 
-Downloads the release from the Hugging Face Hub, checks every file against the release's
+Downloads the serving files from the Hugging Face Hub, checks each against the release's
 `SHA256SUMS` and the manifest, and scores UIT-VSFC validation through the service's own pipeline
 (`serving.pipeline`: lowercase, restorer, pyvi, ONNX). Passes when the macro-F1 equals the one the
 release gate recorded in the manifest. Needs no GPU, no PyTorch and no local checkpoint.
@@ -61,13 +61,16 @@ def download(repo_id: str, revision: str | None = None) -> tuple[Path, dict[str,
         if line.strip():
             sha, name = line.split("  ", 1)
             sums[name] = sha
+    required = [*SERVING_FILES[2:], "manifest.json", *extra]
+    missing = sorted(set(required) - sums.keys())
+    if missing:
+        raise ValueError(f"serving files missing from SHA256SUMS: {missing}")
     checked = {}
-    for name in [*SERVING_FILES[2:], "manifest.json", *extra]:
-        if name in sums:
-            ok = _sha256(dst / name) == sums[name]
-            checked[name] = ok
-            if not ok:
-                raise ValueError(f"{name} does not match SHA256SUMS")
+    for name in required:
+        ok = _sha256(dst / name) == sums[name]
+        checked[name] = ok
+        if not ok:
+            raise ValueError(f"{name} does not match SHA256SUMS")
     if _sha256(dst / manifest["model_file"]) != manifest["sha256"]:
         raise ValueError(f"{manifest['model_file']} does not match the manifest")
     return dst, {"files_checked": len(checked), "model_sha256": manifest["sha256"]}

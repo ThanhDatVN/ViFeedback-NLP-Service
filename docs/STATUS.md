@@ -1,6 +1,6 @@
 # Status, Open Problems and Next Experiments
 
-**Updated:** 2026-10-01, after Cycle 5's H10, H10b and H11 and decision 9 (ADR-043). Living document. Results live in
+**Updated:** 2026-10-26, after H12′ confirmation and verification of the 198.9 MB Hub release. Living document. Results live in
 [EXPERIMENT_MATRIX.md](EXPERIMENT_MATRIX.md) and [results/studies/](../results/studies/README.md);
 decisions in [DECISIONS.md](DECISIONS.md); the work plan in [NEXT_PLAN.md](NEXT_PLAN.md) (v6); the
 owner's manual tasks, in Vietnamese, in [HUONG_DAN_THU_CONG.md](HUONG_DAN_THU_CONG.md). The external
@@ -20,7 +20,7 @@ says **where the project stands, what is wrong with it, and what runs next.**
 | **G2** | PhoBERT reproduction | ✅ | 10 runs, 5 seeds × 2 tasks |
 | **G3** | Word-segmentation ablation | ✅ | 15 runs + latency benchmark |
 | **G4** | Locked test evaluation | ✅ | 21 test rows, every touch in `results/test_evaluations.log` |
-| G5 | Error analysis & robustness | 🔶 | Tooling, robustness suite, audit sheet and its analysis (`study audit-report`) done ([Cycle 0](#2-cycle-0--what-the-current-model-gets-wrong)); the human annotation is not |
+| G5 | Error analysis & robustness | 🔶 | Tooling and robustness suite done. AI has coded all 58 neutral-error rows (9 incorrect gold, 32 ambiguous; ADR-049), exceeding S9's numeric minimum; independent human validation and second-pass agreement are absent |
 | **G6** | CPU inference optimization | ✅ | FP32 ONNX released through the gate (ADR-020) and served (augmented model, ADR-027); latency ladder measured; INT8 blocked by the quality gate (ADR-022), and again by the release gate's fidelity rule after passing S5′ (ADR-036) |
 | **G7** | Service, Docker, CI | ✅ | FastAPI, multi-stage image, CI; API now also tested against a real artifact (R4) |
 
@@ -33,9 +33,9 @@ says **where the project stands, what is wrong with it, and what runs next.**
 | **2** | Track A: confirmation on a frozen challenge set, the serving model, topic stacking, an LLM reference ([cycle2.yaml](../configs/experiments/cycle2.yaml) v2) | ✅ H5 not supported; H6 switched the served model; H7 decided: both LLM arms better on neutral on challenge v1 (construction caveat); on real posts only gpt-4o-mini is ahead |
 | **3** | Reliability of the served model on real input ([cycle3.yaml](../configs/experiments/cycle3.yaml) v6) | ✅ closed 2026-09-28. Confirmed on NEU-ESC real student text (ADR-030): the service lowercases, restores diacritics and reports an out-of-scope score (ADR-031); CE + restoration, the real-typing lexicon and careful INT8 fail their rules; H7 decided ([§ 5](#5-cycle-3--reliability-on-real-input)) |
 | **4** | Student text from other institutions ([cycle4.yaml](../configs/experiments/cycle4.yaml) v4) | ✅ closed 2026-09-29. H8 **not passed** (ADR-033); `in_scope` now comes from a topic detector (ADR-032, ADR-034); careful INT8 passed S5′ but the release gate held it back (ADR-035, ADR-036); S8 and S10 met; Hub release updated to ADR-034 ([§ 6](#6-cycle-4--student-text-from-other-institutions)) |
-| **5** | Real typing, then a distilled student, then other institutions ([cycle5.yaml](../configs/experiments/cycle5.yaml) v5) | ⏳ H10 **not passed** (ADR-038): flips 16.6% → 0.3%, but by labelling informal text negative. **H11 passed** (ADR-039/040): a 6-layer student, 185 MB, 0.013 below on test, released. **H10b passed** (ADR-042): flips about 18% → 12%, test not distinguishable; **served** by the owner's decision 9 (ADR-043). H12 waits for data ([§ 6b](#6b-cycle-5--real-typing-a-smaller-model-other-institutions)) |
+| **5** | Real typing, then a distilled student, then other institutions ([cycle5.yaml](../configs/experiments/cycle5.yaml) v7) | ⏳ H10 **not passed** (ADR-038): its model collapsed on informal text. **H11 passed** (ADR-039/040): 185 MB, released. **H10b passed** (ADR-042), served at 198.9 MB (ADR-043/045). **H12′ passed** all five declared conditions on 3,000 held-out NEU-ESC posts; candidate release gate pending. H12 needs an authorised third-institution sample ([§ 6b](#6b-cycle-5--real-typing-a-smaller-model-other-institutions)) |
 
-**Compute to date** ([ledger](../configs/experiments/ledger.csv)): 144 weight-updating runs, about 12.9 GPU-hours including 12 GPU-minutes of LLM inference on the laptop; 19 of the runs regenerated results lost in Cycle 1 (ADR-023). The Qwen3-4B H7 run used two Kaggle T4s for inference only. The registry holds 173 rows.
+**Compute to date** ([ledger](../configs/experiments/ledger.csv)): 169 weight-updating attempts (167 completed, two discarded), at least 22.3 logged GPU-hours; the first interrupted H12′ seed-31337 attempt has no measured duration. This total includes 12 GPU-minutes of LLM inference and 19 runs that regenerated Cycle 1 results (ADR-023). The registry holds 196 rows.
 
 ---
 
@@ -194,7 +194,7 @@ rule, every use logged in `results/studies/cycle4/neu_esc_test_uses.log`.
 | Release gate on the S5′ graph | Label agreement with PyTorch **91.4%** (< 99%); batch-vs-single logits differ by up to 0.93 | **Not released** (ADR-036). S7 goes to distillation (H11) |
 | F1 image size | 1,023 MB → 519 MB: pyvi's CRF without scikit-learn/SciPy; a PhoBERT BPE tokenizer without `transformers`, identical ids on 49,141 texts | S8 met |
 | F2 clean-clone reproduction | Install 45 s, data 3 s, Hub download and evaluation 90 s; 0.8644 reproduced, in CI | S10 met |
-| Publication | 2026-09-28 public (CC BY-NC 4.0); 2026-09-29 updated to ADR-034 (Hub commit `ba58267`): 8 files verified, 0.8644 reproduced from the Hub. 2026-10-01: H10b (CC BY-NC-SA 4.0, Hub commit `037edfb`), 0.8617 reproduced (ADR-043) | ✅ |
+| Publication | 2026-09-28 public (CC BY-NC 4.0); 2026-09-29 updated to ADR-034 (Hub commit `ba58267`): 8 files verified, 0.8644 reproduced from the Hub. 2026-10-01: H10b (CC BY-NC-SA 4.0). The 198.9 MB served bundle was checked again on 2026-10-25 against Hub commit `54694f8c5de956f0b39da77d2cc160723c9c7d38`: 16 checksums and the card match; 8 serving files verified and validation 0.8617 reproduced | ✅ |
 
 **What Cycle 4 establishes.**
 1. **In-domain data closes much of the cross-institution gap, but only if each label policy keeps
@@ -230,7 +230,8 @@ gate, v4 H10b, v5 H10b's release candidate and closing gate. The owner's order i
 | **H10b confirmation** (5 seeds each, 1,500 fresh pairs) | Agreement +0.061 [+0.048, +0.075]; flips −0.061 [−0.073, −0.049] (about 18% → 12%); label_tv 0.013 (the control's 0.108); UIT-VSFC +0.0014; neutral +0.003; stripped +0.0028; NEU-ESC −0.0039 | **Passed** (ADR-042) |
 | H10b closing gate (test, once) | 0.8237 over 5 seeds vs 0.8296 for the served recipe: −0.0059 [−0.019, +0.007]; seed 42 0.8208, neutral 0.550 | Reported |
 | H10b release candidate | FP32 graph through the gate (parity 1.85e-5), restorer re-accepted, scope detector and T = 1.349 attached, 12 API tests pass; 40 API tests pass once served | **Served** (ADR-043, 2026-10-01) |
-| H12′ eligibility (`cycle5.yaml` v6, seed 42) | UIT-VSFC 0.8721 (+0.0104 vs H10b s42), in-scope NEU-ESC 0.4881 (+0.0611) | Eligible; the four other seeds on Kaggle (ADR-046), the confirmation on the laptop |
+| H12′ eligibility (`cycle5.yaml` v6, seed 42) | UIT-VSFC 0.8721 (+0.0104 vs H10b s42), in-scope NEU-ESC 0.4881 (+0.0611) | Eligible; four more seeds completed on laptop |
+| **H12′ confirmation** (5 seeds) | 3,000 held-out in-scope NEU-ESC posts: +0.0474 macro-F1, paired-bootstrap 95% CI [+0.0385, +0.0564]. UIT-VSFC validation +0.0010; neutral +0.0027; stripped −0.0065; real-typing agreement +0.0025; label TV 0.0128 | **Passed all declared conditions**; candidate release gate and UIT-VSFC closing test pending |
 | **S7b** (`cycle5.yaml` v7) | H10b with a 17,500-entry vocabulary in FP16 storage: **198.9 MB**; ≥ 99.04% label agreement with the FP32 graph on every held-out set (100% on UIT-VSFC validation, stripped text, challenge v1); macro-F1 unchanged. Latency p95 24.9 ms (FP32 26.9 ms, same session); test once 0.8198 (FP32 0.8208, 99.94% same labels), neutral 0.548 | **Passed and served** (ADR-045); FP32 kept as `.fp32-sentiment` |
 
 **Decision 9: which model the service runs.** The owner approved H10b on 2026-10-01 (ADR-043).
@@ -352,14 +353,18 @@ uncommitted tree; that is recorded, not hidden.
 | UIT-VSFC `refs/convert/parquet` | `2d76906157232f87e9883fa37ebfc91ffdee1f83` |
 
 ### P8 — New claims about other institutions need new labelled data
-NEU-ESC test has served H8 and B4′ (logged), and no other public, labelled Vietnamese
-student-feedback corpus from a third institution exists. H12 waits for a new human-labelled sample
-and the owner's label-policy decision ([HUONG_DAN_THU_CONG.md § 6–7](HUONG_DAN_THU_CONG.md)).
+NEU-ESC test has served H8 and B4′ (logged). A public
+[FPT forum dataset](https://huggingface.co/datasets/lducc/fpt-comments-sentiment) appeared in the
+2026-10-25 search, but its card limits use to FPT coursework and uses another label policy. H12
+still needs an authorised sample with an independent annotation check and a label-policy decision
+([HUONG_DAN_THU_CONG.md § 6–7](HUONG_DAN_THU_CONG.md)).
 
 ### P9 — The scope detector judges topic from words
 It flags an unusual or very short course comment more easily, and lets off-topic text that uses
 course vocabulary through. Its off-topic examples are four NEU-ESC topics. Stated in the card and
-the API docs; revisited with H12's data.
+the API docs; revisited with H12's data. On 12 AI-authored, clearly off-topic probes written on
+2026-10-25, it flagged only 2 (`results/studies/constructed_probe/served.json`). This small constructed
+set is a diagnostic, not a prevalence estimate or a replacement for real out-of-scope evaluation.
 
 ---
 
@@ -390,22 +395,24 @@ Full traceability, including the study designs, catalog and backlog:
 Every open target, problem and unrun experiment, with where it is handled:
 **[NEXT_PLAN.md](NEXT_PLAN.md) v6**. Cycle 5 ran in the owner's order: H10 (not passed), H11
 (passed, released), H10b (passed, served at 198.9 MB since S7b, ADR-045). H12′, the substitute for
-H12 that needs no new labels, passed its seed-42 check; its other seeds run on Kaggle (ADR-046).
+H12 that needs no new labels, passed its five-seed confirmation on held-out NEU-ESC posts.
 
 Needs the owner (step by step, in Vietnamese: [HUONG_DAN_THU_CONG.md](HUONG_DAN_THU_CONG.md)):
 
-1. **Run `notebooks/kaggle_h12p.ipynb`** (guide § 11) and bring back `h12p_results.zip`. On the
-   laptop, Windows Application Control currently blocks torch, pyarrow and scikit-learn.
-2. **The neutral audit**, now 58 rows (ADR-044; the sheet is written), which gates D2, S4 and S9.
-3. **Decisions:**
-   - uploading the served 198.9 MB graph to the Hub (the Hub holds the 540 MB graph of the same
-     model);
-   - the label policy for other institutions' text.
-4. **For H12:** a new labelled sample from another institution.
+1. **H12′ candidate release and closing test:** the five-seed scientific decision is saved. The
+   candidate ONNX export is waiting for Windows Application Control to allow torch import; the
+   logged UIT-VSFC test runs after the release gate.
+2. **The neutral audit**, now 58 rows (ADR-044/049), has been completed by AI at the owner's request.
+   Its exploratory report selects `policy_ceiling` (32/58 ambiguous). A formal D2 or S9 claim still
+   needs independent human validation; the AI report is not a human audit.
+3. **For H12:** an authorised, independently checked sample from another institution and a label
+   policy. The public FPT dataset found in 2026-10 has a use restriction and has not been used.
 
-The Hub holds the H10b release: <https://huggingface.co/Datk4/vifeedback-sentiment-phobert>
-(CC BY-NC-SA 4.0, ONNX + PyTorch, restorer, scope detector and temperature, every file checked against
-`SHA256SUMS`; uploaded 2026-10-01, 0.8617 reproduced from the Hub).
+The Hub holds the current 198.9 MB H10b release: <https://huggingface.co/Datk4/vifeedback-sentiment-phobert>
+(CC BY-NC-SA 4.0, ONNX + PyTorch, restorer, scope detector and temperature). On 2026-10-25,
+all 16 bundle checksums and the card matched pinned commit
+`54694f8c5de956f0b39da77d2cc160723c9c7d38`; eight serving files were verified and validation
+macro-F1 0.8617 was reproduced from the Hub.
 
 The service was hardened against cheap requests that buy expensive work (ADR-047). There are no known
 vulnerabilities in the locked dependencies (`pip-audit`, 2026-10-01; torch is a local CUDA build and
@@ -423,7 +430,7 @@ training-only).
 | LLM pilot (Qwen3-1.7B, fp16) | Laptop | fits 4 GB; about 70 s per 1k sentences zero-shot |
 | Declared LLM (Qwen3-4B) | **Kaggle** (cell 4f) | 8 GB in fp16 |
 | Cycle 5: H10 consistency training, H11 distillation (6-layer student), teacher soft labels | **Laptop RTX 3050** | PhoBERT-base-sized; one job at a time, cool-down between runs |
-| H11's FP16-storage export | Laptop via `torch.onnx.export`, or Kaggle | the `onnx` package's DLL is blocked by Windows Application Control here (ADR-036) |
+| ONNX export of a new candidate | Laptop via `torch.onnx.export`, or a prepared cloud run | Windows Application Control currently blocks `torch_python.dll`; `onnx` itself imports, but export still requires torch |
 
 Notebook: [`notebooks/kaggle_train.ipynb`](../notebooks/kaggle_train.ipynb) (§ 4e for Cycle 1, § 4f for Cycle 2 H7) and
 [KAGGLE_GUIDE.md](KAGGLE_GUIDE.md).

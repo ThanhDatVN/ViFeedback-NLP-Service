@@ -27,7 +27,7 @@ for the sentiment model.
 | **Sentiment, test, 5 seeds** | Served H10b **0.824** (the recipe without the consistency training 0.830 ± 0.007: −0.006 [−0.019, +0.007], not distinguishable); the student 0.817; research best 0.837 with VnCoreNLP |
 | **Robustness** | Diacritics restored before the model: stripped validation 0.686 → **0.857** (ADR-031). Out-of-scope input flagged by a topic detector: AUROC **0.922** within another university's forum (ADR-034) |
 | **Latency** | Raw text in, served pipeline p95 **24.9 ms** on a laptop CPU (the full FP32 graph 26.9 ms in the same session; the student 12.3 ms; target 30 ms) |
-| **Reproducible** | A clean clone reproduces the published model's validation macro-F1 (0.8617, H10b) in about **2–3 min**, every file checked against `SHA256SUMS`; CI runs it on every change to the workflow |
+| **Reproducible** | A clean clone reproduces the published model's validation macro-F1 (0.8617, H10b) in about **2–3 min**, each downloaded serving file checked against `SHA256SUMS`; CI runs it on every change to the workflow |
 | **Research** | Cycles 0–4 closed, Cycle 5 run; 47 ADRs, 163 weight-updating runs in [the ledger](configs/experiments/ledger.csv); Cycle 5 declared ([cycle5.yaml](configs/experiments/cycle5.yaml)) |
 
 ---
@@ -90,6 +90,8 @@ Each prediction carries `label`, `confidence`, `probabilities`, `in_scope` and `
 - `confidence` and `probabilities` are calibrated: the logits are divided by a temperature fitted on
   validation (ADR-041), which changes no label.
 - The service never refuses an input: `in_scope: false` is information for the caller.
+  The scope flag was validated on NEU-ESC topics; it caught only 2 of 12 AI-authored off-topic
+  probes, so callers should not treat `in_scope: true` as proof that a comment concerns a course.
 - The restorer and the scope detector are refused unless their SHA-256 matches the release
   manifest. `/version` reports the model file's hash, and `make docker-e2e` checks it inside the
   image.
@@ -121,10 +123,11 @@ rules are committed before its first run ([configs/experiments/](configs/experim
 | **2** | Confirmation on a frozen, SHA-256-pinned challenge set | Topic stacking fails. The service switched to the augmented model. An instruction LLM beats the encoder on neutral, but only on constructed text (H7) |
 | **3** | The served model on real input (NEU-ESC forum posts, ViLexNorm comments) | **The service lowercases and restores diacritics** (NEU-ESC unaccented posts 0.270 → 0.374). 17% of labels flip on real typing. A lexicon and careful INT8 fail their rules |
 | **4** | Student text from other institutions | In-domain data helps only with one head per label policy (+0.111 on NEU-ESC), but it failed two declared conditions, so it was not released. **`in_scope` now comes from a topic detector.** INT8 passed non-inferiority but not fidelity (91.4% label agreement, batch-dependent), so it was not released |
-| **5** | Real typing, then a smaller model (the owner's order) | **H10 not passed**: its consistency training removed flips by calling informal text negative (ADR-038). **H10b passed**: anchored on a frozen teacher, flips fell from about 18% to 12% with no collapse and test unchanged at five seeds (ADR-042). **H11 passed**: a 6-layer student, 185 MB and 1.8x faster, 0.013 below on test (ADR-039, ADR-040), released. Calibrated confidence served (ADR-041). **The owner chose H10b for the service** (ADR-043), served at 198.9 MB (ADR-045). H12′ (forum posts held out of NEU-ESC train) eligible at seed 42, finishing on Kaggle; H12 waits for new labelled data |
+| **5** | Real typing, then a smaller model (the owner's order) | **H10 not passed**: its consistency training removed flips by calling informal text negative (ADR-038). **H10b passed**: anchored on a frozen teacher, flips fell from about 18% to 12% with no collapse and test unchanged at five seeds (ADR-042). **H11 passed**: a 6-layer student, 185 MB and 1.8x faster, 0.013 below on test (ADR-039, ADR-040), released. Calibrated confidence served (ADR-041). **The owner chose H10b for the service** (ADR-043), served at 198.9 MB (ADR-045). **H12′ passed** its five-seed, held-out NEU-ESC rule (+0.0474 macro-F1, 95% CI [+0.0385, +0.0564]); its candidate release gate is pending. H12 still needs authorised, independently labelled data from a third institution |
 
 Per-cycle tables: [STATUS](docs/STATUS.md) and [EXPERIMENT_MATRIX § 5](docs/EXPERIMENT_MATRIX.md).
 Technical report: [RESEARCH_REPORT](docs/RESEARCH_REPORT.md).
+Current completion checklist (Vietnamese): [TINH_TRANG_HOAN_THANH](docs/TINH_TRANG_HOAN_THANH.md).
 
 ### What was got wrong, and corrected
 
@@ -268,7 +271,7 @@ registry.
 |---|---|
 | CPU | AMD Ryzen 5 6600H · 6C/12T · AVX2 · **no AVX512-VNNI** |
 | GPU | RTX 3050 Laptop, 4.29 GB · about 65 s per epoch for PhoBERT-base |
-| Compute to date | 173 registry rows; 144 weight-updating runs, about 12.9 GPU-hours ([ledger](configs/experiments/ledger.csv)) |
+| Compute to date | 196 registry rows; 169 weight-updating attempts (167 completed), at least 22.3 logged GPU-hours ([ledger](configs/experiments/ledger.csv)) |
 
 Single-sentence latency, model only, two steady passes (`vifeedback study latency`):
 
@@ -298,8 +301,11 @@ machine will re-measure the pipeline with the scope detector.
 - [x] ONNX benchmark — *G6*: FP32 ONNX served, 7.6× faster than padded PyTorch. INT8 is faster
   still, but not released (ADR-022, ADR-036)
 - [x] Model card and Hub release — [Datk4/vifeedback-sentiment-phobert](https://huggingface.co/Datk4/vifeedback-sentiment-phobert), every file verified against `SHA256SUMS`
+- [x] H12′ five-seed confirmation on held-out NEU-ESC posts — +0.0474 macro-F1, 95% CI
+  [+0.0385, +0.0564], all declared guards passed; candidate release gate pending
 - [ ] ≥ 30 error cases coded by linguistic feature — *G5 / S9*: tooling, a 160-row audit sheet and
-  its analysis are done; the human audit is not
+  its analysis are done; 58 cases are AI-coded (9 incorrect gold, 32 ambiguous), while independent
+  human review remains open for the original research claim
 - [x] Serving artifact ≤ 200 MB — *S7*: the served H10b graph, 198.9 MB (ADR-045); a 6-layer student, 185 MB, also released (ADR-039, ADR-040)
 
 Every external-review item (R1–R12) is closed ([STATUS § 8](docs/STATUS.md#8-external-review--item-status)).

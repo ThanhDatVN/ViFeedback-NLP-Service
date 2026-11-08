@@ -1,0 +1,61 @@
+id,group,text,expected_sentiment,expected_in_scope
+n01,course_problem,tiết thực hành bị hủy hai lần mà không có buổi học bù,negative,1
+n02,course_problem,giảng viên đọc nguyên slide nên em không hiểu cách làm bài,negative,1
+n03,course_problem,đề kiểm tra hỏi phần chưa từng được dạy trên lớp,negative,1
+n04,course_problem,phòng máy thiếu máy để mỗi sinh viên thực hành,negative,1
+n05,course_problem,đường dẫn tài liệu môn học bị lỗi suốt học kỳ,negative,1
+n06,course_problem,thầy trả lời thắc mắc quá muộn trước ngày nộp bài,negative,1
+n07,course_problem,bài tập nhóm chia điểm không công bằng,negative,1
+n08,course_problem,lịch học thay đổi liên tục làm em không theo kịp,negative,1
+n09,course_problem,lop thuc hanh qua dong nen em khong duoc dung may,negative,1
+n10,course_problem,slide chu nho doc tren man hinh khong ro,negative,1
+n11,course_problem,cô đi trễ gần nửa giờ trong nhiều buổi,negative,1
+n12,course_problem,môn này chỉ bắt chép mà không giải thích vì sao,negative,1
+p01,course_praise,thầy giải thích từng bước nên em tự làm được bài tập,positive,1
+p02,course_praise,cô trả lời câu hỏi rất kiên nhẫn sau giờ học,positive,1
+p03,course_praise,bài thực hành giúp em áp dụng kiến thức ngay,positive,1
+p04,course_praise,tài liệu có ví dụ rõ ràng và dễ tra cứu,positive,1
+p05,course_praise,đề thi bám sát nội dung đã học,positive,1
+p06,course_praise,giảng viên phản hồi bài tập rất nhanh và hữu ích,positive,1
+p07,course_praise,phòng thí nghiệm đủ thiết bị cho cả lớp,positive,1
+p08,course_praise,em thích cách cô liên hệ bài giảng với công việc thực tế,positive,1
+p09,course_praise,thay giang de hieu va luon dung gio,positive,1
+p10,course_praise,bai tap nhom giup em hieu bai hon,positive,1
+p11,course_praise,mỗi buổi học đều có phần hỏi đáp rất bổ ích,positive,1
+p12,course_praise,cách chấm điểm minh bạch khiến em yên tâm,positive,1
+u01,course_fact,môn học có ba tín chỉ và học vào sáng thứ hai,neutral,1
+u02,course_fact,lớp có một buổi lý thuyết và một buổi thực hành mỗi tuần,neutral,1
+u03,course_fact,tài liệu được đăng trên trang môn học vào đầu học kỳ,neutral,1
+u04,course_fact,bài kiểm tra giữa kỳ diễn ra ở tuần thứ tám,neutral,1
+u05,course_fact,phòng học nằm ở tầng bốn của tòa nhà,neutral,1
+u06,course_fact,em chưa có ý kiến về cách giảng dạy,neutral,1
+u07,course_fact,buổi học hôm nay bắt đầu lúc bảy giờ rưỡi,neutral,1
+u08,course_fact,nhóm em nộp báo cáo qua hệ thống học trực tuyến,neutral,1
+u09,course_fact,mon nay hoc vao thu ba va thu nam,neutral,1
+u10,course_fact,lich thi duoc dang tren cong thong tin,neutral,1
+u11,course_fact,em mới chuyển vào lớp này được một tuần,neutral,1
+u12,course_fact,môn học dùng giáo trình tiếng Anh,neutral,1
+s01,change_request,mong thầy đăng slide trước buổi học để tụi em chuẩn bị,negative,1
+s02,change_request,nên bổ sung thêm giờ thực hành vì thời gian hiện tại quá ít,negative,1
+s03,change_request,cần ghi rõ tiêu chí chấm điểm trước khi giao đồ án,negative,1
+s04,change_request,mong khoa sửa các máy tính hỏng trong phòng học,negative,1
+s05,change_request,thầy nên trả bài sớm hơn để sinh viên biết lỗi,negative,1
+s06,change_request,đề nghị giảng viên nói chậm lại ở phần công thức,negative,1
+s07,change_request,cần cập nhật ví dụ vì số liệu trong bài đã cũ,negative,1
+s08,change_request,mong có buổi học bù cho tiết vừa bị hủy,negative,1
+s09,change_request,nen cho them bai mau de de on tap,negative,1
+s10,change_request,mong co giai thich ky hon phan kho,negative,1
+s11,change_request,cô nên dành thời gian giải đáp cuối buổi,negative,1
+s12,change_request,cần mở thêm nhóm thực hành để lớp bớt đông,negative,1
+o01,off_topic,cần tuyển nhân viên bán hàng làm ca cuối tuần,none,0
+o02,off_topic,ai muốn mua lại xe đạp cũ thì nhắn mình,none,0
+o03,off_topic,câu lạc bộ bóng đá tuyển thành viên mới,none,0
+o04,off_topic,quán cà phê trước cổng đang giảm giá nước,none,0
+o05,off_topic,xe buýt tuyến này hôm nay đến trễ mười phút,none,0
+o06,off_topic,mình cần tìm người ở ghép gần bến xe,none,0
+o07,off_topic,buổi hòa nhạc tối nay bán vé ở quầy phía trước,none,0
+o08,off_topic,điện thoại của mình hết pin từ sáng,none,0
+o09,off_topic,ban nao muon mua sach cu thi nhan tin,none,0
+o10,off_topic,clb bong ro tap vao chieu chu nhat,none,0
+o11,off_topic,thời tiết chiều nay có thể có mưa lớn,none,0
+o12,off_topic,nhà ăn đổi thực đơn vào tuần sau,none,0

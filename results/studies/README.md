@@ -306,11 +306,29 @@ passed but INT8 was not released (ADR-035, ADR-036). Tables:
 - `engineering/hub_reproduce.json` is the reproduction of the published model from the Hub after the
   ADR-034 update (8 files verified, 0.8644).
 
-## Cycle 5 — real typing and a smaller model
+## Cycle 5 — real typing, a smaller model and held-out forum posts
 
-Declared in `configs/experiments/cycle5.yaml` (v1 H10, v2 H11, v3 the H11 release). H10 was not passed:
-the consistency-trained models removed ViLexNorm flips by calling informal text negative (ADR-038).
-H11 passed on validation and is served: a 6-layer student, 185 MB, p95 12.3 ms (ADR-039, ADR-040). Its
-closing gate found it 0.013 below the 12-layer model on test. Tables:
+Declared in `configs/experiments/cycle5.yaml` (v1–v7). H10 was not passed: its models removed
+ViLexNorm flips by calling informal text negative (ADR-038). H11 passed: a 6-layer student, 185 MB,
+p95 12.3 ms; its closing gate found it 0.013 below the 12-layer model on test (ADR-039/040). H10b
+passed and is served at 198.9 MB after vocabulary trimming (ADR-042/043/045). H12′ passed its
+five-seed confirmation on 3,000 held-out NEU-ESC forum posts (+0.0474 macro-F1,
+95% CI [+0.0385, +0.0564]); the candidate release gate remains. Tables:
 [EXPERIMENT_MATRIX § 5.11](../../docs/EXPERIMENT_MATRIX.md); discussion:
 [STATUS § 6b](../../docs/STATUS.md#6b-cycle-5--real-typing-a-smaller-model-other-institutions).
+
+`engineering/hub_bundle_compare_2026-10-25.json` records the 16 matching bundle checksums and
+identical model card at a pinned Hub commit. `engineering/hub_reproduce_2026-10-25.json` verifies
+the eight serving files and reproduces validation macro-F1 0.8617. `constructed_probe/served.json`
+scores 60 AI-authored examples as an exploratory diagnostic; they cannot confirm H12 transfer.
+The stricter checksum reader was run again on 2026-10-26
+(`engineering/hub_reproduce_2026-10-26.json`): eight serving files verified and the same score
+reproduced.
+
+`study_a/ai_audit_report.json` is the text-free report from 58 AI-labelled neutral-error rows
+(9 assessed incorrect, 32 ambiguous). It marks its provenance as AI and its D2 branch as
+exploratory. `study_a/ai_audit_labels.csv` records the text-free row keys and AI labels; run
+`python scripts/report_ai_audit.py` to validate them against the local source sheet. The local
+sheet retains the AI rationale without committing source sentences. `challenge/ai_review_v1.csv`
+records the 15 text-free AI proposals, and `challenge/ai_sensitivity_v1.json` records their
+sensitivity analysis. Both are separate from the official owner-review report.

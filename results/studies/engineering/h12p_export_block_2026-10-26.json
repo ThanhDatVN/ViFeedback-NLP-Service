@@ -1,0 +1,11 @@
+{
+  "date": "2026-10-26",
+  "step": "H12prime seed-42 FP32 ONNX candidate export",
+  "command": "vifeedback serve export --checkpoint models/p16-sent-phobert-base-seg_pyvi-h12p-two_heads_anchored-s42-2842e32b-ckp --quantize none --out models/candidate_h12p/sentiment",
+  "result": "blocked before model loading",
+  "windows_error": "WinError 4551: Application Control policy blocked torch_python.dll",
+  "code_integrity_event_ids": [3033, 3077],
+  "candidate_manifest_written": false,
+  "h12prime_confirmation_unchanged": true,
+  "resume_condition": "PyTorch imports successfully in an authorised environment"
+}

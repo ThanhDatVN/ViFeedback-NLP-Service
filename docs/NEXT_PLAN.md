@@ -17,6 +17,18 @@ H10b passed (ADR-042) and, by the owner's decision 9, **the service runs it** (A
 substitute for H12 that needs no new labels, is declared (§ 4). The neutral audit can now be done on
 the 58 rows the tree reads, in about 2 hours (ADR-044, § 5).
 
+**Update, 2026-10-26.** The 198.9 MB S7b bundle is already on the Hub: all 16 bundle checksums
+match and the pinned Hub commit `54694f8c5de956f0b39da77d2cc160723c9c7d38` reproduces validation
+macro-F1 0.8617. All five H12′ seeds completed on the laptop and the declared confirmation passed
+(held-out macro-F1 +0.0474, 95% CI [+0.0385, +0.0564], all guards passed). The candidate release gate
+and logged UIT-VSFC closing test remain; Windows Application Control currently blocks torch import.
+
+**Release resume order after torch is allowed again:** export seed 42 to
+`models/candidate_h12p/sentiment` with `serve export --quantize none`; run `serve add-restorer`,
+`serve add-scope` and `serve add-temperature` with `--serve-dir models/candidate_h12p`; run
+`tests/contract/test_api_with_model.py` with `SERVE_DIR_UNDER_TEST=models/candidate_h12p`; then run
+`study h12p-closing-gate` once. The confirmation command must not be repeated: its decision is final.
+
 The manual work that only the owner can do is written up step by step, in Vietnamese, in
 [HUONG_DAN_THU_CONG.md](HUONG_DAN_THU_CONG.md). Per-cycle results and open problems are in
 [STATUS.md](STATUS.md).
@@ -85,9 +97,9 @@ student, not by the served model (ADR-043):
 | 9b | ✅ H10b (ADR-042): passed; closing gate 0.8237 (−0.0059, n.s.); release candidate built (`cycle5.yaml` v5) | — | 12 GPU runs | the H10b rule |
 | 9c | ✅ Decision 9 (ADR-043): **the service runs H10b** (2026-10-01); 40 API tests pass. ✅ Uploaded by the owner (Hub commit `037edfb`), 0.8617 reproduced from the Hub | — | CPU | release gate |
 | 9d | ✅ Latency of H10b: the FP32 graph 26.9 ms p95 in the S7b session (an earlier session on a loaded machine was not reportable) | — | CPU | reported |
-| 9e | ✅ S7b (`cycle5.yaml` v7, ADR-045): the served H10b at 198.9 MB by FP16 storage and a 17,500-entry vocabulary, no retraining; passed; p95 24.9 ms; **served**; test once 0.8198. 👤 Hub upload | 👤 upload | CPU | the S7b rule |
+| 9e | ✅ S7b (`cycle5.yaml` v7, ADR-045): the served H10b at 198.9 MB by FP16 storage and a 17,500-entry vocabulary, no retraining; passed; p95 24.9 ms; **served**; test once 0.8198. Hub bundle verified on 2026-10-25 (16 matching checksums; 0.8617 validation reproduced from the Hub) | — | CPU | the S7b rule |
 | 10 | H12: declare, then run, when decision 2 and the new labelled sample exist | 👤 decision 2, 👤 data | ≈ 6 GPU runs | declared later |
-| 10′ | H12′ (§ 4): ✅ declared (v6); ✅ seed 42 eligible (+0.0104 UIT-VSFC, +0.0611 NEU-ESC); seeds 1337/2024/7/31337 on Kaggle (`notebooks/kaggle_h12p.ipynb`, ADR-046), then `study h12p-import` and `h12p-confirm` on the laptop | 👤 run the notebook | 4 GPU runs on a T4 | the H12′ rule |
+| 10′ | ✅ H12′ (§ 4): all five seeds on laptop; held-out macro-F1 +0.0474 [95% CI +0.0385, +0.0564], all guards passed. ⏳ Candidate release gate and logged UIT-VSFC closing test, once torch loads | — | CPU | the H12′ rule and release gate |
 | any time | D1 neutral audit → D2 branch: the 58 rows the tree reads (ADR-044; sheet written) | 👤 about 2 h + 30–40 min | D2: ≤ 12 runs | the tree frozen in `cycle2.yaml` |
 | ✅ | Three latency sessions (owner waived the idle condition) | — | CPU | p95 ≤ 30 ms: 12.3 ms |
 
@@ -249,9 +261,12 @@ Each run is shorter than a teacher run (half the layers).
 **What H12 needs before it can be declared.**
 1. **Owner decision 2** (§ 8): does the service keep UIT-VSFC's label policy for other institutions'
    text (two heads, the UIT-VSFC head served), or add a head that follows the source's policy?
-2. **A new labelled sample.** NEU-ESC test is spent: it confirmed H8 and B4′, both logged. No other
-   public, labelled Vietnamese student-feedback corpus from a third institution exists (searched
-   2026-09-29; DUIT/EduPulse is internal to UIT, the same institution as UIT-VSFC).
+2. **A new labelled sample with usable permission and an independent annotation check.** NEU-ESC test
+   is spent: it confirmed H8 and B4′, both logged. A new search on 2026-10-25 found the public
+   [FPT comments dataset](https://huggingface.co/datasets/lducc/fpt-comments-sentiment) (5,469 rows),
+   but its card says it was created solely for FPT coursework, its licence is listed as `other`, and
+   its sentiment policy differs from UIT-VSFC. It is a lead for permission and protocol review, not
+   yet an authorised H12 test set. DUIT/EduPulse is internal to UIT, the same institution as UIT-VSFC.
    - The plan: ≥ 600 in-scope posts from another institution, labelled by two people, with
      disagreements adjudicated.
    - 600 posts resolve a +0.05 paired macro-F1 difference; Cycle 4's effect was +0.11.
@@ -292,6 +307,10 @@ from NEU-ESC train, which no compared model has been scored on.
   compared in H12′.
 
 The owner approved it on 2026-10-01 (decision 10); `cycle5.yaml` v6 was committed before the split was drawn.
+**Outcome, 2026-10-25:** all five seeds completed on the laptop. The held-out difference was +0.0474
+macro-F1, paired-bootstrap 95% CI [+0.0385, +0.0564]; UIT-VSFC, neutral, stripped-text and
+real-typing guards all passed (`results/studies/cycle5/h12p/confirm/decision.json`). Candidate
+export and the one-time UIT-VSFC closing test are the remaining release steps.
 
 ---
 
@@ -303,6 +322,14 @@ The audit is the gate, and nothing fully automatic replaces it:
 - Cycle 1 ruled out the decision boundary and the classifier head.
 - What remains is **label ambiguity** or **representation**, and only a person reading the sentences
   can separate them.
+
+At the owner's request, an AI assistant filled all 58 rows and saved its separate git-ignored sheet.
+`scripts/report_ai_audit.py` checks the source rows and produces a text-free
+`results/studies/study_a/ai_audit_report.json` (ADR-049): 32 ambiguous, 9 incorrect, exploratory
+`policy_ceiling`. This exceeds S9's numeric count but cannot supply independent human evidence or
+select formal D2. The AI also reviewed all 15 challenge labels; its sensitivity report is in
+`results/studies/challenge/ai_sensitivity_v1.json`. No owner decisions were written into the official
+sheet.
 
 The owner's guide is [HUONG_DAN_THU_CONG.md § 1](HUONG_DAN_THU_CONG.md#1-neutral-audit-gán-nhãn-kiểm-tra-lớp-neutral).
 The audit codes ≥ 30 errors by type, which meets S9. `study audit-report` then applies the tree
@@ -415,8 +442,8 @@ Settled:
 
 ## 9. Kaggle
 
-H10 and H11 trained on the laptop. H12′ uses `kaggle_h12p.ipynb` for the remaining seeds and
-confirmation labels. `kaggle_h7_llm.ipynb` (H7) and `kaggle_train.ipynb` remain available for reruns;
+H10, H11 and all H12′ seeds trained on the laptop. `kaggle_h12p.ipynb` remains a fallback for reruns.
+`kaggle_h7_llm.ipynb` (H7) and `kaggle_train.ipynb` remain available for reruns;
 they clone into `/tmp` and return text-free results archives.
 
 ## 10. Research sources

@@ -1,0 +1,83 @@
+{
+  "rows": 305,
+  "scored_rows": 285,
+  "decisions": {
+    "filled": 15,
+    "keep": 10,
+    "relabelled": 0,
+    "ambiguous": 5
+  },
+  "relabelled_rows": {},
+  "systems": {
+    "ce": {
+      "frozen": {
+        "accuracy": 0.7859649122807018,
+        "macro_f1": 0.7739687536735507,
+        "neutral_f1": 0.7132867132867132
+      },
+      "reviewed": {
+        "accuracy": 0.7892857142857143,
+        "macro_f1": 0.7765947505724456,
+        "neutral_f1": 0.7132867132867132
+      },
+      "delta": {
+        "accuracy": 0.003320802005012502,
+        "macro_f1": 0.0026259968988949778,
+        "neutral_f1": 0.0
+      }
+    },
+    "augmented (served)": {
+      "frozen": {
+        "accuracy": 0.8456140350877193,
+        "macro_f1": 0.8274434485702091,
+        "neutral_f1": 0.7454545454545455
+      },
+      "reviewed": {
+        "accuracy": 0.85,
+        "macro_f1": 0.8313115962052132,
+        "neutral_f1": 0.7454545454545455
+      },
+      "delta": {
+        "accuracy": 0.004385964912280715,
+        "macro_f1": 0.0038681476350040933,
+        "neutral_f1": 0.0
+      }
+    },
+    "gpt-4o-mini": {
+      "frozen": {
+        "accuracy": 0.9438596491228071,
+        "macro_f1": 0.9440488112458736,
+        "neutral_f1": 0.9545454545454545
+      },
+      "reviewed": {
+        "accuracy": 0.9607142857142857,
+        "macro_f1": 0.9605826514909114,
+        "neutral_f1": 0.9618320610687023
+      },
+      "delta": {
+        "accuracy": 0.016854636591478678,
+        "macro_f1": 0.01653384024503779,
+        "neutral_f1": 0.007286606523247863
+      }
+    },
+    "Qwen3-4B": {
+      "frozen": {
+        "accuracy": 0.8245614035087719,
+        "macro_f1": 0.8191871401563519,
+        "neutral_f1": 0.9007633587786259
+      },
+      "reviewed": {
+        "accuracy": 0.8392857142857143,
+        "macro_f1": 0.8324230744112162,
+        "neutral_f1": 0.9007633587786259
+      },
+      "delta": {
+        "accuracy": 0.014724310776942362,
+        "macro_f1": 0.013235934254864357,
+        "neutral_f1": 0.0
+      }
+    }
+  },
+  "note": "challenge v1 stays frozen; this is a sensitivity view (NEXT_PLAN v6 F6)",
+  "reviewer": "AI provisional, not owner approval"
+}

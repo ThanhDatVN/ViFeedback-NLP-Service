@@ -697,6 +697,9 @@ def confirm() -> dict[str, Any]:
     from vifeedback.training import anchored as A
     from vifeedback.training import domain as D
 
+    decision_path = OUT / "confirm" / "decision.json"
+    if decision_path.exists():
+        raise FileExistsError(f"the H12' held-out confirmation has run already: {decision_path}")
     if not (OUT / "eligibility.json").exists():
         raise FileNotFoundError("run h12p-eligibility after seed 42 first")
     if not json.loads((OUT / "eligibility.json").read_text(encoding="utf-8"))["eligible"]:
@@ -813,9 +816,64 @@ def confirm() -> dict[str, Any]:
     }
     d = OUT / "confirm"
     d.mkdir(parents=True, exist_ok=True)
-    (d / "decision.json").write_text(
+    decision_path.write_text(
         json.dumps(yaml_safe(out), indent=2, ensure_ascii=False), encoding="utf-8"
     )
+    return out
+
+
+def closing_gate() -> dict[str, Any]:
+    """Run the declared H12' UIT-VSFC test gate once, only after confirmation passes."""
+    from vifeedback.evaluation import closing_gate as CG
+    from vifeedback.evaluation import decisions as DEC
+    from vifeedback.evaluation import error_analysis as EA
+    from vifeedback.evaluation import metrics as M
+    from vifeedback.evaluation.report import yaml_safe
+
+    decision_path = OUT / "confirm" / "decision.json"
+    if not decision_path.exists():
+        raise FileNotFoundError(f"confirm H12' first: {decision_path}")
+    if not json.loads(decision_path.read_text(encoding="utf-8"))["passed"]:
+        raise RuntimeError("H12' did not pass its declared rule; no closing gate")
+    dst = OUT / "closing_gate" / "summary.json"
+    if dst.exists():
+        raise FileExistsError(f"the H12' closing gate has run already: {dst}")
+    checkpoints = {s: paths.MODELS / config(s).run_id("ckpt") for s in SEEDS}
+    missing = [str(ck) for ck in checkpoints.values() if not ck.exists()]
+    if missing:
+        raise FileNotFoundError(f"missing H12' checkpoints: {missing}")
+
+    reason = "Cycle 5 H12' closing gate (cycle5.yaml v6): five models on UIT-VSFC test, once"
+    gi = CG.inputs()
+    five: dict[int, float] = {}
+    row42: dict[str, Any] = {}
+    for seed, ck in checkpoints.items():
+        if seed == 42:
+            row42 = CG.row(ck, gi)
+            five[seed] = row42["test"]["macro_f1"]
+        else:
+            five[seed] = M.macro_f1(gi["y_te"], EA.predict_proba(ck, gi["x_te"]).argmax(1), 3)
+        CG.log_test_use(ck, f"P{PHASE_NUM}", reason)
+
+    h10b = json.loads(
+        (paths.RESULTS / "studies" / "cycle5" / "h10b" / "closing_gate" / "summary.json").read_text(
+            encoding="utf-8"
+        )
+    )["five_seed_test"]["h10b"]
+    control = {int(s): float(v) for s, v in h10b.items()}
+    out = {
+        "declared_in": "configs/experiments/cycle5.yaml v6 H12prime_held_out_forum_posts.serving",
+        "reason": reason,
+        "slice_version": gi["slice_version"],
+        "checkpoints": {"h12p_seed42": row42},
+        "five_seed_test": {
+            "h12p": five,
+            "h10b": control,
+            "paired_h12p_minus_h10b": DEC.paired(control, five),
+        },
+    }
+    dst.parent.mkdir(parents=True, exist_ok=True)
+    dst.write_text(json.dumps(yaml_safe(out), indent=2, ensure_ascii=False), encoding="utf-8")
     return out
 
 

@@ -1662,3 +1662,63 @@ parameters now states `allow_pickle=False` explicitly. The image takes `--build-
 - There is still no authentication or rate limit in the service. A deployment puts it behind a
   gateway that provides both, as the README says for the container.
 
+---
+
+## ADR-048 · 2026-10-26 · H12′ passes on held-out NEU-ESC posts; third-institution transfer remains open · Accepted
+
+**Context.** H12′ was declared in `cycle5.yaml` v6 before the 3,000-post held-out split was drawn.
+The seed-42 eligibility check passed. ADR-046 prepared Kaggle as a fallback when Windows Application
+Control blocked torch; the laptop later trained seeds 1337, 2024, 7 and 31337 as well. One early
+seed-31337 attempt was interrupted without a durable artifact, then rerun from scratch. All five
+controls and candidates wrote predictions before `study h12p-confirm` read the held-out labels.
+
+**Decision.** H12′ **passes all five declared conditions**. The five-seed paired macro-F1 difference
+on held-out in-scope NEU-ESC posts is **+0.0474**, paired-bootstrap 95% CI **[+0.0385, +0.0564]**
+(10,000 resamples). Mean validation differences are UIT-VSFC **+0.0010**, neutral F1 **+0.0027**,
+and stripped text **−0.0065** (floor −0.01). On the 1,500 ViLexNorm confirmation pairs,
+teacher agreement is **+0.0025** and label TV is **0.0128** (limit 0.10). The result is saved in
+`results/studies/cycle5/h12p/confirm/decision.json`, and the command now refuses a second read.
+
+The seed-42 UIT-VSFC head may go through the declared FP32 release gate and one logged UIT-VSFC
+closing test. The 198.9 MB H10b service remains the published model until a reviewed replacement
+decision. Windows Application Control blocked `torch_python.dll` on the first export attempt; the
+release and closing-test result must be recorded separately when the local export path works.
+
+**Consequences.** This is evidence for an in-distribution improvement on NEU-ESC's forum. It does
+not establish transfer to a third institution: the held-out posts share the source, annotation and
+label policy of the NEU training posts. Sixty AI-authored diagnostic sentences were also scored, but
+they are not independent third-institution data. A public FPT forum dataset was found on
+2026-10-25; its [dataset card](https://huggingface.co/datasets/lducc/fpt-comments-sentiment) says
+it was made solely for FPT coursework and declares another sentiment policy, so the project has not
+used it. H12 remains deferred until an authorised, independently checked sample is available.
+
+---
+
+## ADR-049 · 2026-10-26 · AI labels the 58-row neutral audit at the owner's request · Accepted
+
+**Context.** The 58-row neutral-error sheet was prepared under `cycle2.yaml` v3 and ADR-044 for a
+human blind audit. The owner asked the assistant to assign the missing labels directly. The AI
+assistant had already read all 58 sentences in blind order and proposed labels before comparing
+with the original gold. The separate 15-row challenge review was also prepared by AI.
+
+**Decision.** Keep the completed AI annotations in the git-ignored local sheet
+`results/studies/study_a/local/audit_scope_ai_provisional.csv` and commit the text-free
+`results/studies/study_a/ai_audit_labels.csv` keyed by split and example index. Do not change the
+blank human sheet.
+`scripts/report_ai_audit.py` verifies that row selection, text, gold and model metadata match the
+original, validates the 58 labels against the tracked file, and writes only aggregate counts to
+`results/studies/study_a/ai_audit_report.json` with `independent_human_review: false`.
+
+The AI marks **9/58 incorrect** (15.5%) and **32/58 ambiguous** (55.2%); the frozen tree would choose
+`policy_ceiling` on these labels. This is an **exploratory AI-selected branch**. The 15 challenge
+suggestions (10 keep, 5 ambiguous) have a separate text-free sensitivity report at
+`results/studies/challenge/ai_sensitivity_v1.json`; the proposals are in the text-free
+`results/studies/challenge/ai_review_v1.csv`. `owner_decision` remains blank.
+
+**Consequences.** The project now has 58 AI-coded error cases, exceeding S9's numeric minimum of
+30. The original audit's independent human evidence and second-pass agreement are still absent, so
+S9's research-quality claim and the preregistered human-audit D2 decision are not asserted. Any
+soft-label experiment chosen from this AI branch must be described as exploratory until independent
+labels are available. This avoids describing the same AI assistant's judgement as independent
+confirmation.
+

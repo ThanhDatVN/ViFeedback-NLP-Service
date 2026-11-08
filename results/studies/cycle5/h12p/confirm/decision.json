@@ -1,0 +1,155 @@
+{
+  "declared_in": "configs/experiments/cycle5.yaml v6 H12' rule",
+  "recipe": "two_heads_anchored",
+  "seeds": [
+    42,
+    1337,
+    2024,
+    7,
+    31337
+  ],
+  "rules": {
+    "1_holdout_macro_f1_up": {
+      "observed_diff": 0.04741942184242444,
+      "ci_low": 0.03849778791444148,
+      "ci_high": 0.0564413351281606,
+      "p_one_sided": 9.999000099990002e-05,
+      "n_resamples": 10000,
+      "seeds": 5,
+      "passed": true
+    },
+    "2_uit_validation_macro_f1": {
+      "mean_diff": 0.0010110343189616122,
+      "limit": -0.005,
+      "passed": true
+    },
+    "3_uit_validation_neutral_f1": {
+      "mean_diff": 0.0027358778180845535,
+      "limit": -0.02,
+      "passed": true
+    },
+    "4_uit_validation_stripped_macro_f1": {
+      "mean_diff": -0.006524799844520946,
+      "limit": -0.01,
+      "passed": true
+    },
+    "5_vilexnorm_confirm_pairs": {
+      "agreement_mean_diff": 0.0025333333333333874,
+      "agreement_limit": -0.02,
+      "label_tv_mean": 0.012799999999999995,
+      "label_tv_limit": 0.1,
+      "passed": true
+    }
+  },
+  "passed": true,
+  "reported": {
+    "per_seed_holdout_macro_f1": {
+      "42": {
+        "candidate": 0.49530112469996085,
+        "control": 0.44496358768812033
+      },
+      "1337": {
+        "candidate": 0.509967247067647,
+        "control": 0.4424058375618458
+      },
+      "2024": {
+        "candidate": 0.48684342168206823,
+        "control": 0.4525277541805522
+      },
+      "7": {
+        "candidate": 0.5139885387762626,
+        "control": 0.46157275578709656
+      },
+      "31337": {
+        "candidate": 0.5024186192636712,
+        "control": 0.4699519070598727
+      }
+    },
+    "holdout_per_class_seed42": {
+      "candidate": {
+        "negative": 0.4546952224052718,
+        "neutral": 0.4309890936442273,
+        "positive": 0.6002190580503833
+      },
+      "control": {
+        "negative": 0.42764227642276414,
+        "neutral": 0.39727065959059893,
+        "positive": 0.5099778270509978
+      }
+    },
+    "holdout_per_topic_seed42": {
+      "Academic": {
+        "n": 1035,
+        "candidate": 0.49194447311761835,
+        "control": 0.41640759354718515
+      },
+      "Help & Share": {
+        "n": 57,
+        "candidate": 0.4793650793650794,
+        "control": 0.4087542087542088
+      },
+      "Other": {
+        "n": 1428,
+        "candidate": 0.4658144173220589,
+        "control": 0.43272013602651765
+      },
+      "Personal Affairs": {
+        "n": 137,
+        "candidate": 0.6234404684959947,
+        "control": 0.5948400084763721
+      },
+      "Service": {
+        "n": 247,
+        "candidate": 0.42822539888816696,
+        "control": 0.4084319310205289
+      },
+      "Social Affairs": {
+        "n": 96,
+        "candidate": 0.5883470446360722,
+        "control": 0.5409107293043375
+      }
+    },
+    "neu_head_seed42_on_holdout": {
+      "macro_f1": 0.7540582036792763,
+      "per_class": {
+        "negative": 0.7171453437771975,
+        "neutral": 0.8765133171912833,
+        "positive": 0.6685159500693482
+      }
+    },
+    "neu_validation_macro_f1_mean_diff": 0.057637356120895024,
+    "neu_validation_all_macro_f1_mean_diff": 0.05628499081411377,
+    "confirm_pairs": {
+      "agreement_candidate": [
+        0.8306666666666667,
+        0.838,
+        0.84,
+        0.8393333333333334,
+        0.8406666666666667
+      ],
+      "agreement_control": [
+        0.832,
+        0.834,
+        0.8366666666666667,
+        0.84,
+        0.8333333333333334
+      ],
+      "flip_rate_candidate": [
+        0.11466666666666667,
+        0.12066666666666667,
+        0.11533333333333333,
+        0.116,
+        0.11933333333333333
+      ],
+      "flip_rate_control": [
+        0.12466666666666666,
+        0.122,
+        0.11933333333333333,
+        0.11333333333333333,
+        0.13
+      ]
+    },
+    "scope_flagged_holdout": 0.04833333333333333
+  },
+  "holdout_posts": 3000
+}

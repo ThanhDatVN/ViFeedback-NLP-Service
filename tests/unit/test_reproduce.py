@@ -64,6 +64,18 @@ def test_a_tampered_file_is_refused(fake_hub):
         RP.download("owner/name")
 
 
+def test_a_serving_file_without_a_checksum_is_refused(fake_hub):
+    _release(fake_hub)
+    sums = fake_hub / "SHA256SUMS"
+    sums.write_text(
+        "".join(
+            line for line in sums.read_text().splitlines(keepends=True) if "  vocab.txt" not in line
+        )
+    )
+    with pytest.raises(ValueError, match=r"serving files missing from SHA256SUMS.*vocab.txt"):
+        RP.download("owner/name")
+
+
 def test_a_model_that_is_not_the_manifests_is_refused(fake_hub):
     _release(fake_hub)
     m = json.loads((fake_hub / "manifest.json").read_text(encoding="utf-8"))

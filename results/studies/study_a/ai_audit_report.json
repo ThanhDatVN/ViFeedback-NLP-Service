@@ -1,0 +1,90 @@
+{
+  "annotation_provenance": "AI assistant, single provisional pass",
+  "independent_human_review": false,
+  "decision_status": "exploratory; does not select the preregistered human-audit D2 branch",
+  "label_file": "results/studies/study_a/ai_audit_labels.csv",
+  "label_sha256": "b8c93c4cfaf6af510a0d4f59d62c9c6db07750c2558894b52c01e2ce166bcb99",
+  "source_sheet": "results/studies/study_a/local/audit_scope_ai_provisional.csv",
+  "source_sha256": "d47f46eb52ce0cae8738ebc286d7e2a0045f67e9c7a8d50236d40338bdf2cf5b",
+  "rows": 58,
+  "scope_only": true,
+  "per_stratum": {
+    "error:negative->neutral": {
+      "n": 12,
+      "gold_assessment": {
+        "agree": 5,
+        "ambiguous": 7,
+        "incorrect": 0
+      },
+      "annotator_disagrees_with_gold": 7,
+      "neutral_subtype": {
+        "request_suggestion": 4,
+        "n/a": 4,
+        "objective_fact": 4
+      }
+    },
+    "error:neutral->negative": {
+      "n": 16,
+      "gold_assessment": {
+        "agree": 4,
+        "ambiguous": 10,
+        "incorrect": 2
+      },
+      "annotator_disagrees_with_gold": 12,
+      "neutral_subtype": {
+        "other": 5,
+        "request_suggestion": 3,
+        "insufficient_context": 3,
+        "objective_fact": 3,
+        "no_opinion": 1,
+        "mixed": 1
+      }
+    },
+    "error:neutral->positive": {
+      "n": 16,
+      "gold_assessment": {
+        "agree": 1,
+        "ambiguous": 10,
+        "incorrect": 5
+      },
+      "annotator_disagrees_with_gold": 15,
+      "neutral_subtype": {
+        "other": 12,
+        "insufficient_context": 4
+      }
+    },
+    "error:positive->neutral": {
+      "n": 14,
+      "gold_assessment": {
+        "agree": 7,
+        "ambiguous": 5,
+        "incorrect": 2
+      },
+      "annotator_disagrees_with_gold": 7,
+      "neutral_subtype": {
+        "n/a": 7,
+        "insufficient_context": 4,
+        "no_opinion": 1,
+        "objective_fact": 1,
+        "request_suggestion": 1
+      }
+    }
+  },
+  "decision": {
+    "scope_strata": [
+      "error:neutral->negative",
+      "error:neutral->positive",
+      "error:negative->neutral",
+      "error:positive->neutral"
+    ],
+    "n": 58,
+    "share_incorrect": 0.15517241379310345,
+    "share_ambiguous": 0.5517241379310345,
+    "thresholds": {
+      "incorrect": 0.3,
+      "ambiguous": 0.4
+    },
+    "branch": "policy_ceiling",
+    "next": "one soft-label run, then stop optimizing neutral on this benchmark"
+  }
+}

@@ -1,0 +1,9 @@
+{
+  "repo_id": "Datk4/vifeedback-sentiment-phobert",
+  "revision": "54694f8c5de956f0b39da77d2cc160723c9c7d38",
+  "bundle_checksums_match": true,
+  "bundle_file_count": 16,
+  "sha256s_sha256": "d2e5a176754e45713a60226ef5ae33ae31a7f39809011c34662236ce2b41b2a3",
+  "model_card_matches": true,
+  "model_card_sha256": "84dd4af65a0d3b12513fa4b10701226490e0a78b75af1650e0490eab3d16f16a"
+}

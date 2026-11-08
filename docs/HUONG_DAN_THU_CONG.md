@@ -1,11 +1,22 @@
 # Hướng dẫn các việc chủ dự án làm tay
 
-**Cập nhật:** 2026-10-11. Bắt đầu từ [mục 0: lộ trình hoàn thành dự án](#0-lộ-trình-hoàn-thành-dự-án-cập-nhật-2026-10-11). Tài liệu này dành cho chủ dự án. Nó liệt kê những việc máy
+**Cập nhật:** 2026-10-26. Bắt đầu từ [mục 0: lộ trình hoàn thành dự án](#0-lộ-trình-hoàn-thành-dự-án-cập-nhật-2026-10-25). Tài liệu này dành cho chủ dự án. Nó liệt kê những việc máy
 không làm thay được, giải thích vì sao cần làm, và hướng dẫn từng bước. Mọi tài liệu khác của dự án
 viết bằng tiếng Anh; kế hoạch tổng thể nằm ở [NEXT_PLAN.md](NEXT_PLAN.md).
 
 Các lệnh bên dưới chạy trong PowerShell, tại thư mục gốc của repo
 (`D:\GitHub\ViFeedback NLP Service`), với Python của `.venv`:
+
+**Phương án nhanh đã hoàn tất (2026-10-26, theo yêu cầu của bạn).** Tôi đã gán nhãn 58 dòng audit bằng AI vào
+`results/studies/study_a/local/audit_scope_ai_provisional.csv` và 15 dòng challenge vào
+`results/studies/challenge/local/ai_review_v1.csv`. Báo cáo không chứa câu gốc nằm ở
+`results/studies/study_a/ai_audit_report.json` và `results/studies/challenge/ai_sensitivity_v1.json`:
+9/58 nhãn gốc bị đánh giá sai, 32/58 mơ hồ; 15 challenge gồm 10 giữ và 5 mơ hồ. Các tệp gốc
+`audit_scope_pass1.csv` và `label_review_v1.csv` chưa bị sửa. Nếu không có người duyệt độc lập, kết quả
+AI chỉ là phân tích thăm dò: không được ghi S9 đã đạt, không chạy nhánh D2 chính thức, không gọi đó là
+đánh giá nhãn do chủ dự án duyệt. Tôi cũng đã tạo và chạy 60 ví dụ mới do AI viết; chúng không thay
+cho 600 bài thực từ trường thứ ba. Một [bộ FPT công khai](https://huggingface.co/datasets/lducc/fpt-comments-sentiment)
+có văn bản thực nhưng thẻ dữ liệu giới hạn sử dụng cho bài tập FPT, nên chưa đưa vào H12.
 
 ```powershell
 cd "D:\GitHub\ViFeedback NLP Service"
@@ -14,7 +25,7 @@ $PY = ".venv\Scripts\python.exe"
 
 ---
 
-## 0. Lộ trình hoàn thành dự án (cập nhật 2026-10-11)
+## 0. Lộ trình hoàn thành dự án (cập nhật 2026-10-25)
 
 ### 0.1 Thế nào là "hoàn thành"
 
@@ -54,20 +65,19 @@ Tóm lại: **mọi mục tiêu đo bằng máy đã đạt mức tối thiểu*
 
 | Bước | Ai | Thời gian | Kết quả cần đạt | Chi tiết |
 |---|---|---|---|---|
-| **A.** Chạy xong H12′: 4 seed cùng nhãn của 5 mô hình đối chứng, rồi áp quy tắc | Tôi (đang chạy trên laptop) | Khoảng 2–2,5 giờ máy | Kết luận theo quy tắc `cycle5.yaml` v6. Nếu đạt: service tốt hơn trên văn bản diễn đàn NEU (seed 42 cho +0,061 trên validation) mà không kém ở UIT-VSFC, lớp neutral, câu mất dấu, câu gõ tắt. Nếu đạt, bạn quyết định có phục vụ nó không | Không cần bạn. Kaggle (mục 11) **không cần nữa**, vì laptop đã chạy lại được PyTorch |
+| **A.** H12′: 5 seed và xác nhận 3.000 bài giữ kín | ✅ Xong 2026-10-25 | — | **Đạt cả 5 điều kiện**: macro-F1 +0,0474, khoảng tin cậy 95% [+0,0385, +0,0564]. Ứng viên ONNX và test cuối đang chờ Windows cho phép tải torch | `results/studies/cycle5/h12p/confirm/decision.json` |
 | **B.** Audit 58 dòng, lượt 1 | **Bạn** | Khoảng 2 giờ | 58 dòng có đủ `annotator_label`, `neutral_subtype`, `gold_assessment`. S9 đạt mức tối thiểu | [Mục 1, cách nhanh](#cách-nhanh-chỉ-58-dòng-mà-cây-quyết-định-đọc-adr-044-khuyến-nghị) và [0.4](#04-hướng-dẫn-chi-tiết-việc-b-audit-58-dòng) |
 | **B′.** Audit lượt 2 (sau ít nhất 24 giờ) | **Bạn** | 30–40 phút | Hệ số κ đo độ nhất quán của chính bạn | Như trên |
 | **C.** Báo cáo audit, chạy nhánh D2 | Tôi | 1 phút; rồi ≤ 12 lần huấn luyện (4–6 giờ GPU) | Một trong ba nhánh, theo cây quyết định đã đóng băng từ trước: sửa nhãn train (E04), học nhãn mềm rồi dừng, hoặc thử biểu diễn khác. Kết luận có số liệu cho S4 | Không cần bạn, trừ khi kết quả đổi mô hình phục vụ |
 | **D.** Duyệt 15 nhãn challenge v1 (U2) | **Bạn** | 20 phút | 15 dòng có `owner_decision`; tôi thêm bảng độ nhạy | [Mục 2](#2-duyệt-15-nhãn-của-challenge-v1-u2) và [0.5](#05-hướng-dẫn-chi-tiết-việc-d-u2) |
 | **E.** Quyết định về H12 (trường thứ ba) | **Bạn** | 10 phút đọc | Một câu trả lời: thu dữ liệu mới, hoặc hoãn H12 và đóng Cycle 5 với H12′ | [0.6](#06-hướng-dẫn-chi-tiết-việc-e-quyết-định-về-h12) |
-| **F.** Upload bản phục vụ cuối cùng lên Hugging Face | **Bạn** chạy lệnh, tôi kiểm | 10 phút | Hub khớp service; tải về chạy lại validation ra đúng số trong manifest | [0.7](#07-hướng-dẫn-chi-tiết-việc-f-upload-lên-hugging-face) |
+| **F.** Đối chiếu bản phục vụ trên Hugging Face | ✅ Xong 2026-10-25 | 102 giây kiểm lại | Hub khớp bundle 16 checksum; tải về kiểm 8 file phục vụ và tái lập validation macro-F1 0,8617 | [0.7](#07-hướng-dẫn-chi-tiết-việc-f-upload-lên-hugging-face) |
 | **G.** Đóng chu kỳ: chấm test lần cuối, tài liệu, v1.0 | Tôi | 1–2 giờ | Điểm test cuối có ghi log, README và báo cáo khớp, thẻ v1.0. Đẩy thẻ phiên bản lên GitHub cần bạn đồng ý | Làm sau A–F |
 | *H. (tuỳ chọn)* Mô hình nhỏ + cắt vocabulary | Tôi | Khoảng 1 giờ | Khoảng 110 MB, đạt S7 mức kỳ vọng, phát hành bên cạnh (không thay bản phục vụ) | Chỉ khi bạn muốn |
 | *I. (tuỳ chọn)* Challenge v2 | Bạn và người giúp | 4–6 giờ | Câu do người thật gõ | [Mục 8](#8-tuỳ-chọn-challenge-v2) |
 
-**Thứ tự nên làm:** B ngay hôm nay (lượt 2 sau 24 giờ). D bất kỳ lúc nào. E khi bạn đọc xong 0.6. F
-sau khi A và C xong, vì một trong hai có thể đổi mô hình phục vụ; nếu không đổi, F làm ngay được với
-bản 198,9 MB.
+**Thứ tự nên làm:** B ngay hôm nay (lượt 2 sau 24 giờ). D bất kỳ lúc nào. E khi bạn đọc xong 0.6.
+Nếu A hoặc C dẫn tới một bản phục vụ mới, kiểm và phát hành bản đó theo mục 5.
 
 ### 0.4 Hướng dẫn chi tiết việc B: audit 58 dòng
 
@@ -149,8 +159,9 @@ nhãn gốc (`study challenge-review`).
 ### 0.6 Hướng dẫn chi tiết việc E: quyết định về H12
 
 H12 hỏi: mô hình có tốt hơn với phản hồi của **một trường thứ ba** (không phải UIT, không phải NEU)?
-Câu này cần dữ liệu có nhãn mới, vì không có bộ dữ liệu công khai nào khác. H12′ đang chạy chỉ trả
-lời được cho diễn đàn NEU.
+Câu này cần dữ liệu có nhãn được phép sử dụng và kiểm tra chất lượng độc lập. Bộ FPT vừa tìm thấy
+có giới hạn sử dụng ghi trên thẻ dữ liệu; hiện chưa đủ điều kiện cho H12. H12′ đã đạt quy tắc xác
+nhận, nhưng kết luận của nó chỉ áp dụng cho diễn đàn NEU.
 
 | Lựa chọn | Bạn phải làm gì | Hệ quả |
 |---|---|---|
@@ -161,8 +172,15 @@ lời được cho diễn đàn NEU.
 
 ### 0.7 Hướng dẫn chi tiết việc F: upload lên Hugging Face
 
-Lệnh upload do **bạn tự chạy**: Claude Code chặn tôi tạo nội dung công khai, và việc phát hành là
-quyết định của bạn.
+**Đã xong cho bản 198,9 MB hiện tại.** Ngày 2026-10-25, `SHA256SUMS` của bundle dựng từ
+`models/serve/sentiment` khớp cả 16 dòng trên Hub. `serve reproduce` tại commit Hub
+`54694f8c5de956f0b39da77d2cc160723c9c7d38` tải bản trên Hub về, kiểm 8 file phục vụ và
+tái lập đúng macro-F1 validation **0,8617** trên 1.583 câu. Model card cũng khớp byte. Bằng chứng
+tại `results/studies/engineering/hub_bundle_compare_2026-10-25.json` và
+`results/studies/engineering/hub_reproduce_2026-10-25.json`. Các bước sau chỉ dùng nếu mô hình
+phục vụ đổi trong tương lai.
+
+Mỗi lần phát hành mới cần kiểm bản nháp và quyết định công khai riêng.
 
 1. Tôi dựng bản chạy thử và báo bạn khi sẵn sàng. Bản cho mô hình 198,9 MB đã có ở
    `models\publish\vifeedback-sentiment-phobert\`.
@@ -189,7 +207,7 @@ quyết định của bạn.
 | 2 | [Duyệt 15 nhãn của challenge v1 (U2)](#2-duyệt-15-nhãn-của-challenge-v1-u2) | 20 phút | Bất kỳ lúc nào | Báo cáo challenge v1 kèm nhãn đã được người kiểm |
 | 3 | ~~Chuẩn bị máy rảnh để đo độ trễ~~ | — | ✅ Xong 2026-09-30 (bạn cho phép không cần máy rảnh) | p95 12,3 ms (mô hình nhỏ) |
 | 4 | ~~Quyết định giấy phép cho H10b~~ | — | ✅ Xong 2026-10-01: H10b lên Hub với CC BY-NC-SA 4.0 | Mô hình nhỏ: chỉ khi bạn muốn đưa lên repo riêng |
-| 5 | [Duyệt upload lên Hugging Face](#5-duyệt-upload-lên-hugging-face) | 10 phút mỗi lần | Mỗi khi có bản phát hành mới | Bản trên Hub khớp với service |
+| 5 | [Đối chiếu Hub với service](#5-duyệt-upload-lên-hugging-face) | ✅ Bản 198,9 MB đã khớp 2026-10-25; 10 phút nếu có bản mới | Mỗi bản phát hành mới | Bản trên Hub khớp với service |
 | 6 | [Quyết định chính sách nhãn cho trường khác](#6-quyết-định-chính-sách-nhãn-cho-văn-bản-của-trường-khác-quyết-định-số-2) | 15 phút đọc | Trước Cycle 5 (c) | Hướng (c) |
 | 7 | [Dữ liệu có nhãn mới cho hướng (c)](#7-dữ-liệu-có-nhãn-mới-cho-hướng-c), hoặc đồng ý chạy [H12′](#phương-án-thay-thế-h12-không-cần-dữ-liệu-mới) | 20–25 giờ (hai người); H12′ chỉ cần một câu trả lời | Trước Cycle 5 (c) | Kết luận về văn bản của trường khác (H12′: chỉ về diễn đàn NEU) |
 | 8 | [Challenge v2](#8-tuỳ-chọn-challenge-v2) | 4–6 giờ | Tuỳ chọn | Kiểm tra teencode do người thật gõ |
@@ -500,8 +518,8 @@ mục 5. Bản H11 hiện ở máy, chưa upload.
 
 ## 5. Duyệt upload lên Hugging Face
 
-Mỗi lần upload là một lần phát hành công khai, nên cần bạn duyệt riêng; lần duyệt trước không áp dụng
-cho lần sau.
+**Bản hiện tại đã có trên Hub và được kiểm lại ngày 2026-10-25** như mục 0.7. Mỗi bản mới là một
+lần phát hành công khai, cần bạn duyệt riêng.
 
 **Quy trình mỗi lần có bản mới:**
 1. Tôi tạo bản chạy thử (dry run) vào `models/publish/vifeedback-sentiment-phobert/` và gửi bạn các
@@ -643,12 +661,32 @@ Move-Item models\serve\.student-sentiment models\serve\sentiment
 
 **Nếu gặp lại** (lỗi `DLL load failed ... An Application Control policy has blocked this file`):
 1. Đợi vài phút rồi thử lại lệnh. Lần 2026-09-30 tự hết.
-2. Nếu vẫn bị chặn, mở *Windows Security → App & browser control → Smart App Control* để xem trạng
-   thái.
-   - Tắt Smart App Control là quyết định về bảo mật máy của bạn.
-   - Lưu ý: sau khi tắt thì không bật lại được nếu không cài lại Windows.
-3. Nếu không muốn đổi cài đặt, việc huấn luyện có thể chuyển sang Kaggle. Báo tôi để chuẩn bị
-   notebook.
+2. Trường hợp H12′ ngày 2026-10-26 đã được xác định rõ: sự kiện Code Integrity **3077** chặn
+   `torch_python.dll`, chính sách `VerifiedAndReputableDesktop` (ID
+   `{0283ac0f-fff1-49ae-ada1-8a933130cad6}`); `Get-AuthenticodeSignature` báo `NotSigned`.
+   Đây là Smart App Control đang thực thi. Nó không có danh sách cho phép riêng từng ứng dụng.
+3. Cách nhanh nhất trên chính laptop là mở *Windows Security → App & browser control → Smart App
+   Control settings*, xem trạng thái **On** rồi, nếu chấp nhận thay đổi mức bảo vệ của máy, chọn
+   **Off** trong giao diện Windows. Đây là quyết định của chủ máy; không sửa registry hay xóa policy.
+   Khả năng bật lại phụ thuộc bản Windows: tài liệu Microsoft gần đây nói một số bản cập nhật cho
+   phép bật lại, còn tài liệu giao diện cũ nói cần reset/cài lại. Hãy xem thông báo của Windows
+   trước khi đổi trạng thái.
+4. Nếu muốn giữ Smart App Control, xuất ONNX trên môi trường Linux/Windows khác được phép nạp
+   PyTorch rồi mang artifact về laptop để chạy các bước ONNX Runtime. Notebook Kaggle mục 11 là
+   để tái chạy thí nghiệm, chưa phải notebook xuất artifact H12′.
+
+Sau khi Windows cho phép thư viện, từ thư mục gốc repo kiểm tra:
+
+```powershell
+.\.venv\Scripts\python.exe -c "import torch, onnx, pyarrow; print(torch.__version__)"
+```
+
+Nếu lệnh này thành công, tiếp tục theo
+thứ tự **Release resume order** trong `docs/NEXT_PLAN.md`; không chạy lại bước xác nhận H12′.
+
+Nguồn Microsoft: [chính sách và sự kiện 3077](https://learn.microsoft.com/en-us/windows/security/application-security/application-control/app-control-for-business/operations/appcontrol-debugging-and-troubleshooting),
+[cách kiểm tra Smart App Control](https://learn.microsoft.com/en-us/windows/apps/develop/smart-app-control/test-your-app-with-smart-app-control),
+[câu hỏi thường gặp](https://support.microsoft.com/en-us/windows/security/threat-malware-protection/smart-app-control-frequently-asked-questions).
 
 Service (ONNX Runtime, pyvi, bộ phát hiện chủ đề bằng numpy) không cần `pyarrow` hay `onnx`, nên
 vẫn chạy được ngay cả khi hai gói này bị chặn.
@@ -657,8 +695,9 @@ vẫn chạy được ngay cả khi hai gói này bị chặn.
 
 ## 11. Chạy H12′ trên Kaggle
 
-**Dự phòng, hiện không cần.** Từ 2026-10-11 laptop chạy lại được PyTorch và tôi chạy H12′ trên
-laptop. Chỉ dùng mục này nếu Windows lại chặn PyTorch giữa chừng.
+**Lưu trữ để tái chạy; không cần cho thí nghiệm hiện tại.** Cả năm seed H12′ đã huấn luyện xong trên
+laptop và bước xác nhận đã đạt. Windows lại chặn PyTorch khi xuất ứng viên ONNX; notebook dưới đây
+chỉ phục vụ việc tái chạy, không giải quyết trực tiếp cổng phát hành ứng viên.
 
 **Vì sao.** Từ chiều 2026-10-01, Windows Application Control chặn PyTorch, pyarrow và scikit-learn
 trên laptop (mục 9), nên laptop không huấn luyện được. Seed 42 của H12′ đã chạy xong trước đó và

@@ -258,6 +258,21 @@ def study_h12p_confirm() -> None:
     typer.echo(f"  H12' {'PASSED' if out['passed'] else 'NOT passed'}")
 
 
+@study_app.command("h12p-closing-gate")
+def study_h12p_closing_gate() -> None:
+    """After H12' passes, evaluate its five models on UIT-VSFC test once and log each use."""
+    from vifeedback.training import h12p as H
+
+    out = H.closing_gate()
+    seed42 = out["checkpoints"]["h12p_seed42"]["test"]
+    paired = out["five_seed_test"]["paired_h12p_minus_h10b"]
+    typer.echo(
+        f"  seed 42: test macro-F1 {seed42['macro_f1']:.4f}, neutral F1 "
+        f"{seed42['per_class_f1']['neutral']:.3f}"
+    )
+    typer.echo(f"  5-seed H12' - H10b: {paired['mean_delta']:+.4f} {paired.get('ci95')}")
+
+
 @study_app.command("h12p-predict")
 def study_h12p_predict(seed: int = typer.Option(42)) -> None:
     """Write a trained H12' candidate's labels on the confirmation data (labels only)."""

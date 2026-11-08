@@ -123,6 +123,8 @@ def test_confirm_applies_the_rule_from_prediction_files(tmp_path, monkeypatch):
     assert out["passed"] and abs(out["holdout_posts"] - 60) <= 2  # per-label rounding
     assert out["rules"]["1_holdout_macro_f1_up"]["ci_low"] > 0
     assert (tmp_path / "h12p" / "confirm" / "decision.json").exists()
+    with pytest.raises(FileExistsError, match="has run already"):
+        H.confirm()
 
 
 def test_confirm_fails_on_a_guard(tmp_path, monkeypatch):
@@ -137,6 +139,17 @@ def test_confirm_refuses_missing_files(tmp_path, monkeypatch):
     (tmp_path / "h12p" / "control-s7" / "predictions_holdout.csv").unlink()
     with pytest.raises(FileNotFoundError, match="control-s7"):
         H.confirm()
+
+
+def test_closing_gate_requires_a_passed_confirmation(tmp_path, monkeypatch):
+    monkeypatch.setattr(H, "OUT", tmp_path / "h12p")
+    with pytest.raises(FileNotFoundError, match="confirm H12"):
+        H.closing_gate()
+    decision = H.OUT / "confirm" / "decision.json"
+    decision.parent.mkdir(parents=True)
+    decision.write_text(json.dumps({"passed": False}), encoding="utf-8")
+    with pytest.raises(RuntimeError, match="did not pass"):
+        H.closing_gate()
 
 
 def test_import_accepts_results_and_refuses_anything_else(tmp_path, monkeypatch):
